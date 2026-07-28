@@ -18,7 +18,9 @@
       "Bash(perl -0777 -ne ' *)",
       "Bash(git commit -m ' *)",
       "Bash(where.exe zip *)",
-      "Bash(where.exe powershell *)"
+      "Bash(where.exe powershell *)",
+      "Bash(where.exe gh *)",
+      "Bash(gh auth *)"
     ]
   }
 }
