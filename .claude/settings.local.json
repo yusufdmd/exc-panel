@@ -16,7 +16,9 @@
       "Bash(python -m http.server 8791)",
       "Bash(find / -maxdepth 6 -iname \"python3*.exe\" 2>/dev/null | grep -v WindowsApps | head -5 *)",
       "Bash(perl -0777 -ne ' *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(where.exe zip *)",
+      "Bash(where.exe powershell *)"
     ]
   }
 }

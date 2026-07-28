@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EXC Paneli</title>
+<style>
+  :root{
+    --bg-void: #0A0D12;
+    --bg-panel: #12161F;
+    --bg-raised: #1A2029;
+    --bg-raised-hover: #202836;
+    --line: #262E3B;
+    --text-primary: #E6E9EF;
+    --text-muted: #8B94A3;
+    --text-dim: #5A6272;
+    --gold: #E0A63A;
+    --violet: #A987E8;
+    --cyan: #3FC1C9;
+    --blue: #6C8EEF;
+    --gray: #7C8598;
+    --danger: #E5484D;
+    --success: #4ADE80;
+    --warn: #E8C34A;
+    --font-display: 'Segoe UI Semibold', 'Arial Narrow', Arial, sans-serif;
+    --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: 'Consolas', 'SF Mono', Menlo, monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background: radial-gradient(ellipse at top, #10141C 0%, var(--bg-void) 60%);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    min-height:100vh;
+    padding: 24px;
+  }
+  ::selection{ background: var(--cyan); color:#0A0D12; }
+  .wrap{ max-width: 1500px; margin: 0 auto; }
+
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap: wrap; gap: 16px;
+    padding-bottom: 20px; margin-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+  }
+  .brand{ display:flex; align-items:center; gap:14px; }
+  .brand-mark{
+    width:42px; height:42px; border-radius:10px;
+    background: linear-gradient(135deg, var(--gold), #B8791F);
+    display:flex; align-items:center; justify-content:center;
+    font-family: var(--font-display); font-weight:800; font-size:18px; color:#0A0D12;
+    letter-spacing:-1px;
+    box-shadow: 0 0 24px rgba(224,166,58,0.35);
+  }
+  .brand-text h1{
+    font-family: var(--font-display); font-size:20px; letter-spacing: 1px; text-transform:uppercase; font-weight:700;
+  }
+  .brand-text p{ font-size:12px; color:var(--text-muted); margin-top:2px; letter-spacing:0.3px;}
+  .topbar-right{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .sync{
+    display:flex; align-items:center; gap:10px;
+    font-size:12px; color:var(--text-muted);
+    background: var(--bg-panel); border:1px solid var(--line);
+    padding:8px 14px; border-radius:100px;
+  }
+  .dot{ width:7px; height:7px; border-radius:50%; background: var(--success); box-shadow:0 0 8px var(--success); flex-shrink:0; animation: pulse 2s infinite; }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:0.35;} }
+  .btn-refresh, .lang-btn{
+    background:none; border:1px solid var(--line); color:var(--text-muted);
+    border-radius:100px; padding:8px 12px; font-size:12px; cursor:pointer;
+    display:flex; align-items:center; gap:6px; transition: all .15s;
+  }
+  .btn-refresh:hover, .lang-btn:hover{ color:var(--text-primary); border-color:var(--cyan); }
+  .btn-refresh svg{ width:13px; height:13px; }
+  .lang-switch{ display:flex; gap:4px; background:var(--bg-panel); border:1px solid var(--line); border-radius:100px; padding:4px; }
+  .lang-opt{
+    padding:5px 10px; border-radius:100px; font-size:11px; font-weight:700; color:var(--text-dim);
+    cursor:pointer; letter-spacing:0.5px; transition: all .15s;
+  }
+  .lang-opt.active{ background: var(--bg-raised); color:var(--cyan); }
+  .lang-opt:hover{ color:var(--text-primary); }
+
+  .stats{ display:grid; grid-template-columns: repeat(6, 1fr); gap:12px; margin-bottom:22px; }
+  .stat-card{ background: var(--bg-panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+  .stat-card .num{ font-family: var(--font-display); font-size:26px; font-weight:700; letter-spacing:-0.5px; }
+  .stat-card .lbl{ font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px; margin-top:3px; }
+  .stat-card.r5 .num{ color: var(--gold); } .stat-card.r4 .num{ color: var(--violet); }
+  .stat-card.r3 .num{ color: var(--cyan); } .stat-card.r2 .num{ color: var(--blue); } .stat-card.r1 .num{ color: var(--gray); }
+
+  .tabs{ display:flex; gap:6px; margin-bottom:18px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+  .tab{
+    padding:10px 18px; font-size:13px; font-weight:600; letter-spacing:0.3px;
+    color:var(--text-muted); cursor:pointer; border-bottom:2px solid transparent;
+    text-transform:uppercase; transition: all .15s;
+  }
+  .tab:hover{ color:var(--text-primary); }
+  .tab.active{ color:var(--cyan); border-bottom-color:var(--cyan); }
+  .subtabs{ display:flex; gap:8px; margin-bottom:16px; }
+  .subtab{
+    padding:7px 16px; border-radius:100px; font-size:12px; font-weight:700; letter-spacing:0.5px;
+    background:var(--bg-panel); border:1px solid var(--line); color:var(--text-muted); cursor:pointer;
+  }
+  .subtab.active{ background: var(--bg-raised); color:var(--text-primary); border-color:var(--cyan); }
+
+  .panel{ display:none; }
+  .panel.active{ display:block; animation: fadein .2s ease; }
+  .subpanel{ display:none; }
+  .subpanel.active{ display:block; animation: fadein .2s ease; }
+  @keyframes fadein{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
+
+  .toolbar{ display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center; }
+  .search{ flex:1; min-width:180px; background:var(--bg-panel); border:1px solid var(--line); border-radius:8px; padding:10px 14px; color:var(--text-primary); font-size:13px; }
+  .search:focus{ outline:none; border-color:var(--cyan); }
+  .filter-chip{ padding:8px 14px; border-radius:8px; border:1px solid var(--line); background:var(--bg-panel); color:var(--text-muted); font-size:12px; font-weight:600; cursor:pointer; transition: all .15s; }
+  .filter-chip.active{ background: var(--bg-raised); color:var(--text-primary); border-color:var(--cyan); }
+  .btn-primary{ background: linear-gradient(135deg, var(--cyan), #2A9DA5); color:#06141A; border:none; padding:10px 18px; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; letter-spacing:0.3px; transition: transform .1s; white-space:nowrap; }
+  .btn-primary:hover{ transform: translateY(-1px); }
+  .btn-ghost{ background:none; border:1px solid var(--line); color:var(--text-muted); padding:9px 14px; border-radius:8px; font-size:12px; cursor:pointer; }
+  .btn-ghost:hover{ color:var(--text-primary); border-color:var(--text-dim); }
+
+  .table-wrap{ background:var(--bg-panel); border:1px solid var(--line); border-radius:14px; overflow:auto; max-width:100%; }
+  table{ width:100%; border-collapse:collapse; }
+  thead th{ text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.6px; color:var(--text-dim); padding:12px 16px; border-bottom:1px solid var(--line); cursor:pointer; user-select:none; white-space:nowrap; }
+  thead th:hover{ color:var(--text-muted); }
+  tbody td{ padding:12px 16px; border-bottom:1px solid var(--line); font-size:13px; vertical-align:middle; white-space:nowrap; }
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody tr:hover{ background: var(--bg-raised); }
+  tbody tr.old-row{ opacity:0.55; }
+  .sticky-col{ position:sticky; left:0; background: var(--bg-panel); z-index:2; }
+  tbody tr:hover .sticky-col{ background: var(--bg-raised); }
+
+  .rank-badge{ display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:6px; font-family: var(--font-display); font-weight:700; font-size:12px; letter-spacing:0.5px; border:1px solid currentColor; }
+  .rank-badge .chev{ font-size:8px; letter-spacing:-1px; opacity:0.8; }
+  .r5-c{ color: var(--gold); background: rgba(224,166,58,0.08); }
+  .r4-c{ color: var(--violet); background: rgba(169,135,232,0.08); }
+  .r3-c{ color: var(--cyan); background: rgba(63,193,201,0.08); }
+  .r2-c{ color: var(--blue); background: rgba(108,142,239,0.08); }
+  .r1-c{ color: var(--gray); background: rgba(124,133,152,0.08); }
+
+  .member-name{ font-weight:700; }
+  .member-id{ color:var(--text-dim); font-family: var(--font-mono); font-size:12px; }
+  .old-tag{ display:inline-block; margin-left:8px; font-size:10px; padding:2px 6px; border-radius:4px; background: rgba(139,148,163,0.15); color:var(--text-muted); letter-spacing:0.5px; text-transform:uppercase; }
+  .num-cell{ font-family: var(--font-mono); }
+  .row-actions{ display:flex; gap:6px; }
+  .icon-btn{ background:none; border:1px solid var(--line); color:var(--text-muted); width:28px; height:28px; border-radius:6px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; }
+  .icon-btn:hover{ color:var(--text-primary); border-color:var(--cyan); }
+  .icon-btn.danger:hover{ color:var(--danger); border-color:var(--danger); }
+
+  .empty-state{ text-align:center; padding:60px 20px; color:var(--text-muted); }
+  .empty-state h3{ font-family: var(--font-display); color:var(--text-primary); margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;}
+  .empty-state p{ font-size:13px; }
+
+  .week-col{ text-align:center !important; }
+  .week-head{ display:flex; align-items:center; gap:6px; justify-content:center; }
+  .week-head .wname{ cursor:default; }
+  .week-actions{ display:flex; gap:3px; }
+  .cell-pill{ display:inline-flex; align-items:center; justify-content:center; gap:5px; padding:4px 10px; border-radius:6px; font-family:var(--font-mono); font-size:12px; font-weight:700; min-width:64px; }
+  .pill-green{ background: rgba(74,222,128,0.12); color: var(--success); border:1px solid rgba(74,222,128,0.4); }
+  .pill-yellow{ background: rgba(232,195,74,0.12); color: var(--warn); border:1px solid rgba(232,195,74,0.4); }
+  .pill-red{ background: rgba(229,72,77,0.12); color: var(--danger); border:1px solid rgba(229,72,77,0.4); }
+  .pill-gray{ background: rgba(124,133,152,0.08); color: var(--text-dim); border:1px solid var(--line); }
+
+  .event-toolbar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px; }
+  .legend{ display:flex; gap:14px; font-size:11px; color:var(--text-muted); flex-wrap:wrap; }
+  .legend span{ display:inline-flex; align-items:center; gap:5px; }
+  .legend .sw{ width:9px; height:9px; border-radius:3px; display:inline-block; }
+
+  .overlay{ display:none; position:fixed; inset:0; background:rgba(6,8,12,0.75); backdrop-filter: blur(3px); align-items:center; justify-content:center; z-index:100; padding:20px; }
+  .overlay.active{ display:flex; }
+  .modal{ background:var(--bg-panel); border:1px solid var(--line); border-radius:16px; padding:26px; width:100%; max-width:480px; max-height:88vh; overflow-y:auto; }
+  .modal.wide{ max-width:820px; }
+  .modal h2{ font-family:var(--font-display); font-size:17px; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:18px; }
+  .field{ margin-bottom:14px; }
+  .field label{ display:block; font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
+  .field input, .field select{ width:100%; background:var(--bg-raised); border:1px solid var(--line); border-radius:8px; padding:10px 12px; color:var(--text-primary); font-size:13px; }
+  .field input:focus, .field select:focus{ outline:none; border-color:var(--cyan); }
+  .field-row{ display:flex; gap:12px; }
+  .field-row .field{ flex:1; }
+  .toggle-row{ display:flex; align-items:center; gap:10px; margin-bottom:16px; cursor:pointer; }
+  .toggle{ width:38px; height:22px; border-radius:100px; background:var(--bg-raised); border:1px solid var(--line); position:relative; transition: all .15s; flex-shrink:0; }
+  .toggle::after{ content:''; position:absolute; width:16px; height:16px; border-radius:50%; background:var(--text-dim); top:2px; left:2px; transition: all .15s; }
+  .toggle.on{ background: rgba(224,166,58,0.2); border-color:var(--gold); }
+  .toggle.on::after{ background:var(--gold); left:18px; }
+  .modal-actions{ display:flex; gap:10px; justify-content:flex-end; margin-top:20px; }
+
+  .part-table{ width:100%; }
+  .part-table th{ text-align:left; font-size:11px; color:var(--text-dim); padding:8px; text-transform:uppercase; white-space:nowrap; }
+  .part-table td{ padding:8px; border-top:1px solid var(--line); font-size:13px; }
+  .part-table input[type="number"]{ width:110px; }
+  .part-table select{ width:110px; }
+  .join-check, .attend-check, .excused-check{ width:18px; height:18px; accent-color: var(--cyan); cursor:pointer; }
+
+  .lb-row{ display:flex; align-items:center; gap:14px; padding:12px 16px; border-bottom:1px solid var(--line); }
+  .lb-row:last-child{ border-bottom:none; }
+  .lb-rank{ font-family:var(--font-display); font-size:15px; width:28px; color:var(--text-dim); }
+  .lb-rank.top1{ color:var(--gold); } .lb-rank.top2{ color:#C7CBD4; } .lb-rank.top3{ color:#B8763A; }
+  .lb-bar-wrap{ flex:1; }
+  .lb-bar{ height:6px; border-radius:4px; background: var(--bg-raised); overflow:hidden; margin-top:4px; }
+  .lb-bar-fill{ height:100%; background: linear-gradient(90deg, var(--cyan), var(--blue)); border-radius:4px; }
+  .lb-points{ font-family:var(--font-mono); font-weight:700; color:var(--cyan); width:90px; text-align:right; }
+
+  .toast{ position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--bg-raised); border:1px solid var(--cyan); color:var(--text-primary); padding:10px 20px; border-radius:100px; font-size:13px; z-index:200; opacity:0; transition: opacity .2s; max-width:90vw; text-align:center; }
+  .toast.show{ opacity:1; }
+
+  @media (max-width:900px){ .stats{ grid-template-columns: repeat(3,1fr); } }
+  @media (max-width:600px){ .stats{ grid-template-columns: repeat(2,1fr); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">X</div>
+      <div class="brand-text">
+        <h1 id="t_appName">EXC Paneli</h1>
+        <p id="t_tagline">Üye · Rütbe · Güç &amp; Kamp Seviyesi · Etkinlik Takibi</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="lang-switch" id="langSwitch"></div>
+      <div class="sync"><span class="dot"></span><span id="syncText">…</span></div>
+      <button class="btn-refresh" onclick="exportBackup()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
+        <span id="t_exportBackup">Yedekle</span>
+      </button>
+      <button class="btn-refresh" onclick="document.getElementById('importFile').click()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21V9m0 0l-4 4m4-4l4 4M5 3h14"/></svg>
+        <span id="t_importBackup">İçe Aktar</span>
+      </button>
+      <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importBackup(this.files[0])">
+      <button class="btn-refresh" onclick="manualRefresh()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v6h6M20 20v-6h-6M4.5 15a8 8 0 0013.9 3.4M19.5 9A8 8 0 005.6 5.6"/></svg>
+        <span id="t_refresh">Yenile</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="stats" id="statsRow"></div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="members" onclick="switchTab('members')" id="t_tabMembers">Üyeler</div>
+    <div class="tab" data-tab="events" onclick="switchTab('events')" id="t_tabEvents">Etkinlikler</div>
+    <div class="tab" data-tab="board" onclick="switchTab('board')" id="t_tabBoard">Puan Sıralaması</div>
+  </div>
+
+  <!-- MEMBERS -->
+  <div class="panel active" id="panel-members">
+    <div class="subtabs">
+      <div class="subtab active" data-mv="active" onclick="setMemberView('active')" id="t_subActiveMembers">Aktif Üyeler</div>
+      <div class="subtab" data-mv="old" onclick="setMemberView('old')" id="t_subOldMembers">Eski Üyeler (OLD)</div>
+    </div>
+    <div class="toolbar">
+      <input class="search" id="memberSearch" oninput="renderMembers()">
+      <div class="filter-chip active" data-rank="ALL" onclick="setRankFilter('ALL')" id="t_filterAll">Tümü</div>
+      <div class="filter-chip" data-rank="R5" onclick="setRankFilter('R5')">R5</div>
+      <div class="filter-chip" data-rank="R4" onclick="setRankFilter('R4')">R4</div>
+      <div class="filter-chip" data-rank="R3" onclick="setRankFilter('R3')">R3</div>
+      <div class="filter-chip" data-rank="R2" onclick="setRankFilter('R2')">R2</div>
+      <div class="filter-chip" data-rank="R1" onclick="setRankFilter('R1')">R1</div>
+      <button class="btn-primary" onclick="openMemberModal()" id="t_addMember">+ Üye Ekle</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="setSort('rank')" id="t_thRank">Rütbe</th>
+            <th onclick="setSort('name')" id="t_thUsername">Kullanıcı Adı</th>
+            <th onclick="setSort('gameId')" id="t_thId">ID</th>
+            <th onclick="setSort('power')" id="t_thPower">Güç Seviyesi</th>
+            <th onclick="setSort('campSort')" id="t_thCamp">Kamp Seviyesi</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="memberRows"></tbody>
+      </table>
+      <div class="empty-state" id="memberEmpty" style="display:none;">
+        <h3 id="t_emptyMembersTitle">Henüz üye yok</h3>
+        <p id="t_emptyMembersDesc">"+ Üye Ekle" ile ilk üyeyi kaydet.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- EVENTS -->
+  <div class="panel" id="panel-events">
+    <div class="subtabs">
+      <div class="subtab active" data-sub="svs" onclick="switchSub('svs')">SVS</div>
+      <div class="subtab" data-sub="gvg" onclick="switchSub('gvg')">GVG</div>
+      <div class="subtab" data-sub="ss" onclick="switchSub('ss')">SS</div>
+      <div class="subtab" data-sub="other" onclick="switchSub('other')" id="t_subOther">Diğer</div>
+    </div>
+
+    <!-- SVS -->
+    <div class="subpanel active" id="sub-svs">
+      <div class="event-toolbar">
+        <div class="legend">
+          <span><i class="sw" style="background:var(--success)"></i><span id="t_legendJoined">Katıldı</span></span>
+          <span><i class="sw" style="background:var(--danger)"></i><span id="t_legendNotJoined">Katılmadı</span></span>
+          <span><i class="sw" style="background:var(--text-dim)"></i><span id="t_legendUnknown">Bilgi Yok</span></span>
+        </div>
+        <button class="btn-primary" onclick="openWeekModal('svs')" id="t_addWeek_svs">+ Hafta Ekle</button>
+      </div>
+      <div class="table-wrap"><table id="tbl-svs"><thead></thead><tbody></tbody></table></div>
+      <div class="empty-state" id="empty-svs" style="display:none;"><h3 id="t_emptyWeeksTitle1">Henüz hafta yok</h3><p id="t_emptyWeeksDesc1">"+ Hafta Ekle" ile ilk haftayı oluştur.</p></div>
+    </div>
+
+    <!-- GVG -->
+    <div class="subpanel" id="sub-gvg">
+      <div class="event-toolbar">
+        <div class="legend">
+          <span><i class="sw" style="background:var(--success)"></i>≥ 43.500.000</span>
+          <span><i class="sw" style="background:var(--warn)"></i>13.200.000 – 43.499.999</span>
+          <span><i class="sw" style="background:var(--danger)"></i>≤ 13.199.999</span>
+        </div>
+        <button class="btn-primary" onclick="openWeekModal('gvg')" id="t_addWeek_gvg">+ Hafta Ekle</button>
+      </div>
+      <div class="table-wrap"><table id="tbl-gvg"><thead></thead><tbody></tbody></table></div>
+      <div class="empty-state" id="empty-gvg" style="display:none;"><h3 id="t_emptyWeeksTitle2">Henüz hafta yok</h3><p id="t_emptyWeeksDesc2">"+ Hafta Ekle" ile ilk haftayı oluştur.</p></div>
+    </div>
+
+    <!-- SS -->
+    <div class="subpanel" id="sub-ss">
+      <div class="event-toolbar">
+        <div class="legend">
+          <span><i class="sw" style="background:var(--success)"></i><span id="t_legendAttended">Kayıtlı ve Katıldı</span></span>
+          <span><i class="sw" style="background:var(--danger)"></i><span id="t_legendRegNotAttend">Kayıtlı, Katılmadı</span></span>
+          <span><i class="sw" style="background:var(--text-dim)"></i><span id="t_legendNoReg">Kayıt Yok</span></span>
+        </div>
+        <button class="btn-primary" onclick="openWeekModal('ss')" id="t_addWeek_ss">+ Hafta Ekle</button>
+      </div>
+      <div class="table-wrap"><table id="tbl-ss"><thead></thead><tbody></tbody></table></div>
+      <div class="empty-state" id="empty-ss" style="display:none;"><h3 id="t_emptyWeeksTitle3">Henüz hafta yok</h3><p id="t_emptyWeeksDesc3">"+ Hafta Ekle" ile ilk haftayı oluştur.</p></div>
+    </div>
+
+    <!-- OTHER -->
+    <div class="subpanel" id="sub-other">
+      <div class="event-toolbar">
+        <div class="legend">
+          <span><i class="sw" style="background:var(--success)"></i><span id="t_legendJoinedOther">Katıldı</span></span>
+          <span><i class="sw" style="background:var(--danger)"></i><span id="t_legendNotJoinedOther">Katılmadı</span></span>
+          <span><i class="sw" style="background:var(--text-dim)"></i><span id="t_legendUnknownOther">Bilgi Yok</span></span>
+        </div>
+        <button class="btn-primary" onclick="openWeekModal('other')" id="t_addEvent_other">+ Etkinlik Ekle</button>
+      </div>
+      <div class="table-wrap"><table id="tbl-other"><thead></thead><tbody></tbody></table></div>
+      <div class="empty-state" id="empty-other" style="display:none;"><h3 id="t_emptyWeeksTitle4">Henüz etkinlik yok</h3><p id="t_emptyWeeksDesc4">"+ Etkinlik Ekle" ile ilk etkinliği oluştur.</p></div>
+    </div>
+  </div>
+
+  <!-- BOARD -->
+  <div class="panel" id="panel-board">
+    <div class="table-wrap" id="boardWrap"></div>
+  </div>
+
+</div>
+
+<!-- Member Modal -->
+<div class="overlay" id="memberOverlay">
+  <div class="modal">
+    <h2 id="memberModalTitle">Üye Ekle</h2>
+    <input type="hidden" id="memberEditId">
+    <div class="field">
+      <label id="t_lblUsername">Kullanıcı Adı</label>
+      <input id="fName">
+    </div>
+    <div class="field-row">
+      <div class="field"><label id="t_lblGameId">ID Numarası</label><input id="fGameId"></div>
+      <div class="field"><label id="t_lblRank">Rütbe</label>
+        <select id="fRank">
+          <option value="R5">R5</option><option value="R4">R4</option><option value="R3">R3</option>
+          <option value="R2">R2</option><option value="R1" selected>R1</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label id="t_lblPower">Güç Seviyesi</label><input id="fPower" type="number"></div>
+      <div class="field"><label id="t_lblCamp">Kamp Seviyesi</label>
+        <select id="fCamp"></select>
+      </div>
+    </div>
+    <div class="toggle-row" onclick="toggleOld()">
+      <div class="toggle" id="oldToggle"></div>
+      <span id="t_lblOld" style="font-size:13px;">Eski üye (OLD)</span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeMemberModal()" id="t_cancel1">Vazgeç</button>
+      <button class="btn-primary" onclick="saveMember()" id="t_save1">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- Week Modal (create) -->
+<div class="overlay" id="weekOverlay">
+  <div class="modal">
+    <h2 id="weekModalTitle">Hafta Ekle</h2>
+    <input type="hidden" id="weekType">
+    <div class="field"><label id="t_lblWeekLabel">Hafta Etiketi</label><input id="wkLabel" placeholder="Hafta 1"></div>
+    <div class="field"><label id="t_lblWeekDate">Tarih</label><input id="wkDate" type="date"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeWeekModal()" id="t_cancel2">Vazgeç</button>
+      <button class="btn-primary" onclick="saveWeek()" id="t_save2">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- Week Entry Modal (bulk edit per type) -->
+<div class="overlay" id="entryOverlay">
+  <div class="modal wide">
+    <h2 id="entryTitle">Giriş</h2>
+    <input class="search" style="margin-bottom:12px;" id="entrySearch" oninput="renderEntryRows()">
+    <div style="max-height:50vh; overflow-y:auto;">
+      <table class="part-table" id="entryTable">
+        <thead id="entryThead"></thead>
+        <tbody id="entryRows"></tbody>
+      </table>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeEntryModal()" id="t_close1">Kapat</button>
+      <button class="btn-primary" onclick="saveEntry()" id="t_save3">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- Power History Modal -->
+<div class="overlay" id="historyOverlay">
+  <div class="modal">
+    <h2 id="historyTitle">Güç Geçmişi</h2>
+    <div id="historyChartWrap"></div>
+    <div style="max-height:55vh; overflow-y:auto;">
+      <table class="part-table" style="width:100%;">
+        <thead><tr><th id="t_thDate">Tarih</th><th id="t_thPowerVal">Güç</th><th id="t_thDelta">Fark</th></tr></thead>
+        <tbody id="historyRows"></tbody>
+      </table>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeHistoryModal()" id="t_close2">Kapat</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import {
+  getMembers, createMember, updateMember, deleteMember as dbDeleteMember,
+  getAllPowerHistory, addPowerHistoryEntry,
+  getWeeks, createWeek as dbCreateWeek, deleteWeek as dbDeleteWeek,
+  getAllRecords, upsertRecordsBulk,
+  getSetting, setSetting,
+  subscribeToTables
+} from "./js/database.js";
+import { POLL_INTERVAL_MS } from "./js/config.js";
+
+/* ================= I18N ================= */
+const LANGS = ['tr','en','de','es','fr'];
+const LANG_FLAG = { tr:'TR', en:'EN', de:'DE', es:'ES', fr:'FR' };
+let currentLang = 'tr';
+
+const DICT = {
+  tr:{ appName:'EXC Paneli', tagline:'Üye · Rütbe · Güç & Kamp Seviyesi · Etkinlik Takibi', refresh:'Yenile',
+    syncConnecting:'Bağlanıyor…', syncLive:'Canlı — herkes görüyor', syncError:'Bağlantı hatası',
+    tabMembers:'Üyeler', tabEvents:'Etkinlikler', tabBoard:'Puan Sıralaması',
+    statTotal:'Toplam Üye', filterAll:'Tümü', addMember:'+ Üye Ekle', searchPh:'İsim veya ID ile ara…',
+    thRank:'Rütbe', thUsername:'Kullanıcı Adı', thId:'ID', thPower:'Güç Seviyesi', thCamp:'Kamp Seviyesi', thTotalPoints:'Toplam Puan',
+    emptyMembersTitle:'Henüz üye yok', emptyMembersDesc:'"+ Üye Ekle" ile ilk üyeyi kaydet.',
+    memberAddTitle:'Üye Ekle', memberEditTitle:'Üyeyi Düzenle',
+    lblUsername:'Kullanıcı Adı', lblGameId:'ID Numarası', lblRank:'Rütbe', lblPower:'Güç Seviyesi', lblCamp:'Kamp Seviyesi', lblOld:'Eski üye (OLD)',
+    cancel:'Vazgeç', save:'Kaydet', close:'Kapat',
+    toastMemberSaved:'Üye kaydedildi.', toastMemberDeleted:'Üye silindi.', confirmDeleteMember:'Bu üyeyi silmek istediğinize emin misiniz?',
+    nameIdRequired:'Kullanıcı adı ve ID zorunludur.',
+    addWeek:'+ Hafta Ekle', weekAddTitle:'Hafta Ekle', lblWeekLabel:'Hafta Etiketi', lblWeekDate:'Tarih', weekNameRequired:'Hafta etiketi gerekli.',
+    toastWeekSaved:'Hafta eklendi.', toastWeekDeleted:'Hafta silindi.', confirmDeleteWeek:'Bu haftayı ve tüm verilerini silmek istiyor musunuz?',
+    emptyWeeksTitle:'Henüz hafta yok', emptyWeeksDesc:'"+ Hafta Ekle" ile ilk haftayı oluştur.',
+    legendJoined:'Katıldı', legendNotJoined:'Katılmadı', legendAttended:'Kayıtlı ve Katıldı', legendRegNotAttend:'Kayıtlı, Katılmadı', legendNoReg:'Kayıt Yok',
+    thJoined:'Katıldı', thPointsCol:'Puan', thGroup:'Grup', thAttended:'Katıldı mı', groupNone:'Kayıt Yok', groupA:'A Grubu', groupB:'B Grubu',
+    entryTitleSVS:'SVS Girişi', entryTitleGVG:'GVG Girişi', entryTitleSS:'SS Girişi',
+    toastEntrySaved:'Kayıt tamamlandı.', notRegistered:'—',
+    boardEmptyTitle:'Henüz veri yok', boardEmptyDesc:'Üye ve etkinlik ekledikçe sıralama burada oluşur.',
+    searchMember:'Üye ara…',
+    statusYes:'Katıldı', statusNo:'Katılmadı', statusUnknown:'Bilgi Yok', legendUnknown:'Bilgi Yok',
+    subOther:'Diğer', addEvent:'+ Etkinlik Ekle', eventAddTitle:'Etkinlik Ekle', lblEventLabel:'Etkinlik Adı', eventNameRequired:'Etkinlik adı gerekli.',
+    toastEventSaved:'Etkinlik eklendi.', toastEventDeleted:'Etkinlik silindi.', confirmDeleteEvent:'Bu etkinliği ve tüm verilerini silmek istiyor musunuz?',
+    emptyEventsTitle:'Henüz etkinlik yok', emptyEventsDesc:'"+ Etkinlik Ekle" ile ilk etkinliği oluştur.',
+    entryTitleOther:'Diğer Etkinlik Girişi', thStatus:'Durum',
+    lbRankCol:'Sıra', lbMember:'Üye', lbGvgTotal:'GVG Toplam', lbSvsTotal:'SVS Toplam', lbSvsRatio:'SVS Katılım', lbSsRatio:'SS Katılım', lbOtherTotal:'Diğer Toplam', lbOtherRatio:'Diğer Katılım',
+    exemptLabel:'Muaf', powerHistory:'Güç Geçmişi', restoreMember:'Aktif Üyeye Al',
+    exportBackupLabel:'Yedekle', importBackupLabel:'İçe Aktar', backupSuccess:'Yedek indirildi.',
+    importConfirm:'Bu dosyadaki veriler herkesin gördüğü ortak veriyle değiştirilecek. Devam edilsin mi?',
+    importSuccess:'Veriler içe aktarıldı.', importFail:'Dosya okunamadı veya bozuk.',
+    subActiveMembers:'Aktif Üyeler', subOldMembers:'Eski Üyeler (OLD)',
+    thDate:'Tarih', thPowerVal:'Güç', thDelta:'Fark', thExcused:'Mazeretli' },
+  en:{ appName:'EXC Panel', tagline:'Members · Rank · Power & Camp Level · Event Tracking', refresh:'Refresh',
+    syncConnecting:'Connecting…', syncLive:'Live — everyone sees this', syncError:'Connection error',
+    tabMembers:'Members', tabEvents:'Events', tabBoard:'Leaderboard',
+    statTotal:'Total Members', filterAll:'All', addMember:'+ Add Member', searchPh:'Search by name or ID…',
+    thRank:'Rank', thUsername:'Username', thId:'ID', thPower:'Power Level', thCamp:'Camp Level', thTotalPoints:'Total Points',
+    emptyMembersTitle:'No members yet', emptyMembersDesc:'Use "+ Add Member" to add the first one.',
+    memberAddTitle:'Add Member', memberEditTitle:'Edit Member',
+    lblUsername:'Username', lblGameId:'ID Number', lblRank:'Rank', lblPower:'Power Level', lblCamp:'Camp Level', lblOld:'Old member (OLD)',
+    cancel:'Cancel', save:'Save', close:'Close',
+    toastMemberSaved:'Member saved.', toastMemberDeleted:'Member deleted.', confirmDeleteMember:'Are you sure you want to delete this member?',
+    nameIdRequired:'Username and ID are required.',
+    addWeek:'+ Add Week', weekAddTitle:'Add Week', lblWeekLabel:'Week Label', lblWeekDate:'Date', weekNameRequired:'Week label is required.',
+    toastWeekSaved:'Week added.', toastWeekDeleted:'Week deleted.', confirmDeleteWeek:'Delete this week and all its data?',
+    emptyWeeksTitle:'No weeks yet', emptyWeeksDesc:'Use "+ Add Week" to create the first one.',
+    legendJoined:'Joined', legendNotJoined:'Not joined', legendAttended:'Registered & Attended', legendRegNotAttend:'Registered, Absent', legendNoReg:'Not Registered',
+    thJoined:'Joined', thPointsCol:'Points', thGroup:'Group', thAttended:'Attended', groupNone:'Not registered', groupA:'Group A', groupB:'Group B',
+    entryTitleSVS:'SVS Entry', entryTitleGVG:'GVG Entry', entryTitleSS:'SS Entry',
+    toastEntrySaved:'Saved.', notRegistered:'—',
+    boardEmptyTitle:'No data yet', boardEmptyDesc:'The leaderboard fills in as you add members and events.',
+    searchMember:'Search member…',
+    statusYes:'Joined', statusNo:'Not joined', statusUnknown:'No info', legendUnknown:'No info',
+    subOther:'Other', addEvent:'+ Add Event', eventAddTitle:'Add Event', lblEventLabel:'Event Name', eventNameRequired:'Event name is required.',
+    toastEventSaved:'Event added.', toastEventDeleted:'Event deleted.', confirmDeleteEvent:'Delete this event and all its data?',
+    emptyEventsTitle:'No events yet', emptyEventsDesc:'Use "+ Add Event" to create the first one.',
+    entryTitleOther:'Other Event Entry', thStatus:'Status',
+    lbRankCol:'Rank', lbMember:'Member', lbGvgTotal:'GVG Total', lbSvsTotal:'SVS Total', lbSvsRatio:'SVS Attendance', lbSsRatio:'SS Attendance', lbOtherTotal:'Other Total', lbOtherRatio:'Other Attendance',
+    exemptLabel:'Exempt', powerHistory:'Power History', restoreMember:'Restore to Active',
+    exportBackupLabel:'Backup', importBackupLabel:'Import', backupSuccess:'Backup downloaded.',
+    importConfirm:'This file will replace the shared data everyone sees. Continue?',
+    importSuccess:'Data imported.', importFail:'Could not read the file, it may be corrupted.',
+    subActiveMembers:'Active Members', subOldMembers:'Old Members (OLD)',
+    thDate:'Date', thPowerVal:'Power', thDelta:'Change', thExcused:'Excused' },
+  de:{ appName:'EXC Panel', tagline:'Mitglieder · Rang · Machtstufe & Basisstufe · Event-Tracking', refresh:'Aktualisieren',
+    syncConnecting:'Verbinde…', syncLive:'Live — alle sehen dies', syncError:'Verbindungsfehler',
+    tabMembers:'Mitglieder', tabEvents:'Events', tabBoard:'Bestenliste',
+    statTotal:'Mitglieder gesamt', filterAll:'Alle', addMember:'+ Mitglied hinzufügen', searchPh:'Nach Name oder ID suchen…',
+    thRank:'Rang', thUsername:'Benutzername', thId:'ID', thPower:'Machtstufe', thCamp:'Basisstufe', thTotalPoints:'Gesamtpunkte',
+    emptyMembersTitle:'Noch keine Mitglieder', emptyMembersDesc:'Mit "+ Mitglied hinzufügen" das erste anlegen.',
+    memberAddTitle:'Mitglied hinzufügen', memberEditTitle:'Mitglied bearbeiten',
+    lblUsername:'Benutzername', lblGameId:'ID-Nummer', lblRank:'Rang', lblPower:'Machtstufe', lblCamp:'Basisstufe', lblOld:'Altes Mitglied (OLD)',
+    cancel:'Abbrechen', save:'Speichern', close:'Schließen',
+    toastMemberSaved:'Mitglied gespeichert.', toastMemberDeleted:'Mitglied gelöscht.', confirmDeleteMember:'Dieses Mitglied wirklich löschen?',
+    nameIdRequired:'Benutzername und ID sind erforderlich.',
+    addWeek:'+ Woche hinzufügen', weekAddTitle:'Woche hinzufügen', lblWeekLabel:'Wochenbezeichnung', lblWeekDate:'Datum', weekNameRequired:'Wochenbezeichnung erforderlich.',
+    toastWeekSaved:'Woche hinzugefügt.', toastWeekDeleted:'Woche gelöscht.', confirmDeleteWeek:'Diese Woche und alle Daten löschen?',
+    emptyWeeksTitle:'Noch keine Woche', emptyWeeksDesc:'Mit "+ Woche hinzufügen" die erste anlegen.',
+    legendJoined:'Teilgenommen', legendNotJoined:'Nicht teilgenommen', legendAttended:'Angemeldet & teilgenommen', legendRegNotAttend:'Angemeldet, gefehlt', legendNoReg:'Nicht angemeldet',
+    thJoined:'Teilgenommen', thPointsCol:'Punkte', thGroup:'Gruppe', thAttended:'Teilgenommen', groupNone:'Nicht angemeldet', groupA:'Gruppe A', groupB:'Gruppe B',
+    entryTitleSVS:'SVS-Eintrag', entryTitleGVG:'GVG-Eintrag', entryTitleSS:'SS-Eintrag',
+    toastEntrySaved:'Gespeichert.', notRegistered:'—',
+    boardEmptyTitle:'Noch keine Daten', boardEmptyDesc:'Die Bestenliste füllt sich mit Mitgliedern und Events.',
+    searchMember:'Mitglied suchen…',
+    statusYes:'Teilgenommen', statusNo:'Nicht teilgenommen', statusUnknown:'Keine Info', legendUnknown:'Keine Info',
+    subOther:'Sonstige', addEvent:'+ Event hinzufügen', eventAddTitle:'Event hinzufügen', lblEventLabel:'Eventname', eventNameRequired:'Eventname erforderlich.',
+    toastEventSaved:'Event hinzugefügt.', toastEventDeleted:'Event gelöscht.', confirmDeleteEvent:'Dieses Event und alle Daten löschen?',
+    emptyEventsTitle:'Noch keine Events', emptyEventsDesc:'Mit "+ Event hinzufügen" das erste anlegen.',
+    entryTitleOther:'Sonstiger Event-Eintrag', thStatus:'Status',
+    lbRankCol:'Platz', lbMember:'Mitglied', lbGvgTotal:'GVG Gesamt', lbSvsTotal:'SVS Gesamt', lbSvsRatio:'SVS Teilnahme', lbSsRatio:'SS Teilnahme', lbOtherTotal:'Sonstige Gesamt', lbOtherRatio:'Sonstige Teilnahme',
+    exemptLabel:'Befreit', powerHistory:'Machtverlauf', restoreMember:'Wieder aktivieren',
+    exportBackupLabel:'Sichern', importBackupLabel:'Importieren', backupSuccess:'Backup heruntergeladen.',
+    importConfirm:'Diese Datei ersetzt die von allen gesehenen gemeinsamen Daten. Fortfahren?',
+    importSuccess:'Daten importiert.', importFail:'Datei konnte nicht gelesen werden oder ist beschädigt.',
+    subActiveMembers:'Aktive Mitglieder', subOldMembers:'Alte Mitglieder (OLD)',
+    thDate:'Datum', thPowerVal:'Macht', thDelta:'Änderung', thExcused:'Entschuldigt' },
+  es:{ appName:'Panel EXC', tagline:'Miembros · Rango · Poder y Nivel de Campamento · Seguimiento de Eventos', refresh:'Actualizar',
+    syncConnecting:'Conectando…', syncLive:'En vivo — todos lo ven', syncError:'Error de conexión',
+    tabMembers:'Miembros', tabEvents:'Eventos', tabBoard:'Clasificación',
+    statTotal:'Miembros totales', filterAll:'Todos', addMember:'+ Añadir miembro', searchPh:'Buscar por nombre o ID…',
+    thRank:'Rango', thUsername:'Nombre de usuario', thId:'ID', thPower:'Nivel de poder', thCamp:'Nivel de campamento', thTotalPoints:'Puntos totales',
+    emptyMembersTitle:'Aún no hay miembros', emptyMembersDesc:'Usa "+ Añadir miembro" para agregar el primero.',
+    memberAddTitle:'Añadir miembro', memberEditTitle:'Editar miembro',
+    lblUsername:'Nombre de usuario', lblGameId:'Número de ID', lblRank:'Rango', lblPower:'Nivel de poder', lblCamp:'Nivel de campamento', lblOld:'Miembro antiguo (OLD)',
+    cancel:'Cancelar', save:'Guardar', close:'Cerrar',
+    toastMemberSaved:'Miembro guardado.', toastMemberDeleted:'Miembro eliminado.', confirmDeleteMember:'¿Seguro que quieres eliminar a este miembro?',
+    nameIdRequired:'El nombre de usuario y el ID son obligatorios.',
+    addWeek:'+ Añadir semana', weekAddTitle:'Añadir semana', lblWeekLabel:'Etiqueta de semana', lblWeekDate:'Fecha', weekNameRequired:'La etiqueta de semana es obligatoria.',
+    toastWeekSaved:'Semana añadida.', toastWeekDeleted:'Semana eliminada.', confirmDeleteWeek:'¿Eliminar esta semana y todos sus datos?',
+    emptyWeeksTitle:'Aún no hay semanas', emptyWeeksDesc:'Usa "+ Añadir semana" para crear la primera.',
+    legendJoined:'Participó', legendNotJoined:'No participó', legendAttended:'Inscrito y participó', legendRegNotAttend:'Inscrito, ausente', legendNoReg:'No inscrito',
+    thJoined:'Participó', thPointsCol:'Puntos', thGroup:'Grupo', thAttended:'Participó', groupNone:'No inscrito', groupA:'Grupo A', groupB:'Grupo B',
+    entryTitleSVS:'Registro SVS', entryTitleGVG:'Registro GVG', entryTitleSS:'Registro SS',
+    toastEntrySaved:'Guardado.', notRegistered:'—',
+    boardEmptyTitle:'Aún no hay datos', boardEmptyDesc:'La clasificación se completa a medida que agregas miembros y eventos.',
+    searchMember:'Buscar miembro…',
+    statusYes:'Participó', statusNo:'No participó', statusUnknown:'Sin información', legendUnknown:'Sin información',
+    subOther:'Otro', addEvent:'+ Añadir evento', eventAddTitle:'Añadir evento', lblEventLabel:'Nombre del evento', eventNameRequired:'El nombre del evento es obligatorio.',
+    toastEventSaved:'Evento añadido.', toastEventDeleted:'Evento eliminado.', confirmDeleteEvent:'¿Eliminar este evento y todos sus datos?',
+    emptyEventsTitle:'Aún no hay eventos', emptyEventsDesc:'Usa "+ Añadir evento" para crear el primero.',
+    entryTitleOther:'Registro de otro evento', thStatus:'Estado',
+    lbRankCol:'Puesto', lbMember:'Miembro', lbGvgTotal:'Total GVG', lbSvsTotal:'Total SVS', lbSvsRatio:'Asistencia SVS', lbSsRatio:'Asistencia SS', lbOtherTotal:'Total Otro', lbOtherRatio:'Asistencia Otro',
+    exemptLabel:'Exento', powerHistory:'Historial de poder', restoreMember:'Reactivar miembro',
+    exportBackupLabel:'Respaldar', importBackupLabel:'Importar', backupSuccess:'Copia de seguridad descargada.',
+    importConfirm:'Este archivo reemplazará los datos compartidos que todos ven. ¿Continuar?',
+    importSuccess:'Datos importados.', importFail:'No se pudo leer el archivo o está dañado.',
+    subActiveMembers:'Miembros activos', subOldMembers:'Miembros antiguos (OLD)',
+    thDate:'Fecha', thPowerVal:'Poder', thDelta:'Cambio', thExcused:'Justificado' },
+  fr:{ appName:'Panneau EXC', tagline:'Membres · Rang · Puissance et Niveau de Camp · Suivi des Événements', refresh:'Actualiser',
+    syncConnecting:'Connexion…', syncLive:'En direct — visible par tous', syncError:'Erreur de connexion',
+    tabMembers:'Membres', tabEvents:'Événements', tabBoard:'Classement',
+    statTotal:'Membres au total', filterAll:'Tous', addMember:'+ Ajouter un membre', searchPh:'Rechercher par nom ou ID…',
+    thRank:'Rang', thUsername:"Nom d'utilisateur", thId:'ID', thPower:'Niveau de puissance', thCamp:'Niveau de camp', thTotalPoints:'Points totaux',
+    emptyMembersTitle:'Aucun membre pour le moment', emptyMembersDesc:'Utilisez "+ Ajouter un membre" pour ajouter le premier.',
+    memberAddTitle:'Ajouter un membre', memberEditTitle:'Modifier le membre',
+    lblUsername:"Nom d'utilisateur", lblGameId:"Numéro d'ID", lblRank:'Rang', lblPower:'Niveau de puissance', lblCamp:'Niveau de camp', lblOld:'Ancien membre (OLD)',
+    cancel:'Annuler', save:'Enregistrer', close:'Fermer',
+    toastMemberSaved:'Membre enregistré.', toastMemberDeleted:'Membre supprimé.', confirmDeleteMember:'Voulez-vous vraiment supprimer ce membre ?',
+    nameIdRequired:"Le nom d'utilisateur et l'ID sont obligatoires.",
+    addWeek:'+ Ajouter une semaine', weekAddTitle:'Ajouter une semaine', lblWeekLabel:'Libellé de la semaine', lblWeekDate:'Date', weekNameRequired:'Le libellé de la semaine est requis.',
+    toastWeekSaved:'Semaine ajoutée.', toastWeekDeleted:'Semaine supprimée.', confirmDeleteWeek:'Supprimer cette semaine et toutes ses données ?',
+    emptyWeeksTitle:'Aucune semaine pour le moment', emptyWeeksDesc:'Utilisez "+ Ajouter une semaine" pour créer la première.',
+    legendJoined:'A participé', legendNotJoined:"N'a pas participé", legendAttended:'Inscrit et présent', legendRegNotAttend:'Inscrit, absent', legendNoReg:'Non inscrit',
+    thJoined:'A participé', thPointsCol:'Points', thGroup:'Groupe', thAttended:'Présent', groupNone:'Non inscrit', groupA:'Groupe A', groupB:'Groupe B',
+    entryTitleSVS:'Saisie SVS', entryTitleGVG:'Saisie GVG', entryTitleSS:'Saisie SS',
+    toastEntrySaved:'Enregistré.', notRegistered:'—',
+    boardEmptyTitle:'Aucune donnée pour le moment', boardEmptyDesc:'Le classement se remplit au fur et à mesure que vous ajoutez membres et événements.',
+    searchMember:'Rechercher un membre…',
+    statusYes:'A participé', statusNo:"N'a pas participé", statusUnknown:'Pas d\'info', legendUnknown:'Pas d\'info',
+    subOther:'Autre', addEvent:'+ Ajouter un événement', eventAddTitle:'Ajouter un événement', lblEventLabel:"Nom de l'événement", eventNameRequired:"Le nom de l'événement est requis.",
+    toastEventSaved:'Événement ajouté.', toastEventDeleted:'Événement supprimé.', confirmDeleteEvent:'Supprimer cet événement et toutes ses données ?',
+    emptyEventsTitle:'Aucun événement pour le moment', emptyEventsDesc:'Utilisez "+ Ajouter un événement" pour créer le premier.',
+    entryTitleOther:'Saisie autre événement', thStatus:'Statut',
+    lbRankCol:'Rang', lbMember:'Membre', lbGvgTotal:'Total GVG', lbSvsTotal:'Total SVS', lbSvsRatio:'Participation SVS', lbSsRatio:'Participation SS', lbOtherTotal:'Total Autre', lbOtherRatio:'Participation Autre',
+    exemptLabel:'Exempté', powerHistory:'Historique de puissance', restoreMember:'Réactiver le membre',
+    exportBackupLabel:'Sauvegarder', importBackupLabel:'Importer', backupSuccess:'Sauvegarde téléchargée.',
+    importConfirm:'Ce fichier remplacera les données partagées visibles par tous. Continuer ?',
+    importSuccess:'Données importées.', importFail:'Impossible de lire le fichier, il est peut-être corrompu.',
+    subActiveMembers:'Membres actifs', subOldMembers:'Anciens membres (OLD)',
+    thDate:'Date', thPowerVal:'Puissance', thDelta:'Évolution', thExcused:'Excusé' }
+};
+function t(key){ return (DICT[currentLang] && DICT[currentLang][key]) || DICT.tr[key] || key; }
+
+function buildLangSwitch(){
+  const box = document.getElementById('langSwitch');
+  box.innerHTML = LANGS.map(l=> `<div class="lang-opt ${l===currentLang?'active':''}" onclick="setLang('${l}')">${LANG_FLAG[l]}</div>`).join('');
+}
+async function setLang(l){
+  currentLang = l;
+  buildLangSwitch();
+  applyStaticText();
+  renderAll();
+  try{ await setSetting('exc-lang', l); }catch(e){}
+}
+function applyStaticText(){
+  document.getElementById('t_appName').textContent = t('appName');
+  document.getElementById('t_tagline').textContent = t('tagline');
+  document.getElementById('t_refresh').textContent = t('refresh');
+  document.getElementById('t_tabMembers').textContent = t('tabMembers');
+  document.getElementById('t_tabEvents').textContent = t('tabEvents');
+  document.getElementById('t_tabBoard').textContent = t('tabBoard');
+  document.getElementById('t_filterAll').textContent = t('filterAll');
+  document.getElementById('t_addMember').textContent = t('addMember');
+  document.getElementById('memberSearch').placeholder = t('searchPh');
+  document.getElementById('t_thRank').textContent = t('thRank');
+  document.getElementById('t_thUsername').textContent = t('thUsername');
+  document.getElementById('t_thId').textContent = t('thId');
+  document.getElementById('t_thPower').textContent = t('thPower');
+  document.getElementById('t_thCamp').textContent = t('thCamp');
+  document.getElementById('t_emptyMembersTitle').textContent = t('emptyMembersTitle');
+  document.getElementById('t_emptyMembersDesc').textContent = t('emptyMembersDesc');
+  document.getElementById('t_lblUsername').textContent = t('lblUsername');
+  document.getElementById('t_lblGameId').textContent = t('lblGameId');
+  document.getElementById('t_lblRank').textContent = t('lblRank');
+  document.getElementById('t_lblPower').textContent = t('lblPower');
+  document.getElementById('t_lblCamp').textContent = t('lblCamp');
+  document.getElementById('t_lblOld').textContent = t('lblOld');
+  document.getElementById('t_cancel1').textContent = t('cancel');
+  document.getElementById('t_save1').textContent = t('save');
+  document.getElementById('t_cancel2').textContent = t('cancel');
+  document.getElementById('t_save2').textContent = t('save');
+  document.getElementById('t_close1').textContent = t('close');
+  document.getElementById('t_save3').textContent = t('save');
+  document.getElementById('t_lblWeekLabel').textContent = t('lblWeekLabel');
+  document.getElementById('t_lblWeekDate').textContent = t('lblWeekDate');
+  document.getElementById('t_addWeek_svs').textContent = t('addWeek');
+  document.getElementById('t_addWeek_gvg').textContent = t('addWeek');
+  document.getElementById('t_addWeek_ss').textContent = t('addWeek');
+  document.getElementById('t_legendJoined').textContent = t('legendJoined');
+  document.getElementById('t_legendNotJoined').textContent = t('legendNotJoined');
+  document.getElementById('t_legendUnknown').textContent = t('legendUnknown');
+  document.getElementById('t_legendAttended').textContent = t('legendAttended');
+  document.getElementById('t_legendRegNotAttend').textContent = t('legendRegNotAttend');
+  document.getElementById('t_legendNoReg').textContent = t('legendNoReg');
+  document.getElementById('t_subOther').textContent = t('subOther');
+  document.getElementById('t_legendJoinedOther').textContent = t('legendJoined');
+  document.getElementById('t_legendNotJoinedOther').textContent = t('legendNotJoined');
+  document.getElementById('t_legendUnknownOther').textContent = t('legendUnknown');
+  document.getElementById('t_addEvent_other').textContent = t('addEvent');
+  ['1','2','3'].forEach(n=>{
+    document.getElementById('t_emptyWeeksTitle'+n).textContent = t('emptyWeeksTitle');
+    document.getElementById('t_emptyWeeksDesc'+n).textContent = t('emptyWeeksDesc');
+  });
+  document.getElementById('t_emptyWeeksTitle4').textContent = t('emptyEventsTitle');
+  document.getElementById('t_emptyWeeksDesc4').textContent = t('emptyEventsDesc');
+  document.getElementById('entrySearch').placeholder = t('searchMember');
+  document.getElementById('t_exportBackup').textContent = t('exportBackupLabel');
+  document.getElementById('t_importBackup').textContent = t('importBackupLabel');
+  document.getElementById('t_subActiveMembers').textContent = t('subActiveMembers');
+  document.getElementById('t_subOldMembers').textContent = t('subOldMembers');
+  document.getElementById('t_thDate').textContent = t('thDate');
+  document.getElementById('t_thPowerVal').textContent = t('thPowerVal');
+  document.getElementById('t_thDelta').textContent = t('thDelta');
+  document.getElementById('t_close2').textContent = t('close');
+  buildCampOptions();
+  document.title = t('appName');
+}
+
+/* ================= STATE ================= */
+let members = [];
+let svs = { weeks: [], entries: [] };
+let gvg = { weeks: [], entries: [] };
+let ss  = { weeks: [], entries: [] };
+let other = { weeks: [], entries: [] };
+let currentTab = 'members';
+let currentSub = 'svs';
+let memberView = 'active';
+let rankFilter = 'ALL';
+let sortKey = 'rank';
+let sortDir = 1;
+let oldFlag = false;
+let entryContext = null; // { type: 'svs'|'gvg'|'ss'|'other', weekId }
+let boardSortKey = 'gvgPts';
+let boardSortDir = -1;
+let historyMemberId = null;
+
+const RANK_ORDER = { R5:5, R4:4, R3:3, R2:2, R1:1 };
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+
+function showToast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(()=> el.classList.remove('show'), 2200);
+}
+
+/* ================= CAMP LEVEL OPTIONS ================= */
+function campLevelList(){
+  const list = [];
+  for(let i=1;i<=30;i++) list.push(String(i));
+  for(let i=1;i<=5;i++) list.push('AOM-'+i);
+  return list;
+}
+function buildCampOptions(){
+  const sel = document.getElementById('fCamp');
+  const cur = sel.value;
+  sel.innerHTML = campLevelList().map(v=> `<option value="${v}">${v}</option>`).join('');
+  if(cur) sel.value = cur;
+}
+function campSortValue(v){
+  if(!v) return 0;
+  if(String(v).startsWith('AOM')) return 30 + Number(String(v).split('-')[1] || 0);
+  return Number(v) || 0;
+}
+
+/* ================= STORAGE (Supabase via database.js) ================= */
+function mapMember(row){
+  return {
+    id: row.id, name: row.name, gameId: row.game_id, rank: row.rank,
+    campLevel: row.camp_level, power: row.power, isOld: row.is_old,
+    oldSince: row.old_since, joinedAt: row.joined_at, powerHistory: []
+  };
+}
+function mapWeek(row){ return { id: row.id, label: row.label, date: row.week_date || '' }; }
+function mapEntry(type, row){
+  if(type==='gvg') return { id: row.id, memberId: row.member_id, weekId: row.week_id, points: row.points };
+  if(type==='ss') return { id: row.id, memberId: row.member_id, weekId: row.week_id, group: row.group_name, attended: row.attended, excused: row.excused };
+  return { id: row.id, memberId: row.member_id, weekId: row.week_id, status: row.status, points: row.points, excused: row.excused };
+}
+function settledList(res){ return res.status==='fulfilled' ? (res.value||[]) : []; }
+
+async function loadAll(silent){
+  try{
+    document.getElementById('syncText').textContent = t('syncConnecting');
+    const [
+      membersRes, historyRes,
+      svsWeeksRes, svsRecordsRes,
+      gvgWeeksRes, gvgRecordsRes,
+      ssWeeksRes, ssRecordsRes,
+      otherWeeksRes, otherRecordsRes,
+      langRes
+    ] = await Promise.allSettled([
+      getMembers(), getAllPowerHistory(),
+      getWeeks('svs'), getAllRecords('svs'),
+      getWeeks('gvg'), getAllRecords('gvg'),
+      getWeeks('ss'), getAllRecords('ss'),
+      getWeeks('other'), getAllRecords('other'),
+      getSetting('exc-lang', null)
+    ]);
+
+    const historyByMember = {};
+    settledList(historyRes).forEach(h=>{
+      if(!historyByMember[h.member_id]) historyByMember[h.member_id] = [];
+      historyByMember[h.member_id].push({ date: h.history_date, power: h.power });
+    });
+    members = settledList(membersRes).map(row=>{
+      const m = mapMember(row);
+      m.powerHistory = (historyByMember[row.id]||[]).sort((a,b)=> a.date<b.date?-1:a.date>b.date?1:0);
+      return m;
+    });
+
+    svs   = { weeks: settledList(svsWeeksRes).map(mapWeek),   entries: settledList(svsRecordsRes).map(r=>mapEntry('svs',r)) };
+    gvg   = { weeks: settledList(gvgWeeksRes).map(mapWeek),   entries: settledList(gvgRecordsRes).map(r=>mapEntry('gvg',r)) };
+    ss    = { weeks: settledList(ssWeeksRes).map(mapWeek),    entries: settledList(ssRecordsRes).map(r=>mapEntry('ss',r)) };
+    other = { weeks: settledList(otherWeeksRes).map(mapWeek), entries: settledList(otherRecordsRes).map(r=>mapEntry('other',r)) };
+
+    if(langRes.status==='fulfilled' && langRes.value && LANGS.includes(langRes.value)){
+      currentLang = langRes.value;
+      buildLangSwitch();
+      applyStaticText();
+    }
+    document.getElementById('syncText').textContent = t('syncLive');
+    renderAll();
+  }catch(err){
+    console.error('load error', err);
+    document.getElementById('syncText').textContent = t('syncError');
+    if(!silent) showToast(t('syncError'));
+  }
+}
+
+function manualRefresh(){ loadAll(); }
+setInterval(()=> loadAll(true), POLL_INTERVAL_MS);
+let realtimeReloadTimer = null;
+subscribeToTables(
+  ['members','power_history','gvg_weeks','gvg_records','svs_weeks','svs_records','ss_weeks','ss_records','other_weeks','other_records','settings'],
+  ()=>{ clearTimeout(realtimeReloadTimer); realtimeReloadTimer = setTimeout(()=> loadAll(true), 400); }
+);
+
+/* ================= BACKUP / RESTORE ================= */
+function exportBackup(){
+  const payload = { exportedAt: new Date().toISOString(), members, svs, gvg, ss, other };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'exc-paneli-yedek-' + todayStr() + '.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  showToast(t('backupSuccess'));
+}
+async function importEventType(type, source, memberIdMap){
+  const weekIdMap = {};
+  for(const w of source.weeks){
+    const row = await dbCreateWeek(type, { label: w.label, week_date: w.date || null });
+    weekIdMap[w.id] = row.id;
+  }
+  const payloads = source.entries.map(en=>{
+    const mid = memberIdMap[en.memberId];
+    const wid = weekIdMap[en.weekId];
+    if(!mid || !wid) return null;
+    if(type==='gvg') return { week_id: wid, member_id: mid, points: Number(en.points)||0 };
+    if(type==='ss') return { week_id: wid, member_id: mid, group_name: en.group || null, attended: !!en.attended, excused: !!en.excused };
+    const status = en.status || (en.joined===true ? 'joined' : en.joined===false ? 'absent' : 'unknown');
+    return { week_id: wid, member_id: mid, status, points: Number(en.points)||0, excused: !!en.excused };
+  }).filter(Boolean);
+  if(payloads.length) await upsertRecordsBulk(type, payloads);
+}
+
+function importBackup(file){
+  if(!file) return;
+  if(!confirm(t('importConfirm'))){ document.getElementById('importFile').value=''; return; }
+  const reader = new FileReader();
+  reader.onload = async (e)=>{
+    try{
+      const data = JSON.parse(e.target.result);
+      const newMembers = Array.isArray(data.members) ? data.members : [];
+      const newSvs = data.svs && Array.isArray(data.svs.weeks) ? data.svs : { weeks:[], entries:[] };
+      const newGvg = data.gvg && Array.isArray(data.gvg.weeks) ? data.gvg : { weeks:[], entries:[] };
+      const newSs  = data.ss  && Array.isArray(data.ss.weeks)  ? data.ss  : { weeks:[], entries:[] };
+      const newOther = data.other && Array.isArray(data.other.weeks) ? data.other : { weeks:[], entries:[] };
+
+      // Wipe existing shared data (records/history cascade-delete via DB foreign keys).
+      await Promise.all(members.map(m=> dbDeleteMember(m.id)));
+      await Promise.all([
+        ...svs.weeks.map(w=> dbDeleteWeek('svs', w.id)),
+        ...gvg.weeks.map(w=> dbDeleteWeek('gvg', w.id)),
+        ...ss.weeks.map(w=> dbDeleteWeek('ss', w.id)),
+        ...other.weeks.map(w=> dbDeleteWeek('other', w.id))
+      ]);
+
+      const memberIdMap = {};
+      for(const m of newMembers){
+        const row = await createMember({
+          name: m.name, game_id: m.gameId, rank: m.rank, power: Number(m.power)||0,
+          camp_level: m.campLevel, is_old: !!m.isOld, old_since: m.oldSince || null
+        });
+        memberIdMap[m.id] = row.id;
+        const history = Array.isArray(m.powerHistory) && m.powerHistory.length
+          ? m.powerHistory : [{ date: (m.joinedAt||todayStr()).slice(0,10), power: Number(m.power)||0 }];
+        for(const h of history){
+          await addPowerHistoryEntry(row.id, h.date, Number(h.power)||0);
+        }
+      }
+
+      await importEventType('svs', newSvs, memberIdMap);
+      await importEventType('gvg', newGvg, memberIdMap);
+      await importEventType('ss', newSs, memberIdMap);
+      await importEventType('other', newOther, memberIdMap);
+
+      await loadAll();
+      showToast(t('importSuccess'));
+    }catch(err){
+      console.error(err);
+      showToast(t('importFail'));
+    }
+    document.getElementById('importFile').value='';
+  };
+  reader.onerror = ()=>{ showToast(t('importFail')); document.getElementById('importFile').value=''; };
+  reader.readAsText(file);
+}
+
+/* ================= TABS ================= */
+function switchTab(tab){
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(el=> el.classList.toggle('active', el.dataset.tab===tab));
+  document.querySelectorAll('.panel').forEach(p=> p.classList.remove('active'));
+  document.getElementById('panel-'+tab).classList.add('active');
+  renderAll();
+}
+function switchSub(sub){
+  currentSub = sub;
+  document.querySelectorAll('.subtab[data-sub]').forEach(el=> el.classList.toggle('active', el.dataset.sub===sub));
+  document.querySelectorAll('.subpanel').forEach(p=> p.classList.remove('active'));
+  document.getElementById('sub-'+sub).classList.add('active');
+  renderAll();
+}
+function setMemberView(v){
+  memberView = v;
+  document.querySelectorAll('.subtab[data-mv]').forEach(el=> el.classList.toggle('active', el.dataset.mv===v));
+  renderMembers();
+}
+function setRankFilter(r){
+  rankFilter = r;
+  document.querySelectorAll('.filter-chip').forEach(c=> c.classList.toggle('active', c.dataset.rank===r));
+  renderMembers();
+}
+function setSort(key){
+  if(sortKey===key) sortDir *= -1; else { sortKey = key; sortDir = 1; }
+  renderMembers();
+}
+
+/* ================= HELPERS ================= */
+function formatPower(n){
+  n = Number(n)||0;
+  if(n>=1e9) return (n/1e9).toFixed(2).replace(/\.00$/,'')+'B';
+  if(n>=1e6) return (n/1e6).toFixed(2).replace(/\.00$/,'')+'M';
+  if(n>=1e3) return (n/1e3).toFixed(1).replace(/\.0$/,'')+'K';
+  return String(n);
+}
+function rankClass(r){ return { R5:'r5-c', R4:'r4-c', R3:'r3-c', R2:'r2-c', R1:'r1-c' }[r] || 'r1-c'; }
+function rankChevrons(r){ return '▲'.repeat(RANK_ORDER[r]||1); }
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function gvgColorClass(points){
+  points = Number(points)||0;
+  if(points >= 43500000) return 'pill-green';
+  if(points >= 13200000) return 'pill-yellow';
+  return 'pill-red';
+}
+function activeMembers(){ return members.filter(m=> !m.isOld); }
+function isExempt(member, week){
+  if(!week || !week.date || !member || !member.joinedAt) return false;
+  return week.date < member.joinedAt.slice(0,10);
+}
+function formatRatio(num, den){
+  if(!den) return t('notRegistered');
+  const pct = Math.round((num/den)*100);
+  return pct + '% (' + num + '/' + den + ')';
+}
+
+function statusOf(e){
+  if(!e) return 'unknown';
+  if(e.status) return e.status;
+  if(e.joined === true) return 'joined';
+  if(e.joined === false) return 'absent';
+  return 'unknown';
+}
+function sumGvgPoints(memberId){
+  return gvg.entries.filter(e=> e.memberId===memberId).reduce((s,e)=> s+(Number(e.points)||0), 0);
+}
+function sumStatusPoints(store, memberId){
+  return store.entries.filter(e=> e.memberId===memberId && statusOf(e)==='joined').reduce((s,e)=> s+(Number(e.points)||0), 0);
+}
+function ratioStatus(store, member){
+  const applicable = store.weeks.filter(w=> !isExempt(member, w));
+  const den = applicable.length;
+  const num = applicable.filter(w=>{
+    const e = store.entries.find(x=> x.memberId===member.id && x.weekId===w.id);
+    return statusOf(e)==='joined';
+  }).length;
+  return { num, den };
+}
+function ratioSs(member){
+  const applicable = ss.weeks.filter(w=> !isExempt(member, w));
+  const den = applicable.length;
+  const num = applicable.filter(w=>{
+    const e = ss.entries.find(x=> x.memberId===member.id && x.weekId===w.id);
+    return e && e.group && e.attended;
+  }).length;
+  return { num, den };
+}
+
+/* ================= STATS ================= */
+function renderStats(){
+  const active = activeMembers();
+  const counts = { R5:0,R4:0,R3:0,R2:0,R1:0 };
+  active.forEach(m=> counts[m.rank] = (counts[m.rank]||0)+1);
+  document.getElementById('statsRow').innerHTML = `
+    <div class="stat-card"><div class="num">${active.length}</div><div class="lbl">${t('statTotal')}</div></div>
+    <div class="stat-card r5"><div class="num">${counts.R5}</div><div class="lbl">R5</div></div>
+    <div class="stat-card r4"><div class="num">${counts.R4}</div><div class="lbl">R4</div></div>
+    <div class="stat-card r3"><div class="num">${counts.R3}</div><div class="lbl">R3</div></div>
+    <div class="stat-card r2"><div class="num">${counts.R2}</div><div class="lbl">R2</div></div>
+    <div class="stat-card r1"><div class="num">${counts.R1}</div><div class="lbl">R1</div></div>
+  `;
+}
+
+/* ================= MEMBERS TABLE ================= */
+function renderMembers(){
+  renderStats();
+  const q = (document.getElementById('memberSearch').value||'').toLowerCase().trim();
+  let list = members.filter(m=>{
+    const matchView = memberView==='old' ? !!m.isOld : !m.isOld;
+    const matchRank = rankFilter==='ALL' || m.rank===rankFilter;
+    const matchQ = !q || m.name.toLowerCase().includes(q) || String(m.gameId).toLowerCase().includes(q);
+    return matchView && matchRank && matchQ;
+  });
+  list.sort((a,b)=>{
+    let av,bv;
+    if(sortKey==='rank'){ av=RANK_ORDER[a.rank]; bv=RANK_ORDER[b.rank]; }
+    else if(sortKey==='name'){ av=a.name.toLowerCase(); bv=b.name.toLowerCase(); }
+    else if(sortKey==='campSort'){ av=campSortValue(a.campLevel); bv=campSortValue(b.campLevel); }
+    else { av=Number(a[sortKey])||0; bv=Number(b[sortKey])||0; }
+    if(av<bv) return -1*sortDir;
+    if(av>bv) return 1*sortDir;
+    return 0;
+  });
+  const rows = document.getElementById('memberRows');
+  document.getElementById('memberEmpty').style.display = list.length ? 'none' : 'block';
+  rows.innerHTML = list.map(m=>`
+    <tr>
+      <td><span class="rank-badge ${rankClass(m.rank)}">${m.rank}<span class="chev">${rankChevrons(m.rank)}</span></span></td>
+      <td><span class="member-name">${escapeHtml(m.name)}</span>${m.isOld?`<span class="old-tag">OLD${memberView==='old' && m.oldSince ? ' · '+m.oldSince : ''}</span>`:''}</td>
+      <td class="member-id">${escapeHtml(String(m.gameId))}</td>
+      <td class="num-cell" title="${Number(m.power)||0}">${formatPower(m.power)}</td>
+      <td class="num-cell">${escapeHtml(String(m.campLevel||'-'))}</td>
+      <td><div class="row-actions">
+        <button class="icon-btn" onclick="openHistoryModal('${m.id}')" title="${t('powerHistory')}">📈</button>
+        ${memberView==='old' ? `<button class="icon-btn" onclick="restoreMember('${m.id}')" title="${t('restoreMember')}">↺</button>` : ''}
+        <button class="icon-btn" onclick="openMemberModal('${m.id}')">✎</button>
+        <button class="icon-btn danger" onclick="deleteMember('${m.id}')">✕</button>
+      </div></td>
+    </tr>
+  `).join('');
+}
+
+/* ================= MEMBER MODAL ================= */
+function openMemberModal(id){
+  buildCampOptions();
+  document.getElementById('memberEditId').value = id||'';
+  if(id){
+    const m = members.find(x=>x.id===id);
+    document.getElementById('memberModalTitle').textContent = t('memberEditTitle');
+    document.getElementById('fName').value = m.name;
+    document.getElementById('fGameId').value = m.gameId;
+    document.getElementById('fRank').value = m.rank;
+    document.getElementById('fPower').value = m.power;
+    document.getElementById('fCamp').value = m.campLevel;
+    oldFlag = !!m.isOld;
+  } else {
+    document.getElementById('memberModalTitle').textContent = t('memberAddTitle');
+    ['fName','fGameId','fPower'].forEach(i=> document.getElementById(i).value='');
+    document.getElementById('fRank').value = 'R1';
+    document.getElementById('fCamp').value = '1';
+    oldFlag = false;
+  }
+  document.getElementById('oldToggle').classList.toggle('on', oldFlag);
+  document.getElementById('memberOverlay').classList.add('active');
+}
+function closeMemberModal(){ document.getElementById('memberOverlay').classList.remove('active'); }
+function toggleOld(){ oldFlag = !oldFlag; document.getElementById('oldToggle').classList.toggle('on', oldFlag); }
+
+async function saveMember(){
+  const name = document.getElementById('fName').value.trim();
+  const gameId = document.getElementById('fGameId').value.trim();
+  if(!name || !gameId){ showToast(t('nameIdRequired')); return; }
+  const editId = document.getElementById('memberEditId').value;
+  const power = Number(document.getElementById('fPower').value)||0;
+  const rank = document.getElementById('fRank').value;
+  const campLevel = document.getElementById('fCamp').value;
+  try{
+    if(editId){
+      const idx = members.findIndex(m=>m.id===editId);
+      const prev = members[idx];
+      let oldSince = prev.oldSince || null;
+      if(oldFlag && !prev.isOld) oldSince = todayStr();
+      if(!oldFlag) oldSince = null;
+      const row = await updateMember(editId, {
+        name, game_id: gameId, rank, power, camp_level: campLevel,
+        is_old: oldFlag, old_since: oldSince
+      });
+      const history = Array.isArray(prev.powerHistory) ? [...prev.powerHistory] : [];
+      const lastEntry = history[history.length-1];
+      if(!lastEntry || Number(lastEntry.power) !== power){
+        const today = todayStr();
+        if(lastEntry && lastEntry.date === today) lastEntry.power = power;
+        else history.push({ date: today, power });
+        await addPowerHistoryEntry(editId, history[history.length-1].date, power);
+      }
+      members[idx] = { ...mapMember(row), powerHistory: history };
+    } else {
+      const today = todayStr();
+      const row = await createMember({
+        name, game_id: gameId, rank, power, camp_level: campLevel,
+        is_old: oldFlag, old_since: oldFlag ? today : null
+      });
+      await addPowerHistoryEntry(row.id, today, power);
+      members.push({ ...mapMember(row), powerHistory: [{ date: today, power }] });
+    }
+    closeMemberModal();
+    renderAll();
+    showToast(t('toastMemberSaved'));
+  }catch(err){ console.error(err); showToast('Error'); }
+}
+async function deleteMember(id){
+  if(!confirm(t('confirmDeleteMember'))) return;
+  try{
+    await dbDeleteMember(id);
+    members = members.filter(m=>m.id!==id);
+    svs.entries = svs.entries.filter(e=>e.memberId!==id);
+    gvg.entries = gvg.entries.filter(e=>e.memberId!==id);
+    ss.entries = ss.entries.filter(e=>e.memberId!==id);
+    other.entries = other.entries.filter(e=>e.memberId!==id);
+    renderAll();
+    showToast(t('toastMemberDeleted'));
+  }catch(err){ console.error(err); showToast('Error'); }
+}
+async function restoreMember(id){
+  const idx = members.findIndex(m=>m.id===id);
+  if(idx<0) return;
+  try{
+    const row = await updateMember(id, { is_old:false, old_since:null });
+    members[idx] = { ...mapMember(row), powerHistory: members[idx].powerHistory };
+    renderAll();
+    showToast(t('toastMemberSaved'));
+  }catch(err){ console.error(err); showToast('Error'); }
+}
+
+/* ================= POWER HISTORY MODAL ================= */
+function buildHistoryChart(history){
+  if(!history || history.length < 2) return '';
+  const W=600, H=150, padL=8, padR=8, padT=14, padB=16;
+  const powers = history.map(h=> Number(h.power)||0);
+  const min = Math.min(...powers), max = Math.max(...powers);
+  const range = (max-min) || 1;
+  const stepX = history.length>1 ? (W-padL-padR)/(history.length-1) : 0;
+  const points = history.map((h,i)=>{
+    const x = padL + i*stepX;
+    const y = padT + (H-padT-padB) * (1 - ((Number(h.power)-min)/range));
+    return { x, y, h };
+  });
+  const polyPts = points.map(p=> p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ');
+  const circles = points.map(p=> `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="var(--cyan)" stroke="var(--bg-panel)" stroke-width="2"><title>${escapeHtml(p.h.date)}: ${formatPower(p.h.power)}</title></circle>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%; height:150px; display:block; margin-bottom:16px;">
+    <polyline points="${polyPts}" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${circles}
+  </svg>`;
+}
+function openHistoryModal(id){
+  historyMemberId = id;
+  const m = members.find(x=>x.id===id);
+  if(!m) return;
+  document.getElementById('historyTitle').textContent = t('powerHistory') + ' — ' + m.name;
+  const history = Array.isArray(m.powerHistory) && m.powerHistory.length
+    ? [...m.powerHistory].sort((a,b)=> a.date < b.date ? -1 : a.date > b.date ? 1 : 0)
+    : [{ date: (m.joinedAt||todayStr()).slice(0,10), power: m.power||0 }];
+  document.getElementById('historyChartWrap').innerHTML = buildHistoryChart(history);
+  const rows = document.getElementById('historyRows');
+  rows.innerHTML = history.map((h,i)=>{
+    const prev = i>0 ? history[i-1].power : null;
+    let deltaHtml = '<span style="color:var(--text-dim);">—</span>';
+    if(prev != null){
+      const delta = Number(h.power) - Number(prev);
+      const color = delta>0 ? 'var(--success)' : delta<0 ? 'var(--danger)' : 'var(--text-dim)';
+      const sign = delta>0 ? '+' : '';
+      deltaHtml = `<span style="color:${color}; font-family:var(--font-mono); font-weight:700;">${sign}${formatPower(delta)}</span>`;
+    }
+    return `<tr>
+      <td>${h.date}</td>
+      <td class="num-cell">${formatPower(h.power)}</td>
+      <td>${deltaHtml}</td>
+    </tr>`;
+  }).reverse().join('');
+  document.getElementById('historyOverlay').classList.add('active');
+}
+function closeHistoryModal(){ document.getElementById('historyOverlay').classList.remove('active'); historyMemberId = null; }
+
+/* ================= WEEKS (generic) ================= */
+function storeFor(type){ return type==='svs'?svs : type==='gvg'?gvg : type==='ss'?ss : other; }
+
+function openWeekModal(type){
+  document.getElementById('weekType').value = type;
+  const isOther = type==='other';
+  document.getElementById('weekModalTitle').textContent = isOther ? t('eventAddTitle') : t('weekAddTitle');
+  document.getElementById('t_lblWeekLabel').textContent = isOther ? t('lblEventLabel') : t('lblWeekLabel');
+  const store = storeFor(type);
+  document.getElementById('wkLabel').value = (isOther ? (currentLang==='tr'?'Etkinlik ':'Event ') : 'Hafta ') + (store.weeks.length+1);
+  document.getElementById('wkDate').value = '';
+  document.getElementById('weekOverlay').classList.add('active');
+}
+function closeWeekModal(){ document.getElementById('weekOverlay').classList.remove('active'); }
+async function saveWeek(){
+  const type = document.getElementById('weekType').value;
+  const label = document.getElementById('wkLabel').value.trim();
+  if(!label){ showToast(type==='other' ? t('eventNameRequired') : t('weekNameRequired')); return; }
+  try{
+    const row = await dbCreateWeek(type, { label, week_date: document.getElementById('wkDate').value || null });
+    storeFor(type).weeks.push(mapWeek(row));
+    closeWeekModal();
+    renderAll();
+    showToast(type==='other' ? t('toastEventSaved') : t('toastWeekSaved'));
+  }catch(err){ console.error(err); showToast('Error'); }
+}
+async function deleteWeek(type, weekId){
+  if(!confirm(type==='other' ? t('confirmDeleteEvent') : t('confirmDeleteWeek'))) return;
+  try{
+    await dbDeleteWeek(type, weekId);
+    const store = storeFor(type);
+    store.weeks = store.weeks.filter(w=>w.id!==weekId);
+    store.entries = store.entries.filter(e=>e.weekId!==weekId);
+    renderAll();
+    showToast(type==='other' ? t('toastEventDeleted') : t('toastWeekDeleted'));
+  }catch(err){ console.error(err); showToast('Error'); }
+}
+
+function filteredSortedMembers(){
+  return activeMembers().sort((a,b)=>{
+    const rd = RANK_ORDER[b.rank]-RANK_ORDER[a.rank];
+    if(rd!==0) return rd;
+    return a.name.localeCompare(b.name);
+  });
+}
+function statusCellHtml(store, m, w){
+  if(isExempt(m, w)) return `<td class="week-col"><span class="cell-pill pill-gray">${t('exemptLabel')}</span></td>`;
+  const e = store.entries.find(x=>x.memberId===m.id && x.weekId===w.id);
+  const st = statusOf(e);
+  if(st==='unknown') return `<td class="week-col"><span class="cell-pill pill-gray">${t('notRegistered')}</span></td>`;
+  if(st==='joined') return `<td class="week-col"><span class="cell-pill pill-green">✓ ${Number(e.points)||0}</span></td>`;
+  const excused = e && e.excused;
+  const cls = excused ? 'pill-yellow' : 'pill-red';
+  const mark = excused ? ' (M)' : '';
+  return `<td class="week-col"><span class="cell-pill ${cls}">✕${mark}</span></td>`;
+}
+
+/* ---- SVS render ---- */
+function renderSvs(){
+  const table = document.getElementById('tbl-svs');
+  document.getElementById('empty-svs').style.display = svs.weeks.length ? 'none' : 'block';
+  const list = filteredSortedMembers();
+  const thead = table.querySelector('thead');
+  const tbody = table.querySelector('tbody');
+  thead.innerHTML = `<tr>
+      <th class="sticky-col">${t('thRank')}</th>
+      <th class="sticky-col" style="left:90px;">${t('thUsername')}</th>
+      ${svs.weeks.map(w=>`<th class="week-col"><div class="week-head"><span class="wname">${escapeHtml(w.label)}</span>
+        <span class="week-actions">
+          <button class="icon-btn" style="width:20px;height:20px;" onclick="openEntryModal('svs','${w.id}')">✎</button>
+          <button class="icon-btn danger" style="width:20px;height:20px;" onclick="deleteWeek('svs','${w.id}')">✕</button>
+        </span></div></th>`).join('')}
+    </tr>`;
+  tbody.innerHTML = list.map(m=>`
+    <tr>
+      <td class="sticky-col"><span class="rank-badge ${rankClass(m.rank)}" style="font-size:11px;padding:2px 8px;">${m.rank}</span></td>
+      <td class="sticky-col" style="left:90px;">${escapeHtml(m.name)}</td>
+      ${svs.weeks.map(w=> statusCellHtml(svs, m, w)).join('')}
+    </tr>
+  `).join('');
+}
+
+/* ---- GVG render ---- */
+function renderGvg(){
+  const table = document.getElementById('tbl-gvg');
+  document.getElementById('empty-gvg').style.display = gvg.weeks.length ? 'none' : 'block';
+  const list = filteredSortedMembers();
+  const thead = table.querySelector('thead');
+  const tbody = table.querySelector('tbody');
+  thead.innerHTML = `<tr>
+      <th class="sticky-col">${t('thRank')}</th>
+      <th class="sticky-col" style="left:90px;">${t('thUsername')}</th>
+      ${gvg.weeks.map(w=>`<th class="week-col"><div class="week-head"><span class="wname">${escapeHtml(w.label)}</span>
+        <span class="week-actions">
+          <button class="icon-btn" style="width:20px;height:20px;" onclick="openEntryModal('gvg','${w.id}')">✎</button>
+          <button class="icon-btn danger" style="width:20px;height:20px;" onclick="deleteWeek('gvg','${w.id}')">✕</button>
+        </span></div></th>`).join('')}
+    </tr>`;
+  tbody.innerHTML = list.map(m=>`
+    <tr>
+      <td class="sticky-col"><span class="rank-badge ${rankClass(m.rank)}" style="font-size:11px;padding:2px 8px;">${m.rank}</span></td>
+      <td class="sticky-col" style="left:90px;">${escapeHtml(m.name)}</td>
+      ${gvg.weeks.map(w=>{
+        if(isExempt(m, w)) return `<td class="week-col"><span class="cell-pill pill-gray">${t('exemptLabel')}</span></td>`;
+        const e = gvg.entries.find(x=>x.memberId===m.id && x.weekId===w.id);
+        if(!e) return `<td class="week-col"><span class="cell-pill pill-gray">${t('notRegistered')}</span></td>`;
+        return `<td class="week-col"><span class="cell-pill ${gvgColorClass(e.points)}">${Number(e.points)||0}</span></td>`;
+      }).join('')}
+    </tr>
+  `).join('');
+}
+
+/* ---- SS render ---- */
+function renderSs(){
+  const table = document.getElementById('tbl-ss');
+  document.getElementById('empty-ss').style.display = ss.weeks.length ? 'none' : 'block';
+  const list = filteredSortedMembers();
+  const thead = table.querySelector('thead');
+  const tbody = table.querySelector('tbody');
+  thead.innerHTML = `<tr>
+      <th class="sticky-col">${t('thRank')}</th>
+      <th class="sticky-col" style="left:90px;">${t('thUsername')}</th>
+      ${ss.weeks.map(w=>`<th class="week-col"><div class="week-head"><span class="wname">${escapeHtml(w.label)}</span>
+        <span class="week-actions">
+          <button class="icon-btn" style="width:20px;height:20px;" onclick="openEntryModal('ss','${w.id}')">✎</button>
+          <button class="icon-btn danger" style="width:20px;height:20px;" onclick="deleteWeek('ss','${w.id}')">✕</button>
+        </span></div></th>`).join('')}
+    </tr>`;
+  tbody.innerHTML = list.map(m=>`
+    <tr>
+      <td class="sticky-col"><span class="rank-badge ${rankClass(m.rank)}" style="font-size:11px;padding:2px 8px;">${m.rank}</span></td>
+      <td class="sticky-col" style="left:90px;">${escapeHtml(m.name)}</td>
+      ${ss.weeks.map(w=>{
+        if(isExempt(m, w)) return `<td class="week-col"><span class="cell-pill pill-gray">${t('exemptLabel')}</span></td>`;
+        const e = ss.entries.find(x=>x.memberId===m.id && x.weekId===w.id);
+        if(!e || !e.group) return `<td class="week-col"><span class="cell-pill pill-gray">${t('notRegistered')}</span></td>`;
+        if(e.attended) return `<td class="week-col"><span class="cell-pill pill-green">${e.group}</span></td>`;
+        const cls = e.excused ? 'pill-yellow' : 'pill-red';
+        const mark = e.excused ? ' (M)' : '';
+        return `<td class="week-col"><span class="cell-pill ${cls}">${e.group}${mark}</span></td>`;
+      }).join('')}
+    </tr>
+  `).join('');
+}
+
+/* ---- OTHER render ---- */
+function renderOther(){
+  const table = document.getElementById('tbl-other');
+  document.getElementById('empty-other').style.display = other.weeks.length ? 'none' : 'block';
+  const list = filteredSortedMembers();
+  const thead = table.querySelector('thead');
+  const tbody = table.querySelector('tbody');
+  thead.innerHTML = `<tr>
+      <th class="sticky-col">${t('thRank')}</th>
+      <th class="sticky-col" style="left:90px;">${t('thUsername')}</th>
+      ${other.weeks.map(w=>`<th class="week-col"><div class="week-head"><span class="wname">${escapeHtml(w.label)}</span>
+        <span class="week-actions">
+          <button class="icon-btn" style="width:20px;height:20px;" onclick="openEntryModal('other','${w.id}')">✎</button>
+          <button class="icon-btn danger" style="width:20px;height:20px;" onclick="deleteWeek('other','${w.id}')">✕</button>
+        </span></div></th>`).join('')}
+    </tr>`;
+  tbody.innerHTML = list.map(m=>`
+    <tr>
+      <td class="sticky-col"><span class="rank-badge ${rankClass(m.rank)}" style="font-size:11px;padding:2px 8px;">${m.rank}</span></td>
+      <td class="sticky-col" style="left:90px;">${escapeHtml(m.name)}</td>
+      ${other.weeks.map(w=> statusCellHtml(other, m, w)).join('')}
+    </tr>
+  `).join('');
+}
+
+/* ================= ENTRY MODAL (bulk edit per week) ================= */
+function openEntryModal(type, weekId){
+  entryContext = { type, weekId };
+  const store = storeFor(type);
+  const week = store.weeks.find(w=>w.id===weekId);
+  const titleKey = type==='svs' ? 'entryTitleSVS' : type==='gvg' ? 'entryTitleGVG' : type==='ss' ? 'entryTitleSS' : 'entryTitleOther';
+  document.getElementById('entryTitle').textContent = (week ? week.label + ' — ' : '') + t(titleKey);
+  document.getElementById('entrySearch').value = '';
+  const thead = document.getElementById('entryThead');
+  if(type==='svs' || type==='other'){
+    thead.innerHTML = `<tr><th>${t('thStatus')}</th><th>${t('thUsername')}</th><th>${t('thRank')}</th><th>${t('thPointsCol')}</th><th>${t('thExcused')}</th></tr>`;
+  } else if(type==='gvg'){
+    thead.innerHTML = `<tr><th>${t('thUsername')}</th><th>${t('thRank')}</th><th>${t('thPointsCol')}</th></tr>`;
+  } else {
+    thead.innerHTML = `<tr><th>${t('thUsername')}</th><th>${t('thRank')}</th><th>${t('thGroup')}</th><th>${t('thAttended')}</th><th>${t('thExcused')}</th></tr>`;
+  }
+  document.getElementById('entryOverlay').classList.add('active');
+  renderEntryRows();
+}
+function closeEntryModal(){ document.getElementById('entryOverlay').classList.remove('active'); entryContext = null; }
+
+function renderEntryRows(){
+  if(!entryContext) return;
+  const { type, weekId } = entryContext;
+  const store = storeFor(type);
+  const q = (document.getElementById('entrySearch').value||'').toLowerCase().trim();
+  const list = filteredSortedMembers().filter(m=> !q || m.name.toLowerCase().includes(q) || String(m.gameId).toLowerCase().includes(q));
+  const rows = document.getElementById('entryRows');
+  if(type==='svs' || type==='other'){
+    rows.innerHTML = list.map(m=>{
+      const e = store.entries.find(x=>x.memberId===m.id && x.weekId===weekId);
+      const st = statusOf(e);
+      const pts = e ? e.points : 0;
+      const excused = e ? !!e.excused : false;
+      return `<tr>
+        <td><select class="status-select" data-mid="${m.id}">
+          <option value="joined" ${st==='joined'?'selected':''}>${t('statusYes')}</option>
+          <option value="absent" ${st==='absent'?'selected':''}>${t('statusNo')}</option>
+          <option value="unknown" ${st==='unknown'?'selected':''}>${t('statusUnknown')}</option>
+        </select></td>
+        <td>${escapeHtml(m.name)}</td>
+        <td><span class="rank-badge ${rankClass(m.rank)}" style="font-size:11px;padding:2px 8px;">${m.rank}</span></td>
+        <td><input type="number" class="pts-input" data-mid="${m.id}" value="${pts}"></td>
+        <td><input type="checkbox" class="excused-check" data-mid="${m.id}" ${excused?'checked':''}></td>
+      </tr>`;
+    }).join('');
+  } else if(type==='gvg'){
+    rows.innerHTML = list.map(m=>{
+      const e = store.entries.find(x=>x.memberId===m.id && x.weekId===weekId);
+      const pts = e ? e.points : 0;
+      return `<tr>
+        <td>${escapeHtml(m.name)}</td>
+        <td><span class="rank-badge ${rankClass(m.rank)}" style="font-size:11px;padding:2px 8px;">${m.rank}</span></td>
+        <td><input type="number" class="pts-input" data-mid="${m.id}" value="${pts}"></td>
+      </tr>`;
+    }).join('');
+  } else {
+    rows.innerHTML = list.map(m=>{
+      const e = store.entries.find(x=>x.memberId===m.id && x.weekId===weekId);
+      const group = e ? (e.group||'') : '';
+      const attended = e ? !!e.attended : false;
+      const excused = e ? !!e.excused : false;
+      return `<tr>
+        <td>${escapeHtml(m.name)}</td>
+        <td><span class="rank-badge ${rankClass(m.rank)}" style="font-size:11px;padding:2px 8px;">${m.rank}</span></td>
+        <td><select class="grp-select" data-mid="${m.id}">
+          <option value="" ${group===''?'selected':''}>${t('groupNone')}</option>
+          <option value="A" ${group==='A'?'selected':''}>${t('groupA')}</option>
+          <option value="B" ${group==='B'?'selected':''}>${t('groupB')}</option>
+        </select></td>
+        <td><input type="checkbox" class="attend-check" data-mid="${m.id}" ${attended?'checked':''}></td>
+        <td><input type="checkbox" class="excused-check" data-mid="${m.id}" ${excused?'checked':''}></td>
+      </tr>`;
+    }).join('');
+  }
+}
+
+async function saveEntry(){
+  if(!entryContext) return;
+  const { type, weekId } = entryContext;
+  const store = storeFor(type);
+  const payloads = [];
+  if(type==='svs' || type==='other'){
+    document.querySelectorAll('#entryRows tr').forEach(tr=>{
+      const mid = tr.querySelector('.pts-input').dataset.mid;
+      const status = tr.querySelector('.status-select').value;
+      const pts = Number(tr.querySelector('.pts-input').value)||0;
+      const excused = tr.querySelector('.excused-check').checked;
+      payloads.push({ week_id: weekId, member_id: mid, status, points: pts, excused });
+    });
+  } else if(type==='gvg'){
+    document.querySelectorAll('#entryRows tr').forEach(tr=>{
+      const mid = tr.querySelector('.pts-input').dataset.mid;
+      const pts = Number(tr.querySelector('.pts-input').value)||0;
+      payloads.push({ week_id: weekId, member_id: mid, points: pts });
+    });
+  } else {
+    document.querySelectorAll('#entryRows tr').forEach(tr=>{
+      const mid = tr.querySelector('.grp-select').dataset.mid;
+      const group = tr.querySelector('.grp-select').value;
+      const attended = tr.querySelector('.attend-check').checked;
+      const excused = tr.querySelector('.excused-check').checked;
+      payloads.push({ week_id: weekId, member_id: mid, group_name: group || null, attended, excused });
+    });
+  }
+  try{
+    const rows = await upsertRecordsBulk(type, payloads);
+    rows.forEach(row=>{
+      const mapped = mapEntry(type, row);
+      const idx = store.entries.findIndex(e=> e.memberId===mapped.memberId && e.weekId===mapped.weekId);
+      if(idx>=0) store.entries[idx] = mapped; else store.entries.push(mapped);
+    });
+    closeEntryModal();
+    renderAll();
+    showToast(t('toastEntrySaved'));
+  }catch(err){ console.error(err); showToast('Error'); }
+}
+
+/* ================= LEADERBOARD ================= */
+function setBoardSort(key){
+  if(boardSortKey===key) boardSortDir *= -1; else { boardSortKey = key; boardSortDir = -1; }
+  renderBoard();
+}
+function renderBoard(){
+  const wrap = document.getElementById('boardWrap');
+  const activeList = activeMembers();
+  if(!activeList.length){
+    wrap.innerHTML = `<div class="empty-state"><h3>${t('boardEmptyTitle')}</h3><p>${t('boardEmptyDesc')}</p></div>`;
+    return;
+  }
+  const rows = activeList.map(m=>{
+    const gvgPts = sumGvgPoints(m.id);
+    const svsPts = sumStatusPoints(svs, m.id);
+    const svsR = ratioStatus(svs, m);
+    const ssR = ratioSs(m);
+    const otherPts = sumStatusPoints(other, m.id);
+    const otherR = ratioStatus(other, m);
+    return { m, gvgPts, svsPts, svsR, ssR, otherPts, otherR };
+  });
+  rows.sort((a,b)=>{
+    let av, bv;
+    if(boardSortKey==='name'){ av=a.m.name.toLowerCase(); bv=b.m.name.toLowerCase(); }
+    else if(boardSortKey==='rank'){ av=RANK_ORDER[a.m.rank]; bv=RANK_ORDER[b.m.rank]; }
+    else if(boardSortKey==='svsRatio'){ av = a.svsR.den? a.svsR.num/a.svsR.den : -1; bv = b.svsR.den? b.svsR.num/b.svsR.den : -1; }
+    else if(boardSortKey==='ssRatio'){ av = a.ssR.den? a.ssR.num/a.ssR.den : -1; bv = b.ssR.den? b.ssR.num/b.ssR.den : -1; }
+    else if(boardSortKey==='otherRatio'){ av = a.otherR.den? a.otherR.num/a.otherR.den : -1; bv = b.otherR.den? b.otherR.num/b.otherR.den : -1; }
+    else { av = a[boardSortKey]; bv = b[boardSortKey]; }
+    if(av<bv) return -1*boardSortDir;
+    if(av>bv) return 1*boardSortDir;
+    return 0;
+  });
+  wrap.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th onclick="setBoardSort('rank')">${t('thRank')}</th>
+          <th onclick="setBoardSort('name')">${t('lbMember')}</th>
+          <th onclick="setBoardSort('gvgPts')">${t('lbGvgTotal')}</th>
+          <th onclick="setBoardSort('svsPts')">${t('lbSvsTotal')}</th>
+          <th onclick="setBoardSort('svsRatio')">${t('lbSvsRatio')}</th>
+          <th onclick="setBoardSort('ssRatio')">${t('lbSsRatio')}</th>
+          <th onclick="setBoardSort('otherPts')">${t('lbOtherTotal')}</th>
+          <th onclick="setBoardSort('otherRatio')">${t('lbOtherRatio')}</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(r=>`
+          <tr>
+            <td><span class="rank-badge ${rankClass(r.m.rank)}" style="font-size:11px;padding:2px 8px;">${r.m.rank}</span></td>
+            <td class="member-name">${escapeHtml(r.m.name)}</td>
+            <td class="num-cell"><span class="cell-pill ${gvgColorClass(r.gvgPts)}">${r.gvgPts}</span></td>
+            <td class="num-cell" style="color:var(--cyan); font-weight:700;">${r.svsPts}</td>
+            <td class="num-cell">${formatRatio(r.svsR.num, r.svsR.den)}</td>
+            <td class="num-cell">${formatRatio(r.ssR.num, r.ssR.den)}</td>
+            <td class="num-cell" style="color:var(--cyan); font-weight:700;">${r.otherPts}</td>
+            <td class="num-cell">${formatRatio(r.otherR.num, r.otherR.den)}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function renderAll(){
+  renderMembers();
+  renderSvs();
+  renderGvg();
+  renderSs();
+  renderOther();
+  renderBoard();
+}
+
+/* ================= GLOBAL EXPOSURE (module scope -> inline onclick/onchange handlers) ================= */
+Object.assign(window, {
+  exportBackup, importBackup, manualRefresh,
+  switchTab, switchSub, setMemberView, setRankFilter, setSort, renderMembers,
+  openMemberModal, closeMemberModal, toggleOld, saveMember, deleteMember, restoreMember,
+  openWeekModal, closeWeekModal, saveWeek, deleteWeek,
+  openEntryModal, closeEntryModal, saveEntry, renderEntryRows,
+  openHistoryModal, closeHistoryModal,
+  setBoardSort, setLang
+});
+
+buildLangSwitch();
+applyStaticText();
+loadAll();
+</script>
+</body>
+</html>
