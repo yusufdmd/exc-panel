@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la \"C:\\\\Users\\\\Administrator\\\\Desktop\")",
+      "Bash(cp \"C:\\\\Users\\\\Administrator\\\\Desktop\\\\files\\\\config.js\" \"C:\\\\Users\\\\Administrator\\\\Desktop\\\\Exc Manager\\\\js\\\\config.js\")",
+      "Bash(cp \"C:\\\\Users\\\\Administrator\\\\Desktop\\\\files\\\\supabase.js\" \"C:\\\\Users\\\\Administrator\\\\Desktop\\\\Exc Manager\\\\js\\\\supabase.js\")",
+      "Bash(cp \"C:\\\\Users\\\\Administrator\\\\Desktop\\\\files\\\\database.js\" \"C:\\\\Users\\\\Administrator\\\\Desktop\\\\Exc Manager\\\\js\\\\database.js\")",
+      "Bash(cp \"C:\\\\Users\\\\Administrator\\\\Desktop\\\\files\\\\init.sql\" \"C:\\\\Users\\\\Administrator\\\\Desktop\\\\Exc Manager\\\\sql\\\\init.sql\")",
+      "Bash(node -e ' *)",
+      "Bash(node --check _check.mjs)",
+      "PowerShell(Get-Command node -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-Command npx -ErrorAction SilentlyContinue)",
+      "Bash(where python *)",
+      "Bash(where python3 *)",
+      "Bash(where py *)",
+      "Bash(python -m http.server 8791)",
+      "Bash(find / -maxdepth 6 -iname \"python3*.exe\" 2>/dev/null | grep -v WindowsApps | head -5 *)",
+      "Bash(perl -0777 -ne ' *)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}
