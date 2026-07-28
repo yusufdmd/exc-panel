@@ -204,6 +204,10 @@
 
   @media (max-width:900px){ .stats{ grid-template-columns: repeat(3,1fr); } }
   @media (max-width:600px){ .stats{ grid-template-columns: repeat(2,1fr); } }
+
+  /* Write actions are only shown once an admin is signed in; reads stay open to everyone. */
+  body:not(.is-admin) .admin-only{ display:none !important; }
+  .auth-email{ color:var(--text-primary); font-weight:600; }
 </style>
 </head>
 <body>
@@ -220,11 +224,20 @@
     <div class="topbar-right">
       <div class="lang-switch" id="langSwitch"></div>
       <div class="sync"><span class="dot"></span><span id="syncText">…</span></div>
+      <div class="sync" id="authBox">
+        <span id="authStatus">…</span>
+      </div>
+      <button class="btn-refresh" id="loginBtn" onclick="openLoginModal()">
+        <span id="t_loginBtn">Giriş Yap</span>
+      </button>
+      <button class="btn-refresh admin-only" id="logoutBtn" onclick="doLogout()" style="display:none;">
+        <span id="t_logoutBtn">Çıkış Yap</span>
+      </button>
       <button class="btn-refresh" onclick="exportBackup()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
         <span id="t_exportBackup">Yedekle</span>
       </button>
-      <button class="btn-refresh" onclick="document.getElementById('importFile').click()">
+      <button class="btn-refresh admin-only" onclick="document.getElementById('importFile').click()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21V9m0 0l-4 4m4-4l4 4M5 3h14"/></svg>
         <span id="t_importBackup">İçe Aktar</span>
       </button>
@@ -258,7 +271,7 @@
       <div class="filter-chip" data-rank="R3" onclick="setRankFilter('R3')">R3</div>
       <div class="filter-chip" data-rank="R2" onclick="setRankFilter('R2')">R2</div>
       <div class="filter-chip" data-rank="R1" onclick="setRankFilter('R1')">R1</div>
-      <button class="btn-primary" onclick="openMemberModal()" id="t_addMember">+ Üye Ekle</button>
+      <button class="btn-primary admin-only" onclick="openMemberModal()" id="t_addMember">+ Üye Ekle</button>
     </div>
     <div class="table-wrap">
       <table>
@@ -298,7 +311,7 @@
           <span><i class="sw" style="background:var(--danger)"></i><span id="t_legendNotJoined">Katılmadı</span></span>
           <span><i class="sw" style="background:var(--text-dim)"></i><span id="t_legendUnknown">Bilgi Yok</span></span>
         </div>
-        <button class="btn-primary" onclick="openWeekModal('svs')" id="t_addWeek_svs">+ Hafta Ekle</button>
+        <button class="btn-primary admin-only" onclick="openWeekModal('svs')" id="t_addWeek_svs">+ Hafta Ekle</button>
       </div>
       <div class="table-wrap"><table id="tbl-svs"><thead></thead><tbody></tbody></table></div>
       <div class="empty-state" id="empty-svs" style="display:none;"><h3 id="t_emptyWeeksTitle1">Henüz hafta yok</h3><p id="t_emptyWeeksDesc1">"+ Hafta Ekle" ile ilk haftayı oluştur.</p></div>
@@ -312,7 +325,7 @@
           <span><i class="sw" style="background:var(--warn)"></i>13.200.000 – 43.499.999</span>
           <span><i class="sw" style="background:var(--danger)"></i>≤ 13.199.999</span>
         </div>
-        <button class="btn-primary" onclick="openWeekModal('gvg')" id="t_addWeek_gvg">+ Hafta Ekle</button>
+        <button class="btn-primary admin-only" onclick="openWeekModal('gvg')" id="t_addWeek_gvg">+ Hafta Ekle</button>
       </div>
       <div class="table-wrap"><table id="tbl-gvg"><thead></thead><tbody></tbody></table></div>
       <div class="empty-state" id="empty-gvg" style="display:none;"><h3 id="t_emptyWeeksTitle2">Henüz hafta yok</h3><p id="t_emptyWeeksDesc2">"+ Hafta Ekle" ile ilk haftayı oluştur.</p></div>
@@ -326,7 +339,7 @@
           <span><i class="sw" style="background:var(--danger)"></i><span id="t_legendRegNotAttend">Kayıtlı, Katılmadı</span></span>
           <span><i class="sw" style="background:var(--text-dim)"></i><span id="t_legendNoReg">Kayıt Yok</span></span>
         </div>
-        <button class="btn-primary" onclick="openWeekModal('ss')" id="t_addWeek_ss">+ Hafta Ekle</button>
+        <button class="btn-primary admin-only" onclick="openWeekModal('ss')" id="t_addWeek_ss">+ Hafta Ekle</button>
       </div>
       <div class="table-wrap"><table id="tbl-ss"><thead></thead><tbody></tbody></table></div>
       <div class="empty-state" id="empty-ss" style="display:none;"><h3 id="t_emptyWeeksTitle3">Henüz hafta yok</h3><p id="t_emptyWeeksDesc3">"+ Hafta Ekle" ile ilk haftayı oluştur.</p></div>
@@ -340,7 +353,7 @@
           <span><i class="sw" style="background:var(--danger)"></i><span id="t_legendNotJoinedOther">Katılmadı</span></span>
           <span><i class="sw" style="background:var(--text-dim)"></i><span id="t_legendUnknownOther">Bilgi Yok</span></span>
         </div>
-        <button class="btn-primary" onclick="openWeekModal('other')" id="t_addEvent_other">+ Etkinlik Ekle</button>
+        <button class="btn-primary admin-only" onclick="openWeekModal('other')" id="t_addEvent_other">+ Etkinlik Ekle</button>
       </div>
       <div class="table-wrap"><table id="tbl-other"><thead></thead><tbody></tbody></table></div>
       <div class="empty-state" id="empty-other" style="display:none;"><h3 id="t_emptyWeeksTitle4">Henüz etkinlik yok</h3><p id="t_emptyWeeksDesc4">"+ Etkinlik Ekle" ile ilk etkinliği oluştur.</p></div>
@@ -352,6 +365,25 @@
     <div class="table-wrap" id="boardWrap"></div>
   </div>
 
+</div>
+
+<!-- Login Modal -->
+<div class="overlay" id="loginOverlay">
+  <div class="modal">
+    <h2 id="t_loginTitle">Yönetici Girişi</h2>
+    <div class="field">
+      <label id="t_lblEmail">E-posta</label>
+      <input id="loginEmail" type="email" autocomplete="username">
+    </div>
+    <div class="field">
+      <label id="t_lblPassword">Şifre</label>
+      <input id="loginPassword" type="password" autocomplete="current-password">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeLoginModal()" id="t_cancel4">Vazgeç</button>
+      <button class="btn-primary" onclick="doLogin()" id="t_loginSubmit">Giriş Yap</button>
+    </div>
+  </div>
 </div>
 
 <!-- Member Modal -->
@@ -451,6 +483,7 @@ import {
   subscribeToTables
 } from "./js/database.js";
 import { POLL_INTERVAL_MS } from "./js/config.js";
+import { supabase } from "./js/supabase.js";
 
 /* ================= I18N ================= */
 const LANGS = ['tr','en','de','es','fr'];
@@ -489,7 +522,10 @@ const DICT = {
     importConfirm:'Bu dosyadaki veriler herkesin gördüğü ortak veriyle değiştirilecek. Devam edilsin mi?',
     importSuccess:'Veriler içe aktarıldı.', importFail:'Dosya okunamadı veya bozuk.',
     subActiveMembers:'Aktif Üyeler', subOldMembers:'Eski Üyeler (OLD)',
-    thDate:'Tarih', thPowerVal:'Güç', thDelta:'Fark', thExcused:'Mazeretli' },
+    thDate:'Tarih', thPowerVal:'Güç', thDelta:'Fark', thExcused:'Mazeretli',
+    loginTitle:'Yönetici Girişi', lblEmail:'E-posta', lblPassword:'Şifre', loginBtn:'Giriş Yap', logoutBtn:'Çıkış Yap',
+    loginFailed:'Giriş başarısız.', loginSuccess:'Giriş yapıldı.', logoutSuccess:'Çıkış yapıldı.',
+    emailPasswordRequired:'E-posta ve şifre gerekli.', viewOnlyLabel:'Salt okunur' },
   en:{ appName:'EXC Panel', tagline:'Members · Rank · Power & Camp Level · Event Tracking', refresh:'Refresh',
     syncConnecting:'Connecting…', syncLive:'Live — everyone sees this', syncError:'Connection error',
     tabMembers:'Members', tabEvents:'Events', tabBoard:'Leaderboard',
@@ -521,7 +557,10 @@ const DICT = {
     importConfirm:'This file will replace the shared data everyone sees. Continue?',
     importSuccess:'Data imported.', importFail:'Could not read the file, it may be corrupted.',
     subActiveMembers:'Active Members', subOldMembers:'Old Members (OLD)',
-    thDate:'Date', thPowerVal:'Power', thDelta:'Change', thExcused:'Excused' },
+    thDate:'Date', thPowerVal:'Power', thDelta:'Change', thExcused:'Excused',
+    loginTitle:'Admin Login', lblEmail:'Email', lblPassword:'Password', loginBtn:'Sign In', logoutBtn:'Sign Out',
+    loginFailed:'Sign-in failed.', loginSuccess:'Signed in.', logoutSuccess:'Signed out.',
+    emailPasswordRequired:'Email and password are required.', viewOnlyLabel:'View only' },
   de:{ appName:'EXC Panel', tagline:'Mitglieder · Rang · Machtstufe & Basisstufe · Event-Tracking', refresh:'Aktualisieren',
     syncConnecting:'Verbinde…', syncLive:'Live — alle sehen dies', syncError:'Verbindungsfehler',
     tabMembers:'Mitglieder', tabEvents:'Events', tabBoard:'Bestenliste',
@@ -553,7 +592,10 @@ const DICT = {
     importConfirm:'Diese Datei ersetzt die von allen gesehenen gemeinsamen Daten. Fortfahren?',
     importSuccess:'Daten importiert.', importFail:'Datei konnte nicht gelesen werden oder ist beschädigt.',
     subActiveMembers:'Aktive Mitglieder', subOldMembers:'Alte Mitglieder (OLD)',
-    thDate:'Datum', thPowerVal:'Macht', thDelta:'Änderung', thExcused:'Entschuldigt' },
+    thDate:'Datum', thPowerVal:'Macht', thDelta:'Änderung', thExcused:'Entschuldigt',
+    loginTitle:'Admin-Anmeldung', lblEmail:'E-Mail', lblPassword:'Passwort', loginBtn:'Anmelden', logoutBtn:'Abmelden',
+    loginFailed:'Anmeldung fehlgeschlagen.', loginSuccess:'Angemeldet.', logoutSuccess:'Abgemeldet.',
+    emailPasswordRequired:'E-Mail und Passwort sind erforderlich.', viewOnlyLabel:'Nur Ansicht' },
   es:{ appName:'Panel EXC', tagline:'Miembros · Rango · Poder y Nivel de Campamento · Seguimiento de Eventos', refresh:'Actualizar',
     syncConnecting:'Conectando…', syncLive:'En vivo — todos lo ven', syncError:'Error de conexión',
     tabMembers:'Miembros', tabEvents:'Eventos', tabBoard:'Clasificación',
@@ -585,7 +627,10 @@ const DICT = {
     importConfirm:'Este archivo reemplazará los datos compartidos que todos ven. ¿Continuar?',
     importSuccess:'Datos importados.', importFail:'No se pudo leer el archivo o está dañado.',
     subActiveMembers:'Miembros activos', subOldMembers:'Miembros antiguos (OLD)',
-    thDate:'Fecha', thPowerVal:'Poder', thDelta:'Cambio', thExcused:'Justificado' },
+    thDate:'Fecha', thPowerVal:'Poder', thDelta:'Cambio', thExcused:'Justificado',
+    loginTitle:'Inicio de sesión de administrador', lblEmail:'Correo electrónico', lblPassword:'Contraseña', loginBtn:'Iniciar sesión', logoutBtn:'Cerrar sesión',
+    loginFailed:'Error al iniciar sesión.', loginSuccess:'Sesión iniciada.', logoutSuccess:'Sesión cerrada.',
+    emailPasswordRequired:'Correo electrónico y contraseña son obligatorios.', viewOnlyLabel:'Solo lectura' },
   fr:{ appName:'Panneau EXC', tagline:'Membres · Rang · Puissance et Niveau de Camp · Suivi des Événements', refresh:'Actualiser',
     syncConnecting:'Connexion…', syncLive:'En direct — visible par tous', syncError:'Erreur de connexion',
     tabMembers:'Membres', tabEvents:'Événements', tabBoard:'Classement',
@@ -617,7 +662,10 @@ const DICT = {
     importConfirm:'Ce fichier remplacera les données partagées visibles par tous. Continuer ?',
     importSuccess:'Données importées.', importFail:'Impossible de lire le fichier, il est peut-être corrompu.',
     subActiveMembers:'Membres actifs', subOldMembers:'Anciens membres (OLD)',
-    thDate:'Date', thPowerVal:'Puissance', thDelta:'Évolution', thExcused:'Excusé' }
+    thDate:'Date', thPowerVal:'Puissance', thDelta:'Évolution', thExcused:'Excusé',
+    loginTitle:'Connexion administrateur', lblEmail:'E-mail', lblPassword:'Mot de passe', loginBtn:'Se connecter', logoutBtn:'Se déconnecter',
+    loginFailed:'Échec de la connexion.', loginSuccess:'Connecté.', logoutSuccess:'Déconnecté.',
+    emailPasswordRequired:"L'e-mail et le mot de passe sont requis.", viewOnlyLabel:'Lecture seule' }
 };
 function t(key){ return (DICT[currentLang] && DICT[currentLang][key]) || DICT.tr[key] || key; }
 
@@ -692,6 +740,14 @@ function applyStaticText(){
   document.getElementById('t_thPowerVal').textContent = t('thPowerVal');
   document.getElementById('t_thDelta').textContent = t('thDelta');
   document.getElementById('t_close2').textContent = t('close');
+  document.getElementById('t_loginTitle').textContent = t('loginTitle');
+  document.getElementById('t_lblEmail').textContent = t('lblEmail');
+  document.getElementById('t_lblPassword').textContent = t('lblPassword');
+  document.getElementById('t_loginBtn').textContent = t('loginBtn');
+  document.getElementById('t_logoutBtn').textContent = t('logoutBtn');
+  document.getElementById('t_cancel4').textContent = t('cancel');
+  document.getElementById('t_loginSubmit').textContent = t('loginBtn');
+  updateAdminUI();
   buildCampOptions();
   document.title = t('appName');
 }
@@ -707,14 +763,16 @@ let currentSub = 'svs';
 let memberView = 'active';
 let rankFilter = 'ALL';
 let sortKey = 'rank';
-let sortDir = 1;
+let sortDir = -1; // -1 so the default view is R5 first, descending down to R1
 let oldFlag = false;
 let entryContext = null; // { type: 'svs'|'gvg'|'ss'|'other', weekId }
 let boardSortKey = 'gvgPts';
 let boardSortDir = -1;
 let historyMemberId = null;
+let isAdmin = false;
 
 const RANK_ORDER = { R5:5, R4:4, R3:3, R2:2, R1:1 };
+const RANK_LIMITS = { R5:1, R4:8 };
 function todayStr(){ return new Date().toISOString().slice(0,10); }
 
 function showToast(msg){
@@ -722,6 +780,46 @@ function showToast(msg){
   el.textContent = msg;
   el.classList.add('show');
   setTimeout(()=> el.classList.remove('show'), 2200);
+}
+
+/* ================= AUTH (admin-only writes; everyone can still view) ================= */
+function updateAdminUI(){
+  document.body.classList.toggle('is-admin', isAdmin);
+  document.getElementById('loginBtn').style.display = isAdmin ? 'none' : '';
+  document.getElementById('logoutBtn').style.display = isAdmin ? '' : 'none';
+  const statusEl = document.getElementById('authStatus');
+  if(statusEl) statusEl.textContent = isAdmin ? (currentAdminEmail || t('logoutBtn')) : t('viewOnlyLabel');
+}
+let currentAdminEmail = '';
+supabase.auth.onAuthStateChange((event, session)=>{
+  isAdmin = !!session;
+  currentAdminEmail = session && session.user ? (session.user.email || '') : '';
+  updateAdminUI();
+});
+supabase.auth.getSession().then(({ data })=>{
+  isAdmin = !!(data && data.session);
+  currentAdminEmail = data && data.session && data.session.user ? (data.session.user.email || '') : '';
+  updateAdminUI();
+});
+
+function openLoginModal(){
+  document.getElementById('loginEmail').value = '';
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('loginOverlay').classList.add('active');
+}
+function closeLoginModal(){ document.getElementById('loginOverlay').classList.remove('active'); }
+async function doLogin(){
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if(!email || !password){ showToast(t('emailPasswordRequired')); return; }
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if(error){ showToast(t('loginFailed')); return; }
+  closeLoginModal();
+  showToast(t('loginSuccess'));
+}
+async function doLogout(){
+  await supabase.auth.signOut();
+  showToast(t('logoutSuccess'));
 }
 
 /* ================= CAMP LEVEL OPTIONS ================= */
@@ -1053,7 +1151,10 @@ function renderMembers(){
   });
   list.sort((a,b)=>{
     let av,bv;
-    if(sortKey==='rank'){ av=RANK_ORDER[a.rank]; bv=RANK_ORDER[b.rank]; }
+    if(sortKey==='rank'){
+      av=RANK_ORDER[a.rank]; bv=RANK_ORDER[b.rank];
+      if(av===bv) return (Number(b.power)||0) - (Number(a.power)||0); // same rank -> strongest power first, always
+    }
     else if(sortKey==='name'){ av=a.name.toLowerCase(); bv=b.name.toLowerCase(); }
     else if(sortKey==='campSort'){ av=campSortValue(a.campLevel); bv=campSortValue(b.campLevel); }
     else { av=Number(a[sortKey])||0; bv=Number(b[sortKey])||0; }
@@ -1072,9 +1173,9 @@ function renderMembers(){
       <td class="num-cell">${escapeHtml(String(m.campLevel||'-'))}</td>
       <td><div class="row-actions">
         <button class="icon-btn" onclick="openHistoryModal('${m.id}')" title="${t('powerHistory')}">📈</button>
-        ${memberView==='old' ? `<button class="icon-btn" onclick="restoreMember('${m.id}')" title="${t('restoreMember')}">↺</button>` : ''}
-        <button class="icon-btn" onclick="openMemberModal('${m.id}')">✎</button>
-        <button class="icon-btn danger" onclick="deleteMember('${m.id}')">✕</button>
+        ${memberView==='old' ? `<button class="icon-btn admin-only" onclick="restoreMember('${m.id}')" title="${t('restoreMember')}">↺</button>` : ''}
+        <button class="icon-btn admin-only" onclick="openMemberModal('${m.id}')">✎</button>
+        <button class="icon-btn danger admin-only" onclick="deleteMember('${m.id}')">✕</button>
       </div></td>
     </tr>
   `).join('');
@@ -1106,6 +1207,13 @@ function openMemberModal(id){
 function closeMemberModal(){ document.getElementById('memberOverlay').classList.remove('active'); }
 function toggleOld(){ oldFlag = !oldFlag; document.getElementById('oldToggle').classList.toggle('on', oldFlag); }
 
+function rankLimitBlockedMessage(rank, excludeId){
+  const limit = RANK_LIMITS[rank];
+  if(!limit) return null;
+  const count = members.filter(m=> !m.isOld && m.rank===rank && m.id!==excludeId).length;
+  return count >= limit ? (rank + ' rütbesi için üye sınırına ulaşıldı (maks. ' + limit + ').') : null;
+}
+
 async function saveMember(){
   const name = document.getElementById('fName').value.trim();
   const gameId = document.getElementById('fGameId').value.trim();
@@ -1114,6 +1222,10 @@ async function saveMember(){
   const power = Number(document.getElementById('fPower').value)||0;
   const rank = document.getElementById('fRank').value;
   const campLevel = document.getElementById('fCamp').value;
+  if(!oldFlag){
+    const blockMsg = rankLimitBlockedMessage(rank, editId);
+    if(blockMsg){ showToast(blockMsg); return; }
+  }
   try{
     if(editId){
       const idx = members.findIndex(m=>m.id===editId);
@@ -1164,6 +1276,8 @@ async function deleteMember(id){
 async function restoreMember(id){
   const idx = members.findIndex(m=>m.id===id);
   if(idx<0) return;
+  const blockMsg = rankLimitBlockedMessage(members[idx].rank, id);
+  if(blockMsg){ showToast(blockMsg); return; }
   try{
     const row = await updateMember(id, { is_old:false, old_since:null });
     members[idx] = { ...mapMember(row), powerHistory: members[idx].powerHistory };
@@ -1314,8 +1428,8 @@ function renderSvs(){
       <th class="sticky-col" style="left:90px;">${t('thUsername')}</th>
       ${svs.weeks.map(w=>`<th class="week-col"><div class="week-head"><span class="wname">${escapeHtml(w.label)}</span>
         <span class="week-actions">
-          <button class="icon-btn" style="width:20px;height:20px;" onclick="openEntryModal('svs','${w.id}')">✎</button>
-          <button class="icon-btn danger" style="width:20px;height:20px;" onclick="deleteWeek('svs','${w.id}')">✕</button>
+          <button class="icon-btn admin-only" style="width:20px;height:20px;" onclick="openEntryModal('svs','${w.id}')">✎</button>
+          <button class="icon-btn danger admin-only" style="width:20px;height:20px;" onclick="deleteWeek('svs','${w.id}')">✕</button>
         </span></div></th>`).join('')}
     </tr>`;
   tbody.innerHTML = list.map(m=>`
@@ -1339,8 +1453,8 @@ function renderGvg(){
       <th class="sticky-col" style="left:90px;">${t('thUsername')}</th>
       ${gvg.weeks.map(w=>`<th class="week-col"><div class="week-head"><span class="wname">${escapeHtml(w.label)}</span>
         <span class="week-actions">
-          <button class="icon-btn" style="width:20px;height:20px;" onclick="openEntryModal('gvg','${w.id}')">✎</button>
-          <button class="icon-btn danger" style="width:20px;height:20px;" onclick="deleteWeek('gvg','${w.id}')">✕</button>
+          <button class="icon-btn admin-only" style="width:20px;height:20px;" onclick="openEntryModal('gvg','${w.id}')">✎</button>
+          <button class="icon-btn danger admin-only" style="width:20px;height:20px;" onclick="deleteWeek('gvg','${w.id}')">✕</button>
         </span></div></th>`).join('')}
     </tr>`;
   tbody.innerHTML = list.map(m=>`
@@ -1364,8 +1478,8 @@ function renderSs(){
       <th class="sticky-col" style="left:90px;">${t('thUsername')}</th>
       ${ss.weeks.map(w=>`<th class="week-col"><div class="week-head"><span class="wname">${escapeHtml(w.label)}</span>
         <span class="week-actions">
-          <button class="icon-btn" style="width:20px;height:20px;" onclick="openEntryModal('ss','${w.id}')">✎</button>
-          <button class="icon-btn danger" style="width:20px;height:20px;" onclick="deleteWeek('ss','${w.id}')">✕</button>
+          <button class="icon-btn admin-only" style="width:20px;height:20px;" onclick="openEntryModal('ss','${w.id}')">✎</button>
+          <button class="icon-btn danger admin-only" style="width:20px;height:20px;" onclick="deleteWeek('ss','${w.id}')">✕</button>
         </span></div></th>`).join('')}
     </tr>`;
   tbody.innerHTML = list.map(m=>`
@@ -1389,8 +1503,8 @@ function renderOther(){
       <th class="sticky-col" style="left:90px;">${t('thUsername')}</th>
       ${other.weeks.map(w=>`<th class="week-col"><div class="week-head"><span class="wname">${escapeHtml(w.label)}</span>
         <span class="week-actions">
-          <button class="icon-btn" style="width:20px;height:20px;" onclick="openEntryModal('other','${w.id}')">✎</button>
-          <button class="icon-btn danger" style="width:20px;height:20px;" onclick="deleteWeek('other','${w.id}')">✕</button>
+          <button class="icon-btn admin-only" style="width:20px;height:20px;" onclick="openEntryModal('other','${w.id}')">✎</button>
+          <button class="icon-btn danger admin-only" style="width:20px;height:20px;" onclick="deleteWeek('other','${w.id}')">✕</button>
         </span></div></th>`).join('')}
     </tr>`;
   tbody.innerHTML = list.map(m=>`
@@ -1602,7 +1716,8 @@ Object.assign(window, {
   openWeekModal, closeWeekModal, saveWeek, deleteWeek,
   openEntryModal, closeEntryModal, saveEntry, renderEntryRows,
   openHistoryModal, closeHistoryModal,
-  setBoardSort, setLang
+  setBoardSort, setLang,
+  openLoginModal, closeLoginModal, doLogin, doLogout
 });
 
 buildLangSwitch();
