@@ -423,9 +423,10 @@
 
 <!-- Power History Modal -->
 <div class="overlay" id="historyOverlay">
-  <div class="modal">
+  <div class="modal wide">
     <h2 id="historyTitle">Güç Geçmişi</h2>
     <div id="historyChartWrap"></div>
+    <div id="historyEventsWrap"></div>
     <div style="max-height:55vh; overflow-y:auto;">
       <table class="part-table" style="width:100%;">
         <thead><tr><th id="t_thDate">Tarih</th><th id="t_thPowerVal">Güç</th><th id="t_thDelta">Fark</th></tr></thead>
@@ -873,7 +874,8 @@ function importBackup(file){
       for(const m of newMembers){
         const row = await createMember({
           name: m.name, game_id: m.gameId, rank: m.rank, power: Number(m.power)||0,
-          camp_level: m.campLevel, is_old: !!m.isOld, old_since: m.oldSince || null
+          camp_level: m.campLevel, is_old: !!m.isOld, old_since: m.oldSince || null,
+          joined_at: m.joinedAt || new Date().toISOString()
         });
         memberIdMap[m.id] = row.id;
         const history = Array.isArray(m.powerHistory) && m.powerHistory.length
@@ -971,8 +973,39 @@ function sumGvgPoints(memberId){
 function sumStatusPoints(store, memberId){
   return store.entries.filter(e=> e.memberId===memberId && statusOf(e)==='joined').reduce((s,e)=> s+(Number(e.points)||0), 0);
 }
+
+/* ---- Per-cell display info: a real saved entry always wins over the exempt guess ---- */
+function svsOtherCellInfo(store, m, w){
+  const e = store.entries.find(x=>x.memberId===m.id && x.weekId===w.id);
+  if(!e) return isExempt(m, w) ? { cls:'pill-gray', text:t('exemptLabel') } : { cls:'pill-gray', text:t('notRegistered') };
+  const st = statusOf(e);
+  if(st==='joined') return { cls:'pill-green', text:'✓ '+(Number(e.points)||0) };
+  if(st==='unknown') return { cls:'pill-gray', text:t('notRegistered') };
+  const excused = !!e.excused;
+  return { cls: excused ? 'pill-yellow' : 'pill-red', text: '✕'+(excused ? ' (M)' : '') };
+}
+function gvgCellInfo(m, w){
+  const e = gvg.entries.find(x=>x.memberId===m.id && x.weekId===w.id);
+  if(!e) return isExempt(m, w) ? { cls:'pill-gray', text:t('exemptLabel') } : { cls:'pill-gray', text:t('notRegistered') };
+  return { cls: gvgColorClass(e.points), text: String(Number(e.points)||0) };
+}
+function ssCellInfo(m, w){
+  const e = ss.entries.find(x=>x.memberId===m.id && x.weekId===w.id);
+  if(!e) return isExempt(m, w) ? { cls:'pill-gray', text:t('exemptLabel') } : { cls:'pill-gray', text:t('notRegistered') };
+  if(!e.group) return { cls:'pill-gray', text:t('notRegistered') };
+  if(e.attended) return { cls:'pill-green', text: e.group };
+  const excused = !!e.excused;
+  return { cls: excused ? 'pill-yellow' : 'pill-red', text: e.group + (excused ? ' (M)' : '') };
+}
+function cellInfoHtml(info){
+  return `<td class="week-col"><span class="cell-pill ${info.cls}">${info.text}</span></td>`;
+}
+
 function ratioStatus(store, member){
-  const applicable = store.weeks.filter(w=> !isExempt(member, w));
+  const applicable = store.weeks.filter(w=>{
+    const e = store.entries.find(x=> x.memberId===member.id && x.weekId===w.id);
+    return !!e || !isExempt(member, w);
+  });
   const den = applicable.length;
   const num = applicable.filter(w=>{
     const e = store.entries.find(x=> x.memberId===member.id && x.weekId===w.id);
@@ -981,7 +1014,10 @@ function ratioStatus(store, member){
   return { num, den };
 }
 function ratioSs(member){
-  const applicable = ss.weeks.filter(w=> !isExempt(member, w));
+  const applicable = ss.weeks.filter(w=>{
+    const e = ss.entries.find(x=> x.memberId===member.id && x.weekId===w.id);
+    return !!e || !isExempt(member, w);
+  });
   const den = applicable.length;
   const num = applicable.filter(w=>{
     const e = ss.entries.find(x=> x.memberId===member.id && x.weekId===w.id);
@@ -1156,6 +1192,41 @@ function buildHistoryChart(history){
     ${circles}
   </svg>`;
 }
+/* ---- Per-member event summary (SVS/GVG/SS/Diğer), same colors as the event tables ---- */
+function buildEventSummaryHtml(member){
+  const sections = [
+    { key:'svs',   store:svs,   title:'SVS' },
+    { key:'gvg',   store:gvg,   title:'GVG' },
+    { key:'ss',    store:ss,    title:'SS' },
+    { key:'other', store:other, title:t('subOther') }
+  ];
+  const html = sections.map(({ key, store, title })=>{
+    if(!store.weeks.length) return '';
+    let summary;
+    if(key==='gvg'){
+      summary = t('lbGvgTotal') + ': ' + sumGvgPoints(member.id);
+    } else if(key==='ss'){
+      const r = ratioSs(member);
+      summary = t('lbSsRatio') + ': ' + formatRatio(r.num, r.den);
+    } else {
+      const r = ratioStatus(store, member);
+      const total = sumStatusPoints(store, member.id);
+      const ratioLabel = key==='svs' ? t('lbSvsRatio') : t('lbOtherRatio');
+      const totalLabel = key==='svs' ? t('lbSvsTotal') : t('lbOtherTotal');
+      summary = ratioLabel + ': ' + formatRatio(r.num, r.den) + ' · ' + totalLabel + ': ' + total;
+    }
+    const chips = store.weeks.map(w=>{
+      const info = key==='gvg' ? gvgCellInfo(member, w) : key==='ss' ? ssCellInfo(member, w) : svsOtherCellInfo(store, member, w);
+      return `<span class="cell-pill ${info.cls}" style="margin:3px 4px 3px 0;" title="${escapeHtml(w.label)}">${escapeHtml(w.label)}: ${info.text}</span>`;
+    }).join('');
+    return `<div style="margin-bottom:14px;">
+      <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">${title} — ${summary}</div>
+      <div style="display:flex;flex-wrap:wrap;">${chips}</div>
+    </div>`;
+  }).join('');
+  return html || '';
+}
+
 function openHistoryModal(id){
   historyMemberId = id;
   const m = members.find(x=>x.id===id);
@@ -1165,6 +1236,7 @@ function openHistoryModal(id){
     ? [...m.powerHistory].sort((a,b)=> a.date < b.date ? -1 : a.date > b.date ? 1 : 0)
     : [{ date: (m.joinedAt||todayStr()).slice(0,10), power: m.power||0 }];
   document.getElementById('historyChartWrap').innerHTML = buildHistoryChart(history);
+  document.getElementById('historyEventsWrap').innerHTML = buildEventSummaryHtml(m);
   const rows = document.getElementById('historyRows');
   rows.innerHTML = history.map((h,i)=>{
     const prev = i>0 ? history[i-1].power : null;
@@ -1230,18 +1302,6 @@ function filteredSortedMembers(){
     return a.name.localeCompare(b.name);
   });
 }
-function statusCellHtml(store, m, w){
-  if(isExempt(m, w)) return `<td class="week-col"><span class="cell-pill pill-gray">${t('exemptLabel')}</span></td>`;
-  const e = store.entries.find(x=>x.memberId===m.id && x.weekId===w.id);
-  const st = statusOf(e);
-  if(st==='unknown') return `<td class="week-col"><span class="cell-pill pill-gray">${t('notRegistered')}</span></td>`;
-  if(st==='joined') return `<td class="week-col"><span class="cell-pill pill-green">✓ ${Number(e.points)||0}</span></td>`;
-  const excused = e && e.excused;
-  const cls = excused ? 'pill-yellow' : 'pill-red';
-  const mark = excused ? ' (M)' : '';
-  return `<td class="week-col"><span class="cell-pill ${cls}">✕${mark}</span></td>`;
-}
-
 /* ---- SVS render ---- */
 function renderSvs(){
   const table = document.getElementById('tbl-svs');
@@ -1262,7 +1322,7 @@ function renderSvs(){
     <tr>
       <td class="sticky-col"><span class="rank-badge ${rankClass(m.rank)}" style="font-size:11px;padding:2px 8px;">${m.rank}</span></td>
       <td class="sticky-col" style="left:90px;">${escapeHtml(m.name)}</td>
-      ${svs.weeks.map(w=> statusCellHtml(svs, m, w)).join('')}
+      ${svs.weeks.map(w=> cellInfoHtml(svsOtherCellInfo(svs, m, w))).join('')}
     </tr>
   `).join('');
 }
@@ -1287,12 +1347,7 @@ function renderGvg(){
     <tr>
       <td class="sticky-col"><span class="rank-badge ${rankClass(m.rank)}" style="font-size:11px;padding:2px 8px;">${m.rank}</span></td>
       <td class="sticky-col" style="left:90px;">${escapeHtml(m.name)}</td>
-      ${gvg.weeks.map(w=>{
-        if(isExempt(m, w)) return `<td class="week-col"><span class="cell-pill pill-gray">${t('exemptLabel')}</span></td>`;
-        const e = gvg.entries.find(x=>x.memberId===m.id && x.weekId===w.id);
-        if(!e) return `<td class="week-col"><span class="cell-pill pill-gray">${t('notRegistered')}</span></td>`;
-        return `<td class="week-col"><span class="cell-pill ${gvgColorClass(e.points)}">${Number(e.points)||0}</span></td>`;
-      }).join('')}
+      ${gvg.weeks.map(w=> cellInfoHtml(gvgCellInfo(m, w))).join('')}
     </tr>
   `).join('');
 }
@@ -1317,15 +1372,7 @@ function renderSs(){
     <tr>
       <td class="sticky-col"><span class="rank-badge ${rankClass(m.rank)}" style="font-size:11px;padding:2px 8px;">${m.rank}</span></td>
       <td class="sticky-col" style="left:90px;">${escapeHtml(m.name)}</td>
-      ${ss.weeks.map(w=>{
-        if(isExempt(m, w)) return `<td class="week-col"><span class="cell-pill pill-gray">${t('exemptLabel')}</span></td>`;
-        const e = ss.entries.find(x=>x.memberId===m.id && x.weekId===w.id);
-        if(!e || !e.group) return `<td class="week-col"><span class="cell-pill pill-gray">${t('notRegistered')}</span></td>`;
-        if(e.attended) return `<td class="week-col"><span class="cell-pill pill-green">${e.group}</span></td>`;
-        const cls = e.excused ? 'pill-yellow' : 'pill-red';
-        const mark = e.excused ? ' (M)' : '';
-        return `<td class="week-col"><span class="cell-pill ${cls}">${e.group}${mark}</span></td>`;
-      }).join('')}
+      ${ss.weeks.map(w=> cellInfoHtml(ssCellInfo(m, w))).join('')}
     </tr>
   `).join('');
 }
@@ -1350,7 +1397,7 @@ function renderOther(){
     <tr>
       <td class="sticky-col"><span class="rank-badge ${rankClass(m.rank)}" style="font-size:11px;padding:2px 8px;">${m.rank}</span></td>
       <td class="sticky-col" style="left:90px;">${escapeHtml(m.name)}</td>
-      ${other.weeks.map(w=> statusCellHtml(other, m, w)).join('')}
+      ${other.weeks.map(w=> cellInfoHtml(svsOtherCellInfo(other, m, w))).join('')}
     </tr>
   `).join('');
 }
