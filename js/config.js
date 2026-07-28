@@ -5,8 +5,8 @@
 // Supabase Dashboard > Project Settings > API sayfasından alabilirsiniz.
 // =====================================================================
 
-export const SUPABASE_URL = "https://YOUR_PROJECT_REF.supabase.co";
-export const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_PUBLIC_KEY";
+export const SUPABASE_URL = "https://sbzctjpthorlypfrqgte.supabase.co";
+export const SUPABASE_ANON_KEY = "sb_publishable_FNxETjiXZ4tiWqzgyR0vng_vKxGGSp9";
 
 // ---------------------------------------------------------------------
 // Rütbe hiyerarşisi — sıralama ve rozetlerde kullanılır.
@@ -18,8 +18,8 @@ export const RANKS = ["R5", "R4", "R3", "R2", "R1"];
 // GVG haftalık puan renklendirme eşikleri.
 // ---------------------------------------------------------------------
 export const GVG_THRESHOLDS = {
-  green: 43500000,   // puan >= bu değer  -> yeşil
-  yellow: 13200000   // puan >= bu değer (yeşilin altı) -> sarı, altı -> kırmızı
+  green: 43500000,    // puan >= bu değer  -> yeşil
+  yellow: 13200000    // puan >= bu değer (yeşilin altı) -> sarı, altı -> kırmızı
 };
 
 // ---------------------------------------------------------------------
