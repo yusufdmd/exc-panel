@@ -1026,7 +1026,8 @@ function setRankFilter(r){
   renderMembers();
 }
 function setSort(key){
-  if(sortKey===key) sortDir *= -1; else { sortKey = key; sortDir = 1; }
+  if(sortKey===key) sortDir *= -1;
+  else { sortKey = key; sortDir = key==='rank' ? -1 : 1; } // rank always defaults to R5-first
   renderMembers();
 }
 
