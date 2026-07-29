@@ -479,7 +479,6 @@ import {
   getAllPowerHistory, addPowerHistoryEntry,
   getWeeks, createWeek as dbCreateWeek, deleteWeek as dbDeleteWeek,
   getAllRecords, upsertRecordsBulk,
-  getSetting, setSetting,
   subscribeToTables
 } from "./js/database.js";
 import { POLL_INTERVAL_MS, ADMIN_LOGIN_DOMAIN } from "./js/config.js";
@@ -673,12 +672,18 @@ function buildLangSwitch(){
   const box = document.getElementById('langSwitch');
   box.innerHTML = LANGS.map(l=> `<div class="lang-opt ${l===currentLang?'active':''}" onclick="setLang('${l}')">${LANG_FLAG[l]}</div>`).join('');
 }
-async function setLang(l){
+function setLang(l){
   currentLang = l;
   buildLangSwitch();
   applyStaticText();
   renderAll();
-  try{ await setSetting('exc-lang', l); }catch(e){}
+  try{ localStorage.setItem('exc-lang', l); }catch(e){}
+}
+function initLangFromStorage(){
+  try{
+    const saved = localStorage.getItem('exc-lang');
+    if(saved && LANGS.includes(saved)) currentLang = saved;
+  }catch(e){}
 }
 function applyStaticText(){
   document.getElementById('t_appName').textContent = t('appName');
@@ -875,15 +880,13 @@ async function loadAll(silent){
       svsWeeksRes, svsRecordsRes,
       gvgWeeksRes, gvgRecordsRes,
       ssWeeksRes, ssRecordsRes,
-      otherWeeksRes, otherRecordsRes,
-      langRes
+      otherWeeksRes, otherRecordsRes
     ] = await Promise.allSettled([
       getMembers(), getAllPowerHistory(),
       getWeeks('svs'), getAllRecords('svs'),
       getWeeks('gvg'), getAllRecords('gvg'),
       getWeeks('ss'), getAllRecords('ss'),
-      getWeeks('other'), getAllRecords('other'),
-      getSetting('exc-lang', null)
+      getWeeks('other'), getAllRecords('other')
     ]);
 
     const historyByMember = {};
@@ -902,11 +905,6 @@ async function loadAll(silent){
     ss    = { weeks: settledList(ssWeeksRes).map(mapWeek),    entries: settledList(ssRecordsRes).map(r=>mapEntry('ss',r)) };
     other = { weeks: settledList(otherWeeksRes).map(mapWeek), entries: settledList(otherRecordsRes).map(r=>mapEntry('other',r)) };
 
-    if(langRes.status==='fulfilled' && langRes.value && LANGS.includes(langRes.value)){
-      currentLang = langRes.value;
-      buildLangSwitch();
-      applyStaticText();
-    }
     document.getElementById('syncText').textContent = t('syncLive');
     renderAll();
   }catch(err){
@@ -920,7 +918,7 @@ function manualRefresh(){ loadAll(); }
 setInterval(()=> loadAll(true), POLL_INTERVAL_MS);
 let realtimeReloadTimer = null;
 subscribeToTables(
-  ['members','power_history','gvg_weeks','gvg_records','svs_weeks','svs_records','ss_weeks','ss_records','other_weeks','other_records','settings'],
+  ['members','power_history','gvg_weeks','gvg_records','svs_weeks','svs_records','ss_weeks','ss_records','other_weeks','other_records'],
   ()=>{ clearTimeout(realtimeReloadTimer); realtimeReloadTimer = setTimeout(()=> loadAll(true), 400); }
 );
 
@@ -1731,6 +1729,7 @@ Object.assign(window, {
   openLoginModal, closeLoginModal, doLogin, doLogout
 });
 
+initLangFromStorage();
 buildLangSwitch();
 applyStaticText();
 loadAll();
