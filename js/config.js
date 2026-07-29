@@ -55,3 +55,14 @@ export const DEFAULT_LANGUAGE = "tr";
 // Gerçek zamanlı bağlantı kesilirse devreye giren yedek "yoklama" aralığı (ms).
 // ---------------------------------------------------------------------
 export const POLL_INTERVAL_MS = 12000;
+
+// ---------------------------------------------------------------------
+// Admin girişi kullanıcı adı -> email dönüşümü.
+// Supabase Auth teknik olarak bir email adresi bekler ama biz kullanıcıya
+// sadece "kullanıcı adı" gösteriyoruz; arka planda "<kullaniciadi>@<bu-domain>"
+// adresine çeviriyoruz. Gerçek bir domain olması gerekmez, hiç mail
+// gönderilmez (Supabase Dashboard'da admin kullanıcı "Auto Confirm User"
+// işaretli oluşturulur). Admin kullanıcı oluştururken email alanına da
+// aynı formatı ("kullaniciadi@" + bu değer) girin.
+// ---------------------------------------------------------------------
+export const ADMIN_LOGIN_DOMAIN = "excpaneli.local";

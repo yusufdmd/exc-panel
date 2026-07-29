@@ -372,8 +372,8 @@
   <div class="modal">
     <h2 id="t_loginTitle">Yönetici Girişi</h2>
     <div class="field">
-      <label id="t_lblEmail">E-posta</label>
-      <input id="loginEmail" type="email" autocomplete="username">
+      <label id="t_lblEmail">Kullanıcı Adı</label>
+      <input id="loginEmail" type="text" autocomplete="username">
     </div>
     <div class="field">
       <label id="t_lblPassword">Şifre</label>
@@ -482,7 +482,7 @@ import {
   getSetting, setSetting,
   subscribeToTables
 } from "./js/database.js";
-import { POLL_INTERVAL_MS } from "./js/config.js";
+import { POLL_INTERVAL_MS, ADMIN_LOGIN_DOMAIN } from "./js/config.js";
 import { supabase } from "./js/supabase.js";
 
 /* ================= I18N ================= */
@@ -525,7 +525,7 @@ const DICT = {
     thDate:'Tarih', thPowerVal:'Güç', thDelta:'Fark', thExcused:'Mazeretli',
     loginTitle:'Yönetici Girişi', lblEmail:'E-posta', lblPassword:'Şifre', loginBtn:'Giriş Yap', logoutBtn:'Çıkış Yap',
     loginFailed:'Giriş başarısız.', loginSuccess:'Giriş yapıldı.', logoutSuccess:'Çıkış yapıldı.',
-    emailPasswordRequired:'E-posta ve şifre gerekli.', viewOnlyLabel:'Salt okunur' },
+    emailPasswordRequired:'Kullanıcı adı ve şifre gerekli.', viewOnlyLabel:'Salt okunur' },
   en:{ appName:'EXC Panel', tagline:'Members · Rank · Power & Camp Level · Event Tracking', refresh:'Refresh',
     syncConnecting:'Connecting…', syncLive:'Live — everyone sees this', syncError:'Connection error',
     tabMembers:'Members', tabEvents:'Events', tabBoard:'Leaderboard',
@@ -560,7 +560,7 @@ const DICT = {
     thDate:'Date', thPowerVal:'Power', thDelta:'Change', thExcused:'Excused',
     loginTitle:'Admin Login', lblEmail:'Email', lblPassword:'Password', loginBtn:'Sign In', logoutBtn:'Sign Out',
     loginFailed:'Sign-in failed.', loginSuccess:'Signed in.', logoutSuccess:'Signed out.',
-    emailPasswordRequired:'Email and password are required.', viewOnlyLabel:'View only' },
+    emailPasswordRequired:'Username and password are required.', viewOnlyLabel:'View only' },
   de:{ appName:'EXC Panel', tagline:'Mitglieder · Rang · Machtstufe & Basisstufe · Event-Tracking', refresh:'Aktualisieren',
     syncConnecting:'Verbinde…', syncLive:'Live — alle sehen dies', syncError:'Verbindungsfehler',
     tabMembers:'Mitglieder', tabEvents:'Events', tabBoard:'Bestenliste',
@@ -595,7 +595,7 @@ const DICT = {
     thDate:'Datum', thPowerVal:'Macht', thDelta:'Änderung', thExcused:'Entschuldigt',
     loginTitle:'Admin-Anmeldung', lblEmail:'E-Mail', lblPassword:'Passwort', loginBtn:'Anmelden', logoutBtn:'Abmelden',
     loginFailed:'Anmeldung fehlgeschlagen.', loginSuccess:'Angemeldet.', logoutSuccess:'Abgemeldet.',
-    emailPasswordRequired:'E-Mail und Passwort sind erforderlich.', viewOnlyLabel:'Nur Ansicht' },
+    emailPasswordRequired:'Benutzername und Passwort sind erforderlich.', viewOnlyLabel:'Nur Ansicht' },
   es:{ appName:'Panel EXC', tagline:'Miembros · Rango · Poder y Nivel de Campamento · Seguimiento de Eventos', refresh:'Actualizar',
     syncConnecting:'Conectando…', syncLive:'En vivo — todos lo ven', syncError:'Error de conexión',
     tabMembers:'Miembros', tabEvents:'Eventos', tabBoard:'Clasificación',
@@ -630,7 +630,7 @@ const DICT = {
     thDate:'Fecha', thPowerVal:'Poder', thDelta:'Cambio', thExcused:'Justificado',
     loginTitle:'Inicio de sesión de administrador', lblEmail:'Correo electrónico', lblPassword:'Contraseña', loginBtn:'Iniciar sesión', logoutBtn:'Cerrar sesión',
     loginFailed:'Error al iniciar sesión.', loginSuccess:'Sesión iniciada.', logoutSuccess:'Sesión cerrada.',
-    emailPasswordRequired:'Correo electrónico y contraseña son obligatorios.', viewOnlyLabel:'Solo lectura' },
+    emailPasswordRequired:'Nombre de usuario y contraseña son obligatorios.', viewOnlyLabel:'Solo lectura' },
   fr:{ appName:'Panneau EXC', tagline:'Membres · Rang · Puissance et Niveau de Camp · Suivi des Événements', refresh:'Actualiser',
     syncConnecting:'Connexion…', syncLive:'En direct — visible par tous', syncError:'Erreur de connexion',
     tabMembers:'Membres', tabEvents:'Événements', tabBoard:'Classement',
@@ -665,7 +665,7 @@ const DICT = {
     thDate:'Date', thPowerVal:'Puissance', thDelta:'Évolution', thExcused:'Excusé',
     loginTitle:'Connexion administrateur', lblEmail:'E-mail', lblPassword:'Mot de passe', loginBtn:'Se connecter', logoutBtn:'Se déconnecter',
     loginFailed:'Échec de la connexion.', loginSuccess:'Connecté.', logoutSuccess:'Déconnecté.',
-    emailPasswordRequired:"L'e-mail et le mot de passe sont requis.", viewOnlyLabel:'Lecture seule' }
+    emailPasswordRequired:"Le nom d'utilisateur et le mot de passe sont requis.", viewOnlyLabel:'Lecture seule' }
 };
 function t(key){ return (DICT[currentLang] && DICT[currentLang][key]) || DICT.tr[key] || key; }
 
@@ -741,7 +741,7 @@ function applyStaticText(){
   document.getElementById('t_thDelta').textContent = t('thDelta');
   document.getElementById('t_close2').textContent = t('close');
   document.getElementById('t_loginTitle').textContent = t('loginTitle');
-  document.getElementById('t_lblEmail').textContent = t('lblEmail');
+  document.getElementById('t_lblEmail').textContent = t('lblUsername');
   document.getElementById('t_lblPassword').textContent = t('lblPassword');
   document.getElementById('t_loginBtn').textContent = t('loginBtn');
   document.getElementById('t_logoutBtn').textContent = t('logoutBtn');
@@ -783,12 +783,22 @@ function showToast(msg){
 }
 
 /* ================= AUTH (admin-only writes; everyone can still view) ================= */
+// Supabase Auth needs an email under the hood; the admin only ever sees/types a username.
+function usernameToAuthEmail(username){
+  return username.trim().toLowerCase().replace(/\s+/g, '') + '@' + ADMIN_LOGIN_DOMAIN;
+}
+function authEmailToUsername(email){
+  if(!email) return '';
+  const suffix = '@' + ADMIN_LOGIN_DOMAIN;
+  return email.endsWith(suffix) ? email.slice(0, -suffix.length) : email;
+}
+
 function updateAdminUI(){
   document.body.classList.toggle('is-admin', isAdmin);
   document.getElementById('loginBtn').style.display = isAdmin ? 'none' : '';
   document.getElementById('logoutBtn').style.display = isAdmin ? '' : 'none';
   const statusEl = document.getElementById('authStatus');
-  if(statusEl) statusEl.textContent = isAdmin ? (currentAdminEmail || t('logoutBtn')) : t('viewOnlyLabel');
+  if(statusEl) statusEl.textContent = isAdmin ? (authEmailToUsername(currentAdminEmail) || t('logoutBtn')) : t('viewOnlyLabel');
 }
 let currentAdminEmail = '';
 supabase.auth.onAuthStateChange((event, session)=>{
@@ -809,10 +819,10 @@ function openLoginModal(){
 }
 function closeLoginModal(){ document.getElementById('loginOverlay').classList.remove('active'); }
 async function doLogin(){
-  const email = document.getElementById('loginEmail').value.trim();
+  const username = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
-  if(!email || !password){ showToast(t('emailPasswordRequired')); return; }
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  if(!username || !password){ showToast(t('emailPasswordRequired')); return; }
+  const { error } = await supabase.auth.signInWithPassword({ email: usernameToAuthEmail(username), password });
   if(error){ showToast(t('loginFailed')); return; }
   closeLoginModal();
   showToast(t('loginSuccess'));
