@@ -15,11 +15,18 @@ export const RANK_ORDER = { R5: 5, R4: 4, R3: 3, R2: 2, R1: 1 };
 export const RANKS = ["R5", "R4", "R3", "R2", "R1"];
 
 // ---------------------------------------------------------------------
+// Aktif üye rütbe kontenjanları — bu sayıya ulaşan rütbeye yeni üye
+// eklenemez/taşınamaz (üye ekle/düzenle/eski-üyeden-geri-al akışlarında
+// kontrol edilir). Listede olmayan rütbelerin (R3/R2/R1) kontenjanı yoktur.
+// ---------------------------------------------------------------------
+export const RANK_LIMITS = { R5: 1, R4: 8 };
+
+// ---------------------------------------------------------------------
 // GVG haftalık puan renklendirme eşikleri.
 // ---------------------------------------------------------------------
 export const GVG_THRESHOLDS = {
-  green: 43500000,    // puan >= bu değer  -> yeşil
-  yellow: 13200000    // puan >= bu değer (yeşilin altı) -> sarı, altı -> kırmızı
+  green: 43500000,   // puan >= bu değer  -> yeşil
+  yellow: 13200000   // puan >= bu değer (yeşilin altı) -> sarı, altı -> kırmızı
 };
 
 // ---------------------------------------------------------------------
