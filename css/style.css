@@ -119,6 +119,19 @@ tbody td{ padding:12px 16px; border-bottom:1px solid var(--line); font-size:13px
 tbody tr:last-child td{ border-bottom:none; }
 tbody tr:nth-child(even){ background: rgba(255,255,255,0.025); }
 tbody tr:nth-child(even) .sticky-col{ background: #181C25; }
+
+/* Üyeler tablosunda satırlar rütbeye göre hafifçe renklenir (aynı satırdaki zebra tonunun yerine geçer). */
+tbody tr.rank-row-r5{ background: rgba(224,166,58,0.035); }
+tbody tr.rank-row-r4{ background: rgba(169,135,232,0.035); }
+tbody tr.rank-row-r3{ background: rgba(63,193,201,0.035); }
+tbody tr.rank-row-r2{ background: rgba(108,142,239,0.035); }
+tbody tr.rank-row-r1{ background: rgba(124,133,152,0.035); }
+tbody tr.rank-row-r5 .sticky-col{ background: #191B20; }
+tbody tr.rank-row-r4 .sticky-col{ background: #171A26; }
+tbody tr.rank-row-r3 .sticky-col{ background: #141C25; }
+tbody tr.rank-row-r2 .sticky-col{ background: #151A26; }
+tbody tr.rank-row-r1 .sticky-col{ background: #161A23; }
+
 tbody tr:hover{ background: var(--bg-raised); }
 tbody tr.old-row{ opacity:0.55; }
 .sticky-col{ position:sticky; left:0; background: var(--bg-panel); z-index:2; }
