@@ -55,7 +55,7 @@ export const EVENT_TYPES = ["gvg", "svs", "ss", "other"];
 // ---------------------------------------------------------------------
 // Diller
 // ---------------------------------------------------------------------
-export const LANGUAGES = ["tr", "en", "de", "es", "fr"];
+export const LANGUAGES = ["en", "tr", "de", "es", "fr"];
 export const DEFAULT_LANGUAGE = "tr";
 
 // ---------------------------------------------------------------------
