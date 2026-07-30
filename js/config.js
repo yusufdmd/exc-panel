@@ -50,7 +50,7 @@ export function campLevelSortValue(value) {
 // ---------------------------------------------------------------------
 // Etkinlik türleri — her biri {type}_weeks / {type}_records tablosuna karşılık gelir.
 // ---------------------------------------------------------------------
-export const EVENT_TYPES = ["gvg", "svs", "ss", "other"];
+export const EVENT_TYPES = ["gvg", "svs", "ss", "kod", "other"];
 
 // ---------------------------------------------------------------------
 // Diller

@@ -48,9 +48,10 @@ export function renderBoard() {
     const svsPts = sumStatusPoints(state.svs, member.id);
     const svsRatio = ratioStatus(state.svs, member);
     const ssRatio = ratioSs(state.ss, member);
+    const kodRatio = ratioStatus(state.kod, member);
     const otherPts = sumStatusPoints(state.other, member.id);
     const otherRatio = ratioStatus(state.other, member);
-    return { member, gvgPts, svsPts, svsRatio, ssRatio, otherPts, otherRatio };
+    return { member, gvgPts, svsPts, svsRatio, ssRatio, kodRatio, otherPts, otherRatio };
   });
 
   rows.sort((a, b) => {
@@ -68,6 +69,9 @@ export function renderBoard() {
     } else if (state.boardSortKey === "ssRatio") {
       valueA = a.ssRatio.den ? a.ssRatio.num / a.ssRatio.den : -1;
       valueB = b.ssRatio.den ? b.ssRatio.num / b.ssRatio.den : -1;
+    } else if (state.boardSortKey === "kodRatio") {
+      valueA = a.kodRatio.den ? a.kodRatio.num / a.kodRatio.den : -1;
+      valueB = b.kodRatio.den ? b.kodRatio.num / b.kodRatio.den : -1;
     } else if (state.boardSortKey === "otherRatio") {
       valueA = a.otherRatio.den ? a.otherRatio.num / a.otherRatio.den : -1;
       valueB = b.otherRatio.den ? b.otherRatio.num / b.otherRatio.den : -1;
@@ -90,6 +94,7 @@ export function renderBoard() {
           <th onclick="setBoardSort('svsPts')">${t("lbSvsTotal")}</th>
           <th onclick="setBoardSort('svsRatio')">${t("lbSvsRatio")}</th>
           <th onclick="setBoardSort('ssRatio')">${t("lbSsRatio")}</th>
+          <th onclick="setBoardSort('kodRatio')">${t("lbKodRatio")}</th>
           <th onclick="setBoardSort('otherPts')">${t("lbOtherTotal")}</th>
           <th onclick="setBoardSort('otherRatio')">${t("lbOtherRatio")}</th>
         </tr>
@@ -103,6 +108,7 @@ export function renderBoard() {
             <td class="num-cell" style="color:var(--cyan); font-weight:700;">${row.svsPts}</td>
             <td class="num-cell">${formatRatio(row.svsRatio.num, row.svsRatio.den)}</td>
             <td class="num-cell">${formatRatio(row.ssRatio.num, row.ssRatio.den)}</td>
+            <td class="num-cell">${formatRatio(row.kodRatio.num, row.kodRatio.den)}</td>
             <td class="num-cell" style="color:var(--cyan); font-weight:700;">${row.otherPts}</td>
             <td class="num-cell">${formatRatio(row.otherRatio.num, row.otherRatio.den)}</td>
           </tr>

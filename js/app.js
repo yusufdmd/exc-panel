@@ -27,6 +27,7 @@ import { openLoginModal, closeLoginModal, doLogin, doLogout } from "./auth.js";
 import "./gvg.js";
 import "./svs.js";
 import "./ss.js";
+import "./kod.js";
 
 const REALTIME_RELOAD_DEBOUNCE_MS = 400;
 
@@ -44,12 +45,14 @@ async function loadAll(silent) {
       svsWeeksRes, svsRecordsRes,
       gvgWeeksRes, gvgRecordsRes,
       ssWeeksRes, ssRecordsRes,
+      kodWeeksRes, kodRecordsRes,
       otherWeeksRes, otherRecordsRes
     ] = await Promise.allSettled([
       getMembers(), getAllPowerHistory(),
       getWeeks("svs"), getAllRecords("svs"),
       getWeeks("gvg"), getAllRecords("gvg"),
       getWeeks("ss"), getAllRecords("ss"),
+      getWeeks("kod"), getAllRecords("kod"),
       getWeeks("other"), getAllRecords("other")
     ]);
 
@@ -67,6 +70,7 @@ async function loadAll(silent) {
     state.svs = { weeks: settledList(svsWeeksRes).map(mapWeek), entries: settledList(svsRecordsRes).map((r) => mapEntry("svs", r)) };
     state.gvg = { weeks: settledList(gvgWeeksRes).map(mapWeek), entries: settledList(gvgRecordsRes).map((r) => mapEntry("gvg", r)) };
     state.ss = { weeks: settledList(ssWeeksRes).map(mapWeek), entries: settledList(ssRecordsRes).map((r) => mapEntry("ss", r)) };
+    state.kod = { weeks: settledList(kodWeeksRes).map(mapWeek), entries: settledList(kodRecordsRes).map((r) => mapEntry("kod", r)) };
     state.other = { weeks: settledList(otherWeeksRes).map(mapWeek), entries: settledList(otherRecordsRes).map((r) => mapEntry("other", r)) };
 
     document.getElementById("syncText").textContent = t("syncLive");
@@ -87,7 +91,7 @@ setInterval(() => loadAll(true), POLL_INTERVAL_MS);
 
 let realtimeReloadTimer = null;
 subscribeToTables(
-  ["members", "power_history", "gvg_weeks", "gvg_records", "svs_weeks", "svs_records", "ss_weeks", "ss_records", "other_weeks", "other_records"],
+  ["members", "power_history", "gvg_weeks", "gvg_records", "svs_weeks", "svs_records", "ss_weeks", "ss_records", "kod_weeks", "kod_records", "other_weeks", "other_records"],
   () => {
     clearTimeout(realtimeReloadTimer);
     realtimeReloadTimer = setTimeout(() => loadAll(true), REALTIME_RELOAD_DEBOUNCE_MS);

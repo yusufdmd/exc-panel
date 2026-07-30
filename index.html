@@ -97,6 +97,7 @@
       <div class="subtab active" data-sub="svs" onclick="switchSub('svs')">SVS</div>
       <div class="subtab" data-sub="gvg" onclick="switchSub('gvg')">GVG</div>
       <div class="subtab" data-sub="ss" onclick="switchSub('ss')">SS</div>
+      <div class="subtab" data-sub="kod" onclick="switchSub('kod')">King of Desert</div>
       <div class="subtab" data-sub="other" onclick="switchSub('other')" id="t_subOther">Diğer</div>
     </div>
 
@@ -140,6 +141,20 @@
       </div>
       <div class="table-wrap"><table id="tbl-ss"><thead></thead><tbody></tbody></table></div>
       <div class="empty-state" id="empty-ss" style="display:none;"><h3 id="t_emptyWeeksTitle3">Henüz hafta yok</h3><p id="t_emptyWeeksDesc3">"+ Hafta Ekle" ile ilk haftayı oluştur.</p></div>
+    </div>
+
+    <!-- KOD (King of Desert) -->
+    <div class="subpanel" id="sub-kod">
+      <div class="event-toolbar">
+        <div class="legend">
+          <span><i class="sw" style="background:var(--success)"></i><span id="t_legendJoinedKod">Katıldı</span></span>
+          <span><i class="sw" style="background:var(--danger)"></i><span id="t_legendNotJoinedKod">Katılmadı</span></span>
+          <span><i class="sw" style="background:var(--text-dim)"></i><span id="t_legendUnknownKod">Bilgi Yok</span></span>
+        </div>
+        <button class="btn-primary admin-only" onclick="openWeekModal('kod')" id="t_addWeek_kod">+ Hafta Ekle</button>
+      </div>
+      <div class="table-wrap"><table id="tbl-kod"><thead></thead><tbody></tbody></table></div>
+      <div class="empty-state" id="empty-kod" style="display:none;"><h3 id="t_emptyWeeksTitle5">Henüz hafta yok</h3><p id="t_emptyWeeksDesc5">"+ Hafta Ekle" ile ilk haftayı oluştur.</p></div>
     </div>
 
     <!-- OTHER -->

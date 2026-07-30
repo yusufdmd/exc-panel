@@ -27,12 +27,17 @@ export function mapWeek(row) {
 export function mapEntry(type, row) {
   if (type === "gvg") return { id: row.id, memberId: row.member_id, weekId: row.week_id, points: row.points };
   if (type === "ss") return { id: row.id, memberId: row.member_id, weekId: row.week_id, group: row.group_name, attended: row.attended, excused: row.excused };
+  if (type === "kod") return { id: row.id, memberId: row.member_id, weekId: row.week_id, status: row.status, excused: row.excused };
   return { id: row.id, memberId: row.member_id, weekId: row.week_id, status: row.status, points: row.points, excused: row.excused };
 }
 
-/** Etkinlik türüne (gvg/svs/ss/other) karşılık gelen state deposunu döndürür. */
+/** Etkinlik türüne (gvg/svs/ss/kod/other) karşılık gelen state deposunu döndürür. */
 function storeFor(type) {
-  return type === "svs" ? state.svs : type === "gvg" ? state.gvg : type === "ss" ? state.ss : state.other;
+  if (type === "svs") return state.svs;
+  if (type === "gvg") return state.gvg;
+  if (type === "ss") return state.ss;
+  if (type === "kod") return state.kod;
+  return state.other;
 }
 
 // =====================================================================
@@ -94,7 +99,7 @@ export function openEntryModal(type, weekId) {
   state.entryContext = { type, weekId };
   const store = storeFor(type);
   const week = store.weeks.find((w) => w.id === weekId);
-  const titleKey = type === "svs" ? "entryTitleSVS" : type === "gvg" ? "entryTitleGVG" : type === "ss" ? "entryTitleSS" : "entryTitleOther";
+  const titleKey = type === "svs" ? "entryTitleSVS" : type === "gvg" ? "entryTitleGVG" : type === "ss" ? "entryTitleSS" : type === "kod" ? "entryTitleKoD" : "entryTitleOther";
   document.getElementById("entryTitle").textContent = (week ? week.label + " — " : "") + t(titleKey);
   document.getElementById("entrySearch").value = "";
   const thead = document.getElementById("entryThead");
@@ -102,6 +107,8 @@ export function openEntryModal(type, weekId) {
     thead.innerHTML = `<tr><th>${t("thStatus")}</th><th>${t("thUsername")}</th><th>${t("thRank")}</th><th>${t("thPointsCol")}</th><th>${t("thExcused")}</th></tr>`;
   } else if (type === "gvg") {
     thead.innerHTML = `<tr><th>${t("thUsername")}</th><th>${t("thRank")}</th><th>${t("thPointsCol")}</th></tr>`;
+  } else if (type === "kod") {
+    thead.innerHTML = `<tr><th>${t("thStatus")}</th><th>${t("thUsername")}</th><th>${t("thRank")}</th><th>${t("thExcused")}</th></tr>`;
   } else {
     thead.innerHTML = `<tr><th>${t("thUsername")}</th><th>${t("thRank")}</th><th>${t("thGroup")}</th><th>${t("thAttended")}</th><th>${t("thExcused")}</th></tr>`;
   }
@@ -150,6 +157,22 @@ export function renderEntryRows() {
         <td><input type="number" class="pts-input" data-mid="${member.id}" value="${points}"></td>
       </tr>`;
     }).join("");
+  } else if (type === "kod") {
+    rowsEl.innerHTML = list.map((member) => {
+      const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === weekId);
+      const status = statusOf(entry);
+      const excused = entry ? !!entry.excused : false;
+      return `<tr>
+        <td><select class="status-select" data-mid="${member.id}">
+          <option value="joined" ${status === "joined" ? "selected" : ""}>${t("statusYes")}</option>
+          <option value="absent" ${status === "absent" ? "selected" : ""}>${t("statusNo")}</option>
+          <option value="unknown" ${status === "unknown" ? "selected" : ""}>${t("statusUnknown")}</option>
+        </select></td>
+        <td>${escapeHtml(member.name)}</td>
+        <td><span class="rank-badge ${rankClass(member.rank)}" style="font-size:11px;padding:2px 8px;">${member.rank}</span></td>
+        <td><input type="checkbox" class="excused-check" data-mid="${member.id}" ${excused ? "checked" : ""}></td>
+      </tr>`;
+    }).join("");
   } else {
     rowsEl.innerHTML = list.map((member) => {
       const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === weekId);
@@ -190,6 +213,13 @@ export async function saveEntry() {
       const memberId = tr.querySelector(".pts-input").dataset.mid;
       const points = Number(tr.querySelector(".pts-input").value) || 0;
       payloads.push({ week_id: weekId, member_id: memberId, points });
+    });
+  } else if (type === "kod") {
+    document.querySelectorAll("#entryRows tr").forEach((tr) => {
+      const memberId = tr.querySelector(".status-select").dataset.mid;
+      const status = tr.querySelector(".status-select").value;
+      const excused = tr.querySelector(".excused-check").checked;
+      payloads.push({ week_id: weekId, member_id: memberId, status, excused });
     });
   } else {
     document.querySelectorAll("#entryRows tr").forEach((tr) => {

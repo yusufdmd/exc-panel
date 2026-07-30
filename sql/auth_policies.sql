@@ -26,6 +26,7 @@ begin
       'svs_weeks','svs_records',
       'ss_weeks','ss_records',
       'other_weeks','other_records',
+      'kod_weeks','kod_records',
       'settings','users','activity_logs'
     ])
   loop

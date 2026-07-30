@@ -30,6 +30,7 @@ import {
   gvgCellInfo,
   ssCellInfo,
   svsOtherCellInfo,
+  attendanceCellInfo,
   sumGvgPoints,
   sumStatusPoints,
   ratioStatus,
@@ -384,6 +385,7 @@ function buildEventSummaryHtml(member) {
     { key: "svs", store: state.svs, title: "SVS" },
     { key: "gvg", store: state.gvg, title: "GVG" },
     { key: "ss", store: state.ss, title: "SS" },
+    { key: "kod", store: state.kod, title: "King of Desert" },
     { key: "other", store: state.other, title: t("subOther") }
   ];
   const html = sections.map(({ key, store, title }) => {
@@ -394,6 +396,9 @@ function buildEventSummaryHtml(member) {
     } else if (key === "ss") {
       const ratio = ratioSs(store, member);
       summary = t("lbSsRatio") + ": " + formatRatio(ratio.num, ratio.den);
+    } else if (key === "kod") {
+      const ratio = ratioStatus(store, member);
+      summary = t("lbKodRatio") + ": " + formatRatio(ratio.num, ratio.den);
     } else {
       const ratio = ratioStatus(store, member);
       const total = sumStatusPoints(store, member.id);
@@ -404,6 +409,7 @@ function buildEventSummaryHtml(member) {
     const chips = store.weeks.map((week) => {
       const info = key === "gvg" ? gvgCellInfo(store, member, week)
         : key === "ss" ? ssCellInfo(store, member, week)
+        : key === "kod" ? attendanceCellInfo(store, member, week)
         : svsOtherCellInfo(store, member, week);
       return `<span class="cell-pill ${info.cls}" style="margin:3px 4px 3px 0;" title="${escapeHtml(week.label)}">${escapeHtml(week.label)}: ${info.text}</span>`;
     }).join("");

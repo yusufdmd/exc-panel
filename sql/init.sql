@@ -185,6 +185,36 @@ create trigger trg_other_records_updated_at
   for each row execute function set_updated_at();
 
 -- =====================================================================
+-- 6.1) KOD — King of Desert (SVS/Diğer'den farkı: puan tutulmaz, sadece
+--      katıldı/katılmadı/bilgi yok + mazeret)
+-- =====================================================================
+create table if not exists kod_weeks (
+  id          uuid primary key default gen_random_uuid(),
+  label       text not null,
+  week_date   date,
+  created_at  timestamptz not null default now()
+);
+
+create table if not exists kod_records (
+  id          uuid primary key default gen_random_uuid(),
+  week_id     uuid not null references kod_weeks(id) on delete cascade,
+  member_id   uuid not null references members(id) on delete cascade,
+  status      text not null default 'unknown' check (status in ('joined','absent','unknown')),
+  excused     boolean not null default false,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now(),
+  unique (week_id, member_id)
+);
+
+create index if not exists idx_kod_records_week   on kod_records (week_id);
+create index if not exists idx_kod_records_member on kod_records (member_id);
+
+drop trigger if exists trg_kod_records_updated_at on kod_records;
+create trigger trg_kod_records_updated_at
+  before update on kod_records
+  for each row execute function set_updated_at();
+
+-- =====================================================================
 -- 7) SETTINGS — Uygulama geneli ayarlar (anahtar/değer)
 -- =====================================================================
 create table if not exists settings (
@@ -247,6 +277,7 @@ begin
       'svs_weeks','svs_records',
       'ss_weeks','ss_records',
       'other_weeks','other_records',
+      'kod_weeks','kod_records',
       'settings','users','activity_logs'
     ])
   loop
@@ -287,6 +318,7 @@ alter publication supabase_realtime add table
   svs_weeks, svs_records,
   ss_weeks, ss_records,
   other_weeks, other_records,
+  kod_weeks, kod_records,
   settings, activity_logs;
 
 -- =====================================================================

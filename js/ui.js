@@ -43,6 +43,7 @@ export const state = {
   svs: { weeks: [], entries: [] },
   gvg: { weeks: [], entries: [] },
   ss: { weeks: [], entries: [] },
+  kod: { weeks: [], entries: [] },
   other: { weeks: [], entries: [] },
   currentTab: "members",
   currentSub: "svs",
@@ -129,7 +130,7 @@ const DICT = {
     emptyWeeksTitle:'Henüz hafta yok', emptyWeeksDesc:'"+ Hafta Ekle" ile ilk haftayı oluştur.',
     legendJoined:'Katıldı', legendNotJoined:'Katılmadı', legendAttended:'Kayıtlı ve Katıldı', legendRegNotAttend:'Kayıtlı, Katılmadı', legendNoReg:'Kayıt Yok',
     thJoined:'Katıldı', thPointsCol:'Puan', thGroup:'Grup', thAttended:'Katıldı mı', groupNone:'Kayıt Yok', groupA:'A Grubu', groupB:'B Grubu',
-    entryTitleSVS:'SVS Girişi', entryTitleGVG:'GVG Girişi', entryTitleSS:'SS Girişi',
+    entryTitleSVS:'SVS Girişi', entryTitleGVG:'GVG Girişi', entryTitleSS:'SS Girişi', entryTitleKoD:'King of Desert Girişi',
     toastEntrySaved:'Kayıt tamamlandı.', notRegistered:'—',
     boardEmptyTitle:'Henüz veri yok', boardEmptyDesc:'Üye ve etkinlik ekledikçe sıralama burada oluşur.',
     searchMember:'Üye ara…',
@@ -138,7 +139,7 @@ const DICT = {
     toastEventSaved:'Etkinlik eklendi.', toastEventDeleted:'Etkinlik silindi.', confirmDeleteEvent:'Bu etkinliği ve tüm verilerini silmek istiyor musunuz?',
     emptyEventsTitle:'Henüz etkinlik yok', emptyEventsDesc:'"+ Etkinlik Ekle" ile ilk etkinliği oluştur.',
     entryTitleOther:'Diğer Etkinlik Girişi', thStatus:'Durum',
-    lbRankCol:'Sıra', lbMember:'Üye', lbGvgTotal:'GVG Toplam', lbSvsTotal:'SVS Toplam', lbSvsRatio:'SVS Katılım', lbSsRatio:'SS Katılım', lbOtherTotal:'Diğer Toplam', lbOtherRatio:'Diğer Katılım',
+    lbRankCol:'Sıra', lbMember:'Üye', lbGvgTotal:'GVG Toplam', lbSvsTotal:'SVS Toplam', lbSvsRatio:'SVS Katılım', lbSsRatio:'SS Katılım', lbKodRatio:'KoD Katılım', lbOtherTotal:'Diğer Toplam', lbOtherRatio:'Diğer Katılım',
     exemptLabel:'Muaf', powerHistory:'Güç Geçmişi', restoreMember:'Aktif Üyeye Al',
     exportBackupLabel:'Yedekle', importBackupLabel:'İçe Aktar', backupSuccess:'Yedek indirildi.',
     importConfirm:'Bu dosyadaki veriler herkesin gördüğü ortak veriyle değiştirilecek. Devam edilsin mi?',
@@ -167,7 +168,7 @@ const DICT = {
     emptyWeeksTitle:'No weeks yet', emptyWeeksDesc:'Use "+ Add Week" to create the first one.',
     legendJoined:'Joined', legendNotJoined:'Not joined', legendAttended:'Registered & Attended', legendRegNotAttend:'Registered, Absent', legendNoReg:'Not Registered',
     thJoined:'Joined', thPointsCol:'Points', thGroup:'Group', thAttended:'Attended', groupNone:'Not registered', groupA:'Group A', groupB:'Group B',
-    entryTitleSVS:'SVS Entry', entryTitleGVG:'GVG Entry', entryTitleSS:'SS Entry',
+    entryTitleSVS:'SVS Entry', entryTitleGVG:'GVG Entry', entryTitleSS:'SS Entry', entryTitleKoD:'King of Desert Entry',
     toastEntrySaved:'Saved.', notRegistered:'—',
     boardEmptyTitle:'No data yet', boardEmptyDesc:'The leaderboard fills in as you add members and events.',
     searchMember:'Search member…',
@@ -176,7 +177,7 @@ const DICT = {
     toastEventSaved:'Event added.', toastEventDeleted:'Event deleted.', confirmDeleteEvent:'Delete this event and all its data?',
     emptyEventsTitle:'No events yet', emptyEventsDesc:'Use "+ Add Event" to create the first one.',
     entryTitleOther:'Other Event Entry', thStatus:'Status',
-    lbRankCol:'Rank', lbMember:'Member', lbGvgTotal:'GVG Total', lbSvsTotal:'SVS Total', lbSvsRatio:'SVS Attendance', lbSsRatio:'SS Attendance', lbOtherTotal:'Other Total', lbOtherRatio:'Other Attendance',
+    lbRankCol:'Rank', lbMember:'Member', lbGvgTotal:'GVG Total', lbSvsTotal:'SVS Total', lbSvsRatio:'SVS Attendance', lbSsRatio:'SS Attendance', lbKodRatio:'KoD Attendance', lbOtherTotal:'Other Total', lbOtherRatio:'Other Attendance',
     exemptLabel:'Exempt', powerHistory:'Power History', restoreMember:'Restore to Active',
     exportBackupLabel:'Backup', importBackupLabel:'Import', backupSuccess:'Backup downloaded.',
     importConfirm:'This file will replace the shared data everyone sees. Continue?',
@@ -205,7 +206,7 @@ const DICT = {
     emptyWeeksTitle:'Noch keine Woche', emptyWeeksDesc:'Mit "+ Woche hinzufügen" die erste anlegen.',
     legendJoined:'Teilgenommen', legendNotJoined:'Nicht teilgenommen', legendAttended:'Angemeldet & teilgenommen', legendRegNotAttend:'Angemeldet, gefehlt', legendNoReg:'Nicht angemeldet',
     thJoined:'Teilgenommen', thPointsCol:'Punkte', thGroup:'Gruppe', thAttended:'Teilgenommen', groupNone:'Nicht angemeldet', groupA:'Gruppe A', groupB:'Gruppe B',
-    entryTitleSVS:'SVS-Eintrag', entryTitleGVG:'GVG-Eintrag', entryTitleSS:'SS-Eintrag',
+    entryTitleSVS:'SVS-Eintrag', entryTitleGVG:'GVG-Eintrag', entryTitleSS:'SS-Eintrag', entryTitleKoD:'King of Desert-Eintrag',
     toastEntrySaved:'Gespeichert.', notRegistered:'—',
     boardEmptyTitle:'Noch keine Daten', boardEmptyDesc:'Die Bestenliste füllt sich mit Mitgliedern und Events.',
     searchMember:'Mitglied suchen…',
@@ -214,7 +215,7 @@ const DICT = {
     toastEventSaved:'Event hinzugefügt.', toastEventDeleted:'Event gelöscht.', confirmDeleteEvent:'Dieses Event und alle Daten löschen?',
     emptyEventsTitle:'Noch keine Events', emptyEventsDesc:'Mit "+ Event hinzufügen" das erste anlegen.',
     entryTitleOther:'Sonstiger Event-Eintrag', thStatus:'Status',
-    lbRankCol:'Platz', lbMember:'Mitglied', lbGvgTotal:'GVG Gesamt', lbSvsTotal:'SVS Gesamt', lbSvsRatio:'SVS Teilnahme', lbSsRatio:'SS Teilnahme', lbOtherTotal:'Sonstige Gesamt', lbOtherRatio:'Sonstige Teilnahme',
+    lbRankCol:'Platz', lbMember:'Mitglied', lbGvgTotal:'GVG Gesamt', lbSvsTotal:'SVS Gesamt', lbSvsRatio:'SVS Teilnahme', lbSsRatio:'SS Teilnahme', lbKodRatio:'KoD Teilnahme', lbOtherTotal:'Sonstige Gesamt', lbOtherRatio:'Sonstige Teilnahme',
     exemptLabel:'Befreit', powerHistory:'Machtverlauf', restoreMember:'Wieder aktivieren',
     exportBackupLabel:'Sichern', importBackupLabel:'Importieren', backupSuccess:'Backup heruntergeladen.',
     importConfirm:'Diese Datei ersetzt die von allen gesehenen gemeinsamen Daten. Fortfahren?',
@@ -243,7 +244,7 @@ const DICT = {
     emptyWeeksTitle:'Aún no hay semanas', emptyWeeksDesc:'Usa "+ Añadir semana" para crear la primera.',
     legendJoined:'Participó', legendNotJoined:'No participó', legendAttended:'Inscrito y participó', legendRegNotAttend:'Inscrito, ausente', legendNoReg:'No inscrito',
     thJoined:'Participó', thPointsCol:'Puntos', thGroup:'Grupo', thAttended:'Participó', groupNone:'No inscrito', groupA:'Grupo A', groupB:'Grupo B',
-    entryTitleSVS:'Registro SVS', entryTitleGVG:'Registro GVG', entryTitleSS:'Registro SS',
+    entryTitleSVS:'Registro SVS', entryTitleGVG:'Registro GVG', entryTitleSS:'Registro SS', entryTitleKoD:'Registro King of Desert',
     toastEntrySaved:'Guardado.', notRegistered:'—',
     boardEmptyTitle:'Aún no hay datos', boardEmptyDesc:'La clasificación se completa a medida que agregas miembros y eventos.',
     searchMember:'Buscar miembro…',
@@ -252,7 +253,7 @@ const DICT = {
     toastEventSaved:'Evento añadido.', toastEventDeleted:'Evento eliminado.', confirmDeleteEvent:'¿Eliminar este evento y todos sus datos?',
     emptyEventsTitle:'Aún no hay eventos', emptyEventsDesc:'Usa "+ Añadir evento" para crear el primero.',
     entryTitleOther:'Registro de otro evento', thStatus:'Estado',
-    lbRankCol:'Puesto', lbMember:'Miembro', lbGvgTotal:'Total GVG', lbSvsTotal:'Total SVS', lbSvsRatio:'Asistencia SVS', lbSsRatio:'Asistencia SS', lbOtherTotal:'Total Otro', lbOtherRatio:'Asistencia Otro',
+    lbRankCol:'Puesto', lbMember:'Miembro', lbGvgTotal:'Total GVG', lbSvsTotal:'Total SVS', lbSvsRatio:'Asistencia SVS', lbSsRatio:'Asistencia SS', lbKodRatio:'Asistencia KoD', lbOtherTotal:'Total Otro', lbOtherRatio:'Asistencia Otro',
     exemptLabel:'Exento', powerHistory:'Historial de poder', restoreMember:'Reactivar miembro',
     exportBackupLabel:'Respaldar', importBackupLabel:'Importar', backupSuccess:'Copia de seguridad descargada.',
     importConfirm:'Este archivo reemplazará los datos compartidos que todos ven. ¿Continuar?',
@@ -281,7 +282,7 @@ const DICT = {
     emptyWeeksTitle:'Aucune semaine pour le moment', emptyWeeksDesc:'Utilisez "+ Ajouter une semaine" pour créer la première.',
     legendJoined:'A participé', legendNotJoined:"N'a pas participé", legendAttended:'Inscrit et présent', legendRegNotAttend:'Inscrit, absent', legendNoReg:'Non inscrit',
     thJoined:'A participé', thPointsCol:'Points', thGroup:'Groupe', thAttended:'Présent', groupNone:'Non inscrit', groupA:'Groupe A', groupB:'Groupe B',
-    entryTitleSVS:'Saisie SVS', entryTitleGVG:'Saisie GVG', entryTitleSS:'Saisie SS',
+    entryTitleSVS:'Saisie SVS', entryTitleGVG:'Saisie GVG', entryTitleSS:'Saisie SS', entryTitleKoD:'Saisie King of Desert',
     toastEntrySaved:'Enregistré.', notRegistered:'—',
     boardEmptyTitle:'Aucune donnée pour le moment', boardEmptyDesc:'Le classement se remplit au fur et à mesure que vous ajoutez membres et événements.',
     searchMember:'Rechercher un membre…',
@@ -290,7 +291,7 @@ const DICT = {
     toastEventSaved:'Événement ajouté.', toastEventDeleted:'Événement supprimé.', confirmDeleteEvent:'Supprimer cet événement et toutes ses données ?',
     emptyEventsTitle:'Aucun événement pour le moment', emptyEventsDesc:'Utilisez "+ Ajouter un événement" pour créer le premier.',
     entryTitleOther:'Saisie autre événement', thStatus:'Statut',
-    lbRankCol:'Rang', lbMember:'Membre', lbGvgTotal:'Total GVG', lbSvsTotal:'Total SVS', lbSvsRatio:'Participation SVS', lbSsRatio:'Participation SS', lbOtherTotal:'Total Autre', lbOtherRatio:'Participation Autre',
+    lbRankCol:'Rang', lbMember:'Membre', lbGvgTotal:'Total GVG', lbSvsTotal:'Total SVS', lbSvsRatio:'Participation SVS', lbSsRatio:'Participation SS', lbKodRatio:'Participation KoD', lbOtherTotal:'Total Autre', lbOtherRatio:'Participation Autre',
     exemptLabel:'Exempté', powerHistory:'Historique de puissance', restoreMember:'Réactiver le membre',
     exportBackupLabel:'Sauvegarder', importBackupLabel:'Importer', backupSuccess:'Sauvegarde téléchargée.',
     importConfirm:'Ce fichier remplacera les données partagées visibles par tous. Continuer ?',
@@ -372,12 +373,16 @@ export function applyStaticText() {
   document.getElementById("t_legendAttended").textContent = t("legendAttended");
   document.getElementById("t_legendRegNotAttend").textContent = t("legendRegNotAttend");
   document.getElementById("t_legendNoReg").textContent = t("legendNoReg");
+  document.getElementById("t_addWeek_kod").textContent = t("addWeek");
+  document.getElementById("t_legendJoinedKod").textContent = t("legendJoined");
+  document.getElementById("t_legendNotJoinedKod").textContent = t("legendNotJoined");
+  document.getElementById("t_legendUnknownKod").textContent = t("legendUnknown");
   document.getElementById("t_subOther").textContent = t("subOther");
   document.getElementById("t_legendJoinedOther").textContent = t("legendJoined");
   document.getElementById("t_legendNotJoinedOther").textContent = t("legendNotJoined");
   document.getElementById("t_legendUnknownOther").textContent = t("legendUnknown");
   document.getElementById("t_addEvent_other").textContent = t("addEvent");
-  ["1", "2", "3"].forEach((suffix) => {
+  ["1", "2", "3", "5"].forEach((suffix) => {
     document.getElementById("t_emptyWeeksTitle" + suffix).textContent = t("emptyWeeksTitle");
     document.getElementById("t_emptyWeeksDesc" + suffix).textContent = t("emptyWeeksDesc");
   });
@@ -536,6 +541,17 @@ export function svsOtherCellInfo(store, member, week) {
   if (!entry) return isExempt(member, week) ? { cls: "pill-gray", text: t("exemptLabel") } : { cls: "pill-gray", text: t("notRegistered") };
   const status = statusOf(entry);
   if (status === "joined") return { cls: "pill-green", text: "✓ " + (Number(entry.points) || 0) };
+  if (status === "unknown") return { cls: "pill-gray", text: t("notRegistered") };
+  const excused = !!entry.excused;
+  return { cls: excused ? "pill-yellow" : "pill-red", text: "✕" + (excused ? " (M)" : "") };
+}
+
+/** King of Desert türü bir hücrenin rengini/metnini hesaplar — svsOtherCellInfo ile aynı ama puan yok, sadece katıldı/katılmadı. */
+export function attendanceCellInfo(store, member, week) {
+  const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === week.id);
+  if (!entry) return isExempt(member, week) ? { cls: "pill-gray", text: t("exemptLabel") } : { cls: "pill-gray", text: t("notRegistered") };
+  const status = statusOf(entry);
+  if (status === "joined") return { cls: "pill-green", text: "✓" };
   if (status === "unknown") return { cls: "pill-gray", text: t("notRegistered") };
   const excused = !!entry.excused;
   return { cls: excused ? "pill-yellow" : "pill-red", text: "✕" + (excused ? " (M)" : "") };
