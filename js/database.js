@@ -117,10 +117,14 @@ export async function addPowerHistoryEntry(memberId, historyDate, power) {
 // =====================================================================
 // ETKİNLİK HAFTALARI (gvg / svs / ss / other ortak)
 // =====================================================================
+// Haftalar TARİHE göre sıralanır (en eski solda) — eklenme sırasına göre değil.
+// Tarihi girilmemiş haftalar sona düşer; aynı tarihli (veya tarihsiz) haftalar
+// arasında ise eklenme sırası (created_at) korunur.
 export async function getWeeks(type) {
   const { data, error } = await supabase
     .from(weeksTable(type))
     .select("*")
+    .order("week_date", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: true });
   if (error) dbError(`${type.toUpperCase()} haftaları alınamadı`, error);
   return data;
