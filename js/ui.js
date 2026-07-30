@@ -63,6 +63,29 @@ export const state = {
 export { RANK_ORDER };
 
 // =====================================================================
+// RENDER KAYIT MEKANİZMASI
+// =====================================================================
+// Bir üye silindiğinde/eklendiğinde sadece üye tablosu değil, etkinlik
+// tabloları ve puan sıralaması da güncellenmelidir. Ama members.js,
+// gvg.js gibi dosyaların render fonksiyonlarını DOĞRUDAN import etmesi
+// (ya da tam tersi) döngüsel bağımlılık yaratır. Çözüm: her domain
+// modülü kendi render fonksiyonunu buraya KAYDEDER (module yüklenirken,
+// bir kere); `renderAll()` çağrıldığında kayıtlı tüm fonksiyonlar sırayla
+// çalışır. Böylece hiçbir domain dosyası bir diğerinin render
+// fonksiyonunu bilmek zorunda kalmaz.
+const registeredRenderers = [];
+
+/** Bir domain modülünün render fonksiyonunu `renderAll()` kapsamına ekler. */
+export function registerRenderer(renderFn) {
+  registeredRenderers.push(renderFn);
+}
+
+/** Kayıtlı tüm render fonksiyonlarını (üyeler, etkinlik tabloları, puan sıralaması, vb.) sırayla çalıştırır. */
+export function renderAll() {
+  registeredRenderers.forEach((renderFn) => renderFn());
+}
+
+// =====================================================================
 // I18N — Çok dilli metin sözlüğü
 // =====================================================================
 export const LANGS = LANGUAGES;
@@ -455,6 +478,83 @@ export function cellInfoHtml(info) {
 /** Bugünün tarihini "YYYY-MM-DD" biçiminde döndürür. */
 export function todayStr() {
   return new Date().toISOString().slice(0, 10);
+}
+
+// =====================================================================
+// HAFTALIK HÜCRE BİLGİSİ VE TOPLAM/ORAN HESAPLARI
+// =====================================================================
+// Bu fonksiyonlar hem etkinlik tablolarında (gvg.js/svs.js/ss.js) hem de
+// üye kartındaki etkinlik özetinde (members.js) ve puan sıralamasında
+// (dashboard.js) kullanılır. Birden fazla domain dosyası tarafından
+// paylaşıldığı için burada (ui.js) tutulur — aksi halde members.js ile
+// gvg.js/svs.js/ss.js/dashboard.js birbirini import etmeye çalışıp
+// döngüsel bağımlılık oluştururdu. `store` (haftalar+kayıtlar) her zaman
+// çağıran taraftan açıkça geçirilir, örtük bir global okuma yapılmaz.
+
+/** SVS/Diğer türü bir hücrenin (üye × hafta) rengini ve metnini hesaplar. */
+export function svsOtherCellInfo(store, member, week) {
+  const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === week.id);
+  if (!entry) return isExempt(member, week) ? { cls: "pill-gray", text: t("exemptLabel") } : { cls: "pill-gray", text: t("notRegistered") };
+  const status = statusOf(entry);
+  if (status === "joined") return { cls: "pill-green", text: "✓ " + (Number(entry.points) || 0) };
+  if (status === "unknown") return { cls: "pill-gray", text: t("notRegistered") };
+  const excused = !!entry.excused;
+  return { cls: excused ? "pill-yellow" : "pill-red", text: "✕" + (excused ? " (M)" : "") };
+}
+
+/** GVG türü bir hücrenin (üye × hafta) rengini ve metnini hesaplar. */
+export function gvgCellInfo(store, member, week) {
+  const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === week.id);
+  if (!entry) return isExempt(member, week) ? { cls: "pill-gray", text: t("exemptLabel") } : { cls: "pill-gray", text: t("notRegistered") };
+  return { cls: gvgColorClass(entry.points), text: String(Number(entry.points) || 0) };
+}
+
+/** SS türü bir hücrenin (üye × hafta) rengini ve metnini hesaplar. */
+export function ssCellInfo(store, member, week) {
+  const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === week.id);
+  if (!entry) return isExempt(member, week) ? { cls: "pill-gray", text: t("exemptLabel") } : { cls: "pill-gray", text: t("notRegistered") };
+  if (!entry.group) return { cls: "pill-gray", text: t("notRegistered") };
+  if (entry.attended) return { cls: "pill-green", text: entry.group };
+  const excused = !!entry.excused;
+  return { cls: excused ? "pill-yellow" : "pill-red", text: entry.group + (excused ? " (M)" : "") };
+}
+
+/** Bir üyenin belirli bir GVG deposundaki toplam puanını hesaplar. */
+export function sumGvgPoints(store, memberId) {
+  return store.entries.filter((e) => e.memberId === memberId).reduce((sum, e) => sum + (Number(e.points) || 0), 0);
+}
+
+/** Bir üyenin "katıldı" işaretli kayıtlarındaki toplam puanını hesaplar (SVS/Diğer). */
+export function sumStatusPoints(store, memberId) {
+  return store.entries.filter((e) => e.memberId === memberId && statusOf(e) === "joined").reduce((sum, e) => sum + (Number(e.points) || 0), 0);
+}
+
+/** SVS/Diğer türü bir üyenin katılım oranını (x/y) hesaplar; gerçek kaydı olan haftalar muaf sayılmaz. */
+export function ratioStatus(store, member) {
+  const applicableWeeks = store.weeks.filter((week) => {
+    const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === week.id);
+    return !!entry || !isExempt(member, week);
+  });
+  const denominator = applicableWeeks.length;
+  const numerator = applicableWeeks.filter((week) => {
+    const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === week.id);
+    return statusOf(entry) === "joined";
+  }).length;
+  return { num: numerator, den: denominator };
+}
+
+/** SS türü bir üyenin katılım oranını (x/y) hesaplar; gerçek kaydı olan haftalar muaf sayılmaz. */
+export function ratioSs(store, member) {
+  const applicableWeeks = store.weeks.filter((week) => {
+    const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === week.id);
+    return !!entry || !isExempt(member, week);
+  });
+  const denominator = applicableWeeks.length;
+  const numerator = applicableWeeks.filter((week) => {
+    const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === week.id);
+    return entry && entry.group && entry.attended;
+  }).length;
+  return { num: numerator, den: denominator };
 }
 
 // =====================================================================
