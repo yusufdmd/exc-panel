@@ -33,15 +33,17 @@ create table if not exists members (
   power               bigint not null default 0,
   is_old              boolean not null default false,
   old_since           date,
-  migrated_to_server  bigint, -- dolu ise bu üye başka bir sunucuya göç etmiştir ("Göç Edenler" sekmesi)
+  is_migrated         boolean not null default false, -- true ise bu üye başka bir sunucuya göç etmiştir ("Göç Edenler" sekmesi)
+  migrated_to_server  bigint, -- göç ettiği sunucu biliniyorsa (opsiyonel)
   name_history        jsonb not null default '[]'::jsonb, -- [{name, changedAt}, ...] eski kullanıcı adları
   joined_at           timestamptz not null default now(),
   created_at          timestamptz not null default now(),
   updated_at          timestamptz not null default now()
 );
 
-create index if not exists idx_members_is_old on members (is_old);
-create index if not exists idx_members_rank   on members (rank);
+create index if not exists idx_members_is_old      on members (is_old);
+create index if not exists idx_members_is_migrated on members (is_migrated);
+create index if not exists idx_members_rank        on members (rank);
 
 drop trigger if exists trg_members_updated_at on members;
 create trigger trg_members_updated_at

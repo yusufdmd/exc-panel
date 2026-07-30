@@ -51,6 +51,7 @@ export function mapMember(row) {
     oldSince: row.old_since,
     joinedAt: row.joined_at,
     nameHistory: Array.isArray(row.name_history) ? row.name_history : [],
+    isMigrated: !!row.is_migrated,
     migratedTo: row.migrated_to_server ?? null,
     powerHistory: []
   };
@@ -58,7 +59,7 @@ export function mapMember(row) {
 
 /** Bir üyenin hangi listede (aktif/eski/göç eden) görüneceğini belirler. */
 function memberCategory(member) {
-  if (member.migratedTo != null) return "migrated";
+  if (member.isMigrated) return "migrated";
   return member.isOld ? "old" : "active";
 }
 
@@ -133,7 +134,7 @@ export function renderMembers() {
   rowsEl.innerHTML = list.map((member) => `
     <tr>
       <td><span class="rank-badge ${rankClass(member.rank)}">${member.rank}<span class="chev">${rankChevrons(member.rank)}</span></span></td>
-      <td><span class="member-name">${escapeHtml(member.name || "—")}</span>${member.isOld ? `<span class="old-tag">OLD${state.memberView === "old" && member.oldSince ? " · " + member.oldSince : ""}</span>` : ""}${member.migratedTo != null ? `<span class="old-tag">${t("lblMigratedTo")}: ${escapeHtml(String(member.migratedTo))}</span>` : ""}</td>
+      <td><span class="member-name">${escapeHtml(member.name || "—")}</span>${member.isOld ? `<span class="old-tag">OLD${state.memberView === "old" && member.oldSince ? " · " + member.oldSince : ""}</span>` : ""}${member.isMigrated ? `<span class="old-tag">${t("migratedTag")}${member.migratedTo != null ? " · " + member.migratedTo : ""}</span>` : ""}</td>
       <td class="member-id">${escapeHtml(String(member.gameId || "—"))}</td>
       <td class="num-cell" title="${Number(member.power) || 0}">${formatPower(member.power)}</td>
       <td class="num-cell">${escapeHtml(String(member.campLevel || "-"))}</td>
@@ -173,6 +174,13 @@ export function setSort(key) {
 // =====================================================================
 // ÜYE MODALI (EKLE/DÜZENLE)
 // =====================================================================
+/** OLD ve Göç Etti anahtarlarının görünümünü ve göç sunucu alanının görünürlüğünü state ile senkronize eder. Bu iki durum birbirini dışlar. */
+function syncMemberStatusToggles() {
+  document.getElementById("oldToggle").classList.toggle("on", state.oldFlag);
+  document.getElementById("migratedToggle").classList.toggle("on", state.migratedFlag);
+  document.getElementById("migratedToField").style.display = state.migratedFlag ? "" : "none";
+}
+
 export function openMemberModal(id) {
   buildCampOptions();
   document.getElementById("memberEditId").value = id || "";
@@ -186,14 +194,16 @@ export function openMemberModal(id) {
     document.getElementById("fCamp").value = member.campLevel;
     document.getElementById("fMigratedTo").value = member.migratedTo != null ? member.migratedTo : "";
     state.oldFlag = !!member.isOld;
+    state.migratedFlag = !!member.isMigrated;
   } else {
     document.getElementById("memberModalTitle").textContent = t("memberAddTitle");
     ["fName", "fGameId", "fPower", "fMigratedTo"].forEach((fieldId) => { document.getElementById(fieldId).value = ""; });
     document.getElementById("fRank").value = "R1";
     document.getElementById("fCamp").value = "1";
     state.oldFlag = false;
+    state.migratedFlag = false;
   }
-  document.getElementById("oldToggle").classList.toggle("on", state.oldFlag);
+  syncMemberStatusToggles();
   document.getElementById("memberOverlay").classList.add("active");
 }
 
@@ -203,7 +213,14 @@ export function closeMemberModal() {
 
 export function toggleOld() {
   state.oldFlag = !state.oldFlag;
-  document.getElementById("oldToggle").classList.toggle("on", state.oldFlag);
+  if (state.oldFlag) state.migratedFlag = false; // "eski üye" ve "göç etti" birbirini dışlar
+  syncMemberStatusToggles();
+}
+
+export function toggleMigrated() {
+  state.migratedFlag = !state.migratedFlag;
+  if (state.migratedFlag) state.oldFlag = false; // "eski üye" ve "göç etti" birbirini dışlar
+  syncMemberStatusToggles();
 }
 
 /** Verilen rütbe için kontenjan doluysa uyarı metni, aksi halde null döndürür. Göç eden üyeler kontenjana sayılmaz. */
@@ -226,12 +243,12 @@ export async function saveMember() {
   const name = document.getElementById("fName").value.trim();
   const gameId = document.getElementById("fGameId").value.trim();
   const editId = document.getElementById("memberEditId").value;
-  const migratedToRaw = document.getElementById("fMigratedTo").value.trim();
+  // Göç sunucu numarası, sadece "Göç Etti" anahtarı açıkken anlamlıdır ve o zaman bile opsiyoneldir.
+  const migratedToRaw = state.migratedFlag ? document.getElementById("fMigratedTo").value.trim() : "";
   const migratedTo = migratedToRaw === "" ? null : (Number(migratedToRaw) || null);
-  const isMigratedEntry = migratedTo != null;
 
   // Göç eden üyeler için tüm bilgiler eksik olabilir; diğer tüm üyelerde isim/ID hâlâ zorunlu.
-  if (!isMigratedEntry && (!name || !gameId)) {
+  if (!state.migratedFlag && (!name || !gameId)) {
     showToast(t("nameIdRequired"));
     return;
   }
@@ -241,7 +258,7 @@ export async function saveMember() {
   const rank = document.getElementById("fRank").value;
   const campLevel = document.getElementById("fCamp").value;
 
-  if (!state.oldFlag && !isMigratedEntry) {
+  if (!state.oldFlag && !state.migratedFlag) {
     const blockMessage = rankLimitBlockedMessage(rank, editId);
     if (blockMessage) {
       showToast(blockMessage);
@@ -265,7 +282,7 @@ export async function saveMember() {
       const row = await updateMember(editId, {
         name: name || null, game_id: gameId || null, rank, power, camp_level: campLevel,
         is_old: state.oldFlag, old_since: oldSince, name_history: nameHistory,
-        migrated_to_server: migratedTo
+        is_migrated: state.migratedFlag, migrated_to_server: migratedTo
       });
 
       const history = Array.isArray(previous.powerHistory) ? [...previous.powerHistory] : [];
@@ -282,7 +299,7 @@ export async function saveMember() {
       const row = await createMember({
         name: name || null, game_id: gameId || null, rank, power, camp_level: campLevel,
         is_old: state.oldFlag, old_since: state.oldFlag ? today : null,
-        migrated_to_server: migratedTo
+        is_migrated: state.migratedFlag, migrated_to_server: migratedTo
       });
       await addPowerHistoryEntry(row.id, today, power);
       state.members.push({ ...mapMember(row), powerHistory: [{ date: today, power }] });

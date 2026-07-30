@@ -211,7 +211,11 @@
       <div class="toggle" id="oldToggle"></div>
       <span id="t_lblOld" style="font-size:13px;">Eski üye (OLD)</span>
     </div>
-    <div class="field">
+    <div class="toggle-row" onclick="toggleMigrated()">
+      <div class="toggle" id="migratedToggle"></div>
+      <span id="t_lblMigrated" style="font-size:13px;">Başka sunucuya göç etti</span>
+    </div>
+    <div class="field" id="migratedToField" style="display:none;">
       <label id="t_lblMigratedTo">Göç Ettiği Sunucu</label>
       <input id="fMigratedTo" type="number">
     </div>
