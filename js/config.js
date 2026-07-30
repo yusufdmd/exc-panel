@@ -30,12 +30,12 @@ export const GVG_THRESHOLDS = {
 };
 
 // ---------------------------------------------------------------------
-// Kamp seviyesi seçenekleri: 1-30, ardından AOM-1 .. AOM-5
+// Kamp seviyesi seçenekleri: AOM-5 .. AOM-1, ardından 30 .. 1
 // ---------------------------------------------------------------------
 export const CAMP_LEVELS = (() => {
   const levels = [];
-  for (let i = 1; i <= 30; i++) levels.push(String(i));
-  for (let i = 1; i <= 5; i++) levels.push(`AOM-${i}`);
+  for (let i = 5; i >= 1; i--) levels.push(`AOM-${i}`);
+  for (let i = 30; i >= 1; i--) levels.push(String(i));
   return levels;
 })();
 
