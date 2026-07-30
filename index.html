@@ -58,6 +58,7 @@
     <div class="subtabs">
       <div class="subtab active" data-mv="active" onclick="setMemberView('active')" id="t_subActiveMembers">Aktif Üyeler</div>
       <div class="subtab" data-mv="old" onclick="setMemberView('old')" id="t_subOldMembers">Eski Üyeler (OLD)</div>
+      <div class="subtab" data-mv="migrated" onclick="setMemberView('migrated')" id="t_subMigratedMembers">Göç Edenler</div>
     </div>
     <div class="toolbar">
       <input class="search" id="memberSearch" oninput="renderMembers()">
@@ -209,6 +210,10 @@
     <div class="toggle-row" onclick="toggleOld()">
       <div class="toggle" id="oldToggle"></div>
       <span id="t_lblOld" style="font-size:13px;">Eski üye (OLD)</span>
+    </div>
+    <div class="field">
+      <label id="t_lblMigratedTo">Göç Ettiği Sunucu</label>
+      <input id="fMigratedTo" type="number">
     </div>
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closeMemberModal()" id="t_cancel1">Vazgeç</button>

@@ -147,7 +147,8 @@ const DICT = {
     loginTitle:'Yönetici Girişi', lblEmail:'E-posta', lblPassword:'Şifre', loginBtn:'Giriş Yap', logoutBtn:'Çıkış Yap',
     loginFailed:'Giriş başarısız.', loginSuccess:'Giriş yapıldı.', logoutSuccess:'Çıkış yapıldı.',
     emailPasswordRequired:'Kullanıcı adı ve şifre gerekli.', viewOnlyLabel:'Salt okunur',
-    previousNames:'Önceki Kullanıcı Adları' },
+    previousNames:'Önceki Kullanıcı Adları',
+    subMigratedMembers:'Göç Edenler', lblMigratedTo:'Göç Ettiği Sunucu' },
   en: { appName:'EXC Panel', tagline:'Members · Rank · Power & Camp Level · Event Tracking', refresh:'Refresh',
     syncConnecting:'Connecting…', syncLive:'Live — everyone sees this', syncError:'Connection error',
     tabMembers:'Members', tabEvents:'Events', tabBoard:'Leaderboard',
@@ -183,7 +184,8 @@ const DICT = {
     loginTitle:'Admin Login', lblEmail:'Email', lblPassword:'Password', loginBtn:'Sign In', logoutBtn:'Sign Out',
     loginFailed:'Sign-in failed.', loginSuccess:'Signed in.', logoutSuccess:'Signed out.',
     emailPasswordRequired:'Username and password are required.', viewOnlyLabel:'View only',
-    previousNames:'Previous Usernames' },
+    previousNames:'Previous Usernames',
+    subMigratedMembers:'Migrated Members', lblMigratedTo:'Migrated To Server' },
   de: { appName:'EXC Panel', tagline:'Mitglieder · Rang · Machtstufe & Basisstufe · Event-Tracking', refresh:'Aktualisieren',
     syncConnecting:'Verbinde…', syncLive:'Live — alle sehen dies', syncError:'Verbindungsfehler',
     tabMembers:'Mitglieder', tabEvents:'Events', tabBoard:'Bestenliste',
@@ -219,7 +221,8 @@ const DICT = {
     loginTitle:'Admin-Anmeldung', lblEmail:'E-Mail', lblPassword:'Passwort', loginBtn:'Anmelden', logoutBtn:'Abmelden',
     loginFailed:'Anmeldung fehlgeschlagen.', loginSuccess:'Angemeldet.', logoutSuccess:'Abgemeldet.',
     emailPasswordRequired:'Benutzername und Passwort sind erforderlich.', viewOnlyLabel:'Nur Ansicht',
-    previousNames:'Frühere Benutzernamen' },
+    previousNames:'Frühere Benutzernamen',
+    subMigratedMembers:'Abgewanderte Mitglieder', lblMigratedTo:'Migriert zu Server' },
   es: { appName:'Panel EXC', tagline:'Miembros · Rango · Poder y Nivel de Campamento · Seguimiento de Eventos', refresh:'Actualizar',
     syncConnecting:'Conectando…', syncLive:'En vivo — todos lo ven', syncError:'Error de conexión',
     tabMembers:'Miembros', tabEvents:'Eventos', tabBoard:'Clasificación',
@@ -255,7 +258,8 @@ const DICT = {
     loginTitle:'Inicio de sesión de administrador', lblEmail:'Correo electrónico', lblPassword:'Contraseña', loginBtn:'Iniciar sesión', logoutBtn:'Cerrar sesión',
     loginFailed:'Error al iniciar sesión.', loginSuccess:'Sesión iniciada.', logoutSuccess:'Sesión cerrada.',
     emailPasswordRequired:'Nombre de usuario y contraseña son obligatorios.', viewOnlyLabel:'Solo lectura',
-    previousNames:'Nombres de usuario anteriores' },
+    previousNames:'Nombres de usuario anteriores',
+    subMigratedMembers:'Miembros Migrados', lblMigratedTo:'Migró al Servidor' },
   fr: { appName:'Panneau EXC', tagline:'Membres · Rang · Puissance et Niveau de Camp · Suivi des Événements', refresh:'Actualiser',
     syncConnecting:'Connexion…', syncLive:'En direct — visible par tous', syncError:'Erreur de connexion',
     tabMembers:'Membres', tabEvents:'Événements', tabBoard:'Classement',
@@ -291,7 +295,8 @@ const DICT = {
     loginTitle:'Connexion administrateur', lblEmail:'E-mail', lblPassword:'Mot de passe', loginBtn:'Se connecter', logoutBtn:'Se déconnecter',
     loginFailed:'Échec de la connexion.', loginSuccess:'Connecté.', logoutSuccess:'Déconnecté.',
     emailPasswordRequired:"Le nom d'utilisateur et le mot de passe sont requis.", viewOnlyLabel:'Lecture seule',
-    previousNames:"Anciens noms d'utilisateur" }
+    previousNames:"Anciens noms d'utilisateur",
+    subMigratedMembers:'Membres Migrés', lblMigratedTo:'Migré vers le Serveur' }
 };
 
 /**
@@ -377,6 +382,8 @@ export function applyStaticText() {
   document.getElementById("t_importBackup").textContent = t("importBackupLabel");
   document.getElementById("t_subActiveMembers").textContent = t("subActiveMembers");
   document.getElementById("t_subOldMembers").textContent = t("subOldMembers");
+  document.getElementById("t_subMigratedMembers").textContent = t("subMigratedMembers");
+  document.getElementById("t_lblMigratedTo").textContent = t("lblMigratedTo");
   document.getElementById("t_thDate").textContent = t("thDate");
   document.getElementById("t_thPowerVal").textContent = t("thPowerVal");
   document.getElementById("t_thDelta").textContent = t("thDelta");

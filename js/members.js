@@ -51,13 +51,20 @@ export function mapMember(row) {
     oldSince: row.old_since,
     joinedAt: row.joined_at,
     nameHistory: Array.isArray(row.name_history) ? row.name_history : [],
+    migratedTo: row.migrated_to_server ?? null,
     powerHistory: []
   };
 }
 
-/** Eski (OLD) işaretli olmayan üyeleri döndürür. */
+/** Bir üyenin hangi listede (aktif/eski/göç eden) görüneceğini belirler. */
+function memberCategory(member) {
+  if (member.migratedTo != null) return "migrated";
+  return member.isOld ? "old" : "active";
+}
+
+/** Ne eski (OLD) işaretli ne de başka sunucuya göç etmiş üyeleri döndürür. */
 export function activeMembers() {
-  return state.members.filter((member) => !member.isOld);
+  return state.members.filter((member) => memberCategory(member) === "active");
 }
 
 /** Etkinlik tablolarında ve toplu giriş modalında kullanılan, rütbeye sonra isme göre sıralı aktif üye listesi. */
@@ -93,9 +100,9 @@ export function renderMembers() {
   renderStats();
   const query = (document.getElementById("memberSearch").value || "").toLowerCase().trim();
   const list = state.members.filter((member) => {
-    const matchesView = state.memberView === "old" ? !!member.isOld : !member.isOld;
+    const matchesView = memberCategory(member) === state.memberView;
     const matchesRank = state.rankFilter === "ALL" || member.rank === state.rankFilter;
-    const matchesQuery = !query || member.name.toLowerCase().includes(query) || String(member.gameId).toLowerCase().includes(query);
+    const matchesQuery = !query || (member.name || "").toLowerCase().includes(query) || String(member.gameId || "").toLowerCase().includes(query);
     return matchesView && matchesRank && matchesQuery;
   });
 
@@ -107,8 +114,8 @@ export function renderMembers() {
       valueB = RANK_ORDER[b.rank];
       if (valueA === valueB) return (Number(b.power) || 0) - (Number(a.power) || 0); // aynı rütbede güç azalan sırada, her zaman
     } else if (state.sortKey === "name") {
-      valueA = a.name.toLowerCase();
-      valueB = b.name.toLowerCase();
+      valueA = (a.name || "").toLowerCase();
+      valueB = (b.name || "").toLowerCase();
     } else if (state.sortKey === "campSort") {
       valueA = campLevelSortValue(a.campLevel);
       valueB = campLevelSortValue(b.campLevel);
@@ -126,8 +133,8 @@ export function renderMembers() {
   rowsEl.innerHTML = list.map((member) => `
     <tr>
       <td><span class="rank-badge ${rankClass(member.rank)}">${member.rank}<span class="chev">${rankChevrons(member.rank)}</span></span></td>
-      <td><span class="member-name">${escapeHtml(member.name)}</span>${member.isOld ? `<span class="old-tag">OLD${state.memberView === "old" && member.oldSince ? " · " + member.oldSince : ""}</span>` : ""}</td>
-      <td class="member-id">${escapeHtml(String(member.gameId))}</td>
+      <td><span class="member-name">${escapeHtml(member.name || "—")}</span>${member.isOld ? `<span class="old-tag">OLD${state.memberView === "old" && member.oldSince ? " · " + member.oldSince : ""}</span>` : ""}${member.migratedTo != null ? `<span class="old-tag">${t("lblMigratedTo")}: ${escapeHtml(String(member.migratedTo))}</span>` : ""}</td>
+      <td class="member-id">${escapeHtml(String(member.gameId || "—"))}</td>
       <td class="num-cell" title="${Number(member.power) || 0}">${formatPower(member.power)}</td>
       <td class="num-cell">${escapeHtml(String(member.campLevel || "-"))}</td>
       <td><div class="row-actions">
@@ -172,15 +179,16 @@ export function openMemberModal(id) {
   if (id) {
     const member = state.members.find((m) => m.id === id);
     document.getElementById("memberModalTitle").textContent = t("memberEditTitle");
-    document.getElementById("fName").value = member.name;
-    document.getElementById("fGameId").value = member.gameId;
+    document.getElementById("fName").value = member.name || "";
+    document.getElementById("fGameId").value = member.gameId || "";
     document.getElementById("fRank").value = member.rank;
     document.getElementById("fPower").value = member.power;
     document.getElementById("fCamp").value = member.campLevel;
+    document.getElementById("fMigratedTo").value = member.migratedTo != null ? member.migratedTo : "";
     state.oldFlag = !!member.isOld;
   } else {
     document.getElementById("memberModalTitle").textContent = t("memberAddTitle");
-    ["fName", "fGameId", "fPower"].forEach((fieldId) => { document.getElementById(fieldId).value = ""; });
+    ["fName", "fGameId", "fPower", "fMigratedTo"].forEach((fieldId) => { document.getElementById(fieldId).value = ""; });
     document.getElementById("fRank").value = "R1";
     document.getElementById("fCamp").value = "1";
     state.oldFlag = false;
@@ -198,27 +206,42 @@ export function toggleOld() {
   document.getElementById("oldToggle").classList.toggle("on", state.oldFlag);
 }
 
-/** Verilen rütbe için kontenjan doluysa uyarı metni, aksi halde null döndürür. */
+/** Verilen rütbe için kontenjan doluysa uyarı metni, aksi halde null döndürür. Göç eden üyeler kontenjana sayılmaz. */
 function rankLimitBlockedMessage(rank, excludeId) {
   const limit = RANK_LIMITS[rank];
   if (!limit) return null;
-  const activeCountAtRank = state.members.filter((m) => !m.isOld && m.rank === rank && m.id !== excludeId).length;
+  const activeCountAtRank = state.members.filter((m) => memberCategory(m) === "active" && m.rank === rank && m.id !== excludeId).length;
   return activeCountAtRank >= limit ? (rank + " rütbesi için üye sınırına ulaşıldı (maks. " + limit + ").") : null;
+}
+
+/** Aynı ID numarasını kullanan başka bir üye varsa, kullanıcıyı onaylatır (devam/vazgeç). true dönerse kayda devam edilir. */
+function confirmDuplicateGameId(gameId, excludeId) {
+  if (!gameId) return true;
+  const duplicate = state.members.find((m) => m.id !== excludeId && String(m.gameId || "").trim() === gameId);
+  if (!duplicate) return true;
+  return confirm(`Bu ID numarası ("${gameId}") zaten "${duplicate.name || "isimsiz bir üye"}" adlı kayıtta kullanılıyor. Yine de devam etmek istiyor musunuz?`);
 }
 
 export async function saveMember() {
   const name = document.getElementById("fName").value.trim();
   const gameId = document.getElementById("fGameId").value.trim();
-  if (!name || !gameId) {
+  const editId = document.getElementById("memberEditId").value;
+  const migratedToRaw = document.getElementById("fMigratedTo").value.trim();
+  const migratedTo = migratedToRaw === "" ? null : (Number(migratedToRaw) || null);
+  const isMigratedEntry = migratedTo != null;
+
+  // Göç eden üyeler için tüm bilgiler eksik olabilir; diğer tüm üyelerde isim/ID hâlâ zorunlu.
+  if (!isMigratedEntry && (!name || !gameId)) {
     showToast(t("nameIdRequired"));
     return;
   }
-  const editId = document.getElementById("memberEditId").value;
+  if (!confirmDuplicateGameId(gameId, editId)) return;
+
   const power = Number(document.getElementById("fPower").value) || 0;
   const rank = document.getElementById("fRank").value;
   const campLevel = document.getElementById("fCamp").value;
 
-  if (!state.oldFlag) {
+  if (!state.oldFlag && !isMigratedEntry) {
     const blockMessage = rankLimitBlockedMessage(rank, editId);
     if (blockMessage) {
       showToast(blockMessage);
@@ -235,13 +258,14 @@ export async function saveMember() {
       if (!state.oldFlag) oldSince = null;
 
       const nameHistory = Array.isArray(previous.nameHistory) ? [...previous.nameHistory] : [];
-      if (previous.name !== name) {
+      if (previous.name && previous.name !== name) {
         nameHistory.push({ name: previous.name, changedAt: todayStr() });
       }
 
       const row = await updateMember(editId, {
-        name, game_id: gameId, rank, power, camp_level: campLevel,
-        is_old: state.oldFlag, old_since: oldSince, name_history: nameHistory
+        name: name || null, game_id: gameId || null, rank, power, camp_level: campLevel,
+        is_old: state.oldFlag, old_since: oldSince, name_history: nameHistory,
+        migrated_to_server: migratedTo
       });
 
       const history = Array.isArray(previous.powerHistory) ? [...previous.powerHistory] : [];
@@ -256,8 +280,9 @@ export async function saveMember() {
     } else {
       const today = todayStr();
       const row = await createMember({
-        name, game_id: gameId, rank, power, camp_level: campLevel,
-        is_old: state.oldFlag, old_since: state.oldFlag ? today : null
+        name: name || null, game_id: gameId || null, rank, power, camp_level: campLevel,
+        is_old: state.oldFlag, old_since: state.oldFlag ? today : null,
+        migrated_to_server: migratedTo
       });
       await addPowerHistoryEntry(row.id, today, power);
       state.members.push({ ...mapMember(row), powerHistory: [{ date: today, power }] });
