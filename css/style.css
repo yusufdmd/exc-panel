@@ -117,6 +117,8 @@ thead th{ text-align:left; font-size:11px; text-transform:uppercase; letter-spac
 thead th:hover{ color:var(--text-muted); }
 tbody td{ padding:12px 16px; border-bottom:1px solid var(--line); font-size:13px; vertical-align:middle; white-space:nowrap; }
 tbody tr:last-child td{ border-bottom:none; }
+tbody tr:nth-child(even){ background: rgba(255,255,255,0.025); }
+tbody tr:nth-child(even) .sticky-col{ background: #181C25; }
 tbody tr:hover{ background: var(--bg-raised); }
 tbody tr.old-row{ opacity:0.55; }
 .sticky-col{ position:sticky; left:0; background: var(--bg-panel); z-index:2; }
