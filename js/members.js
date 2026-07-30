@@ -50,6 +50,7 @@ export function mapMember(row) {
     isOld: row.is_old,
     oldSince: row.old_since,
     joinedAt: row.joined_at,
+    nameHistory: Array.isArray(row.name_history) ? row.name_history : [],
     powerHistory: []
   };
 }
@@ -233,9 +234,14 @@ export async function saveMember() {
       if (state.oldFlag && !previous.isOld) oldSince = todayStr();
       if (!state.oldFlag) oldSince = null;
 
+      const nameHistory = Array.isArray(previous.nameHistory) ? [...previous.nameHistory] : [];
+      if (previous.name !== name) {
+        nameHistory.push({ name: previous.name, changedAt: todayStr() });
+      }
+
       const row = await updateMember(editId, {
         name, game_id: gameId, rank, power, camp_level: campLevel,
-        is_old: state.oldFlag, old_since: oldSince
+        is_old: state.oldFlag, old_since: oldSince, name_history: nameHistory
       });
 
       const history = Array.isArray(previous.powerHistory) ? [...previous.powerHistory] : [];
@@ -367,11 +373,22 @@ function buildEventSummaryHtml(member) {
   return html || "";
 }
 
+/** Bir üyenin eski kullanıcı adlarını (varsa) "Ad (tarih), Ad (tarih)" biçiminde listeler. */
+function buildNameHistoryHtml(member) {
+  if (!Array.isArray(member.nameHistory) || !member.nameHistory.length) return "";
+  const items = member.nameHistory.map((entry) => `${escapeHtml(entry.name)} (${entry.changedAt})`).join(", ");
+  return `<div style="margin-bottom:14px; font-size:12px; color:var(--text-muted);">
+    <span style="text-transform:uppercase; letter-spacing:0.5px; color:var(--text-dim);">${t("previousNames")}:</span>
+    ${items}
+  </div>`;
+}
+
 export function openHistoryModal(id) {
   state.historyMemberId = id;
   const member = state.members.find((m) => m.id === id);
   if (!member) return;
   document.getElementById("historyTitle").textContent = t("powerHistory") + " — " + member.name;
+  document.getElementById("historyNameHistoryWrap").innerHTML = buildNameHistoryHtml(member);
   const history = Array.isArray(member.powerHistory) && member.powerHistory.length
     ? [...member.powerHistory].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))
     : [{ date: (member.joinedAt || todayStr()).slice(0, 10), power: member.power || 0 }];

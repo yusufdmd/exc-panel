@@ -25,17 +25,18 @@ $$ language plpgsql;
 -- 1) MEMBERS — Üyeler
 -- =====================================================================
 create table if not exists members (
-  id           uuid primary key default gen_random_uuid(),
-  name         text not null,
-  game_id      text not null,
-  rank         text not null check (rank in ('R5','R4','R3','R2','R1')),
-  camp_level   text not null default '1',
-  power        bigint not null default 0,
-  is_old       boolean not null default false,
-  old_since    date,
-  joined_at    timestamptz not null default now(),
-  created_at   timestamptz not null default now(),
-  updated_at   timestamptz not null default now()
+  id            uuid primary key default gen_random_uuid(),
+  name          text not null,
+  game_id       text not null,
+  rank          text not null check (rank in ('R5','R4','R3','R2','R1')),
+  camp_level    text not null default '1',
+  power         bigint not null default 0,
+  is_old        boolean not null default false,
+  old_since     date,
+  name_history  jsonb not null default '[]'::jsonb, -- [{name, changedAt}, ...] eski kullanıcı adları
+  joined_at     timestamptz not null default now(),
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now()
 );
 
 create index if not exists idx_members_is_old on members (is_old);
