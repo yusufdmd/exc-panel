@@ -85,6 +85,26 @@ export function renderAll() {
   registeredRenderers.forEach((renderFn) => renderFn());
 }
 
+// ---------------------------------------------------------------------
+// Aynı sebeple: yedek içe aktarma (backup.js), tüm veriyi Supabase'de
+// yeniden oluşturduktan sonra state'i taze ID'lerle senkronize etmek için
+// tam bir veritabanı yeniden yüklemesi (app.js'teki loadAll) yapmalıdır.
+// loadAll, members.js'deki mapMember'a ve events.js'deki mapWeek/mapEntry'e
+// bağımlı olduğu için ui.js'te DEĞİL, app.js'te tanımlanır — o yüzden
+// backup.js'in çağırabilmesi için aynı kayıt deseni kullanılır.
+// ---------------------------------------------------------------------
+let registeredDataLoader = null;
+
+/** app.js kendi `loadAll` fonksiyonunu burada kaydeder (bootstrap sırasında, bir kere). */
+export function registerDataLoader(loaderFn) {
+  registeredDataLoader = loaderFn;
+}
+
+/** Kayıtlı veri yükleyiciyi (app.js'teki loadAll) çalıştırır. */
+export async function reloadAllData(silent) {
+  if (registeredDataLoader) await registeredDataLoader(silent);
+}
+
 // =====================================================================
 // I18N — Çok dilli metin sözlüğü
 // =====================================================================
