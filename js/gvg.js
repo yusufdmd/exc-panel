@@ -22,6 +22,7 @@ export function renderGvg() {
       <th class="sticky-col" style="left:90px;">${t("thUsername")}</th>
       ${state.gvg.weeks.map((week) => `<th class="week-col"><div class="week-head"><span class="wname">${escapeHtml(week.label)}</span>
         <span class="week-actions">
+          <button class="icon-btn" style="width:20px;height:20px;" onclick="openWeekReportModal('gvg','${week.id}')" title="${t("weekReport")}">📋</button>
           <button class="icon-btn admin-only" style="width:20px;height:20px;" onclick="openEntryModal('gvg','${week.id}')">✎</button>
           <button class="icon-btn danger admin-only" style="width:20px;height:20px;" onclick="deleteWeek('gvg','${week.id}')">✕</button>
         </span></div></th>`).join("")}

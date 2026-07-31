@@ -15,7 +15,7 @@
 // =====================================================================
 
 import { createWeek as dbCreateWeek, deleteWeek as dbDeleteWeek, upsertRecordsBulk } from "./database.js";
-import { state, t, showToast, escapeHtml, rankClass, statusOf, renderAll } from "./ui.js";
+import { state, t, showToast, escapeHtml, rankClass, statusOf, gvgColorClass, formatPower, renderAll } from "./ui.js";
 import { filteredSortedMembers } from "./members.js";
 
 /** Supabase hafta satırını uygulama şekline çevirir. */
@@ -246,4 +246,82 @@ export async function saveEntry() {
     console.error(error);
     showToast("Error");
   }
+}
+
+// =====================================================================
+// HAFTA RAPORU (salt okunur — herkes görebilir, admin girişi gerekmez)
+// =====================================================================
+function memberEntryFor(store, memberId, weekId) {
+  return store.entries.find((e) => e.memberId === memberId && e.weekId === weekId);
+}
+
+/** Bir isim listesini renkli başlıklı bir bölüm olarak biçimlendirir. */
+function reportSection(title, color, names) {
+  return `<div style="margin-bottom:16px;">
+    <div style="font-size:12px; font-weight:700; color:${color}; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">${escapeHtml(title)} (${names.length})</div>
+    <div style="font-size:13px; color:var(--text-primary); line-height:1.7;">${names.length ? names.map(escapeHtml).join(", ") : "—"}</div>
+  </div>`;
+}
+
+/** SVS/KoD/Diğer türü haftalık rapor: katıldı/katılmadı listeleri. */
+function buildStatusReportHtml(store, week, members) {
+  const joined = [];
+  const absent = [];
+  members.forEach((member) => {
+    const entry = memberEntryFor(store, member.id, week.id);
+    const status = statusOf(entry);
+    if (status === "joined") joined.push(member.name);
+    else if (status === "absent") absent.push(entry.excused ? member.name + " (M)" : member.name);
+  });
+  return reportSection(t("legendJoined"), "var(--success)", joined)
+    + reportSection(t("legendNotJoined"), "var(--danger)", absent);
+}
+
+/** SS türü haftalık rapor: A/B grubu ayrı ayrı katıldı/katılmadı listeleri. */
+function buildSsReportHtml(store, week, members) {
+  const groups = { A: { joined: [], absent: [] }, B: { joined: [], absent: [] } };
+  members.forEach((member) => {
+    const entry = memberEntryFor(store, member.id, week.id);
+    if (!entry || !entry.group || !groups[entry.group]) return;
+    const bucket = groups[entry.group];
+    if (entry.attended) bucket.joined.push(member.name);
+    else bucket.absent.push(entry.excused ? member.name + " (M)" : member.name);
+  });
+  const groupSection = (label, bucket) => `<div style="margin-bottom:8px;">
+      <div style="font-size:13px; font-weight:700; margin-bottom:8px;">${escapeHtml(label)}</div>
+      ${reportSection(t("legendJoined"), "var(--success)", bucket.joined)}
+      ${reportSection(t("legendNotJoined"), "var(--danger)", bucket.absent)}
+    </div>`;
+  return groupSection(t("groupA"), groups.A) + groupSection(t("groupB"), groups.B);
+}
+
+/** GVG türü haftalık rapor: puana göre yeşil/sarı/kırmızı bölge listeleri. */
+function buildGvgReportHtml(store, week, members) {
+  const zones = { "pill-green": [], "pill-yellow": [], "pill-red": [] };
+  members.forEach((member) => {
+    const entry = memberEntryFor(store, member.id, week.id);
+    const points = entry ? (Number(entry.points) || 0) : 0;
+    zones[gvgColorClass(points)].push(member.name + " (" + formatPower(points) + ")");
+  });
+  return reportSection(t("zoneGreen"), "var(--success)", zones["pill-green"])
+    + reportSection(t("zoneYellow"), "var(--warn)", zones["pill-yellow"])
+    + reportSection(t("zoneRed"), "var(--danger)", zones["pill-red"]);
+}
+
+/** Herkesin görebildiği, salt okunur haftalık katılım/puan raporunu açar. */
+export function openWeekReportModal(type, weekId) {
+  const store = storeFor(type);
+  const week = store.weeks.find((w) => w.id === weekId);
+  if (!week) return;
+  document.getElementById("weekReportTitle").textContent = week.label;
+  const members = filteredSortedMembers();
+  const bodyHtml = type === "ss" ? buildSsReportHtml(store, week, members)
+    : type === "gvg" ? buildGvgReportHtml(store, week, members)
+    : buildStatusReportHtml(store, week, members);
+  document.getElementById("weekReportBody").innerHTML = bodyHtml;
+  document.getElementById("weekReportOverlay").classList.add("active");
+}
+
+export function closeWeekReportModal() {
+  document.getElementById("weekReportOverlay").classList.remove("active");
 }
