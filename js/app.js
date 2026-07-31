@@ -20,7 +20,7 @@ import { getMembers, getAllPowerHistory, getWeeks, getAllRecords, subscribeToTab
 import { POLL_INTERVAL_MS } from "./config.js";
 import { state, t, showToast, buildLangSwitch, applyStaticText, initLangFromStorage, persistLanguage, renderAll, registerDataLoader } from "./ui.js";
 import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld, toggleMigrated, saveMember, deleteMember, restoreMember, openHistoryModal, closeHistoryModal, setMemberView, setRankFilter, setSort } from "./members.js";
-import { mapWeek, mapEntry, openWeekModal, closeWeekModal, saveWeek, deleteWeek, openEntryModal, closeEntryModal, renderEntryRows, saveEntry, openWeekReportModal, closeWeekReportModal } from "./events.js";
+import { mapWeek, mapEntry, openWeekModal, closeWeekModal, saveWeek, deleteWeek, openEntryModal, closeEntryModal, renderEntryRows, saveEntry, openWeekReportModal, closeWeekReportModal, openOverallReportModal, closeOverallReportModal, setOverallReportSort } from "./events.js";
 import { setBoardSort } from "./dashboard.js";
 import { exportBackup, importBackup } from "./backup.js";
 import { openLoginModal, closeLoginModal, doLogin, doLogout } from "./auth.js";
@@ -135,6 +135,7 @@ Object.assign(window, {
   openWeekModal, closeWeekModal, saveWeek, deleteWeek,
   openEntryModal, closeEntryModal, saveEntry, renderEntryRows,
   openWeekReportModal, closeWeekReportModal,
+  openOverallReportModal, closeOverallReportModal, setOverallReportSort,
   openHistoryModal, closeHistoryModal,
   setBoardSort, setLang,
   openLoginModal, closeLoginModal, doLogin, doLogout

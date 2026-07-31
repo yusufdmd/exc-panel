@@ -109,6 +109,7 @@
           <span><i class="sw" style="background:var(--danger)"></i><span id="t_legendNotJoined">Katılmadı</span></span>
           <span><i class="sw" style="background:var(--text-dim)"></i><span id="t_legendUnknown">Bilgi Yok</span></span>
         </div>
+        <button class="btn-ghost" onclick="openOverallReportModal('svs')" id="t_overallReport_svs">📊 Genel Rapor</button>
         <button class="btn-primary admin-only" onclick="openWeekModal('svs')" id="t_addWeek_svs">+ Hafta Ekle</button>
       </div>
       <div class="table-wrap"><table id="tbl-svs"><thead></thead><tbody></tbody></table></div>
@@ -123,6 +124,7 @@
           <span><i class="sw" style="background:var(--warn)"></i>13.200.000 – 43.499.999</span>
           <span><i class="sw" style="background:var(--danger)"></i>≤ 13.199.999</span>
         </div>
+        <button class="btn-ghost" onclick="openOverallReportModal('gvg')" id="t_overallReport_gvg">📊 Genel Rapor</button>
         <button class="btn-primary admin-only" onclick="openWeekModal('gvg')" id="t_addWeek_gvg">+ Hafta Ekle</button>
       </div>
       <div class="table-wrap"><table id="tbl-gvg"><thead></thead><tbody></tbody></table></div>
@@ -137,6 +139,7 @@
           <span><i class="sw" style="background:var(--danger)"></i><span id="t_legendRegNotAttend">Kayıtlı, Katılmadı</span></span>
           <span><i class="sw" style="background:var(--text-dim)"></i><span id="t_legendNoReg">Kayıt Yok</span></span>
         </div>
+        <button class="btn-ghost" onclick="openOverallReportModal('ss')" id="t_overallReport_ss">📊 Genel Rapor</button>
         <button class="btn-primary admin-only" onclick="openWeekModal('ss')" id="t_addWeek_ss">+ Hafta Ekle</button>
       </div>
       <div class="table-wrap"><table id="tbl-ss"><thead></thead><tbody></tbody></table></div>
@@ -151,6 +154,7 @@
           <span><i class="sw" style="background:var(--danger)"></i><span id="t_legendNotJoinedKod">Katılmadı</span></span>
           <span><i class="sw" style="background:var(--text-dim)"></i><span id="t_legendUnknownKod">Bilgi Yok</span></span>
         </div>
+        <button class="btn-ghost" onclick="openOverallReportModal('kod')" id="t_overallReport_kod">📊 Genel Rapor</button>
         <button class="btn-primary admin-only" onclick="openWeekModal('kod')" id="t_addWeek_kod">+ Hafta Ekle</button>
       </div>
       <div class="table-wrap"><table id="tbl-kod"><thead></thead><tbody></tbody></table></div>
@@ -165,6 +169,7 @@
           <span><i class="sw" style="background:var(--danger)"></i><span id="t_legendNotJoinedOther">Katılmadı</span></span>
           <span><i class="sw" style="background:var(--text-dim)"></i><span id="t_legendUnknownOther">Bilgi Yok</span></span>
         </div>
+        <button class="btn-ghost" onclick="openOverallReportModal('other')" id="t_overallReport_other">📊 Genel Rapor</button>
         <button class="btn-primary admin-only" onclick="openWeekModal('other')" id="t_addEvent_other">+ Etkinlik Ekle</button>
       </div>
       <div class="table-wrap"><table id="tbl-other"><thead></thead><tbody></tbody></table></div>
@@ -281,6 +286,17 @@
     <div id="weekReportBody" style="max-height:60vh; overflow-y:auto;"></div>
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closeWeekReportModal()" id="t_close3">Kapat</button>
+    </div>
+  </div>
+</div>
+
+<!-- Overall Report Modal (read-only, no login required) -->
+<div class="overlay" id="overallReportOverlay">
+  <div class="modal wide">
+    <h2 id="t_overallReportTitle">Genel Rapor</h2>
+    <div id="overallReportBody" style="max-height:60vh; overflow-y:auto;"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeOverallReportModal()" id="t_close5">Kapat</button>
     </div>
   </div>
 </div>

@@ -15,7 +15,11 @@
 // =====================================================================
 
 import { createWeek as dbCreateWeek, updateWeek as dbUpdateWeek, deleteWeek as dbDeleteWeek, upsertRecordsBulk } from "./database.js";
-import { state, t, showToast, escapeHtml, rankClass, statusOf, gvgColorClass, formatPower, renderAll } from "./ui.js";
+import {
+  state, t, showToast, escapeHtml, rankClass, statusOf, gvgColorClass, formatPower, formatRatio, renderAll,
+  cellInfoHtml, svsOtherCellInfo, ssCellInfo, attendanceCellInfo, gvgCellInfo,
+  ratioStatus, ratioSs, sumGvgPoints, RANK_ORDER
+} from "./ui.js";
 import { filteredSortedMembers } from "./members.js";
 
 /** Supabase hafta satırını uygulama şekline çevirir. */
@@ -342,4 +346,128 @@ export function openWeekReportModal(type, weekId) {
 
 export function closeWeekReportModal() {
   document.getElementById("weekReportOverlay").classList.remove("active");
+}
+
+// =====================================================================
+// GENEL RAPOR (salt okunur — herkes görebilir, admin girişi gerekmez)
+// =====================================================================
+// Haftalık raporun (yukarıda) aksine tek bir haftaya değil, o etkinlik
+// türünün TÜM haftalarına birden bakar: her üye için tek bir özet satırı
+// (GVG dışında katılım oranı, GVG'de toplam puan) + hafta hafta renkli
+// küçük işaretler gösterir. Sıralama, dashboard.js'deki lider tablosuyla
+// aynı desende (state.overallReportSortKey/Dir, tıklanan sütun başlığı).
+
+/** Bir hafta + hücre bilgisini rapor tablosundaki küçük renkli bir işarete (chip) çevirir. */
+function overallReportChip(week, info) {
+  return `<span class="cell-pill ${info.cls}" style="margin:2px; display:inline-block;" title="${escapeHtml(week.label)}">${escapeHtml(week.label)}: ${info.text}</span>`;
+}
+
+/** GVG dışındaki türler (svs/ss/kod/other) için üye başına özet satırı üretir. */
+function buildOverallReportRow(type, store, member) {
+  const ratio = type === "ss" ? ratioSs(store, member) : ratioStatus(store, member);
+  const chips = store.weeks.map((week) => {
+    const info = type === "ss" ? ssCellInfo(store, member, week)
+      : type === "kod" ? attendanceCellInfo(store, member, week)
+      : svsOtherCellInfo(store, member, week);
+    return overallReportChip(week, info);
+  }).join("");
+  const sortValue = ratio.den ? ratio.num / ratio.den : -1;
+  return { member, sortValue, summaryHtml: formatRatio(ratio.num, ratio.den), chips };
+}
+
+/** GVG için üye başına özet satırı üretir: katılım oranı yerine toplam puan anlamlıdır. */
+function buildOverallReportRowGvg(store, member) {
+  const total = sumGvgPoints(store, member.id);
+  const chips = store.weeks.map((week) => overallReportChip(week, gvgCellInfo(store, member, week))).join("");
+  return { member, sortValue: total, summaryHtml: `<span style="color:var(--cyan); font-weight:700;">${formatPower(total)}</span>`, chips };
+}
+
+/** Genel rapor satırlarını, tıklanan sütuna göre (lider tablosuyla aynı desende) sıralar. */
+function sortOverallReportRows(rows) {
+  const key = state.overallReportSortKey;
+  const dir = state.overallReportSortDir;
+  rows.sort((a, b) => {
+    let valueA;
+    let valueB;
+    if (key === "name") {
+      valueA = a.member.name.toLowerCase();
+      valueB = b.member.name.toLowerCase();
+    } else if (key === "value") {
+      valueA = a.sortValue;
+      valueB = b.sortValue;
+    } else {
+      valueA = RANK_ORDER[a.member.rank];
+      valueB = RANK_ORDER[b.member.rank];
+    }
+    if (valueA < valueB) return -1 * dir;
+    if (valueA > valueB) return 1 * dir;
+    return 0;
+  });
+  return rows;
+}
+
+/** Genel rapor modalının içeriğini, mevcut açık tür ve sıralamaya göre yeniden çizer. */
+function renderOverallReport() {
+  const type = state.overallReportType;
+  if (!type) return;
+  const store = storeFor(type);
+  const body = document.getElementById("overallReportBody");
+  if (!store.weeks.length) {
+    body.innerHTML = `<div class="empty-state"><h3>${t("emptyWeeksTitle")}</h3><p>${t("emptyWeeksDesc")}</p></div>`;
+    return;
+  }
+
+  const members = filteredSortedMembers();
+  const rows = sortOverallReportRows(
+    members.map((member) => type === "gvg" ? buildOverallReportRowGvg(store, member) : buildOverallReportRow(type, store, member))
+  );
+  const valueHeaderKey = type === "gvg" ? "lbGvgTotal" : type === "ss" ? "lbSsRatio" : type === "kod" ? "lbKodRatio" : type === "svs" ? "lbSvsRatio" : "lbOtherRatio";
+
+  body.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th onclick="setOverallReportSort('rank')">${t("thRank")}</th>
+          <th onclick="setOverallReportSort('name')">${t("lbMember")}</th>
+          <th onclick="setOverallReportSort('value')">${t(valueHeaderKey)}</th>
+          <th>${t("thWeeks")}</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map((row) => `
+          <tr>
+            <td><span class="rank-badge ${rankClass(row.member.rank)}" style="font-size:11px;padding:2px 8px;">${row.member.rank}</span></td>
+            <td class="member-name">${escapeHtml(row.member.name)}</td>
+            <td class="num-cell">${row.summaryHtml}</td>
+            <td>${row.chips}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+}
+
+/** Sıralama sütununa tıklanınca (lider tablosuyla aynı desende) sıralamayı değiştirir ve yeniden çizer. */
+export function setOverallReportSort(key) {
+  if (state.overallReportSortKey === key) {
+    state.overallReportSortDir *= -1;
+  } else {
+    state.overallReportSortKey = key;
+    state.overallReportSortDir = key === "rank" ? -1 : 1;
+  }
+  renderOverallReport();
+}
+
+/** Herkesin görebildiği, salt okunur — bir etkinlik türünün TÜM haftalarını kapsayan genel raporunu açar. */
+export function openOverallReportModal(type) {
+  state.overallReportType = type;
+  state.overallReportSortKey = "rank";
+  state.overallReportSortDir = -1;
+  document.getElementById("overallReportOverlay").classList.add("active");
+  renderOverallReport();
+}
+
+export function closeOverallReportModal() {
+  document.getElementById("overallReportOverlay").classList.remove("active");
+  state.overallReportType = null;
 }

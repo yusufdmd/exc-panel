@@ -57,6 +57,9 @@ export const state = {
   entryContext: null, // { type: 'svs'|'gvg'|'ss'|'other', weekId }
   boardSortKey: "gvgPts",
   boardSortDir: -1,
+  overallReportType: null,
+  overallReportSortKey: "rank",
+  overallReportSortDir: -1,
   historyMemberId: null,
   isAdmin: false,
   currentAdminUsername: "" // auth.js buraya Supabase oturumundaki sahte email'i (bkz. ADMIN_LOGIN_DOMAIN) DEĞİL, kullanıcıya gösterilecek çıplak kullanıcı adını yazar
@@ -153,7 +156,8 @@ const DICT = {
     subMigratedMembers:'Göç Edenler', lblMigratedTo:'Göç Ettiği Sunucu',
     lblMigrated:'Başka sunucuya göç etti', migratedTag:'Göç Etti',
     weekReport:'Hafta Raporu', zoneGreen:'Yeşil Bölge', zoneYellow:'Sarı Bölge', zoneRed:'Kırmızı Bölge',
-    weekEditTitle:'Haftayı Düzenle', eventEditTitle:'Etkinliği Düzenle' },
+    weekEditTitle:'Haftayı Düzenle', eventEditTitle:'Etkinliği Düzenle',
+    overallReportBtn:'📊 Genel Rapor', overallReport:'Genel Rapor', thWeeks:'Haftalar' },
   en: { appName:'EXC Panel', tagline:'Members · Rank · Power & Camp Level · Event Tracking', refresh:'Refresh',
     syncConnecting:'Connecting…', syncLive:'Live — everyone sees this', syncError:'Connection error',
     tabMembers:'Members', tabEvents:'Events', tabBoard:'Leaderboard',
@@ -193,7 +197,8 @@ const DICT = {
     subMigratedMembers:'Migrated Members', lblMigratedTo:'Migrated To Server',
     lblMigrated:'Migrated to another server', migratedTag:'Migrated',
     weekReport:'Week Report', zoneGreen:'Green Zone', zoneYellow:'Yellow Zone', zoneRed:'Red Zone',
-    weekEditTitle:'Edit Week', eventEditTitle:'Edit Event' },
+    weekEditTitle:'Edit Week', eventEditTitle:'Edit Event',
+    overallReportBtn:'📊 Overall Report', overallReport:'Overall Report', thWeeks:'Weeks' },
   de: { appName:'EXC Panel', tagline:'Mitglieder · Rang · Machtstufe & Basisstufe · Event-Tracking', refresh:'Aktualisieren',
     syncConnecting:'Verbinde…', syncLive:'Live — alle sehen dies', syncError:'Verbindungsfehler',
     tabMembers:'Mitglieder', tabEvents:'Events', tabBoard:'Bestenliste',
@@ -233,7 +238,8 @@ const DICT = {
     subMigratedMembers:'Abgewanderte Mitglieder', lblMigratedTo:'Migriert zu Server',
     lblMigrated:'Zu einem anderen Server abgewandert', migratedTag:'Abgewandert',
     weekReport:'Wochenbericht', zoneGreen:'Grüne Zone', zoneYellow:'Gelbe Zone', zoneRed:'Rote Zone',
-    weekEditTitle:'Woche bearbeiten', eventEditTitle:'Event bearbeiten' },
+    weekEditTitle:'Woche bearbeiten', eventEditTitle:'Event bearbeiten',
+    overallReportBtn:'📊 Gesamtbericht', overallReport:'Gesamtbericht', thWeeks:'Wochen' },
   es: { appName:'Panel EXC', tagline:'Miembros · Rango · Poder y Nivel de Campamento · Seguimiento de Eventos', refresh:'Actualizar',
     syncConnecting:'Conectando…', syncLive:'En vivo — todos lo ven', syncError:'Error de conexión',
     tabMembers:'Miembros', tabEvents:'Eventos', tabBoard:'Clasificación',
@@ -273,7 +279,8 @@ const DICT = {
     subMigratedMembers:'Miembros Migrados', lblMigratedTo:'Migró al Servidor',
     lblMigrated:'Migró a otro servidor', migratedTag:'Migró',
     weekReport:'Informe Semanal', zoneGreen:'Zona Verde', zoneYellow:'Zona Amarilla', zoneRed:'Zona Roja',
-    weekEditTitle:'Editar semana', eventEditTitle:'Editar evento' },
+    weekEditTitle:'Editar semana', eventEditTitle:'Editar evento',
+    overallReportBtn:'📊 Informe General', overallReport:'Informe General', thWeeks:'Semanas' },
   fr: { appName:'Panneau EXC', tagline:'Membres · Rang · Puissance et Niveau de Camp · Suivi des Événements', refresh:'Actualiser',
     syncConnecting:'Connexion…', syncLive:'En direct — visible par tous', syncError:'Erreur de connexion',
     tabMembers:'Membres', tabEvents:'Événements', tabBoard:'Classement',
@@ -313,7 +320,8 @@ const DICT = {
     subMigratedMembers:'Membres Migrés', lblMigratedTo:'Migré vers le Serveur',
     lblMigrated:'A migré vers un autre serveur', migratedTag:'A migré',
     weekReport:'Rapport Hebdomadaire', zoneGreen:'Zone Verte', zoneYellow:'Zone Jaune', zoneRed:'Zone Rouge',
-    weekEditTitle:'Modifier la semaine', eventEditTitle:"Modifier l'événement" }
+    weekEditTitle:'Modifier la semaine', eventEditTitle:"Modifier l'événement",
+    overallReportBtn:'📊 Rapport Global', overallReport:'Rapport Global', thWeeks:'Semaines' }
 };
 
 /**
@@ -377,6 +385,11 @@ export function applyStaticText() {
   document.getElementById("t_addWeek_svs").textContent = t("addWeek");
   document.getElementById("t_addWeek_gvg").textContent = t("addWeek");
   document.getElementById("t_addWeek_ss").textContent = t("addWeek");
+  ["svs", "gvg", "ss", "kod", "other"].forEach((type) => {
+    document.getElementById("t_overallReport_" + type).textContent = t("overallReportBtn");
+  });
+  document.getElementById("t_overallReportTitle").textContent = t("overallReport");
+  document.getElementById("t_close5").textContent = t("close");
   document.getElementById("t_legendJoined").textContent = t("legendJoined");
   document.getElementById("t_legendNotJoined").textContent = t("legendNotJoined");
   document.getElementById("t_legendUnknown").textContent = t("legendUnknown");
