@@ -140,6 +140,17 @@ export async function createWeek(type, payload) {
   return data;
 }
 
+export async function updateWeek(type, weekId, payload) {
+  const { data, error } = await supabase
+    .from(weeksTable(type))
+    .update(payload)
+    .eq("id", weekId)
+    .select()
+    .single();
+  if (error) dbError(`${type.toUpperCase()} haftası güncellenemedi`, error);
+  return data;
+}
+
 export async function deleteWeek(type, weekId) {
   const { error } = await supabase.from(weeksTable(type)).delete().eq("id", weekId);
   if (error) dbError(`${type.toUpperCase()} haftası silinemedi`, error);

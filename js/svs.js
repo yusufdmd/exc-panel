@@ -27,6 +27,7 @@ function renderStatusTypeTable(type, store, tableElementId, emptyElementId) {
       ${store.weeks.map((week) => `<th class="week-col"><div class="week-head"><span class="wname">${escapeHtml(week.label)}</span>
         <span class="week-actions">
           <button class="icon-btn" style="width:20px;height:20px;" onclick="openWeekReportModal('${type}','${week.id}')" title="${t("weekReport")}">📋</button>
+          <button class="icon-btn admin-only" style="width:20px;height:20px;" onclick="openWeekModal('${type}','${week.id}')" title="${type === "other" ? t("eventEditTitle") : t("weekEditTitle")}">🏷</button>
           <button class="icon-btn admin-only" style="width:20px;height:20px;" onclick="openEntryModal('${type}','${week.id}')">✎</button>
           <button class="icon-btn danger admin-only" style="width:20px;height:20px;" onclick="deleteWeek('${type}','${week.id}')">✕</button>
         </span></div></th>`).join("")}

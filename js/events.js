@@ -14,7 +14,7 @@
 // çünkü bu dosyadaki CRUD fonksiyonları da aynı dönüşümü kullanır.
 // =====================================================================
 
-import { createWeek as dbCreateWeek, deleteWeek as dbDeleteWeek, upsertRecordsBulk } from "./database.js";
+import { createWeek as dbCreateWeek, updateWeek as dbUpdateWeek, deleteWeek as dbDeleteWeek, upsertRecordsBulk } from "./database.js";
 import { state, t, showToast, escapeHtml, rankClass, statusOf, gvgColorClass, formatPower, renderAll } from "./ui.js";
 import { filteredSortedMembers } from "./members.js";
 
@@ -41,16 +41,25 @@ function storeFor(type) {
 }
 
 // =====================================================================
-// HAFTA MODALI (EKLE)
+// HAFTA MODALI (EKLE/DÜZENLE)
 // =====================================================================
-export function openWeekModal(type) {
+/** weekId verilirse mevcut haftayı düzenleme modunda açar; verilmezse yeni hafta ekler. */
+export function openWeekModal(type, weekId) {
   document.getElementById("weekType").value = type;
+  document.getElementById("weekEditId").value = weekId || "";
   const isOther = type === "other";
-  document.getElementById("weekModalTitle").textContent = isOther ? t("eventAddTitle") : t("weekAddTitle");
   document.getElementById("t_lblWeekLabel").textContent = isOther ? t("lblEventLabel") : t("lblWeekLabel");
   const store = storeFor(type);
-  document.getElementById("wkLabel").value = (isOther ? (state.currentLang === "tr" ? "Etkinlik " : "Event ") : "Hafta ") + (store.weeks.length + 1);
-  document.getElementById("wkDate").value = "";
+  if (weekId) {
+    const week = store.weeks.find((w) => w.id === weekId);
+    document.getElementById("weekModalTitle").textContent = isOther ? t("eventEditTitle") : t("weekEditTitle");
+    document.getElementById("wkLabel").value = week ? week.label : "";
+    document.getElementById("wkDate").value = week ? week.date : "";
+  } else {
+    document.getElementById("weekModalTitle").textContent = isOther ? t("eventAddTitle") : t("weekAddTitle");
+    document.getElementById("wkLabel").value = (isOther ? (state.currentLang === "tr" ? "Etkinlik " : "Event ") : "Hafta ") + (store.weeks.length + 1);
+    document.getElementById("wkDate").value = "";
+  }
   document.getElementById("weekOverlay").classList.add("active");
 }
 
@@ -60,14 +69,23 @@ export function closeWeekModal() {
 
 export async function saveWeek() {
   const type = document.getElementById("weekType").value;
+  const editId = document.getElementById("weekEditId").value;
   const label = document.getElementById("wkLabel").value.trim();
   if (!label) {
     showToast(type === "other" ? t("eventNameRequired") : t("weekNameRequired"));
     return;
   }
+  const weekDate = document.getElementById("wkDate").value || null;
   try {
-    const row = await dbCreateWeek(type, { label, week_date: document.getElementById("wkDate").value || null });
-    storeFor(type).weeks.push(mapWeek(row));
+    const store = storeFor(type);
+    if (editId) {
+      const row = await dbUpdateWeek(type, editId, { label, week_date: weekDate });
+      const index = store.weeks.findIndex((w) => w.id === editId);
+      if (index >= 0) store.weeks[index] = mapWeek(row);
+    } else {
+      const row = await dbCreateWeek(type, { label, week_date: weekDate });
+      store.weeks.push(mapWeek(row));
+    }
     closeWeekModal();
     renderAll();
     showToast(type === "other" ? t("toastEventSaved") : t("toastWeekSaved"));

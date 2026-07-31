@@ -24,6 +24,7 @@ export function renderSs() {
       ${state.ss.weeks.map((week) => `<th class="week-col"><div class="week-head"><span class="wname">${escapeHtml(week.label)}</span>
         <span class="week-actions">
           <button class="icon-btn" style="width:20px;height:20px;" onclick="openWeekReportModal('ss','${week.id}')" title="${t("weekReport")}">📋</button>
+          <button class="icon-btn admin-only" style="width:20px;height:20px;" onclick="openWeekModal('ss','${week.id}')" title="${t("weekEditTitle")}">🏷</button>
           <button class="icon-btn admin-only" style="width:20px;height:20px;" onclick="openEntryModal('ss','${week.id}')">✎</button>
           <button class="icon-btn danger admin-only" style="width:20px;height:20px;" onclick="deleteWeek('ss','${week.id}')">✕</button>
         </span></div></th>`).join("")}
