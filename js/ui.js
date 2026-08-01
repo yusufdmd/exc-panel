@@ -153,6 +153,9 @@ const DICT = {
     loginFailed:'Giriş başarısız.', loginSuccess:'Giriş yapıldı.', logoutSuccess:'Çıkış yapıldı.',
     emailPasswordRequired:'Kullanıcı adı ve şifre gerekli.', viewOnlyLabel:'Salt okunur',
     previousNames:'Önceki Kullanıcı Adları',
+    lblUserChanged:'Kullanıcı Değişikliği', userChangedBtn:'🔄 Kullanıcı Değişti',
+    confirmUserChanged:'Bu hesabı bugün itibariyle yeni bir kullanıcının devraldığını işaretlemek istiyor musunuz? Bu tarihten önceki etkinlik haftaları bu üye için otomatik olarak muaf sayılacak.',
+    userChangedStagedLabel:'Kullanıcı değişikliği',
     subMigratedMembers:'Göç Edenler', lblMigratedTo:'Göç Ettiği Sunucu',
     lblMigrated:'Başka sunucuya göç etti', migratedTag:'Göç Etti',
     weekReport:'Hafta Raporu', zoneGreen:'Yeşil Bölge', zoneYellow:'Sarı Bölge', zoneRed:'Kırmızı Bölge',
@@ -194,6 +197,9 @@ const DICT = {
     loginFailed:'Sign-in failed.', loginSuccess:'Signed in.', logoutSuccess:'Signed out.',
     emailPasswordRequired:'Username and password are required.', viewOnlyLabel:'View only',
     previousNames:'Previous Usernames',
+    lblUserChanged:'User Change', userChangedBtn:'🔄 User Changed',
+    confirmUserChanged:'Mark this account as taken over by a new user as of today? Event weeks before this date will automatically be treated as exempt for this member.',
+    userChangedStagedLabel:'User changed',
     subMigratedMembers:'Migrated Members', lblMigratedTo:'Migrated To Server',
     lblMigrated:'Migrated to another server', migratedTag:'Migrated',
     weekReport:'Week Report', zoneGreen:'Green Zone', zoneYellow:'Yellow Zone', zoneRed:'Red Zone',
@@ -235,6 +241,9 @@ const DICT = {
     loginFailed:'Anmeldung fehlgeschlagen.', loginSuccess:'Angemeldet.', logoutSuccess:'Abgemeldet.',
     emailPasswordRequired:'Benutzername und Passwort sind erforderlich.', viewOnlyLabel:'Nur Ansicht',
     previousNames:'Frühere Benutzernamen',
+    lblUserChanged:'Nutzerwechsel', userChangedBtn:'🔄 Nutzer gewechselt',
+    confirmUserChanged:'Soll dieses Konto ab heute als von einem neuen Nutzer übernommen markiert werden? Event-Wochen vor diesem Datum gelten für dieses Mitglied automatisch als befreit.',
+    userChangedStagedLabel:'Nutzerwechsel',
     subMigratedMembers:'Abgewanderte Mitglieder', lblMigratedTo:'Migriert zu Server',
     lblMigrated:'Zu einem anderen Server abgewandert', migratedTag:'Abgewandert',
     weekReport:'Wochenbericht', zoneGreen:'Grüne Zone', zoneYellow:'Gelbe Zone', zoneRed:'Rote Zone',
@@ -276,6 +285,9 @@ const DICT = {
     loginFailed:'Error al iniciar sesión.', loginSuccess:'Sesión iniciada.', logoutSuccess:'Sesión cerrada.',
     emailPasswordRequired:'Nombre de usuario y contraseña son obligatorios.', viewOnlyLabel:'Solo lectura',
     previousNames:'Nombres de usuario anteriores',
+    lblUserChanged:'Cambio de Usuario', userChangedBtn:'🔄 Usuario Cambiado',
+    confirmUserChanged:'¿Marcar esta cuenta como asumida por un nuevo usuario a partir de hoy? Las semanas de eventos anteriores a esta fecha se considerarán automáticamente exentas para este miembro.',
+    userChangedStagedLabel:'Cambio de usuario',
     subMigratedMembers:'Miembros Migrados', lblMigratedTo:'Migró al Servidor',
     lblMigrated:'Migró a otro servidor', migratedTag:'Migró',
     weekReport:'Informe Semanal', zoneGreen:'Zona Verde', zoneYellow:'Zona Amarilla', zoneRed:'Zona Roja',
@@ -317,6 +329,9 @@ const DICT = {
     loginFailed:'Échec de la connexion.', loginSuccess:'Connecté.', logoutSuccess:'Déconnecté.',
     emailPasswordRequired:"Le nom d'utilisateur et le mot de passe sont requis.", viewOnlyLabel:'Lecture seule',
     previousNames:"Anciens noms d'utilisateur",
+    lblUserChanged:"Changement d'utilisateur", userChangedBtn:'🔄 Utilisateur Changé',
+    confirmUserChanged:"Marquer ce compte comme repris par un nouvel utilisateur à partir d'aujourd'hui ? Les semaines d'événements antérieures à cette date seront automatiquement considérées comme exemptées pour ce membre.",
+    userChangedStagedLabel:"Changement d'utilisateur",
     subMigratedMembers:'Membres Migrés', lblMigratedTo:'Migré vers le Serveur',
     lblMigrated:'A migré vers un autre serveur', migratedTag:'A migré',
     weekReport:'Rapport Hebdomadaire', zoneGreen:'Zone Verte', zoneYellow:'Zone Jaune', zoneRed:'Zone Rouge',
@@ -418,6 +433,8 @@ export function applyStaticText() {
   document.getElementById("t_subOldMembers").textContent = t("subOldMembers");
   document.getElementById("t_subMigratedMembers").textContent = t("subMigratedMembers");
   document.getElementById("t_lblMigratedTo").textContent = t("lblMigratedTo");
+  document.getElementById("t_lblUserChanged").textContent = t("lblUserChanged");
+  document.getElementById("t_userChangedBtn").textContent = t("userChangedBtn");
   document.getElementById("t_lblMigrated").textContent = t("lblMigrated");
   document.getElementById("t_thDate").textContent = t("thDate");
   document.getElementById("t_thPowerVal").textContent = t("thPowerVal");
@@ -518,15 +535,21 @@ export function gvgColorClass(points) {
 }
 
 /**
- * Bir üyenin, verilen haftada henüz loncaya katılmamış olması nedeniyle
- * "muaf" sayılıp sayılmayacağını hesaplar. Bu SADECE o hafta için hiç
- * kayıt girilmemişse bir varsayım olarak kullanılmalıdır — gerçek bir
- * kayıt varsa her zaman kayıttaki veri gösterilir (bkz. members/gvg/svs/ss
+ * Bir üyenin, verilen haftada henüz loncaya katılmamış (veya hesabı henüz
+ * devralmamış) olması nedeniyle "muaf" sayılıp sayılmayacağını hesaplar.
+ * Eşik tarihi, `user_changed_at` doluysa (hesabı devralan yeni kullanıcı)
+ * onu, yoksa `joined_at`'i esas alır — böylece hem yeni eklenen bir üye
+ * hem de "Kullanıcı Değişti" ile işaretlenmiş bir üye, kendinden önceki
+ * haftalardan otomatik muaf sayılır. Bu SADECE o hafta için hiç kayıt
+ * girilmemişse bir varsayım olarak kullanılmalıdır — gerçek bir kayıt
+ * varsa her zaman kayıttaki veri gösterilir (bkz. members/gvg/svs/ss
  * modüllerindeki "cellInfo" fonksiyonları).
  */
 export function isExempt(member, week) {
-  if (!week || !week.date || !member || !member.joinedAt) return false;
-  return week.date < member.joinedAt.slice(0, 10);
+  if (!week || !week.date || !member) return false;
+  const threshold = member.userChangedAt || member.joinedAt;
+  if (!threshold) return false;
+  return week.date < threshold.slice(0, 10);
 }
 
 /** Bir katılım kaydının durumunu ('joined' | 'absent' | 'unknown') normalize eder. */

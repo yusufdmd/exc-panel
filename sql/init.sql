@@ -37,6 +37,7 @@ create table if not exists members (
   migrated_to_server  bigint, -- göç ettiği sunucu biliniyorsa (opsiyonel)
   name_history        jsonb not null default '[]'::jsonb, -- [{name, changedAt}, ...] eski kullanıcı adları
   joined_at           timestamptz not null default now(),
+  user_changed_at     timestamptz, -- hesabı devralan yeni kullanıcının başlangıç tarihi (bkz. add_user_changed_at.sql); doluysa muafiyet eşiği joined_at yerine bunu esas alır
   created_at          timestamptz not null default now(),
   updated_at          timestamptz not null default now()
 );

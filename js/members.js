@@ -51,6 +51,7 @@ export function mapMember(row) {
     isOld: row.is_old,
     oldSince: row.old_since,
     joinedAt: row.joined_at,
+    userChangedAt: row.user_changed_at || null,
     nameHistory: Array.isArray(row.name_history) ? row.name_history : [],
     isMigrated: !!row.is_migrated,
     migratedTo: row.migrated_to_server ?? null,
@@ -194,6 +195,9 @@ export function openMemberModal(id) {
     document.getElementById("fPower").value = member.power;
     document.getElementById("fCamp").value = member.campLevel;
     document.getElementById("fMigratedTo").value = member.migratedTo != null ? member.migratedTo : "";
+    document.getElementById("fUserChangedAt").value = member.userChangedAt ? member.userChangedAt.slice(0, 10) : "";
+    document.getElementById("userChangedStatus").textContent = member.userChangedAt ? (t("userChangedStagedLabel") + ": " + member.userChangedAt.slice(0, 10)) : "";
+    document.getElementById("userChangedField").style.display = "";
     state.oldFlag = !!member.isOld;
     state.migratedFlag = !!member.isMigrated;
   } else {
@@ -201,6 +205,9 @@ export function openMemberModal(id) {
     ["fName", "fGameId", "fPower", "fMigratedTo"].forEach((fieldId) => { document.getElementById(fieldId).value = ""; });
     document.getElementById("fRank").value = "R1";
     document.getElementById("fCamp").value = "1";
+    document.getElementById("fUserChangedAt").value = "";
+    document.getElementById("userChangedStatus").textContent = "";
+    document.getElementById("userChangedField").style.display = "none";
     state.oldFlag = false;
     state.migratedFlag = false;
   }
@@ -222,6 +229,14 @@ export function toggleMigrated() {
   state.migratedFlag = !state.migratedFlag;
   if (state.migratedFlag) state.oldFlag = false; // "eski üye" ve "göç etti" birbirini dışlar
   syncMemberStatusToggles();
+}
+
+/** Hesabı bugün itibariyle yeni bir kullanıcının devraldığını işaretler (kayıt "Kaydet" ile onaylanana kadar sadece formda bekler). */
+export function markUserChanged() {
+  if (!confirm(t("confirmUserChanged"))) return;
+  const today = todayStr();
+  document.getElementById("fUserChangedAt").value = today;
+  document.getElementById("userChangedStatus").textContent = t("userChangedStagedLabel") + ": " + today;
 }
 
 /** Verilen rütbe için kontenjan doluysa uyarı metni, aksi halde null döndürür. Göç eden üyeler kontenjana sayılmaz. */
@@ -280,10 +295,13 @@ export async function saveMember() {
         nameHistory.push({ name: previous.name, changedAt: todayStr() });
       }
 
+      const userChangedAt = document.getElementById("fUserChangedAt").value || null;
+
       const row = await updateMember(editId, {
         name: name || null, game_id: gameId || null, rank, power, camp_level: campLevel,
         is_old: state.oldFlag, old_since: oldSince, name_history: nameHistory,
-        is_migrated: state.migratedFlag, migrated_to_server: migratedTo
+        is_migrated: state.migratedFlag, migrated_to_server: migratedTo,
+        user_changed_at: userChangedAt
       });
 
       const history = Array.isArray(previous.powerHistory) ? [...previous.powerHistory] : [];

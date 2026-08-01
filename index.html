@@ -239,6 +239,14 @@
       <label id="t_lblMigratedTo">Göç Ettiği Sunucu</label>
       <input id="fMigratedTo" type="number">
     </div>
+    <div class="field" id="userChangedField" style="display:none;">
+      <label id="t_lblUserChanged">Kullanıcı Değişikliği</label>
+      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+        <button type="button" class="btn-ghost" onclick="markUserChanged()" id="t_userChangedBtn">🔄 Kullanıcı Değişti</button>
+        <span id="userChangedStatus" style="font-size:12px; color:var(--text-muted);"></span>
+      </div>
+      <input type="hidden" id="fUserChangedAt">
+    </div>
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closeMemberModal()" id="t_cancel1">Vazgeç</button>
       <button class="btn-primary" onclick="saveMember()" id="t_save1">Kaydet</button>
