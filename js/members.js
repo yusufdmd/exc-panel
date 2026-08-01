@@ -194,6 +194,7 @@ export function openMemberModal(id) {
     document.getElementById("fRank").value = member.rank;
     document.getElementById("fPower").value = member.power;
     document.getElementById("fCamp").value = member.campLevel;
+    document.getElementById("fJoinedAt").value = member.joinedAt ? member.joinedAt.slice(0, 10) : "";
     document.getElementById("fMigratedTo").value = member.migratedTo != null ? member.migratedTo : "";
     document.getElementById("fUserChangedAt").value = member.userChangedAt ? member.userChangedAt.slice(0, 10) : "";
     document.getElementById("userChangedStatus").textContent = member.userChangedAt ? (t("userChangedStagedLabel") + ": " + member.userChangedAt.slice(0, 10)) : "";
@@ -205,6 +206,7 @@ export function openMemberModal(id) {
     ["fName", "fGameId", "fPower", "fMigratedTo"].forEach((fieldId) => { document.getElementById(fieldId).value = ""; });
     document.getElementById("fRank").value = "R1";
     document.getElementById("fCamp").value = "1";
+    document.getElementById("fJoinedAt").value = todayStr();
     document.getElementById("fUserChangedAt").value = "";
     document.getElementById("userChangedStatus").textContent = "";
     document.getElementById("userChangedField").style.display = "none";
@@ -273,6 +275,7 @@ export async function saveMember() {
   const power = Number(document.getElementById("fPower").value) || 0;
   const rank = document.getElementById("fRank").value;
   const campLevel = document.getElementById("fCamp").value;
+  const joinedAt = document.getElementById("fJoinedAt").value || todayStr();
 
   if (!state.oldFlag && !state.migratedFlag) {
     const blockMessage = rankLimitBlockedMessage(rank, editId);
@@ -301,7 +304,7 @@ export async function saveMember() {
         name: name || null, game_id: gameId || null, rank, power, camp_level: campLevel,
         is_old: state.oldFlag, old_since: oldSince, name_history: nameHistory,
         is_migrated: state.migratedFlag, migrated_to_server: migratedTo,
-        user_changed_at: userChangedAt
+        user_changed_at: userChangedAt, joined_at: joinedAt
       });
 
       const history = Array.isArray(previous.powerHistory) ? [...previous.powerHistory] : [];
@@ -318,7 +321,8 @@ export async function saveMember() {
       const row = await createMember({
         name: name || null, game_id: gameId || null, rank, power, camp_level: campLevel,
         is_old: state.oldFlag, old_since: state.oldFlag ? today : null,
-        is_migrated: state.migratedFlag, migrated_to_server: migratedTo
+        is_migrated: state.migratedFlag, migrated_to_server: migratedTo,
+        joined_at: joinedAt
       });
       await addPowerHistoryEntry(row.id, today, power);
       state.members.push({ ...mapMember(row), powerHistory: [{ date: today, power }] });

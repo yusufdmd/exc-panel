@@ -124,7 +124,7 @@ const DICT = {
     thRank:'Rütbe', thUsername:'Kullanıcı Adı', thId:'ID', thPower:'Güç Seviyesi', thCamp:'Kamp Seviyesi', thTotalPoints:'Toplam Puan',
     emptyMembersTitle:'Henüz üye yok', emptyMembersDesc:'"+ Üye Ekle" ile ilk üyeyi kaydet.',
     memberAddTitle:'Üye Ekle', memberEditTitle:'Üyeyi Düzenle',
-    lblUsername:'Kullanıcı Adı', lblGameId:'ID Numarası', lblRank:'Rütbe', lblPower:'Güç Seviyesi', lblCamp:'Kamp Seviyesi', lblOld:'Eski üye (OLD)',
+    lblUsername:'Kullanıcı Adı', lblGameId:'ID Numarası', lblRank:'Rütbe', lblPower:'Güç Seviyesi', lblCamp:'Kamp Seviyesi', lblJoinedAt:'Katılma Tarihi', lblOld:'Eski üye (OLD)',
     cancel:'Vazgeç', save:'Kaydet', close:'Kapat',
     toastMemberSaved:'Üye kaydedildi.', toastMemberDeleted:'Üye silindi.', confirmDeleteMember:'Bu üyeyi silmek istediğinize emin misiniz?',
     nameIdRequired:'Kullanıcı adı ve ID zorunludur.',
@@ -168,7 +168,7 @@ const DICT = {
     thRank:'Rank', thUsername:'Username', thId:'ID', thPower:'Power Level', thCamp:'Camp Level', thTotalPoints:'Total Points',
     emptyMembersTitle:'No members yet', emptyMembersDesc:'Use "+ Add Member" to add the first one.',
     memberAddTitle:'Add Member', memberEditTitle:'Edit Member',
-    lblUsername:'Username', lblGameId:'ID Number', lblRank:'Rank', lblPower:'Power Level', lblCamp:'Camp Level', lblOld:'Old member (OLD)',
+    lblUsername:'Username', lblGameId:'ID Number', lblRank:'Rank', lblPower:'Power Level', lblCamp:'Camp Level', lblJoinedAt:'Join Date', lblOld:'Old member (OLD)',
     cancel:'Cancel', save:'Save', close:'Close',
     toastMemberSaved:'Member saved.', toastMemberDeleted:'Member deleted.', confirmDeleteMember:'Are you sure you want to delete this member?',
     nameIdRequired:'Username and ID are required.',
@@ -212,7 +212,7 @@ const DICT = {
     thRank:'Rang', thUsername:'Benutzername', thId:'ID', thPower:'Machtstufe', thCamp:'Basisstufe', thTotalPoints:'Gesamtpunkte',
     emptyMembersTitle:'Noch keine Mitglieder', emptyMembersDesc:'Mit "+ Mitglied hinzufügen" das erste anlegen.',
     memberAddTitle:'Mitglied hinzufügen', memberEditTitle:'Mitglied bearbeiten',
-    lblUsername:'Benutzername', lblGameId:'ID-Nummer', lblRank:'Rang', lblPower:'Machtstufe', lblCamp:'Basisstufe', lblOld:'Altes Mitglied (OLD)',
+    lblUsername:'Benutzername', lblGameId:'ID-Nummer', lblRank:'Rang', lblPower:'Machtstufe', lblCamp:'Basisstufe', lblJoinedAt:'Beitrittsdatum', lblOld:'Altes Mitglied (OLD)',
     cancel:'Abbrechen', save:'Speichern', close:'Schließen',
     toastMemberSaved:'Mitglied gespeichert.', toastMemberDeleted:'Mitglied gelöscht.', confirmDeleteMember:'Dieses Mitglied wirklich löschen?',
     nameIdRequired:'Benutzername und ID sind erforderlich.',
@@ -256,7 +256,7 @@ const DICT = {
     thRank:'Rango', thUsername:'Nombre de usuario', thId:'ID', thPower:'Nivel de poder', thCamp:'Nivel de campamento', thTotalPoints:'Puntos totales',
     emptyMembersTitle:'Aún no hay miembros', emptyMembersDesc:'Usa "+ Añadir miembro" para agregar el primero.',
     memberAddTitle:'Añadir miembro', memberEditTitle:'Editar miembro',
-    lblUsername:'Nombre de usuario', lblGameId:'Número de ID', lblRank:'Rango', lblPower:'Nivel de poder', lblCamp:'Nivel de campamento', lblOld:'Miembro antiguo (OLD)',
+    lblUsername:'Nombre de usuario', lblGameId:'Número de ID', lblRank:'Rango', lblPower:'Nivel de poder', lblCamp:'Nivel de campamento', lblJoinedAt:'Fecha de ingreso', lblOld:'Miembro antiguo (OLD)',
     cancel:'Cancelar', save:'Guardar', close:'Cerrar',
     toastMemberSaved:'Miembro guardado.', toastMemberDeleted:'Miembro eliminado.', confirmDeleteMember:'¿Seguro que quieres eliminar a este miembro?',
     nameIdRequired:'El nombre de usuario y el ID son obligatorios.',
@@ -300,7 +300,7 @@ const DICT = {
     thRank:'Rang', thUsername:"Nom d'utilisateur", thId:'ID', thPower:'Niveau de puissance', thCamp:'Niveau de camp', thTotalPoints:'Points totaux',
     emptyMembersTitle:'Aucun membre pour le moment', emptyMembersDesc:'Utilisez "+ Ajouter un membre" pour ajouter le premier.',
     memberAddTitle:'Ajouter un membre', memberEditTitle:'Modifier le membre',
-    lblUsername:"Nom d'utilisateur", lblGameId:"Numéro d'ID", lblRank:'Rang', lblPower:'Niveau de puissance', lblCamp:'Niveau de camp', lblOld:'Ancien membre (OLD)',
+    lblUsername:"Nom d'utilisateur", lblGameId:"Numéro d'ID", lblRank:'Rang', lblPower:'Niveau de puissance', lblCamp:'Niveau de camp', lblJoinedAt:"Date d'adhésion", lblOld:'Ancien membre (OLD)',
     cancel:'Annuler', save:'Enregistrer', close:'Fermer',
     toastMemberSaved:'Membre enregistré.', toastMemberDeleted:'Membre supprimé.', confirmDeleteMember:'Voulez-vous vraiment supprimer ce membre ?',
     nameIdRequired:"Le nom d'utilisateur et l'ID sont obligatoires.",
@@ -388,6 +388,7 @@ export function applyStaticText() {
   document.getElementById("t_lblRank").textContent = t("lblRank");
   document.getElementById("t_lblPower").textContent = t("lblPower");
   document.getElementById("t_lblCamp").textContent = t("lblCamp");
+  document.getElementById("t_lblJoinedAt").textContent = t("lblJoinedAt");
   document.getElementById("t_lblOld").textContent = t("lblOld");
   document.getElementById("t_cancel1").textContent = t("cancel");
   document.getElementById("t_save1").textContent = t("save");
