@@ -16,12 +16,13 @@
 // o dosyalar hiç çalıştırılmaz ve tabloları hiç çizilmez.
 // =====================================================================
 
-import { getMembers, getAllPowerHistory, getWeeks, getAllRecords, subscribeToTables } from "./database.js";
+import { getMembers, getAllPowerHistory, getWeeks, getAllRecords, getMigrationProspects, subscribeToTables } from "./database.js";
 import { POLL_INTERVAL_MS } from "./config.js";
 import { state, t, showToast, buildLangSwitch, applyStaticText, initLangFromStorage, persistLanguage, renderAll, registerDataLoader } from "./ui.js";
 import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, saveMember, deleteMember, restoreMember, openHistoryModal, closeHistoryModal, setMemberView, setRankFilter, setSort } from "./members.js";
 import { mapWeek, mapEntry, openWeekModal, closeWeekModal, saveWeek, deleteWeek, openEntryModal, closeEntryModal, renderEntryRows, saveEntry, openWeekReportModal, closeWeekReportModal, openOverallReportModal, closeOverallReportModal, setOverallReportSort } from "./events.js";
 import { setBoardSort } from "./dashboard.js";
+import { mapProspect, renderMigration, setMigrationSort, openProspectModal, closeProspectModal, saveProspect, deleteProspect } from "./migration.js";
 import { exportBackup, importBackup } from "./backup.js";
 import { openLoginModal, closeLoginModal, doLogin, doLogout } from "./auth.js";
 import "./gvg.js";
@@ -46,14 +47,16 @@ async function loadAll(silent) {
       gvgWeeksRes, gvgRecordsRes,
       ssWeeksRes, ssRecordsRes,
       kodWeeksRes, kodRecordsRes,
-      otherWeeksRes, otherRecordsRes
+      otherWeeksRes, otherRecordsRes,
+      migrationRes
     ] = await Promise.allSettled([
       getMembers(), getAllPowerHistory(),
       getWeeks("svs"), getAllRecords("svs"),
       getWeeks("gvg"), getAllRecords("gvg"),
       getWeeks("ss"), getAllRecords("ss"),
       getWeeks("kod"), getAllRecords("kod"),
-      getWeeks("other"), getAllRecords("other")
+      getWeeks("other"), getAllRecords("other"),
+      getMigrationProspects()
     ]);
 
     const historyByMember = {};
@@ -72,6 +75,7 @@ async function loadAll(silent) {
     state.ss = { weeks: settledList(ssWeeksRes).map(mapWeek), entries: settledList(ssRecordsRes).map((r) => mapEntry("ss", r)) };
     state.kod = { weeks: settledList(kodWeeksRes).map(mapWeek), entries: settledList(kodRecordsRes).map((r) => mapEntry("kod", r)) };
     state.other = { weeks: settledList(otherWeeksRes).map(mapWeek), entries: settledList(otherRecordsRes).map((r) => mapEntry("other", r)) };
+    state.migration = settledList(migrationRes).map(mapProspect);
 
     document.getElementById("syncText").textContent = t("syncLive");
     renderAll();
@@ -91,7 +95,7 @@ setInterval(() => loadAll(true), POLL_INTERVAL_MS);
 
 let realtimeReloadTimer = null;
 subscribeToTables(
-  ["members", "power_history", "gvg_weeks", "gvg_records", "svs_weeks", "svs_records", "ss_weeks", "ss_records", "kod_weeks", "kod_records", "other_weeks", "other_records"],
+  ["members", "power_history", "gvg_weeks", "gvg_records", "svs_weeks", "svs_records", "ss_weeks", "ss_records", "kod_weeks", "kod_records", "other_weeks", "other_records", "migration_prospects"],
   () => {
     clearTimeout(realtimeReloadTimer);
     realtimeReloadTimer = setTimeout(() => loadAll(true), REALTIME_RELOAD_DEBOUNCE_MS);
@@ -138,6 +142,7 @@ Object.assign(window, {
   openOverallReportModal, closeOverallReportModal, setOverallReportSort,
   openHistoryModal, closeHistoryModal,
   setBoardSort, setLang,
+  renderMigration, setMigrationSort, openProspectModal, closeProspectModal, saveProspect, deleteProspect,
   openLoginModal, closeLoginModal, doLogin, doLogout
 });
 

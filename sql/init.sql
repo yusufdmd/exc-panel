@@ -216,6 +216,28 @@ create trigger trg_kod_records_updated_at
   for each row execute function set_updated_at();
 
 -- =====================================================================
+-- 6.2) MIGRATION_PROSPECTS — "Göç" sekmesi: önümüzdeki göç dönemi için
+--      bize katılmak isteyen adaylar. members'dan bağımsızdır.
+-- =====================================================================
+create table if not exists migration_prospects (
+  id          uuid primary key default gen_random_uuid(),
+  name        text,
+  game_id     text,
+  power       bigint not null default 0,
+  server      bigint, -- adayın şu an hangi sunucuda olduğu
+  color       text not null default 'gray' check (color in ('gold','purple','blue','gray')), -- göç rengi: Altın > Mor > Mavi > Gri
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+create index if not exists idx_migration_prospects_color on migration_prospects (color);
+
+drop trigger if exists trg_migration_prospects_updated_at on migration_prospects;
+create trigger trg_migration_prospects_updated_at
+  before update on migration_prospects
+  for each row execute function set_updated_at();
+
+-- =====================================================================
 -- 7) SETTINGS — Uygulama geneli ayarlar (anahtar/değer)
 -- =====================================================================
 create table if not exists settings (
@@ -279,6 +301,7 @@ begin
       'ss_weeks','ss_records',
       'other_weeks','other_records',
       'kod_weeks','kod_records',
+      'migration_prospects',
       'settings','users','activity_logs'
     ])
   loop
@@ -320,6 +343,7 @@ alter publication supabase_realtime add table
   ss_weeks, ss_records,
   other_weeks, other_records,
   kod_weeks, kod_records,
+  migration_prospects,
   settings, activity_logs;
 
 -- =====================================================================

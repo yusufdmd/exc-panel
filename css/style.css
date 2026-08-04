@@ -79,6 +79,8 @@ body{
 .stat-card .lbl{ font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.8px; margin-top:3px; }
 .stat-card.r5 .num{ color: var(--gold); } .stat-card.r4 .num{ color: var(--violet); }
 .stat-card.r3 .num{ color: var(--cyan); } .stat-card.r2 .num{ color: var(--blue); } .stat-card.r1 .num{ color: var(--gray); }
+.stat-card.gold .num{ color: var(--gold); } .stat-card.purple .num{ color: var(--violet); }
+.stat-card.blue .num{ color: var(--blue); } .stat-card.gray .num{ color: var(--gray); }
 
 .tabs{ display:flex; gap:6px; margin-bottom:18px; border-bottom:1px solid var(--line); flex-wrap:wrap; }
 .tab{
@@ -132,6 +134,12 @@ tbody tr.rank-row-r3 .sticky-col{ background: #172730; }
 tbody tr.rank-row-r2 .sticky-col{ background: #1B2234; }
 tbody tr.rank-row-r1 .sticky-col{ background: #1D212B; }
 
+/* Göç sekmesinde satırlar aday renk skalasına (Altın>Mor>Mavi>Gri) göre renklenir. */
+tbody tr.migration-row-gold{ background: rgba(224,166,58,0.1); }
+tbody tr.migration-row-purple{ background: rgba(169,135,232,0.1); }
+tbody tr.migration-row-blue{ background: rgba(108,142,239,0.1); }
+tbody tr.migration-row-gray{ background: rgba(124,133,152,0.1); }
+
 tbody tr:hover{ background: var(--bg-raised); }
 tbody tr.old-row{ opacity:0.55; }
 .sticky-col{ position:sticky; left:0; background: var(--bg-panel); z-index:2; }
@@ -144,6 +152,10 @@ tbody tr:hover .sticky-col{ background: var(--bg-raised); }
 .r3-c{ color: var(--cyan); background: rgba(63,193,201,0.08); }
 .r2-c{ color: var(--blue); background: rgba(108,142,239,0.08); }
 .r1-c{ color: var(--gray); background: rgba(124,133,152,0.08); }
+.mc-gold{ color: var(--gold); background: rgba(224,166,58,0.08); }
+.mc-purple{ color: var(--violet); background: rgba(169,135,232,0.08); }
+.mc-blue{ color: var(--blue); background: rgba(108,142,239,0.08); }
+.mc-gray{ color: var(--gray); background: rgba(124,133,152,0.08); }
 
 .member-name{ font-weight:700; }
 .member-id{ color:var(--text-dim); font-family: var(--font-mono); font-size:12px; }

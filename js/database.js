@@ -79,6 +79,45 @@ export async function deleteMember(id) {
 }
 
 // =====================================================================
+// MIGRATION_PROSPECTS — Göç sekmesi (bize katılmak isteyen adaylar)
+// =====================================================================
+export async function getMigrationProspects() {
+  const { data, error } = await supabase
+    .from("migration_prospects")
+    .select("*")
+    .order("created_at", { ascending: true });
+  if (error) dbError("Göç adayları alınamadı", error);
+  return data;
+}
+
+export async function createMigrationProspect(payload) {
+  const { data, error } = await supabase
+    .from("migration_prospects")
+    .insert(payload)
+    .select()
+    .single();
+  if (error) dbError("Göç adayı eklenemedi", error);
+  return data;
+}
+
+export async function updateMigrationProspect(id, payload) {
+  const { data, error } = await supabase
+    .from("migration_prospects")
+    .update(payload)
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) dbError("Göç adayı güncellenemedi", error);
+  return data;
+}
+
+export async function deleteMigrationProspect(id) {
+  const { error } = await supabase.from("migration_prospects").delete().eq("id", id);
+  if (error) dbError("Göç adayı silinemedi", error);
+  return true;
+}
+
+// =====================================================================
 // POWER_HISTORY — Güç seviyesi geçmişi
 // =====================================================================
 export async function getPowerHistory(memberId) {

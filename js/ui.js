@@ -20,7 +20,9 @@ import {
   CAMP_LEVELS,
   campLevelSortValue,
   LANGUAGES,
-  DEFAULT_LANGUAGE
+  DEFAULT_LANGUAGE,
+  MIGRATION_COLORS,
+  MIGRATION_COLOR_ORDER
 } from "./config.js";
 
 // ---------------------------------------------------------------------
@@ -45,6 +47,9 @@ export const state = {
   ss: { weeks: [], entries: [] },
   kod: { weeks: [], entries: [] },
   other: { weeks: [], entries: [] },
+  migration: [],
+  migrationSortKey: "color",
+  migrationSortDir: -1, // -1: varsayılan görünümde Altın üstte, Griye doğru azalan sıra
   currentTab: "members",
   currentSub: "svs",
   currentLang: DEFAULT_LANGUAGE,
@@ -65,7 +70,7 @@ export const state = {
   currentAdminUsername: "" // auth.js buraya Supabase oturumundaki sahte email'i (bkz. ADMIN_LOGIN_DOMAIN) DEĞİL, kullanıcıya gösterilecek çıplak kullanıcı adını yazar
 };
 
-export { RANK_ORDER };
+export { RANK_ORDER, MIGRATION_COLORS, MIGRATION_COLOR_ORDER };
 
 // =====================================================================
 // RENDER KAYIT MEKANİZMASI
@@ -119,7 +124,13 @@ export const LANG_FLAG = LANG_FLAG_LABELS;
 const DICT = {
   tr: { appName:'EXC Paneli', tagline:'Üye · Rütbe · Güç & Kamp Seviyesi · Etkinlik Takibi', refresh:'Yenile',
     syncConnecting:'Bağlanıyor…', syncLive:'Canlı — herkes görüyor', syncError:'Bağlantı hatası',
-    tabMembers:'Üyeler', tabEvents:'Etkinlikler', tabBoard:'Puan Sıralaması',
+    tabMembers:'Üyeler', tabEvents:'Etkinlikler', tabBoard:'Puan Sıralaması', tabMigration:'Göç',
+    addProspect:'+ Aday Ekle', prospectAddTitle:'Aday Ekle', prospectEditTitle:'Adayı Düzenle',
+    lblColor:'Göç Rengi', thColor:'Renk', thServer:'Sunucu', lblServer:'Mevcut Sunucu',
+    colorGold:'Altın', colorPurple:'Mor', colorBlue:'Mavi', colorGray:'Gri',
+    emptyMigrationTitle:'Henüz aday yok', emptyMigrationDesc:'"+ Aday Ekle" ile ilk göç adayını ekle.',
+    toastProspectSaved:'Aday kaydedildi.', toastProspectDeleted:'Aday silindi.', confirmDeleteProspect:'Bu adayı silmek istediğinize emin misiniz?',
+    statMigrationTotal:'Toplam Aday',
     statTotal:'Toplam Üye', filterAll:'Tümü', addMember:'+ Üye Ekle', searchPh:'İsim veya ID ile ara…',
     thRank:'Rütbe', thUsername:'Kullanıcı Adı', thId:'ID', thPower:'Güç Seviyesi', thCamp:'Kamp Seviyesi', thTotalPoints:'Toplam Puan',
     emptyMembersTitle:'Henüz üye yok', emptyMembersDesc:'"+ Üye Ekle" ile ilk üyeyi kaydet.',
@@ -163,7 +174,13 @@ const DICT = {
     overallReportBtn:'📊 Genel Rapor', overallReport:'Genel Rapor', thWeeks:'Haftalar' },
   en: { appName:'EXC Panel', tagline:'Members · Rank · Power & Camp Level · Event Tracking', refresh:'Refresh',
     syncConnecting:'Connecting…', syncLive:'Live — everyone sees this', syncError:'Connection error',
-    tabMembers:'Members', tabEvents:'Events', tabBoard:'Leaderboard',
+    tabMembers:'Members', tabEvents:'Events', tabBoard:'Leaderboard', tabMigration:'Migration',
+    addProspect:'+ Add Candidate', prospectAddTitle:'Add Candidate', prospectEditTitle:'Edit Candidate',
+    lblColor:'Migration Color', thColor:'Color', thServer:'Server', lblServer:'Current Server',
+    colorGold:'Gold', colorPurple:'Purple', colorBlue:'Blue', colorGray:'Gray',
+    emptyMigrationTitle:'No candidates yet', emptyMigrationDesc:'Use "+ Add Candidate" to add the first migration candidate.',
+    toastProspectSaved:'Candidate saved.', toastProspectDeleted:'Candidate deleted.', confirmDeleteProspect:'Are you sure you want to delete this candidate?',
+    statMigrationTotal:'Total Candidates',
     statTotal:'Total Members', filterAll:'All', addMember:'+ Add Member', searchPh:'Search by name or ID…',
     thRank:'Rank', thUsername:'Username', thId:'ID', thPower:'Power Level', thCamp:'Camp Level', thTotalPoints:'Total Points',
     emptyMembersTitle:'No members yet', emptyMembersDesc:'Use "+ Add Member" to add the first one.',
@@ -207,7 +224,13 @@ const DICT = {
     overallReportBtn:'📊 Overall Report', overallReport:'Overall Report', thWeeks:'Weeks' },
   de: { appName:'EXC Panel', tagline:'Mitglieder · Rang · Machtstufe & Basisstufe · Event-Tracking', refresh:'Aktualisieren',
     syncConnecting:'Verbinde…', syncLive:'Live — alle sehen dies', syncError:'Verbindungsfehler',
-    tabMembers:'Mitglieder', tabEvents:'Events', tabBoard:'Bestenliste',
+    tabMembers:'Mitglieder', tabEvents:'Events', tabBoard:'Bestenliste', tabMigration:'Migration',
+    addProspect:'+ Kandidat hinzufügen', prospectAddTitle:'Kandidat hinzufügen', prospectEditTitle:'Kandidat bearbeiten',
+    lblColor:'Migrationsfarbe', thColor:'Farbe', thServer:'Server', lblServer:'Aktueller Server',
+    colorGold:'Gold', colorPurple:'Lila', colorBlue:'Blau', colorGray:'Grau',
+    emptyMigrationTitle:'Noch keine Kandidaten', emptyMigrationDesc:'Mit "+ Kandidat hinzufügen" den ersten Migrationskandidaten hinzufügen.',
+    toastProspectSaved:'Kandidat gespeichert.', toastProspectDeleted:'Kandidat gelöscht.', confirmDeleteProspect:'Diesen Kandidaten wirklich löschen?',
+    statMigrationTotal:'Kandidaten gesamt',
     statTotal:'Mitglieder gesamt', filterAll:'Alle', addMember:'+ Mitglied hinzufügen', searchPh:'Nach Name oder ID suchen…',
     thRank:'Rang', thUsername:'Benutzername', thId:'ID', thPower:'Machtstufe', thCamp:'Basisstufe', thTotalPoints:'Gesamtpunkte',
     emptyMembersTitle:'Noch keine Mitglieder', emptyMembersDesc:'Mit "+ Mitglied hinzufügen" das erste anlegen.',
@@ -251,7 +274,13 @@ const DICT = {
     overallReportBtn:'📊 Gesamtbericht', overallReport:'Gesamtbericht', thWeeks:'Wochen' },
   es: { appName:'Panel EXC', tagline:'Miembros · Rango · Poder y Nivel de Campamento · Seguimiento de Eventos', refresh:'Actualizar',
     syncConnecting:'Conectando…', syncLive:'En vivo — todos lo ven', syncError:'Error de conexión',
-    tabMembers:'Miembros', tabEvents:'Eventos', tabBoard:'Clasificación',
+    tabMembers:'Miembros', tabEvents:'Eventos', tabBoard:'Clasificación', tabMigration:'Migración',
+    addProspect:'+ Añadir candidato', prospectAddTitle:'Añadir candidato', prospectEditTitle:'Editar candidato',
+    lblColor:'Color de migración', thColor:'Color', thServer:'Servidor', lblServer:'Servidor actual',
+    colorGold:'Oro', colorPurple:'Morado', colorBlue:'Azul', colorGray:'Gris',
+    emptyMigrationTitle:'Aún no hay candidatos', emptyMigrationDesc:'Usa "+ Añadir candidato" para agregar el primer candidato de migración.',
+    toastProspectSaved:'Candidato guardado.', toastProspectDeleted:'Candidato eliminado.', confirmDeleteProspect:'¿Seguro que quieres eliminar a este candidato?',
+    statMigrationTotal:'Total de candidatos',
     statTotal:'Miembros totales', filterAll:'Todos', addMember:'+ Añadir miembro', searchPh:'Buscar por nombre o ID…',
     thRank:'Rango', thUsername:'Nombre de usuario', thId:'ID', thPower:'Nivel de poder', thCamp:'Nivel de campamento', thTotalPoints:'Puntos totales',
     emptyMembersTitle:'Aún no hay miembros', emptyMembersDesc:'Usa "+ Añadir miembro" para agregar el primero.',
@@ -295,7 +324,13 @@ const DICT = {
     overallReportBtn:'📊 Informe General', overallReport:'Informe General', thWeeks:'Semanas' },
   fr: { appName:'Panneau EXC', tagline:'Membres · Rang · Puissance et Niveau de Camp · Suivi des Événements', refresh:'Actualiser',
     syncConnecting:'Connexion…', syncLive:'En direct — visible par tous', syncError:'Erreur de connexion',
-    tabMembers:'Membres', tabEvents:'Événements', tabBoard:'Classement',
+    tabMembers:'Membres', tabEvents:'Événements', tabBoard:'Classement', tabMigration:'Migration',
+    addProspect:'+ Ajouter un candidat', prospectAddTitle:'Ajouter un candidat', prospectEditTitle:'Modifier le candidat',
+    lblColor:'Couleur de migration', thColor:'Couleur', thServer:'Serveur', lblServer:'Serveur actuel',
+    colorGold:'Or', colorPurple:'Violet', colorBlue:'Bleu', colorGray:'Gris',
+    emptyMigrationTitle:'Aucun candidat pour le moment', emptyMigrationDesc:'Utilisez "+ Ajouter un candidat" pour ajouter le premier candidat à la migration.',
+    toastProspectSaved:'Candidat enregistré.', toastProspectDeleted:'Candidat supprimé.', confirmDeleteProspect:'Voulez-vous vraiment supprimer ce candidat ?',
+    statMigrationTotal:'Total des candidats',
     statTotal:'Membres au total', filterAll:'Tous', addMember:'+ Ajouter un membre', searchPh:'Rechercher par nom ou ID…',
     thRank:'Rang', thUsername:"Nom d'utilisateur", thId:'ID', thPower:'Niveau de puissance', thCamp:'Niveau de camp', thTotalPoints:'Points totaux',
     emptyMembersTitle:'Aucun membre pour le moment', emptyMembersDesc:'Utilisez "+ Ajouter un membre" pour ajouter le premier.',
@@ -449,8 +484,25 @@ export function applyStaticText() {
   document.getElementById("t_logoutBtn").textContent = t("logoutBtn");
   document.getElementById("t_cancel4").textContent = t("cancel");
   document.getElementById("t_loginSubmit").textContent = t("loginBtn");
+  document.getElementById("t_tabMigration").textContent = t("tabMigration");
+  document.getElementById("t_addProspect").textContent = t("addProspect");
+  document.getElementById("t_thColor").textContent = t("thColor");
+  document.getElementById("t_thUsername2").textContent = t("thUsername");
+  document.getElementById("t_thId2").textContent = t("thId");
+  document.getElementById("t_thPower2").textContent = t("thPower");
+  document.getElementById("t_thServer").textContent = t("thServer");
+  document.getElementById("t_emptyMigrationTitle").textContent = t("emptyMigrationTitle");
+  document.getElementById("t_emptyMigrationDesc").textContent = t("emptyMigrationDesc");
+  document.getElementById("t_lblProspectName").textContent = t("lblUsername");
+  document.getElementById("t_lblProspectId").textContent = t("lblGameId");
+  document.getElementById("t_lblProspectPower").textContent = t("lblPower");
+  document.getElementById("t_lblServer").textContent = t("lblServer");
+  document.getElementById("t_lblColor").textContent = t("lblColor");
+  document.getElementById("t_cancel5").textContent = t("cancel");
+  document.getElementById("t_save5").textContent = t("save");
   updateAdminUI();
   buildCampOptions();
+  buildMigrationColorOptions();
   document.title = t("appName");
 }
 
@@ -525,6 +577,16 @@ export function rankClass(rank) {
 /** Rütbe rozetindeki şeflik (▲) sayısını döndürür. */
 export function rankChevrons(rank) {
   return "▲".repeat(RANK_ORDER[rank] || 1);
+}
+
+/** Göç adayı renk rozetinin CSS sınıfını döndürür (mc-gold/mc-purple/mc-blue/mc-gray). */
+export function migrationColorClass(color) {
+  return "mc-" + (MIGRATION_COLORS.includes(color) ? color : "gray");
+}
+
+/** Göç adayı renginin çevrilmiş etiketini döndürür. */
+export function migrationColorLabel(color) {
+  return t({ gold: "colorGold", purple: "colorPurple", blue: "colorBlue", gray: "colorGray" }[color] || "colorGray");
 }
 
 /** GVG haftalık puanına göre hücre rengi sınıfını döndürür (config.js'teki eşiklere göre). */
@@ -673,6 +735,14 @@ export function buildCampOptions() {
   const select = document.getElementById("fCamp");
   const currentValue = select.value;
   select.innerHTML = CAMP_LEVELS.map((level) => `<option value="${level}">${level}</option>`).join("");
+  if (currentValue) select.value = currentValue;
+}
+
+/** Göç adayı formundaki "Göç Rengi" açılır listesini (Altın>Mor>Mavi>Gri sırasıyla) doldurur. */
+export function buildMigrationColorOptions() {
+  const select = document.getElementById("pColor");
+  const currentValue = select.value;
+  select.innerHTML = MIGRATION_COLORS.map((color) => `<option value="${color}">${migrationColorLabel(color)}</option>`).join("");
   if (currentValue) select.value = currentValue;
 }
 

@@ -27,6 +27,7 @@ begin
       'ss_weeks','ss_records',
       'other_weeks','other_records',
       'kod_weeks','kod_records',
+      'migration_prospects',
       'settings','users','activity_logs'
     ])
   loop
