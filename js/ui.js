@@ -130,7 +130,7 @@ const DICT = {
     colorGold:'İmparatorluk Rakibi', colorPurple:'Hudut Kaptanı', colorBlue:'Keşif Peşinde', colorGray:'Gezgin',
     emptyMigrationTitle:'Henüz aday yok', emptyMigrationDesc:'"+ Aday Ekle" ile ilk göç adayını ekle.',
     toastProspectSaved:'Aday kaydedildi.', toastProspectDeleted:'Aday silindi.', confirmDeleteProspect:'Bu adayı silmek istediğinize emin misiniz?',
-    statMigrationTotal:'Toplam Aday',
+    statMigrationTotal:'Toplam Aday', migrationStatusCertain:'Kesin', migrationStatusUncertain:'Belirsiz',
     statTotal:'Toplam Üye', filterAll:'Tümü', addMember:'+ Üye Ekle', searchPh:'İsim veya ID ile ara…',
     thRank:'Rütbe', thUsername:'Kullanıcı Adı', thId:'ID', thPower:'Güç Seviyesi', thCamp:'Kamp Seviyesi', thTotalPoints:'Toplam Puan',
     emptyMembersTitle:'Henüz üye yok', emptyMembersDesc:'"+ Üye Ekle" ile ilk üyeyi kaydet.',
@@ -180,7 +180,7 @@ const DICT = {
     colorGold:'Empire Challenger', colorPurple:'Frontier Captain', colorBlue:'Discovery Seeker', colorGray:'Voyager',
     emptyMigrationTitle:'No candidates yet', emptyMigrationDesc:'Use "+ Add Candidate" to add the first migration candidate.',
     toastProspectSaved:'Candidate saved.', toastProspectDeleted:'Candidate deleted.', confirmDeleteProspect:'Are you sure you want to delete this candidate?',
-    statMigrationTotal:'Total Candidates',
+    statMigrationTotal:'Total Candidates', migrationStatusCertain:'Certain', migrationStatusUncertain:'Uncertain',
     statTotal:'Total Members', filterAll:'All', addMember:'+ Add Member', searchPh:'Search by name or ID…',
     thRank:'Rank', thUsername:'Username', thId:'ID', thPower:'Power Level', thCamp:'Camp Level', thTotalPoints:'Total Points',
     emptyMembersTitle:'No members yet', emptyMembersDesc:'Use "+ Add Member" to add the first one.',
@@ -230,7 +230,7 @@ const DICT = {
     colorGold:'Reichsherausforderer', colorPurple:'Grenzkapitän', colorBlue:'Entdeckungssuchender', colorGray:'Reisender',
     emptyMigrationTitle:'Noch keine Kandidaten', emptyMigrationDesc:'Mit "+ Kandidat hinzufügen" den ersten Migrationskandidaten hinzufügen.',
     toastProspectSaved:'Kandidat gespeichert.', toastProspectDeleted:'Kandidat gelöscht.', confirmDeleteProspect:'Diesen Kandidaten wirklich löschen?',
-    statMigrationTotal:'Kandidaten gesamt',
+    statMigrationTotal:'Kandidaten gesamt', migrationStatusCertain:'Sicher', migrationStatusUncertain:'Unsicher',
     statTotal:'Mitglieder gesamt', filterAll:'Alle', addMember:'+ Mitglied hinzufügen', searchPh:'Nach Name oder ID suchen…',
     thRank:'Rang', thUsername:'Benutzername', thId:'ID', thPower:'Machtstufe', thCamp:'Basisstufe', thTotalPoints:'Gesamtpunkte',
     emptyMembersTitle:'Noch keine Mitglieder', emptyMembersDesc:'Mit "+ Mitglied hinzufügen" das erste anlegen.',
@@ -280,7 +280,7 @@ const DICT = {
     colorGold:'Retador del Imperio', colorPurple:'Capitán de Frontera', colorBlue:'Buscador de Descubrimientos', colorGray:'Viajero',
     emptyMigrationTitle:'Aún no hay candidatos', emptyMigrationDesc:'Usa "+ Añadir candidato" para agregar el primer candidato de migración.',
     toastProspectSaved:'Candidato guardado.', toastProspectDeleted:'Candidato eliminado.', confirmDeleteProspect:'¿Seguro que quieres eliminar a este candidato?',
-    statMigrationTotal:'Total de candidatos',
+    statMigrationTotal:'Total de candidatos', migrationStatusCertain:'Seguro', migrationStatusUncertain:'Incierto',
     statTotal:'Miembros totales', filterAll:'Todos', addMember:'+ Añadir miembro', searchPh:'Buscar por nombre o ID…',
     thRank:'Rango', thUsername:'Nombre de usuario', thId:'ID', thPower:'Nivel de poder', thCamp:'Nivel de campamento', thTotalPoints:'Puntos totales',
     emptyMembersTitle:'Aún no hay miembros', emptyMembersDesc:'Usa "+ Añadir miembro" para agregar el primero.',
@@ -330,7 +330,7 @@ const DICT = {
     colorGold:"Challenger de l'Empire", colorPurple:'Capitaine de Frontière', colorBlue:'Chercheur de Découvertes', colorGray:'Voyageur',
     emptyMigrationTitle:'Aucun candidat pour le moment', emptyMigrationDesc:'Utilisez "+ Ajouter un candidat" pour ajouter le premier candidat à la migration.',
     toastProspectSaved:'Candidat enregistré.', toastProspectDeleted:'Candidat supprimé.', confirmDeleteProspect:'Voulez-vous vraiment supprimer ce candidat ?',
-    statMigrationTotal:'Total des candidats',
+    statMigrationTotal:'Total des candidats', migrationStatusCertain:'Certain', migrationStatusUncertain:'Incertain',
     statTotal:'Membres au total', filterAll:'Tous', addMember:'+ Ajouter un membre', searchPh:'Rechercher par nom ou ID…',
     thRank:'Rang', thUsername:"Nom d'utilisateur", thId:'ID', thPower:'Niveau de puissance', thCamp:'Niveau de camp', thTotalPoints:'Points totaux',
     emptyMembersTitle:'Aucun membre pour le moment', emptyMembersDesc:'Utilisez "+ Ajouter un membre" pour ajouter le premier.',
@@ -498,6 +498,10 @@ export function applyStaticText() {
   document.getElementById("t_lblProspectPower").textContent = t("lblPower");
   document.getElementById("t_lblServer").textContent = t("lblServer");
   document.getElementById("t_lblColor").textContent = t("lblColor");
+  document.getElementById("t_lblMigrationStatus").textContent = t("thStatus");
+  document.getElementById("t_thMigrationStatus").textContent = t("thStatus");
+  document.getElementById("t_statusCertainOpt").textContent = t("migrationStatusCertain");
+  document.getElementById("t_statusUncertainOpt").textContent = t("migrationStatusUncertain");
   document.getElementById("t_cancel5").textContent = t("cancel");
   document.getElementById("t_save5").textContent = t("save");
   updateAdminUI();
@@ -587,6 +591,16 @@ export function migrationColorClass(color) {
 /** Göç adayı renginin çevrilmiş etiketini döndürür. */
 export function migrationColorLabel(color) {
   return t({ gold: "colorGold", purple: "colorPurple", blue: "colorBlue", gray: "colorGray" }[color] || "colorGray");
+}
+
+/** Göç adayının "bize kesin mi belirsiz mi geleceği" durumunun hücre rengi sınıfını döndürür. */
+export function migrationStatusClass(status) {
+  return status === "certain" ? "pill-blue" : "pill-yellow";
+}
+
+/** Göç adayının durumunun çevrilmiş etiketini döndürür. */
+export function migrationStatusLabel(status) {
+  return t(status === "certain" ? "migrationStatusCertain" : "migrationStatusUncertain");
 }
 
 /** GVG haftalık puanına göre hücre rengi sınıfını döndürür (config.js'teki eşiklere göre). */

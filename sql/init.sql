@@ -225,7 +225,8 @@ create table if not exists migration_prospects (
   game_id     text,
   power       bigint not null default 0,
   server      bigint, -- adayın şu an hangi sunucuda olduğu
-  color       text not null default 'gray' check (color in ('gold','purple','blue','gray')), -- göç rengi: Altın > Mor > Mavi > Gri
+  color       text not null default 'gray' check (color in ('gold','purple','blue','gray')), -- göç unvanı: Altın > Mor > Mavi > Gri
+  status      text not null default 'uncertain' check (status in ('certain','uncertain')), -- bize kesin mi belirsiz mi geleceği (Göç Planı)
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );

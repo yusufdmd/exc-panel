@@ -199,6 +199,7 @@
             <th onclick="setMigrationSort('gameId')" id="t_thId2">ID</th>
             <th onclick="setMigrationSort('power')" id="t_thPower2">Güç Seviyesi</th>
             <th onclick="setMigrationSort('server')" id="t_thServer">Sunucu</th>
+            <th onclick="setMigrationSort('status')" id="t_thMigrationStatus">Durum</th>
             <th></th>
           </tr>
         </thead>
@@ -302,9 +303,16 @@
     </div>
     <div class="field-row">
       <div class="field"><label id="t_lblServer">Mevcut Sunucu</label><input id="pServer" type="number"></div>
-      <div class="field"><label id="t_lblColor">Göç Rengi</label>
+      <div class="field"><label id="t_lblColor">Unvan</label>
         <select id="pColor"></select>
       </div>
+    </div>
+    <div class="field">
+      <label id="t_lblMigrationStatus">Durum</label>
+      <select id="pStatus">
+        <option value="certain" id="t_statusCertainOpt">Kesin</option>
+        <option value="uncertain" id="t_statusUncertainOpt" selected>Belirsiz</option>
+      </select>
     </div>
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closeProspectModal()" id="t_cancel5">Vazgeç</button>

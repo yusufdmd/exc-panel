@@ -17,6 +17,8 @@ import {
   formatPower,
   migrationColorClass,
   migrationColorLabel,
+  migrationStatusClass,
+  migrationStatusLabel,
   buildMigrationColorOptions,
   MIGRATION_COLORS,
   MIGRATION_COLOR_ORDER,
@@ -32,7 +34,8 @@ export function mapProspect(row) {
     gameId: row.game_id,
     power: row.power,
     server: row.server,
-    color: row.color
+    color: row.color,
+    status: row.status
   };
 }
 
@@ -55,6 +58,9 @@ function sortedProspects() {
     } else if (state.migrationSortKey === "server") {
       valueA = Number(a.server) || 0;
       valueB = Number(b.server) || 0;
+    } else if (state.migrationSortKey === "status") {
+      valueA = a.status === "certain" ? 1 : 0;
+      valueB = b.status === "certain" ? 1 : 0;
     } else {
       valueA = MIGRATION_COLOR_ORDER[a.color] || 0;
       valueB = MIGRATION_COLOR_ORDER[b.color] || 0;
@@ -89,6 +95,7 @@ export function renderMigration() {
       <td class="member-id">${escapeHtml(String(p.gameId || "—"))}</td>
       <td class="num-cell" title="${Number(p.power) || 0}">${formatPower(p.power)}</td>
       <td class="num-cell">${escapeHtml(p.server != null ? String(p.server) : "—")}</td>
+      <td><span class="cell-pill ${migrationStatusClass(p.status)}">${migrationStatusLabel(p.status)}</span></td>
       <td><div class="row-actions">
         <button class="icon-btn admin-only" onclick="openProspectModal('${p.id}')">✎</button>
         <button class="icon-btn danger admin-only" onclick="deleteProspect('${p.id}')">✕</button>
@@ -122,10 +129,12 @@ export function openProspectModal(id) {
     document.getElementById("pPower").value = prospect.power || "";
     document.getElementById("pServer").value = prospect.server != null ? prospect.server : "";
     document.getElementById("pColor").value = prospect.color;
+    document.getElementById("pStatus").value = prospect.status;
   } else {
     document.getElementById("prospectModalTitle").textContent = t("prospectAddTitle");
     ["pName", "pGameId", "pPower", "pServer"].forEach((fieldId) => { document.getElementById(fieldId).value = ""; });
     document.getElementById("pColor").value = "gray";
+    document.getElementById("pStatus").value = "uncertain";
   }
   document.getElementById("prospectOverlay").classList.add("active");
 }
@@ -142,9 +151,10 @@ export async function saveProspect() {
   const serverRaw = document.getElementById("pServer").value.trim();
   const server = serverRaw === "" ? null : (Number(serverRaw) || null);
   const color = document.getElementById("pColor").value;
+  const status = document.getElementById("pStatus").value;
 
   try {
-    const payload = { name: name || null, game_id: gameId || null, power, server, color };
+    const payload = { name: name || null, game_id: gameId || null, power, server, color, status };
     if (editId) {
       const row = await updateMigrationProspect(editId, payload);
       const index = state.migration.findIndex((p) => p.id === editId);
