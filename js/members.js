@@ -12,7 +12,7 @@
 // bağımlılık tek yönlüdür, döngü oluşmaz.
 // =====================================================================
 
-import { createMember, updateMember, deleteMember as dbDeleteMember, addPowerHistoryEntry } from "./database.js";
+import { createMember, updateMember, deleteMember as dbDeleteMember, addPowerHistoryEntry, deleteMigrationProspect } from "./database.js";
 import { RANK_LIMITS } from "./config.js";
 import {
   state,
@@ -184,6 +184,7 @@ function syncMemberStatusToggles() {
 }
 
 export function openMemberModal(id) {
+  state.pendingProspectApprovalId = null; // varsayılan: normal ekleme/düzenleme, göç adayı onay akışı değil (bkz. migration.js -> approveProspect)
   buildCampOptions();
   document.getElementById("memberEditId").value = id || "";
   if (id) {
@@ -219,6 +220,7 @@ export function openMemberModal(id) {
 
 export function closeMemberModal() {
   document.getElementById("memberOverlay").classList.remove("active");
+  state.pendingProspectApprovalId = null;
 }
 
 export function toggleOld() {
@@ -326,6 +328,20 @@ export async function saveMember() {
       });
       await addPowerHistoryEntry(row.id, today, power);
       state.members.push({ ...mapMember(row), powerHistory: [{ date: today, power }] });
+
+      // "Onayla" akışından geldiyse (bkz. migration.js -> approveProspect), üye başarıyla
+      // oluşturulduktan sonra göç adayını da temizler. Bu adım kendi try/catch'inde tutulur
+      // ki temizlik başarısız olsa bile üyenin oluşturulduğu doğru şekilde bildirilsin.
+      if (state.pendingProspectApprovalId) {
+        const prospectId = state.pendingProspectApprovalId;
+        state.pendingProspectApprovalId = null;
+        try {
+          await deleteMigrationProspect(prospectId);
+          state.migration = state.migration.filter((p) => p.id !== prospectId);
+        } catch (cleanupError) {
+          console.error(cleanupError);
+        }
+      }
     }
     closeMemberModal();
     renderAll();

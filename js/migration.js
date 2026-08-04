@@ -7,10 +7,17 @@
 // haftalarının (en eski önce) TAM TERSİDİR — kullanıcı her zaman güncel
 // göç dönemini ilk görmek ister (bkz. database.js -> getMigrationPeriods).
 //
-// members.js'den tamamen bağımsızdır — adaylar henüz üye değildir,
-// rütbe/kamp seviyesi gibi üyeliğe özel alanları yoktur. Göç unvanı
-// (Altın > Mor > Mavi > Gri), adayın ne kadar değerli görüldüğüne dair
-// basit bir skaladır (bkz. config.js -> MIGRATION_COLORS).
+// Adaylar henüz üye değildir, rütbe/kamp seviyesi gibi üyeliğe özel
+// alanları yoktur. Göç unvanı (Altın > Mor > Mavi > Gri > Bilinmiyor),
+// adayın ne kadar değerli görüldüğüne dair basit bir skaladır (bkz.
+// config.js -> MIGRATION_COLORS).
+//
+// "Onayla" akışı için members.js'den SADECE openMemberModal import
+// edilir (members.js buradan hiçbir şey import ETMEZ — döngü oluşmaz,
+// gvg.js/svs.js/ss.js/events.js'in members.js'den filteredSortedMembers
+// alması ile aynı tek yönlü desen). Onaylanan adayın üye kaydına
+// dönüşmesinden SONRAKİ temizlik (adayı silme) members.js -> saveMember
+// içinde, state.pendingProspectApprovalId bayrağı üzerinden yapılır.
 // =====================================================================
 
 import {
@@ -34,6 +41,7 @@ import {
   registerRenderer,
   renderAll
 } from "./ui.js";
+import { openMemberModal } from "./members.js";
 
 /** Supabase'ten dönen ham göç dönemi satırını uygulamanın kullandığı şekle çevirir. */
 export function mapPeriod(row) {
@@ -218,6 +226,7 @@ export function renderMigration() {
       <td class="num-cell">${escapeHtml(p.server != null ? String(p.server) : "—")}</td>
       <td><span class="cell-pill ${migrationStatusClass(p.status)}">${migrationStatusLabel(p.status)}</span></td>
       <td><div class="row-actions">
+        <button class="icon-btn admin-only" onclick="approveProspect('${p.id}')" title="${t("approveProspectTitle")}">✅</button>
         <button class="icon-btn admin-only" onclick="openProspectModal('${p.id}')">✎</button>
         <button class="icon-btn danger admin-only" onclick="deleteProspect('${p.id}')">✕</button>
       </div></td>
@@ -309,4 +318,23 @@ export async function deleteProspect(id) {
     console.error(error);
     showToast("Error");
   }
+}
+
+/**
+ * Bir göç adayını üyeliğe dönüştürme akışını başlatır: onay istenir,
+ * onaylanırsa Üyeler sekmesine geçilip üye ekleme modalı, adayın bilinen
+ * bilgileriyle (isim/ID/güç) önceden doldurulmuş halde açılır. Rütbe/kamp
+ * seviyesi gibi eksik alanları admin doldurup "Kaydet"e bastığında, aday
+ * göç listesinden otomatik olarak silinir (bkz. members.js -> saveMember).
+ */
+export function approveProspect(id) {
+  const prospect = state.migration.find((p) => p.id === id);
+  if (!prospect) return;
+  if (!confirm(t("confirmApproveProspect"))) return;
+  window.switchTab("members");
+  openMemberModal();
+  state.pendingProspectApprovalId = id;
+  document.getElementById("fName").value = prospect.name || "";
+  document.getElementById("fGameId").value = prospect.gameId || "";
+  document.getElementById("fPower").value = prospect.power || "";
 }

@@ -25,7 +25,7 @@ import { setBoardSort } from "./dashboard.js";
 import {
   mapPeriod, mapProspect, renderMigration, setMigrationSort,
   selectMigrationPeriod, openPeriodModal, closePeriodModal, savePeriod, deletePeriod,
-  openProspectModal, closeProspectModal, saveProspect, deleteProspect
+  openProspectModal, closeProspectModal, saveProspect, deleteProspect, approveProspect
 } from "./migration.js";
 import { exportBackup, importBackup } from "./backup.js";
 import { openLoginModal, closeLoginModal, doLogin, doLogout } from "./auth.js";
@@ -147,7 +147,7 @@ Object.assign(window, {
   openOverallReportModal, closeOverallReportModal, setOverallReportSort,
   openHistoryModal, closeHistoryModal,
   setBoardSort, setLang,
-  renderMigration, setMigrationSort, openProspectModal, closeProspectModal, saveProspect, deleteProspect,
+  renderMigration, setMigrationSort, openProspectModal, closeProspectModal, saveProspect, deleteProspect, approveProspect,
   selectMigrationPeriod, openPeriodModal, closePeriodModal, savePeriod, deletePeriod,
   openLoginModal, closeLoginModal, doLogin, doLogout
 });
