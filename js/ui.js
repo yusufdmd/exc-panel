@@ -129,7 +129,7 @@ const DICT = {
     tabMembers:'Üyeler', tabEvents:'Etkinlikler', tabBoard:'Puan Sıralaması', tabMigration:'Göç',
     addProspect:'+ Aday Ekle', prospectAddTitle:'Aday Ekle', prospectEditTitle:'Adayı Düzenle',
     lblColor:'Unvan', thColor:'Unvan', thServer:'Sunucu', lblServer:'Mevcut Sunucu',
-    colorGold:'İmparatorluk Rakibi', colorPurple:'Hudut Kaptanı', colorBlue:'Keşif Peşinde', colorGray:'Gezgin',
+    colorGold:'İmparatorluk Rakibi', colorPurple:'Hudut Kaptanı', colorBlue:'Keşif Peşinde', colorGray:'Gezgin', colorUnknown:'Bilinmiyor',
     emptyMigrationTitle:'Henüz aday yok', emptyMigrationDesc:'"+ Aday Ekle" ile ilk göç adayını ekle.',
     toastProspectSaved:'Aday kaydedildi.', toastProspectDeleted:'Aday silindi.', confirmDeleteProspect:'Bu adayı silmek istediğinize emin misiniz?',
     statMigrationTotal:'Toplam Aday', migrationStatusCertain:'Kesin', migrationStatusUncertain:'Belirsiz',
@@ -184,7 +184,7 @@ const DICT = {
     tabMembers:'Members', tabEvents:'Events', tabBoard:'Leaderboard', tabMigration:'Migration',
     addProspect:'+ Add Candidate', prospectAddTitle:'Add Candidate', prospectEditTitle:'Edit Candidate',
     lblColor:'Title', thColor:'Title', thServer:'Server', lblServer:'Current Server',
-    colorGold:'Empire Challenger', colorPurple:'Frontier Captain', colorBlue:'Discovery Seeker', colorGray:'Voyager',
+    colorGold:'Empire Challenger', colorPurple:'Frontier Captain', colorBlue:'Discovery Seeker', colorGray:'Voyager', colorUnknown:'Unknown',
     emptyMigrationTitle:'No candidates yet', emptyMigrationDesc:'Use "+ Add Candidate" to add the first migration candidate.',
     toastProspectSaved:'Candidate saved.', toastProspectDeleted:'Candidate deleted.', confirmDeleteProspect:'Are you sure you want to delete this candidate?',
     statMigrationTotal:'Total Candidates', migrationStatusCertain:'Certain', migrationStatusUncertain:'Uncertain',
@@ -239,7 +239,7 @@ const DICT = {
     tabMembers:'Mitglieder', tabEvents:'Events', tabBoard:'Bestenliste', tabMigration:'Migration',
     addProspect:'+ Kandidat hinzufügen', prospectAddTitle:'Kandidat hinzufügen', prospectEditTitle:'Kandidat bearbeiten',
     lblColor:'Titel', thColor:'Titel', thServer:'Server', lblServer:'Aktueller Server',
-    colorGold:'Reichsherausforderer', colorPurple:'Grenzkapitän', colorBlue:'Entdeckungssuchender', colorGray:'Reisender',
+    colorGold:'Reichsherausforderer', colorPurple:'Grenzkapitän', colorBlue:'Entdeckungssuchender', colorGray:'Reisender', colorUnknown:'Unbekannt',
     emptyMigrationTitle:'Noch keine Kandidaten', emptyMigrationDesc:'Mit "+ Kandidat hinzufügen" den ersten Migrationskandidaten hinzufügen.',
     toastProspectSaved:'Kandidat gespeichert.', toastProspectDeleted:'Kandidat gelöscht.', confirmDeleteProspect:'Diesen Kandidaten wirklich löschen?',
     statMigrationTotal:'Kandidaten gesamt', migrationStatusCertain:'Sicher', migrationStatusUncertain:'Unsicher',
@@ -294,7 +294,7 @@ const DICT = {
     tabMembers:'Miembros', tabEvents:'Eventos', tabBoard:'Clasificación', tabMigration:'Migración',
     addProspect:'+ Añadir candidato', prospectAddTitle:'Añadir candidato', prospectEditTitle:'Editar candidato',
     lblColor:'Título', thColor:'Título', thServer:'Servidor', lblServer:'Servidor actual',
-    colorGold:'Retador del Imperio', colorPurple:'Capitán de Frontera', colorBlue:'Buscador de Descubrimientos', colorGray:'Viajero',
+    colorGold:'Retador del Imperio', colorPurple:'Capitán de Frontera', colorBlue:'Buscador de Descubrimientos', colorGray:'Viajero', colorUnknown:'Desconocido',
     emptyMigrationTitle:'Aún no hay candidatos', emptyMigrationDesc:'Usa "+ Añadir candidato" para agregar el primer candidato de migración.',
     toastProspectSaved:'Candidato guardado.', toastProspectDeleted:'Candidato eliminado.', confirmDeleteProspect:'¿Seguro que quieres eliminar a este candidato?',
     statMigrationTotal:'Total de candidatos', migrationStatusCertain:'Seguro', migrationStatusUncertain:'Incierto',
@@ -349,7 +349,7 @@ const DICT = {
     tabMembers:'Membres', tabEvents:'Événements', tabBoard:'Classement', tabMigration:'Migration',
     addProspect:'+ Ajouter un candidat', prospectAddTitle:'Ajouter un candidat', prospectEditTitle:'Modifier le candidat',
     lblColor:'Titre', thColor:'Titre', thServer:'Serveur', lblServer:'Serveur actuel',
-    colorGold:"Challenger de l'Empire", colorPurple:'Capitaine de Frontière', colorBlue:'Chercheur de Découvertes', colorGray:'Voyageur',
+    colorGold:"Challenger de l'Empire", colorPurple:'Capitaine de Frontière', colorBlue:'Chercheur de Découvertes', colorGray:'Voyageur', colorUnknown:'Inconnu',
     emptyMigrationTitle:'Aucun candidat pour le moment', emptyMigrationDesc:'Utilisez "+ Ajouter un candidat" pour ajouter le premier candidat à la migration.',
     toastProspectSaved:'Candidat enregistré.', toastProspectDeleted:'Candidat supprimé.', confirmDeleteProspect:'Voulez-vous vraiment supprimer ce candidat ?',
     statMigrationTotal:'Total des candidats', migrationStatusCertain:'Certain', migrationStatusUncertain:'Incertain',
@@ -617,14 +617,14 @@ export function rankChevrons(rank) {
   return "▲".repeat(RANK_ORDER[rank] || 1);
 }
 
-/** Göç adayı renk rozetinin CSS sınıfını döndürür (mc-gold/mc-purple/mc-blue/mc-gray). */
+/** Göç adayı renk rozetinin CSS sınıfını döndürür (mc-gold/mc-purple/mc-blue/mc-gray/mc-unknown). */
 export function migrationColorClass(color) {
-  return "mc-" + (MIGRATION_COLORS.includes(color) ? color : "gray");
+  return "mc-" + (MIGRATION_COLORS.includes(color) ? color : "unknown");
 }
 
 /** Göç adayı renginin çevrilmiş etiketini döndürür. */
 export function migrationColorLabel(color) {
-  return t({ gold: "colorGold", purple: "colorPurple", blue: "colorBlue", gray: "colorGray" }[color] || "colorGray");
+  return t({ gold: "colorGold", purple: "colorPurple", blue: "colorBlue", gray: "colorGray", unknown: "colorUnknown" }[color] || "colorUnknown");
 }
 
 /** Göç adayının "bize kesin mi belirsiz mi geleceği" durumunun hücre rengi sınıfını döndürür. */

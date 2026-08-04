@@ -194,7 +194,7 @@ function sortedProspects() {
 
 /** Seçili dönemdeki adayların kaçının hangi unvanda olduğunu gösteren istatistik kartlarını çizer. */
 function renderMigrationStats(list) {
-  const counts = { gold: 0, purple: 0, blue: 0, gray: 0 };
+  const counts = { gold: 0, purple: 0, blue: 0, gray: 0, unknown: 0 };
   list.forEach((p) => { counts[p.color] = (counts[p.color] || 0) + 1; });
   document.getElementById("migrationStatsRow").innerHTML = `
     <div class="stat-card"><div class="num">${list.length}</div><div class="lbl">${t("statMigrationTotal")}</div></div>
@@ -258,7 +258,7 @@ export function openProspectModal(id) {
   } else {
     document.getElementById("prospectModalTitle").textContent = t("prospectAddTitle");
     ["pName", "pGameId", "pPower", "pServer"].forEach((fieldId) => { document.getElementById(fieldId).value = ""; });
-    document.getElementById("pColor").value = "gray";
+    document.getElementById("pColor").value = "unknown";
     document.getElementById("pStatus").value = "uncertain";
   }
   document.getElementById("prospectOverlay").classList.add("active");

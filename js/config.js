@@ -56,8 +56,8 @@ export const EVENT_TYPES = ["gvg", "svs", "ss", "kod", "other"];
 // Göç sekmesi — bize katılmak isteyen adayların değer skalası (en
 // yüksekten en düşüğe): Altın > Mor > Mavi > Gri.
 // ---------------------------------------------------------------------
-export const MIGRATION_COLORS = ["gold", "purple", "blue", "gray"];
-export const MIGRATION_COLOR_ORDER = { gold: 4, purple: 3, blue: 2, gray: 1 };
+export const MIGRATION_COLORS = ["gold", "purple", "blue", "gray", "unknown"];
+export const MIGRATION_COLOR_ORDER = { gold: 5, purple: 4, blue: 3, gray: 2, unknown: 1 };
 
 // ---------------------------------------------------------------------
 // Diller
