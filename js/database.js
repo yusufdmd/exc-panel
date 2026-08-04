@@ -79,6 +79,48 @@ export async function deleteMember(id) {
 }
 
 // =====================================================================
+// MIGRATION_PERIODS — Göç dönemleri (iki haftalık göç pencereleri)
+// =====================================================================
+// Etkinlik haftalarının aksine (en eski solda), göç dönemleri EN YENİ
+// ÖNCE sıralanır — kullanıcı her zaman güncel dönemi ilk görmek istiyor.
+export async function getMigrationPeriods() {
+  const { data, error } = await supabase
+    .from("migration_periods")
+    .select("*")
+    .order("period_date", { ascending: false, nullsFirst: false })
+    .order("created_at", { ascending: false });
+  if (error) dbError("Göç dönemleri alınamadı", error);
+  return data;
+}
+
+export async function createMigrationPeriod(payload) {
+  const { data, error } = await supabase
+    .from("migration_periods")
+    .insert(payload)
+    .select()
+    .single();
+  if (error) dbError("Göç dönemi eklenemedi", error);
+  return data;
+}
+
+export async function updateMigrationPeriod(id, payload) {
+  const { data, error } = await supabase
+    .from("migration_periods")
+    .update(payload)
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) dbError("Göç dönemi güncellenemedi", error);
+  return data;
+}
+
+export async function deleteMigrationPeriod(id) {
+  const { error } = await supabase.from("migration_periods").delete().eq("id", id);
+  if (error) dbError("Göç dönemi silinemedi", error);
+  return true;
+}
+
+// =====================================================================
 // MIGRATION_PROSPECTS — Göç sekmesi (bize katılmak isteyen adaylar)
 // =====================================================================
 export async function getMigrationProspects() {

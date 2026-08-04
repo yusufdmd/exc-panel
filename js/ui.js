@@ -48,6 +48,8 @@ export const state = {
   kod: { weeks: [], entries: [] },
   other: { weeks: [], entries: [] },
   migration: [],
+  migrationPeriods: [],
+  migrationActivePeriodId: null,
   migrationSortKey: "color",
   migrationSortDir: -1, // -1: varsayılan görünümde Altın üstte, Griye doğru azalan sıra
   currentTab: "members",
@@ -131,6 +133,11 @@ const DICT = {
     emptyMigrationTitle:'Henüz aday yok', emptyMigrationDesc:'"+ Aday Ekle" ile ilk göç adayını ekle.',
     toastProspectSaved:'Aday kaydedildi.', toastProspectDeleted:'Aday silindi.', confirmDeleteProspect:'Bu adayı silmek istediğinize emin misiniz?',
     statMigrationTotal:'Toplam Aday', migrationStatusCertain:'Kesin', migrationStatusUncertain:'Belirsiz',
+    addPeriod:'+ Dönem Ekle', periodAddTitle:'Dönem Ekle', periodEditTitle:'Dönemi Düzenle', lblPeriodLabel:'Dönem Etiketi',
+    periodNameRequired:'Dönem etiketi gerekli.', confirmDeletePeriod:'Bu dönemi silmek istediğinize emin misiniz? İçindeki tüm adaylar da silinecek.',
+    toastPeriodSaved:'Dönem kaydedildi.', toastPeriodDeleted:'Dönem silindi.',
+    emptyPeriodsTitle:'Henüz dönem yok', emptyPeriodsDesc:'"+ Dönem Ekle" ile ilk göç dönemini oluştur.',
+    needPeriodFirst:'Önce bir göç dönemi oluşturun.',
     statTotal:'Toplam Üye', filterAll:'Tümü', addMember:'+ Üye Ekle', searchPh:'İsim veya ID ile ara…',
     thRank:'Rütbe', thUsername:'Kullanıcı Adı', thId:'ID', thPower:'Güç Seviyesi', thCamp:'Kamp Seviyesi', thTotalPoints:'Toplam Puan',
     emptyMembersTitle:'Henüz üye yok', emptyMembersDesc:'"+ Üye Ekle" ile ilk üyeyi kaydet.',
@@ -181,6 +188,11 @@ const DICT = {
     emptyMigrationTitle:'No candidates yet', emptyMigrationDesc:'Use "+ Add Candidate" to add the first migration candidate.',
     toastProspectSaved:'Candidate saved.', toastProspectDeleted:'Candidate deleted.', confirmDeleteProspect:'Are you sure you want to delete this candidate?',
     statMigrationTotal:'Total Candidates', migrationStatusCertain:'Certain', migrationStatusUncertain:'Uncertain',
+    addPeriod:'+ Add Period', periodAddTitle:'Add Period', periodEditTitle:'Edit Period', lblPeriodLabel:'Period Label',
+    periodNameRequired:'Period label is required.', confirmDeletePeriod:'Are you sure you want to delete this period? All candidates in it will also be deleted.',
+    toastPeriodSaved:'Period saved.', toastPeriodDeleted:'Period deleted.',
+    emptyPeriodsTitle:'No periods yet', emptyPeriodsDesc:'Use "+ Add Period" to create the first migration period.',
+    needPeriodFirst:'Create a migration period first.',
     statTotal:'Total Members', filterAll:'All', addMember:'+ Add Member', searchPh:'Search by name or ID…',
     thRank:'Rank', thUsername:'Username', thId:'ID', thPower:'Power Level', thCamp:'Camp Level', thTotalPoints:'Total Points',
     emptyMembersTitle:'No members yet', emptyMembersDesc:'Use "+ Add Member" to add the first one.',
@@ -231,6 +243,11 @@ const DICT = {
     emptyMigrationTitle:'Noch keine Kandidaten', emptyMigrationDesc:'Mit "+ Kandidat hinzufügen" den ersten Migrationskandidaten hinzufügen.',
     toastProspectSaved:'Kandidat gespeichert.', toastProspectDeleted:'Kandidat gelöscht.', confirmDeleteProspect:'Diesen Kandidaten wirklich löschen?',
     statMigrationTotal:'Kandidaten gesamt', migrationStatusCertain:'Sicher', migrationStatusUncertain:'Unsicher',
+    addPeriod:'+ Zeitraum hinzufügen', periodAddTitle:'Zeitraum hinzufügen', periodEditTitle:'Zeitraum bearbeiten', lblPeriodLabel:'Zeitraumbezeichnung',
+    periodNameRequired:'Zeitraumbezeichnung erforderlich.', confirmDeletePeriod:'Diesen Zeitraum wirklich löschen? Alle Kandidaten darin werden ebenfalls gelöscht.',
+    toastPeriodSaved:'Zeitraum gespeichert.', toastPeriodDeleted:'Zeitraum gelöscht.',
+    emptyPeriodsTitle:'Noch kein Zeitraum', emptyPeriodsDesc:'Mit "+ Zeitraum hinzufügen" den ersten Migrationszeitraum anlegen.',
+    needPeriodFirst:'Zuerst einen Migrationszeitraum anlegen.',
     statTotal:'Mitglieder gesamt', filterAll:'Alle', addMember:'+ Mitglied hinzufügen', searchPh:'Nach Name oder ID suchen…',
     thRank:'Rang', thUsername:'Benutzername', thId:'ID', thPower:'Machtstufe', thCamp:'Basisstufe', thTotalPoints:'Gesamtpunkte',
     emptyMembersTitle:'Noch keine Mitglieder', emptyMembersDesc:'Mit "+ Mitglied hinzufügen" das erste anlegen.',
@@ -281,6 +298,11 @@ const DICT = {
     emptyMigrationTitle:'Aún no hay candidatos', emptyMigrationDesc:'Usa "+ Añadir candidato" para agregar el primer candidato de migración.',
     toastProspectSaved:'Candidato guardado.', toastProspectDeleted:'Candidato eliminado.', confirmDeleteProspect:'¿Seguro que quieres eliminar a este candidato?',
     statMigrationTotal:'Total de candidatos', migrationStatusCertain:'Seguro', migrationStatusUncertain:'Incierto',
+    addPeriod:'+ Añadir periodo', periodAddTitle:'Añadir periodo', periodEditTitle:'Editar periodo', lblPeriodLabel:'Etiqueta del periodo',
+    periodNameRequired:'La etiqueta del periodo es obligatoria.', confirmDeletePeriod:'¿Seguro que quieres eliminar este periodo? También se eliminarán todos los candidatos que contiene.',
+    toastPeriodSaved:'Periodo guardado.', toastPeriodDeleted:'Periodo eliminado.',
+    emptyPeriodsTitle:'Aún no hay periodos', emptyPeriodsDesc:'Usa "+ Añadir periodo" para crear el primer periodo de migración.',
+    needPeriodFirst:'Crea primero un periodo de migración.',
     statTotal:'Miembros totales', filterAll:'Todos', addMember:'+ Añadir miembro', searchPh:'Buscar por nombre o ID…',
     thRank:'Rango', thUsername:'Nombre de usuario', thId:'ID', thPower:'Nivel de poder', thCamp:'Nivel de campamento', thTotalPoints:'Puntos totales',
     emptyMembersTitle:'Aún no hay miembros', emptyMembersDesc:'Usa "+ Añadir miembro" para agregar el primero.',
@@ -331,6 +353,11 @@ const DICT = {
     emptyMigrationTitle:'Aucun candidat pour le moment', emptyMigrationDesc:'Utilisez "+ Ajouter un candidat" pour ajouter le premier candidat à la migration.',
     toastProspectSaved:'Candidat enregistré.', toastProspectDeleted:'Candidat supprimé.', confirmDeleteProspect:'Voulez-vous vraiment supprimer ce candidat ?',
     statMigrationTotal:'Total des candidats', migrationStatusCertain:'Certain', migrationStatusUncertain:'Incertain',
+    addPeriod:'+ Ajouter une période', periodAddTitle:'Ajouter une période', periodEditTitle:'Modifier la période', lblPeriodLabel:'Libellé de la période',
+    periodNameRequired:'Le libellé de la période est requis.', confirmDeletePeriod:'Voulez-vous vraiment supprimer cette période ? Tous les candidats qu\'elle contient seront également supprimés.',
+    toastPeriodSaved:'Période enregistrée.', toastPeriodDeleted:'Période supprimée.',
+    emptyPeriodsTitle:'Aucune période pour le moment', emptyPeriodsDesc:'Utilisez "+ Ajouter une période" pour créer la première période de migration.',
+    needPeriodFirst:'Créez d\'abord une période de migration.',
     statTotal:'Membres au total', filterAll:'Tous', addMember:'+ Ajouter un membre', searchPh:'Rechercher par nom ou ID…',
     thRank:'Rang', thUsername:"Nom d'utilisateur", thId:'ID', thPower:'Niveau de puissance', thCamp:'Niveau de camp', thTotalPoints:'Points totaux',
     emptyMembersTitle:'Aucun membre pour le moment', emptyMembersDesc:'Utilisez "+ Ajouter un membre" pour ajouter le premier.',
@@ -486,6 +513,13 @@ export function applyStaticText() {
   document.getElementById("t_loginSubmit").textContent = t("loginBtn");
   document.getElementById("t_tabMigration").textContent = t("tabMigration");
   document.getElementById("t_addProspect").textContent = t("addProspect");
+  document.getElementById("t_addPeriod").textContent = t("addPeriod");
+  document.getElementById("t_lblPeriodLabel").textContent = t("lblPeriodLabel");
+  document.getElementById("t_lblPeriodDate").textContent = t("lblWeekDate");
+  document.getElementById("t_cancel6").textContent = t("cancel");
+  document.getElementById("t_save6").textContent = t("save");
+  document.getElementById("t_emptyPeriodsTitle").textContent = t("emptyPeriodsTitle");
+  document.getElementById("t_emptyPeriodsDesc").textContent = t("emptyPeriodsDesc");
   document.getElementById("t_thColor").textContent = t("thColor");
   document.getElementById("t_thUsername2").textContent = t("thUsername");
   document.getElementById("t_thId2").textContent = t("thId");

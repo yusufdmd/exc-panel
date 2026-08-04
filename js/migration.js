@@ -1,20 +1,29 @@
 // =====================================================================
 // EXC PANELİ — migration.js
 // =====================================================================
-// "Göç" sekmesi: önümüzdeki göç dönemi için bize katılmak isteyen
-// adayların listesi. members.js'den tamamen bağımsızdır — adaylar henüz
-// üye değildir, rütbe/kamp seviyesi gibi üyeliğe özel alanları yoktur.
-// Göç rengi (Altın > Mor > Mavi > Gri), adayın ne kadar değerli
-// görüldüğüne dair basit bir skaladır (bkz. config.js -> MIGRATION_COLORS).
+// "Göç" sekmesi: göç dönemlere (iki haftalık pencerelere) ayrılmıştır —
+// her dönemin kendi, birbirinden bağımsız aday listesi vardır. Dönemler
+// EN YENİ ÖNCE (soldan sağa güncelden eskiye) sıralanır; bu, etkinlik
+// haftalarının (en eski önce) TAM TERSİDİR — kullanıcı her zaman güncel
+// göç dönemini ilk görmek ister (bkz. database.js -> getMigrationPeriods).
+//
+// members.js'den tamamen bağımsızdır — adaylar henüz üye değildir,
+// rütbe/kamp seviyesi gibi üyeliğe özel alanları yoktur. Göç unvanı
+// (Altın > Mor > Mavi > Gri), adayın ne kadar değerli görüldüğüne dair
+// basit bir skaladır (bkz. config.js -> MIGRATION_COLORS).
 // =====================================================================
 
-import { createMigrationProspect, updateMigrationProspect, deleteMigrationProspect as dbDeleteProspect } from "./database.js";
+import {
+  createMigrationPeriod, updateMigrationPeriod, deleteMigrationPeriod as dbDeletePeriod,
+  createMigrationProspect, updateMigrationProspect, deleteMigrationProspect as dbDeleteProspect
+} from "./database.js";
 import {
   state,
   t,
   showToast,
   escapeHtml,
   formatPower,
+  todayStr,
   migrationColorClass,
   migrationColorLabel,
   migrationStatusClass,
@@ -26,10 +35,16 @@ import {
   renderAll
 } from "./ui.js";
 
+/** Supabase'ten dönen ham göç dönemi satırını uygulamanın kullandığı şekle çevirir. */
+export function mapPeriod(row) {
+  return { id: row.id, label: row.label, date: row.period_date || "" };
+}
+
 /** Supabase'ten dönen ham göç adayı satırını uygulamanın kullandığı şekle çevirir. */
 export function mapProspect(row) {
   return {
     id: row.id,
+    periodId: row.period_id,
     name: row.name,
     gameId: row.game_id,
     power: row.power,
@@ -39,10 +54,114 @@ export function mapProspect(row) {
   };
 }
 
-/** Arama filtresi + geçerli sıralama anahtarına göre sıralanmış aday listesini döndürür. */
+// =====================================================================
+// DÖNEM SEÇİCİ (en yeni solda) + DÖNEM MODALI (EKLE/DÜZENLE)
+// =====================================================================
+/** Seçili dönem artık listede yoksa (silindiyse) veya hiç seçilmediyse en yeni (ilk) döneme geçer. */
+function ensureActivePeriod() {
+  const stillExists = state.migrationPeriods.some((p) => p.id === state.migrationActivePeriodId);
+  if (!stillExists) {
+    state.migrationActivePeriodId = state.migrationPeriods.length ? state.migrationPeriods[0].id : null;
+  }
+}
+
+function renderMigrationPeriodTabs() {
+  ensureActivePeriod();
+  const tabsEl = document.getElementById("migrationPeriodTabs");
+  tabsEl.innerHTML = state.migrationPeriods.map((period) => `
+    <div class="subtab ${period.id === state.migrationActivePeriodId ? "active" : ""}" onclick="selectMigrationPeriod('${period.id}')">
+      <span>${escapeHtml(period.label)}</span>
+      <span class="admin-only period-actions">
+        <button class="icon-btn" style="width:18px;height:18px;" onclick="event.stopPropagation(); openPeriodModal('${period.id}')" title="${t("weekEditTitle")}">🏷</button>
+        <button class="icon-btn danger" style="width:18px;height:18px;" onclick="event.stopPropagation(); deletePeriod('${period.id}')">✕</button>
+      </span>
+    </div>
+  `).join("");
+
+  const hasPeriods = state.migrationPeriods.length > 0;
+  document.getElementById("migrationPeriodEmpty").style.display = hasPeriods ? "none" : "block";
+  document.getElementById("migrationPeriodContent").style.display = hasPeriods ? "" : "none";
+}
+
+export function selectMigrationPeriod(id) {
+  state.migrationActivePeriodId = id;
+  renderMigration();
+}
+
+export function openPeriodModal(id) {
+  document.getElementById("periodEditId").value = id || "";
+  if (id) {
+    const period = state.migrationPeriods.find((p) => p.id === id);
+    document.getElementById("periodModalTitle").textContent = t("periodEditTitle");
+    document.getElementById("prLabel").value = period ? period.label : "";
+    document.getElementById("prDate").value = period ? period.date : "";
+  } else {
+    document.getElementById("periodModalTitle").textContent = t("periodAddTitle");
+    document.getElementById("prLabel").value = "Dönem " + (state.migrationPeriods.length + 1);
+    document.getElementById("prDate").value = todayStr();
+  }
+  document.getElementById("periodOverlay").classList.add("active");
+}
+
+export function closePeriodModal() {
+  document.getElementById("periodOverlay").classList.remove("active");
+}
+
+export async function savePeriod() {
+  const editId = document.getElementById("periodEditId").value;
+  const label = document.getElementById("prLabel").value.trim();
+  if (!label) {
+    showToast(t("periodNameRequired"));
+    return;
+  }
+  const periodDate = document.getElementById("prDate").value || null;
+
+  try {
+    if (editId) {
+      const row = await updateMigrationPeriod(editId, { label, period_date: periodDate });
+      const index = state.migrationPeriods.findIndex((p) => p.id === editId);
+      if (index >= 0) state.migrationPeriods[index] = mapPeriod(row);
+    } else {
+      const row = await createMigrationPeriod({ label, period_date: periodDate });
+      state.migrationPeriods.push(mapPeriod(row));
+      state.migrationActivePeriodId = row.id;
+    }
+    // Yeni/güncellenen dönemin sıradaki (en yeni önce) konumu değişmiş olabilir; sunucudaki sıralamayı yansıtmak için yerel listeyi de aynı kurala göre sıralıyoruz.
+    state.migrationPeriods.sort((a, b) => (b.date || "").localeCompare(a.date || ""));
+    closePeriodModal();
+    renderAll();
+    showToast(t("toastPeriodSaved"));
+  } catch (error) {
+    console.error(error);
+    showToast("Error");
+  }
+}
+
+export async function deletePeriod(id) {
+  if (!confirm(t("confirmDeletePeriod"))) return;
+  try {
+    await dbDeletePeriod(id);
+    state.migrationPeriods = state.migrationPeriods.filter((p) => p.id !== id);
+    state.migration = state.migration.filter((p) => p.periodId !== id);
+    if (state.migrationActivePeriodId === id) state.migrationActivePeriodId = null;
+    renderAll();
+    showToast(t("toastPeriodDeleted"));
+  } catch (error) {
+    console.error(error);
+    showToast("Error");
+  }
+}
+
+// =====================================================================
+// ADAY LİSTESİ (seçili döneme ait)
+// =====================================================================
+/** Arama filtresi + geçerli sıralama anahtarına göre, SEÇİLİ DÖNEME ait sıralanmış aday listesini döndürür. */
 function sortedProspects() {
   const query = (document.getElementById("migrationSearch").value || "").toLowerCase().trim();
-  const list = state.migration.filter((p) => !query || (p.name || "").toLowerCase().includes(query) || String(p.gameId || "").toLowerCase().includes(query));
+  const list = state.migration.filter((p) => {
+    if (p.periodId !== state.migrationActivePeriodId) return false;
+    return !query || (p.name || "").toLowerCase().includes(query) || String(p.gameId || "").toLowerCase().includes(query);
+  });
   list.sort((a, b) => {
     let valueA;
     let valueB;
@@ -64,7 +183,7 @@ function sortedProspects() {
     } else {
       valueA = MIGRATION_COLOR_ORDER[a.color] || 0;
       valueB = MIGRATION_COLOR_ORDER[b.color] || 0;
-      if (valueA === valueB) return (Number(b.power) || 0) - (Number(a.power) || 0); // aynı renkte güç azalan sırada
+      if (valueA === valueB) return (Number(b.power) || 0) - (Number(a.power) || 0); // aynı unvanda güç azalan sırada
     }
     if (valueA < valueB) return -1 * state.migrationSortDir;
     if (valueA > valueB) return 1 * state.migrationSortDir;
@@ -73,19 +192,21 @@ function sortedProspects() {
   return list;
 }
 
-/** Kaç adayın hangi göç renginde olduğunu gösteren istatistik kartlarını çizer. */
-function renderMigrationStats() {
+/** Seçili dönemdeki adayların kaçının hangi unvanda olduğunu gösteren istatistik kartlarını çizer. */
+function renderMigrationStats(list) {
   const counts = { gold: 0, purple: 0, blue: 0, gray: 0 };
-  state.migration.forEach((p) => { counts[p.color] = (counts[p.color] || 0) + 1; });
+  list.forEach((p) => { counts[p.color] = (counts[p.color] || 0) + 1; });
   document.getElementById("migrationStatsRow").innerHTML = `
-    <div class="stat-card"><div class="num">${state.migration.length}</div><div class="lbl">${t("statMigrationTotal")}</div></div>
+    <div class="stat-card"><div class="num">${list.length}</div><div class="lbl">${t("statMigrationTotal")}</div></div>
     ${MIGRATION_COLORS.map((color) => `<div class="stat-card ${color}"><div class="num">${counts[color]}</div><div class="lbl">${migrationColorLabel(color)}</div></div>`).join("")}
   `;
 }
 
 export function renderMigration() {
-  renderMigrationStats();
+  renderMigrationPeriodTabs();
+  if (!state.migrationActivePeriodId) return;
   const list = sortedProspects();
+  renderMigrationStats(list);
   const rowsEl = document.getElementById("migrationRows");
   document.getElementById("migrationEmpty").style.display = list.length ? "none" : "block";
   rowsEl.innerHTML = list.map((p) => `
@@ -110,7 +231,7 @@ export function setMigrationSort(key) {
     state.migrationSortDir *= -1;
   } else {
     state.migrationSortKey = key;
-    state.migrationSortDir = key === "color" ? -1 : 1; // renk sütunu her zaman Altın-önce ile başlar
+    state.migrationSortDir = key === "color" ? -1 : 1; // unvan sütunu her zaman Altın-önce ile başlar
   }
   renderMigration();
 }
@@ -119,6 +240,10 @@ export function setMigrationSort(key) {
 // ADAY MODALI (EKLE/DÜZENLE)
 // =====================================================================
 export function openProspectModal(id) {
+  if (!id && !state.migrationActivePeriodId) {
+    showToast(t("needPeriodFirst"));
+    return;
+  }
   buildMigrationColorOptions();
   document.getElementById("prospectEditId").value = id || "";
   if (id) {
@@ -154,12 +279,13 @@ export async function saveProspect() {
   const status = document.getElementById("pStatus").value;
 
   try {
-    const payload = { name: name || null, game_id: gameId || null, power, server, color, status };
     if (editId) {
+      const payload = { name: name || null, game_id: gameId || null, power, server, color, status };
       const row = await updateMigrationProspect(editId, payload);
       const index = state.migration.findIndex((p) => p.id === editId);
       if (index >= 0) state.migration[index] = mapProspect(row);
     } else {
+      const payload = { period_id: state.migrationActivePeriodId, name: name || null, game_id: gameId || null, power, server, color, status };
       const row = await createMigrationProspect(payload);
       state.migration.push(mapProspect(row));
     }

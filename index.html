@@ -185,29 +185,39 @@
 
   <!-- MIGRATION -->
   <div class="panel" id="panel-migration">
-    <div class="stats" id="migrationStatsRow"></div>
-    <div class="toolbar">
-      <input class="search" id="migrationSearch" oninput="renderMigration()">
-      <button class="btn-primary admin-only" onclick="openProspectModal()" id="t_addProspect">+ Aday Ekle</button>
+    <div class="event-toolbar">
+      <div class="subtabs" id="migrationPeriodTabs"></div>
+      <button class="btn-primary admin-only" onclick="openPeriodModal()" id="t_addPeriod">+ Dönem Ekle</button>
     </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th onclick="setMigrationSort('color')" id="t_thColor">Renk</th>
-            <th onclick="setMigrationSort('name')" id="t_thUsername2">Kullanıcı Adı</th>
-            <th onclick="setMigrationSort('gameId')" id="t_thId2">ID</th>
-            <th onclick="setMigrationSort('power')" id="t_thPower2">Güç Seviyesi</th>
-            <th onclick="setMigrationSort('server')" id="t_thServer">Sunucu</th>
-            <th onclick="setMigrationSort('status')" id="t_thMigrationStatus">Durum</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="migrationRows"></tbody>
-      </table>
-      <div class="empty-state" id="migrationEmpty" style="display:none;">
-        <h3 id="t_emptyMigrationTitle">Henüz aday yok</h3>
-        <p id="t_emptyMigrationDesc">"+ Aday Ekle" ile ilk göç adayını ekle.</p>
+    <div class="empty-state" id="migrationPeriodEmpty" style="display:none;">
+      <h3 id="t_emptyPeriodsTitle">Henüz dönem yok</h3>
+      <p id="t_emptyPeriodsDesc">"+ Dönem Ekle" ile ilk göç dönemini oluştur.</p>
+    </div>
+    <div id="migrationPeriodContent" style="display:none;">
+      <div class="stats" id="migrationStatsRow"></div>
+      <div class="toolbar">
+        <input class="search" id="migrationSearch" oninput="renderMigration()">
+        <button class="btn-primary admin-only" onclick="openProspectModal()" id="t_addProspect">+ Aday Ekle</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th onclick="setMigrationSort('color')" id="t_thColor">Renk</th>
+              <th onclick="setMigrationSort('name')" id="t_thUsername2">Kullanıcı Adı</th>
+              <th onclick="setMigrationSort('gameId')" id="t_thId2">ID</th>
+              <th onclick="setMigrationSort('power')" id="t_thPower2">Güç Seviyesi</th>
+              <th onclick="setMigrationSort('server')" id="t_thServer">Sunucu</th>
+              <th onclick="setMigrationSort('status')" id="t_thMigrationStatus">Durum</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="migrationRows"></tbody>
+        </table>
+        <div class="empty-state" id="migrationEmpty" style="display:none;">
+          <h3 id="t_emptyMigrationTitle">Henüz aday yok</h3>
+          <p id="t_emptyMigrationDesc">"+ Aday Ekle" ile ilk göç adayını ekle.</p>
+        </div>
       </div>
     </div>
   </div>
@@ -332,6 +342,20 @@
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closeWeekModal()" id="t_cancel2">Vazgeç</button>
       <button class="btn-primary" onclick="saveWeek()" id="t_save2">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- Migration Period Modal (create/edit) -->
+<div class="overlay" id="periodOverlay">
+  <div class="modal">
+    <h2 id="periodModalTitle">Dönem Ekle</h2>
+    <input type="hidden" id="periodEditId">
+    <div class="field"><label id="t_lblPeriodLabel">Dönem Etiketi</label><input id="prLabel" placeholder="Dönem 1"></div>
+    <div class="field"><label id="t_lblPeriodDate">Tarih</label><input id="prDate" type="date"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closePeriodModal()" id="t_cancel6">Vazgeç</button>
+      <button class="btn-primary" onclick="savePeriod()" id="t_save6">Kaydet</button>
     </div>
   </div>
 </div>
