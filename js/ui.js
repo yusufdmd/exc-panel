@@ -127,7 +127,7 @@ export const LANGS = LANGUAGES;
 export const LANG_FLAG = LANG_FLAG_LABELS;
 
 const DICT = {
-  tr: { appName:'EXC Paneli', tagline:'Üye · Rütbe · Güç & Kamp Seviyesi · Etkinlik Takibi', refresh:'Yenile',
+  tr: { appName:'EXC Paneli', tagline:'Üye · Rütbe · Güç & Kamp Seviyesi · Etkinlik Takibi', refresh:'Yenile', backToSite:'← Ana Siteye Dön',
     syncConnecting:'Bağlanıyor…', syncLive:'Canlı — herkes görüyor', syncError:'Bağlantı hatası',
     tabMembers:'Üyeler', tabEvents:'Etkinlikler', tabBoard:'Puan Sıralaması', tabMigration:'Göç',
     addProspect:'+ Aday Ekle', prospectAddTitle:'Aday Ekle', prospectEditTitle:'Adayı Düzenle',
@@ -186,7 +186,7 @@ const DICT = {
     weekReport:'Hafta Raporu', zoneGreen:'Yeşil Bölge', zoneYellow:'Sarı Bölge', zoneRed:'Kırmızı Bölge',
     weekEditTitle:'Haftayı Düzenle', eventEditTitle:'Etkinliği Düzenle',
     overallReportBtn:'📊 Genel Rapor', overallReport:'Genel Rapor', thWeeks:'Haftalar' },
-  en: { appName:'EXC Panel', tagline:'Members · Rank · Power & Camp Level · Event Tracking', refresh:'Refresh',
+  en: { appName:'EXC Panel', tagline:'Members · Rank · Power & Camp Level · Event Tracking', refresh:'Refresh', backToSite:'← Back to Site',
     syncConnecting:'Connecting…', syncLive:'Live — everyone sees this', syncError:'Connection error',
     tabMembers:'Members', tabEvents:'Events', tabBoard:'Leaderboard', tabMigration:'Migration',
     addProspect:'+ Add Candidate', prospectAddTitle:'Add Candidate', prospectEditTitle:'Edit Candidate',
@@ -245,7 +245,7 @@ const DICT = {
     weekReport:'Week Report', zoneGreen:'Green Zone', zoneYellow:'Yellow Zone', zoneRed:'Red Zone',
     weekEditTitle:'Edit Week', eventEditTitle:'Edit Event',
     overallReportBtn:'📊 Overall Report', overallReport:'Overall Report', thWeeks:'Weeks' },
-  de: { appName:'EXC Panel', tagline:'Mitglieder · Rang · Machtstufe & Basisstufe · Event-Tracking', refresh:'Aktualisieren',
+  de: { appName:'EXC Panel', tagline:'Mitglieder · Rang · Machtstufe & Basisstufe · Event-Tracking', refresh:'Aktualisieren', backToSite:'← Zur Website',
     syncConnecting:'Verbinde…', syncLive:'Live — alle sehen dies', syncError:'Verbindungsfehler',
     tabMembers:'Mitglieder', tabEvents:'Events', tabBoard:'Bestenliste', tabMigration:'Migration',
     addProspect:'+ Kandidat hinzufügen', prospectAddTitle:'Kandidat hinzufügen', prospectEditTitle:'Kandidat bearbeiten',
@@ -304,7 +304,7 @@ const DICT = {
     weekReport:'Wochenbericht', zoneGreen:'Grüne Zone', zoneYellow:'Gelbe Zone', zoneRed:'Rote Zone',
     weekEditTitle:'Woche bearbeiten', eventEditTitle:'Event bearbeiten',
     overallReportBtn:'📊 Gesamtbericht', overallReport:'Gesamtbericht', thWeeks:'Wochen' },
-  es: { appName:'Panel EXC', tagline:'Miembros · Rango · Poder y Nivel de Campamento · Seguimiento de Eventos', refresh:'Actualizar',
+  es: { appName:'Panel EXC', tagline:'Miembros · Rango · Poder y Nivel de Campamento · Seguimiento de Eventos', refresh:'Actualizar', backToSite:'← Volver al Sitio',
     syncConnecting:'Conectando…', syncLive:'En vivo — todos lo ven', syncError:'Error de conexión',
     tabMembers:'Miembros', tabEvents:'Eventos', tabBoard:'Clasificación', tabMigration:'Migración',
     addProspect:'+ Añadir candidato', prospectAddTitle:'Añadir candidato', prospectEditTitle:'Editar candidato',
@@ -363,7 +363,7 @@ const DICT = {
     weekReport:'Informe Semanal', zoneGreen:'Zona Verde', zoneYellow:'Zona Amarilla', zoneRed:'Zona Roja',
     weekEditTitle:'Editar semana', eventEditTitle:'Editar evento',
     overallReportBtn:'📊 Informe General', overallReport:'Informe General', thWeeks:'Semanas' },
-  fr: { appName:'Panneau EXC', tagline:'Membres · Rang · Puissance et Niveau de Camp · Suivi des Événements', refresh:'Actualiser',
+  fr: { appName:'Panneau EXC', tagline:'Membres · Rang · Puissance et Niveau de Camp · Suivi des Événements', refresh:'Actualiser', backToSite:'← Retour au Site',
     syncConnecting:'Connexion…', syncLive:'En direct — visible par tous', syncError:'Erreur de connexion',
     tabMembers:'Membres', tabEvents:'Événements', tabBoard:'Classement', tabMigration:'Migration',
     addProspect:'+ Ajouter un candidat', prospectAddTitle:'Ajouter un candidat', prospectEditTitle:'Modifier le candidat',
@@ -455,6 +455,7 @@ export function applyStaticText() {
   document.getElementById("t_appName").textContent = t("appName");
   document.getElementById("t_tagline").textContent = t("tagline");
   document.getElementById("t_refresh").textContent = t("refresh");
+  document.getElementById("t_backToSite").textContent = t("backToSite");
   document.getElementById("t_tabMembers").textContent = t("tabMembers");
   document.getElementById("t_tabEvents").textContent = t("tabEvents");
   document.getElementById("t_tabBoard").textContent = t("tabBoard");

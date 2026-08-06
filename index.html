@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Excellence — Server 76 Palmon Survival Loncası</title>
-<meta name="description" content="Excellence, Server 76'nın önde gelen Palmon Survival loncasıdır. Stratejiyle, kararlılıkla ve kardeşlikle kurulmuş bir topluluk.">
+<title>Excellence — Server 76 Palmon Survival Guild</title>
+<meta name="description" content="Excellence is Server 76's leading Palmon Survival guild. A community built on strategy, dedication, and brotherhood.">
 <link rel="stylesheet" href="css/landing.css">
 </head>
 <body>
@@ -16,62 +16,66 @@
       <div class="brand-name">EXCELLENCE</div>
     </div>
     <div class="nav-links" id="navLinks">
-      <a href="#anasayfa">Ana Sayfa</a>
-      <a href="#hakkimizda">Hakkımızda</a>
-      <a href="#goc">Göçe Katıl</a>
-      <a href="#medya">YouTube</a>
+      <a href="#anasayfa" data-i18n="navHome">Home</a>
+      <a href="#hakkimizda" data-i18n="navAbout">About</a>
+      <a href="#goc" data-i18n="navMigrate">Join Migration</a>
+      <a href="#medya" data-i18n="navMedia">YouTube</a>
       <!-- TODO: Gerçek Discord davet linkinizi girin -->
-      <a href="#" target="_blank" rel="noopener">Discord</a>
+      <a href="#" target="_blank" rel="noopener" data-i18n="navDiscord">Discord</a>
     </div>
-    <!-- TODO: Gerçek Discord davet linkinizi girin -->
-    <a class="nav-cta" href="#" target="_blank" rel="noopener">Discord'a Katıl</a>
-    <button class="nav-toggle" id="navToggle" aria-label="Menü">☰</button>
+    <div class="nav-actions">
+      <div class="lang-switch" id="langSwitch"></div>
+      <a class="btn-panel" href="panel/" data-i18n="navPanel">Panel</a>
+      <!-- TODO: Gerçek Discord davet linkinizi girin -->
+      <a class="nav-cta" href="#" target="_blank" rel="noopener" data-i18n="ctaDiscordJoin">Join Discord</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Menu">☰</button>
+    </div>
   </div>
 </nav>
 
 <section class="hero" id="anasayfa">
   <div class="hero-tag">Server 76 · Palmon Survival</div>
   <h1>EXCELLENCE</h1>
-  <div class="hero-slogan">Biz Rekabet Etmeyiz<span class="dot">•</span>Biz Hükmederiz</div>
-  <p class="hero-desc">
-    Excellence, Server 76'nın önde gelen Palmon Survival loncasıdır. Strateji, kararlılık ve
-    kardeşlik üzerine kurulu bir topluluğuz — birlikte oynayan, birlikte büyüyen bir aileyiz.
+  <div class="hero-slogan" data-i18n="heroSlogan">We Don't Compete<span class="dot">•</span>We Dominate</div>
+  <p class="hero-desc" data-i18n="heroDesc">
+    Excellence is Server 76's leading Palmon Survival guild. A community built on strategy,
+    dedication, and brotherhood — a family that plays together and grows together.
   </p>
   <div class="hero-actions">
     <!-- TODO: Gerçek Discord davet linkinizi girin -->
-    <a class="btn-gold" href="#" target="_blank" rel="noopener">Discord'a Katıl</a>
-    <a class="btn-outline" href="#goc">Göçe Katıl</a>
+    <a class="btn-gold" href="#" target="_blank" rel="noopener" data-i18n="ctaDiscordJoin">Join Discord</a>
+    <a class="btn-outline" href="#goc" data-i18n="navMigrate">Join Migration</a>
   </div>
 </section>
 
 <div class="stats-strip">
-  <div class="stat-box"><div class="num" id="memberCount">—</div><div class="lbl">Üye</div></div>
-  <div class="stat-box"><div class="num">76</div><div class="lbl">Sunucu</div></div>
-  <div class="stat-box"><div class="num">Palmon Survival</div><div class="lbl">Oyun</div></div>
-  <div class="stat-box"><div class="num">Canlı</div><div class="lbl">Topluluk</div></div>
+  <div class="stat-box"><div class="num" id="memberCount">—</div><div class="lbl" data-i18n="statMembers">Members</div></div>
+  <div class="stat-box"><div class="num">76</div><div class="lbl" data-i18n="statServer">Server</div></div>
+  <div class="stat-box"><div class="num">Palmon Survival</div><div class="lbl" data-i18n="statGame">Game</div></div>
+  <div class="stat-box"><div class="num" data-i18n="statLiveValue">Live</div><div class="lbl" data-i18n="statCommunity">Community</div></div>
 </div>
 
 <section id="hakkimizda">
   <div class="section-head">
-    <div class="section-tag">Hakkımızda</div>
-    <h2>Kim Olduğumuz</h2>
-    <p>Excellence, tek başına güç değil, birlikte hareket eden bir topluluktur.</p>
+    <div class="section-tag" data-i18n="aboutTag">About Us</div>
+    <h2 data-i18n="aboutTitle">Who We Are</h2>
+    <p data-i18n="aboutDesc">Excellence isn't strength alone — it's a community that moves as one.</p>
   </div>
   <div class="about-grid">
     <div class="about-card">
       <div class="icon">🛡️</div>
-      <h3>Strateji &amp; Kararlılık</h3>
-      <p>Her etkinlikte, her göç döneminde planlı hareket ederiz — rastgele değil, düşünerek kazanırız.</p>
+      <h3 data-i18n="aboutCard1Title">Strategy &amp; Dedication</h3>
+      <p data-i18n="aboutCard1Desc">We move with a plan in every event, every migration window — we win by thinking, not by chance.</p>
     </div>
     <div class="about-card">
       <div class="icon">🤝</div>
-      <h3>Kardeşlik</h3>
-      <p>Yeni katılan herkes ailenin bir parçası olur. Birbirimize destek oluruz, birlikte büyürüz.</p>
+      <h3 data-i18n="aboutCard2Title">Brotherhood</h3>
+      <p data-i18n="aboutCard2Desc">Everyone who joins becomes part of the family. We support each other and grow together.</p>
     </div>
     <div class="about-card">
       <div class="icon">👑</div>
-      <h3>Hükmetme</h3>
-      <p>Server 76'da adımızı duyuran, hedeflerine ulaşan bir lonca — rekabet etmeyiz, hükmederiz.</p>
+      <h3 data-i18n="aboutCard3Title">Dominance</h3>
+      <p data-i18n="aboutCard3Desc">A guild that makes its name known on Server 76 and reaches its goals — we don't compete, we dominate.</p>
     </div>
   </div>
 </section>
@@ -79,40 +83,40 @@
 <section class="migrate-section" id="goc">
   <div class="migrate-wrap">
     <div class="section-head">
-      <div class="section-tag">Başka Sunucudan mısınız?</div>
-      <h2>Göçe Katıl</h2>
-      <p>
-        Önümüzdeki göç döneminde Excellence'a katılmak ister misiniz? Aşağıdaki formu doldurun,
-        liderlik ekibimiz sizinle iletişime geçsin.
+      <div class="section-tag" data-i18n="migrateTag">Coming From Another Server?</div>
+      <h2 data-i18n="navMigrate">Join Migration</h2>
+      <p data-i18n="migrateDesc">
+        Want to join Excellence in the upcoming migration window? Fill out the form below and
+        our leadership team will reach out.
       </p>
     </div>
     <form class="lead-form" id="leadForm">
       <div class="row">
         <div class="field">
-          <label for="leadName">Kullanıcı Adı</label>
+          <label for="leadName" data-i18n="fieldName">Username</label>
           <input id="leadName" required>
         </div>
         <div class="field">
-          <label for="leadContact">İletişim (Discord vb.)</label>
+          <label for="leadContact" data-i18n="fieldContact">Contact (Discord, etc.)</label>
           <input id="leadContact">
         </div>
       </div>
       <div class="row">
         <div class="field">
-          <label for="leadServer">Mevcut Sunucu</label>
+          <label for="leadServer" data-i18n="fieldServer">Current Server</label>
           <input id="leadServer" type="number">
         </div>
         <div class="field">
-          <label for="leadPower">Güç Seviyesi</label>
+          <label for="leadPower" data-i18n="fieldPower">Power Level</label>
           <input id="leadPower" type="number">
         </div>
       </div>
       <div class="field">
-        <label for="leadMessage">Mesaj (opsiyonel)</label>
-        <textarea id="leadMessage" placeholder="Kendinizden kısaca bahsedin…"></textarea>
+        <label for="leadMessage" data-i18n="fieldMessage">Message (optional)</label>
+        <textarea id="leadMessage" data-i18n-placeholder="fieldMessagePh" placeholder="Tell us a bit about yourself…"></textarea>
       </div>
       <div class="submit-row">
-        <button type="submit" class="btn-gold" id="leadSubmitBtn">Başvuruyu Gönder</button>
+        <button type="submit" class="btn-gold" id="leadSubmitBtn" data-i18n="submitBtn">Submit Application</button>
         <span id="leadFormMessage"></span>
       </div>
     </form>
@@ -121,14 +125,14 @@
 
 <section id="medya">
   <div class="section-head">
-    <div class="section-tag">Medya</div>
-    <h2>YouTube Kanalımız</h2>
+    <div class="section-tag" data-i18n="mediaTag">Media</div>
+    <h2 data-i18n="mediaTitle">Our YouTube Channel</h2>
   </div>
   <div class="media-card">
     <div class="icon">▶️</div>
-    <p style="color:var(--text-muted); margin-bottom:20px;">Etkinlik özetleri, rehberler ve daha fazlası için kanalımıza göz atın.</p>
+    <p style="color:var(--text-muted); margin-bottom:20px;" data-i18n="mediaDesc">Check out our channel for event recaps, guides, and more.</p>
     <!-- TODO: Gerçek YouTube kanal linkinizi girin -->
-    <a class="btn-gold" href="#" target="_blank" rel="noopener">Kanala Git</a>
+    <a class="btn-gold" href="#" target="_blank" rel="noopener" data-i18n="mediaBtn">Go to Channel</a>
   </div>
 </section>
 
@@ -136,9 +140,9 @@
   <div class="footer-inner">
     <div class="footer-copy">© <span id="year"></span> Excellence — Server 76</div>
     <div class="footer-links">
-      <a href="#hakkimizda">Hakkımızda</a>
-      <a href="#goc">Göçe Katıl</a>
-      <a href="panel/">Yönetim Girişi</a>
+      <a href="#hakkimizda" data-i18n="navAbout">About</a>
+      <a href="#goc" data-i18n="navMigrate">Join Migration</a>
+      <a href="panel/" data-i18n="navPanel">Panel</a>
     </div>
     <div class="social-links">
       <!-- TODO: Gerçek sosyal medya linklerinizi girin -->
