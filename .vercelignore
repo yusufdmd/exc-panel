@@ -1,0 +1,4 @@
+# Keep the DB schema dump and the stale local backup copy out of the public deployment.
+# They stay in git/local disk, they're just not served as public URLs on Vercel.
+sql/
+backup/

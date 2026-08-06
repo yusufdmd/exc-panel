@@ -1,0 +1,9 @@
+{
+  "name": "exc-paneli",
+  "version": "1.0.0",
+  "private": true,
+  "description": "EXC Paneli - uye, rutbe, guc & kamp seviyesi, etkinlik takip paneli (Supabase destekli, statik site).",
+  "scripts": {
+    "dev": "npx serve . -l 3000"
+  }
+}
