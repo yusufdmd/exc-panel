@@ -46,6 +46,9 @@
       <button class="btn-refresh admin-only" id="logoutBtn" onclick="doLogout()" style="display:none;">
         <span id="t_logoutBtn">Çıkış Yap</span>
       </button>
+      <button class="btn-refresh admin-only" onclick="openSiteLinksModal()">
+        🔗 <span id="t_siteLinksBtn">Site Linkleri</span>
+      </button>
       <button class="btn-refresh" onclick="exportBackup()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
         <span id="t_exportBackup">Yedekle</span>
@@ -377,6 +380,21 @@
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closePeriodModal()" id="t_cancel6">Vazgeç</button>
       <button class="btn-primary" onclick="savePeriod()" id="t_save6">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- Site Links Modal -->
+<div class="overlay" id="siteLinksOverlay">
+  <div class="modal">
+    <h2 id="t_siteLinksTitle">Site Linkleri</h2>
+    <p style="color:var(--text-muted); font-size:12px; margin-bottom:16px;" id="t_siteLinksDesc">Bu linkler genel tanıtım sitesinde (ana sayfa) kullanılır.</p>
+    <div class="field"><label id="t_lblDiscordUrl">Discord Davet Linki</label><input id="slDiscord" placeholder="https://discord.gg/..."></div>
+    <div class="field"><label id="t_lblYoutubeUrl">YouTube Kanal Linki</label><input id="slYoutube" placeholder="https://youtube.com/@..."></div>
+    <div class="field"><label id="t_lblInstagramUrl">Instagram Linki</label><input id="slInstagram" placeholder="https://instagram.com/..."></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeSiteLinksModal()" id="t_cancel7">Vazgeç</button>
+      <button class="btn-primary" onclick="saveSiteLinks()" id="t_save7">Kaydet</button>
     </div>
   </div>
 </div>

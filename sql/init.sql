@@ -310,6 +310,37 @@ create trigger trg_settings_updated_at
   for each row execute function set_updated_at();
 
 -- =====================================================================
+-- 7.1) SITE_LINKS — genel tanıtım sitesindeki Discord/YouTube/Instagram
+--      linkleri, admin panelinden düzenlenebilir. Tek satırlık tablo
+--      (id her zaman 1). Herkes okuyabilir (site üzerinde görünecekler
+--      için), sadece admin güncelleyebilir — BU YÜZDEN aşağıdaki 10)
+--      bölümündeki genel (select'i de admin'e kilitleyen) RLS döngüsüne
+--      BİLEREK DAHİL EDİLMEZ, kendi politikaları burada tanımlanır.
+-- =====================================================================
+create table if not exists site_links (
+  id            int primary key default 1 check (id = 1),
+  discord_url   text,
+  youtube_url   text,
+  instagram_url text,
+  updated_at    timestamptz not null default now()
+);
+
+insert into site_links (id) values (1) on conflict (id) do nothing;
+
+drop trigger if exists trg_site_links_updated_at on site_links;
+create trigger trg_site_links_updated_at
+  before update on site_links
+  for each row execute function set_updated_at();
+
+alter table site_links enable row level security;
+
+drop policy if exists site_links_select_all on site_links;
+create policy site_links_select_all on site_links for select using (true);
+
+drop policy if exists site_links_update_auth on site_links;
+create policy site_links_update_auth on site_links for update using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+
+-- =====================================================================
 -- 8) USERS — Liderler / gelecekteki giriş sistemi için
 -- =====================================================================
 create table if not exists users (
@@ -402,7 +433,7 @@ alter publication supabase_realtime add table
   other_weeks, other_records,
   kod_weeks, kod_records,
   migration_periods, migration_prospects, migration_leads,
-  settings, activity_logs;
+  settings, site_links, activity_logs;
 
 -- =====================================================================
 -- BİTTİ

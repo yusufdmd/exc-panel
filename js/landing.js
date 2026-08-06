@@ -19,7 +19,7 @@
 // bu kasıtlı bir fark, bu yüzden localStorage anahtarları da ayrıdır).
 // =====================================================================
 
-import { getActiveMemberCount, createMigrationLead } from "./database.js";
+import { getActiveMemberCount, getSiteLinks, createMigrationLead } from "./database.js";
 
 const LANGUAGE_STORAGE_KEY = "exc-landing-lang";
 const DEFAULT_LANGUAGE = "en";
@@ -191,6 +191,27 @@ async function loadStats() {
   }
 }
 
+/**
+ * Discord/YouTube/Instagram bağlantılarını Supabase'ten (herkese açık,
+ * dar kapsamlı site_links tablosu) çekip sayfadaki ilgili `data-link`
+ * işaretli tüm öğelere uygular — admin panelinden ("Site Linkleri")
+ * güncellenene kadar bu düğmeler işlevsiz (#) kalır.
+ */
+async function loadSiteLinks() {
+  try {
+    const links = await getSiteLinks();
+    const apply = (key, url) => {
+      if (!url) return;
+      document.querySelectorAll(`[data-link="${key}"]`).forEach((el) => { el.href = url; });
+    };
+    apply("discord", links.discord_url);
+    apply("youtube", links.youtube_url);
+    apply("instagram", links.instagram_url);
+  } catch (error) {
+    console.error("[Excellence] Site linkleri alınamadı:", error);
+  }
+}
+
 function setFormMessage(text, isError) {
   const el = document.getElementById("leadFormMessage");
   el.textContent = text;
@@ -240,3 +261,4 @@ document.getElementById("navToggle").addEventListener("click", () => {
 
 initLang();
 loadStats();
+loadSiteLinks();

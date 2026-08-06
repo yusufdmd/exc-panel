@@ -369,6 +369,32 @@ export async function setSetting(key, value) {
 }
 
 // =====================================================================
+// SITE_LINKS — genel tanıtım sitesindeki Discord/YouTube/Instagram
+// linkleri. getSiteLinks herkese açıktır (site üzerinde görünecekler
+// için); updateSiteLinks admin oturumu gerektirir.
+// =====================================================================
+export async function getSiteLinks() {
+  const { data, error } = await supabase
+    .from("site_links")
+    .select("*")
+    .eq("id", 1)
+    .maybeSingle();
+  if (error) dbError("Site linkleri alınamadı", error);
+  return data || {};
+}
+
+export async function updateSiteLinks(payload) {
+  const { data, error } = await supabase
+    .from("site_links")
+    .update(payload)
+    .eq("id", 1)
+    .select()
+    .single();
+  if (error) dbError("Site linkleri güncellenemedi", error);
+  return data;
+}
+
+// =====================================================================
 // USERS — Liderler
 // =====================================================================
 export async function getUsers() {
