@@ -22,7 +22,8 @@
 
 import {
   createMigrationPeriod, updateMigrationPeriod, deleteMigrationPeriod as dbDeletePeriod,
-  createMigrationProspect, updateMigrationProspect, deleteMigrationProspect as dbDeleteProspect
+  createMigrationProspect, updateMigrationProspect, deleteMigrationProspect as dbDeleteProspect,
+  deleteMigrationLead as dbDeleteLead
 } from "./database.js";
 import {
   state,
@@ -46,6 +47,11 @@ import { openMemberModal } from "./members.js";
 /** Supabase'ten dönen ham göç dönemi satırını uygulamanın kullandığı şekle çevirir. */
 export function mapPeriod(row) {
   return { id: row.id, label: row.label, date: row.period_date || "" };
+}
+
+/** Supabase'ten dönen ham göç başvurusu (genel siteden gelen) satırını uygulamanın kullandığı şekle çevirir. */
+export function mapLead(row) {
+  return { id: row.id, name: row.name, contact: row.contact, server: row.current_server, power: row.power, message: row.message, createdAt: row.created_at };
 }
 
 /** Supabase'ten dönen ham göç adayı satırını uygulamanın kullandığı şekle çevirir. */
@@ -210,7 +216,30 @@ function renderMigrationStats(list) {
   `;
 }
 
+/** Genel tanıtım sitesinden gelen, henüz işlenmemiş ham başvuruları çizer (dönemden bağımsız, sadece admin görür). */
+function renderMigrationLeads() {
+  const section = document.getElementById("migrationLeadsSection");
+  const hasLeads = state.migrationLeads.length > 0;
+  section.style.display = hasLeads ? "" : "none";
+  if (!hasLeads) return;
+  document.getElementById("migrationLeadsRows").innerHTML = state.migrationLeads.map((lead) => `
+    <tr>
+      <td><span class="member-name">${escapeHtml(lead.name || "—")}</span></td>
+      <td>${escapeHtml(lead.contact || "—")}</td>
+      <td class="num-cell">${escapeHtml(lead.server != null ? String(lead.server) : "—")}</td>
+      <td class="num-cell">${formatPower(lead.power)}</td>
+      <td>${escapeHtml(lead.message || "—")}</td>
+      <td>${escapeHtml((lead.createdAt || "").slice(0, 10))}</td>
+      <td><div class="row-actions">
+        <button class="icon-btn" onclick="processLead('${lead.id}')" title="${t("processLeadTitle")}">✅</button>
+        <button class="icon-btn danger" onclick="dismissLead('${lead.id}')">✕</button>
+      </div></td>
+    </tr>
+  `).join("");
+}
+
 export function renderMigration() {
+  renderMigrationLeads();
   renderMigrationPeriodTabs();
   if (!state.migrationActivePeriodId) return;
   const list = sortedProspects();
@@ -253,6 +282,7 @@ export function openProspectModal(id) {
     showToast(t("needPeriodFirst"));
     return;
   }
+  state.pendingLeadProcessingId = null; // varsayılan: normal ekleme/düzenleme, "İşle" akışı değil (bkz. processLead)
   buildMigrationColorOptions();
   document.getElementById("prospectEditId").value = id || "";
   if (id) {
@@ -275,6 +305,7 @@ export function openProspectModal(id) {
 
 export function closeProspectModal() {
   document.getElementById("prospectOverlay").classList.remove("active");
+  state.pendingLeadProcessingId = null;
 }
 
 export async function saveProspect() {
@@ -297,6 +328,20 @@ export async function saveProspect() {
       const payload = { period_id: state.migrationActivePeriodId, name: name || null, game_id: gameId || null, power, server, color, status };
       const row = await createMigrationProspect(payload);
       state.migration.push(mapProspect(row));
+
+      // "İşle" akışından geldiyse (bkz. processLead), aday başarıyla oluşturulduktan
+      // sonra ham başvuruyu da temizler. Kendi try/catch'inde tutulur ki temizlik
+      // başarısız olsa bile adayın oluşturulduğu doğru şekilde bildirilsin.
+      if (state.pendingLeadProcessingId) {
+        const leadId = state.pendingLeadProcessingId;
+        state.pendingLeadProcessingId = null;
+        try {
+          await dbDeleteLead(leadId);
+          state.migrationLeads = state.migrationLeads.filter((l) => l.id !== leadId);
+        } catch (cleanupError) {
+          console.error(cleanupError);
+        }
+      }
     }
     closeProspectModal();
     renderAll();
@@ -337,4 +382,37 @@ export function approveProspect(id) {
   document.getElementById("fName").value = prospect.name || "";
   document.getElementById("fGameId").value = prospect.gameId || "";
   document.getElementById("fPower").value = prospect.power || "";
+}
+
+/**
+ * Genel siteden gelen ham bir başvuruyu göç adayına dönüştürme akışını
+ * başlatır: seçili dönem içinde aday ekleme formu, başvurunun bilinen
+ * bilgileriyle (isim/sunucu/güç) önceden doldurulmuş halde açılır.
+ * "Kaydet"e basıldığında başvuru otomatik olarak silinir (bkz. saveProspect).
+ */
+export function processLead(id) {
+  if (!state.migrationActivePeriodId) {
+    showToast(t("needPeriodFirst"));
+    return;
+  }
+  const lead = state.migrationLeads.find((l) => l.id === id);
+  if (!lead) return;
+  openProspectModal();
+  state.pendingLeadProcessingId = id;
+  document.getElementById("pName").value = lead.name || "";
+  document.getElementById("pServer").value = lead.server != null ? lead.server : "";
+  document.getElementById("pPower").value = lead.power || "";
+}
+
+export async function dismissLead(id) {
+  if (!confirm(t("confirmDismissLead"))) return;
+  try {
+    await dbDeleteLead(id);
+    state.migrationLeads = state.migrationLeads.filter((l) => l.id !== id);
+    renderAll();
+    showToast(t("toastLeadDismissed"));
+  } catch (error) {
+    console.error(error);
+    showToast("Error");
+  }
 }

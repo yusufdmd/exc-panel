@@ -51,6 +51,8 @@ export const state = {
   migrationPeriods: [],
   migrationActivePeriodId: null,
   pendingProspectApprovalId: null, // "Onayla" ile üye ekleme ekranına gidilirken hangi göç adayının dönüştürüldüğünü hatırlar (bkz. members.js -> saveMember)
+  migrationLeads: [], // genel tanıtım sitesindeki formdan gelen, henüz işlenmemiş ham başvurular
+  pendingLeadProcessingId: null, // "İşle" ile aday ekleme formuna gidilirken hangi başvurunun dönüştürüldüğünü hatırlar (bkz. migration.js -> saveProspect)
   migrationSortKey: "color",
   migrationSortDir: -1, // -1: varsayılan görünümde Altın üstte, Griye doğru azalan sıra
   currentTab: "members",
@@ -134,6 +136,9 @@ const DICT = {
     emptyMigrationTitle:'Henüz aday yok', emptyMigrationDesc:'"+ Aday Ekle" ile ilk göç adayını ekle.',
     toastProspectSaved:'Aday kaydedildi.', toastProspectDeleted:'Aday silindi.', confirmDeleteProspect:'Bu adayı silmek istediğinize emin misiniz?',
     approveProspectTitle:'Üye Olarak Onayla', confirmApproveProspect:'Bu adayı üye olarak onaylamak istediğinize emin misiniz? Eksik bilgileri dolduracağınız üye ekleme ekranına yönlendirileceksiniz.',
+    leadsHeading:'📥 Gelen Göç Talepleri', thLeadContact:'İletişim', thLeadMessage:'Mesaj', thLeadDate:'Tarih',
+    processLeadTitle:'Aday Olarak İşle', confirmDismissLead:'Bu başvuruyu reddetmek/silmek istediğinize emin misiniz?',
+    toastLeadDismissed:'Başvuru silindi.',
     statMigrationTotal:'Toplam Aday', migrationStatusCertain:'Kesin', migrationStatusUncertain:'Belirsiz',
     addPeriod:'+ Dönem Ekle', periodAddTitle:'Dönem Ekle', periodEditTitle:'Dönemi Düzenle', lblPeriodLabel:'Dönem Etiketi',
     periodNameRequired:'Dönem etiketi gerekli.', confirmDeletePeriod:'Bu dönemi silmek istediğinize emin misiniz? İçindeki tüm adaylar da silinecek.',
@@ -190,6 +195,9 @@ const DICT = {
     emptyMigrationTitle:'No candidates yet', emptyMigrationDesc:'Use "+ Add Candidate" to add the first migration candidate.',
     toastProspectSaved:'Candidate saved.', toastProspectDeleted:'Candidate deleted.', confirmDeleteProspect:'Are you sure you want to delete this candidate?',
     approveProspectTitle:'Approve as Member', confirmApproveProspect:'Are you sure you want to approve this candidate as a member? You will be taken to the add-member screen to fill in the missing details.',
+    leadsHeading:'📥 Incoming Migration Requests', thLeadContact:'Contact', thLeadMessage:'Message', thLeadDate:'Date',
+    processLeadTitle:'Process as Candidate', confirmDismissLead:'Are you sure you want to dismiss/delete this request?',
+    toastLeadDismissed:'Request deleted.',
     statMigrationTotal:'Total Candidates', migrationStatusCertain:'Certain', migrationStatusUncertain:'Uncertain',
     addPeriod:'+ Add Period', periodAddTitle:'Add Period', periodEditTitle:'Edit Period', lblPeriodLabel:'Period Label',
     periodNameRequired:'Period label is required.', confirmDeletePeriod:'Are you sure you want to delete this period? All candidates in it will also be deleted.',
@@ -246,6 +254,9 @@ const DICT = {
     emptyMigrationTitle:'Noch keine Kandidaten', emptyMigrationDesc:'Mit "+ Kandidat hinzufügen" den ersten Migrationskandidaten hinzufügen.',
     toastProspectSaved:'Kandidat gespeichert.', toastProspectDeleted:'Kandidat gelöscht.', confirmDeleteProspect:'Diesen Kandidaten wirklich löschen?',
     approveProspectTitle:'Als Mitglied bestätigen', confirmApproveProspect:'Diesen Kandidaten wirklich als Mitglied bestätigen? Sie werden zum Formular für neue Mitglieder weitergeleitet, um die fehlenden Angaben zu ergänzen.',
+    leadsHeading:'📥 Eingehende Migrationsanfragen', thLeadContact:'Kontakt', thLeadMessage:'Nachricht', thLeadDate:'Datum',
+    processLeadTitle:'Als Kandidat bearbeiten', confirmDismissLead:'Diese Anfrage wirklich ablehnen/löschen?',
+    toastLeadDismissed:'Anfrage gelöscht.',
     statMigrationTotal:'Kandidaten gesamt', migrationStatusCertain:'Sicher', migrationStatusUncertain:'Unsicher',
     addPeriod:'+ Zeitraum hinzufügen', periodAddTitle:'Zeitraum hinzufügen', periodEditTitle:'Zeitraum bearbeiten', lblPeriodLabel:'Zeitraumbezeichnung',
     periodNameRequired:'Zeitraumbezeichnung erforderlich.', confirmDeletePeriod:'Diesen Zeitraum wirklich löschen? Alle Kandidaten darin werden ebenfalls gelöscht.',
@@ -302,6 +313,9 @@ const DICT = {
     emptyMigrationTitle:'Aún no hay candidatos', emptyMigrationDesc:'Usa "+ Añadir candidato" para agregar el primer candidato de migración.',
     toastProspectSaved:'Candidato guardado.', toastProspectDeleted:'Candidato eliminado.', confirmDeleteProspect:'¿Seguro que quieres eliminar a este candidato?',
     approveProspectTitle:'Aprobar como miembro', confirmApproveProspect:'¿Seguro que quieres aprobar a este candidato como miembro? Se te llevará a la pantalla de añadir miembro para completar los datos que faltan.',
+    leadsHeading:'📥 Solicitudes de Migración Entrantes', thLeadContact:'Contacto', thLeadMessage:'Mensaje', thLeadDate:'Fecha',
+    processLeadTitle:'Procesar como Candidato', confirmDismissLead:'¿Seguro que quieres rechazar/eliminar esta solicitud?',
+    toastLeadDismissed:'Solicitud eliminada.',
     statMigrationTotal:'Total de candidatos', migrationStatusCertain:'Seguro', migrationStatusUncertain:'Incierto',
     addPeriod:'+ Añadir periodo', periodAddTitle:'Añadir periodo', periodEditTitle:'Editar periodo', lblPeriodLabel:'Etiqueta del periodo',
     periodNameRequired:'La etiqueta del periodo es obligatoria.', confirmDeletePeriod:'¿Seguro que quieres eliminar este periodo? También se eliminarán todos los candidatos que contiene.',
@@ -358,6 +372,9 @@ const DICT = {
     emptyMigrationTitle:'Aucun candidat pour le moment', emptyMigrationDesc:'Utilisez "+ Ajouter un candidat" pour ajouter le premier candidat à la migration.',
     toastProspectSaved:'Candidat enregistré.', toastProspectDeleted:'Candidat supprimé.', confirmDeleteProspect:'Voulez-vous vraiment supprimer ce candidat ?',
     approveProspectTitle:'Approuver comme membre', confirmApproveProspect:'Voulez-vous vraiment approuver ce candidat comme membre ? Vous serez redirigé vers l\'écran d\'ajout de membre pour compléter les informations manquantes.',
+    leadsHeading:'📥 Demandes de Migration Entrantes', thLeadContact:'Contact', thLeadMessage:'Message', thLeadDate:'Date',
+    processLeadTitle:'Traiter comme Candidat', confirmDismissLead:'Voulez-vous vraiment rejeter/supprimer cette demande ?',
+    toastLeadDismissed:'Demande supprimée.',
     statMigrationTotal:'Total des candidats', migrationStatusCertain:'Certain', migrationStatusUncertain:'Incertain',
     addPeriod:'+ Ajouter une période', periodAddTitle:'Ajouter une période', periodEditTitle:'Modifier la période', lblPeriodLabel:'Libellé de la période',
     periodNameRequired:'Le libellé de la période est requis.', confirmDeletePeriod:'Voulez-vous vraiment supprimer cette période ? Tous les candidats qu\'elle contient seront également supprimés.',
@@ -540,6 +557,13 @@ export function applyStaticText() {
   document.getElementById("t_lblColor").textContent = t("lblColor");
   document.getElementById("t_lblMigrationStatus").textContent = t("thStatus");
   document.getElementById("t_thMigrationStatus").textContent = t("thStatus");
+  document.getElementById("t_leadsHeading").textContent = t("leadsHeading");
+  document.getElementById("t_thLeadName2").textContent = t("thUsername");
+  document.getElementById("t_thLeadContact").textContent = t("thLeadContact");
+  document.getElementById("t_thLeadServer2").textContent = t("thServer");
+  document.getElementById("t_thLeadPower2").textContent = t("thPower");
+  document.getElementById("t_thLeadMessage").textContent = t("thLeadMessage");
+  document.getElementById("t_thLeadDate").textContent = t("thLeadDate");
   document.getElementById("t_statusCertainOpt").textContent = t("migrationStatusCertain");
   document.getElementById("t_statusUncertainOpt").textContent = t("migrationStatusUncertain");
   document.getElementById("t_cancel5").textContent = t("cancel");

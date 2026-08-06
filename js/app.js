@@ -16,16 +16,17 @@
 // o dosyalar hiç çalıştırılmaz ve tabloları hiç çizilmez.
 // =====================================================================
 
-import { getMembers, getAllPowerHistory, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, subscribeToTables } from "./database.js";
+import { getMembers, getAllPowerHistory, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, subscribeToTables } from "./database.js";
 import { POLL_INTERVAL_MS } from "./config.js";
 import { state, t, showToast, buildLangSwitch, applyStaticText, initLangFromStorage, persistLanguage, renderAll, registerDataLoader } from "./ui.js";
 import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, saveMember, deleteMember, restoreMember, openHistoryModal, closeHistoryModal, setMemberView, setRankFilter, setSort } from "./members.js";
 import { mapWeek, mapEntry, openWeekModal, closeWeekModal, saveWeek, deleteWeek, openEntryModal, closeEntryModal, renderEntryRows, saveEntry, openWeekReportModal, closeWeekReportModal, openOverallReportModal, closeOverallReportModal, setOverallReportSort } from "./events.js";
 import { setBoardSort } from "./dashboard.js";
 import {
-  mapPeriod, mapProspect, renderMigration, setMigrationSort,
+  mapPeriod, mapProspect, mapLead, renderMigration, setMigrationSort,
   selectMigrationPeriod, openPeriodModal, closePeriodModal, savePeriod, deletePeriod,
-  openProspectModal, closeProspectModal, saveProspect, deleteProspect, approveProspect
+  openProspectModal, closeProspectModal, saveProspect, deleteProspect, approveProspect,
+  processLead, dismissLead
 } from "./migration.js";
 import { exportBackup, importBackup } from "./backup.js";
 import { openLoginModal, closeLoginModal, doLogin, doLogout } from "./auth.js";
@@ -52,7 +53,7 @@ async function loadAll(silent) {
       ssWeeksRes, ssRecordsRes,
       kodWeeksRes, kodRecordsRes,
       otherWeeksRes, otherRecordsRes,
-      migrationPeriodsRes, migrationRes
+      migrationPeriodsRes, migrationRes, migrationLeadsRes
     ] = await Promise.allSettled([
       getMembers(), getAllPowerHistory(),
       getWeeks("svs"), getAllRecords("svs"),
@@ -60,7 +61,7 @@ async function loadAll(silent) {
       getWeeks("ss"), getAllRecords("ss"),
       getWeeks("kod"), getAllRecords("kod"),
       getWeeks("other"), getAllRecords("other"),
-      getMigrationPeriods(), getMigrationProspects()
+      getMigrationPeriods(), getMigrationProspects(), getMigrationLeads()
     ]);
 
     const historyByMember = {};
@@ -81,6 +82,7 @@ async function loadAll(silent) {
     state.other = { weeks: settledList(otherWeeksRes).map(mapWeek), entries: settledList(otherRecordsRes).map((r) => mapEntry("other", r)) };
     state.migrationPeriods = settledList(migrationPeriodsRes).map(mapPeriod);
     state.migration = settledList(migrationRes).map(mapProspect);
+    state.migrationLeads = settledList(migrationLeadsRes).map(mapLead);
 
     document.getElementById("syncText").textContent = t("syncLive");
     renderAll();
@@ -100,7 +102,7 @@ setInterval(() => loadAll(true), POLL_INTERVAL_MS);
 
 let realtimeReloadTimer = null;
 subscribeToTables(
-  ["members", "power_history", "gvg_weeks", "gvg_records", "svs_weeks", "svs_records", "ss_weeks", "ss_records", "kod_weeks", "kod_records", "other_weeks", "other_records", "migration_periods", "migration_prospects"],
+  ["members", "power_history", "gvg_weeks", "gvg_records", "svs_weeks", "svs_records", "ss_weeks", "ss_records", "kod_weeks", "kod_records", "other_weeks", "other_records", "migration_periods", "migration_prospects", "migration_leads"],
   () => {
     clearTimeout(realtimeReloadTimer);
     realtimeReloadTimer = setTimeout(() => loadAll(true), REALTIME_RELOAD_DEBOUNCE_MS);
@@ -149,6 +151,7 @@ Object.assign(window, {
   setBoardSort, setLang,
   renderMigration, setMigrationSort, openProspectModal, closeProspectModal, saveProspect, deleteProspect, approveProspect,
   selectMigrationPeriod, openPeriodModal, closePeriodModal, savePeriod, deletePeriod,
+  processLead, dismissLead,
   openLoginModal, closeLoginModal, doLogin, doLogout
 });
 

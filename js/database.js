@@ -160,6 +160,37 @@ export async function deleteMigrationProspect(id) {
 }
 
 // =====================================================================
+// MIGRATION_LEADS — genel tanıtım sitesindeki "Göçe Katıl" formundan
+// gelen ham başvurular. createMigrationLead giriş yapmamış ziyaretçiler
+// tarafından da çağrılır (bkz. sql/add_migration_leads.sql -> insert_public
+// politikası); getMigrationLeads/deleteMigrationLead admin oturumu gerektirir.
+// =====================================================================
+export async function getMigrationLeads() {
+  const { data, error } = await supabase
+    .from("migration_leads")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) dbError("Göç başvuruları alınamadı", error);
+  return data;
+}
+
+export async function createMigrationLead(payload) {
+  const { data, error } = await supabase
+    .from("migration_leads")
+    .insert(payload)
+    .select()
+    .single();
+  if (error) dbError("Göç başvurusu gönderilemedi", error);
+  return data;
+}
+
+export async function deleteMigrationLead(id) {
+  const { error } = await supabase.from("migration_leads").delete().eq("id", id);
+  if (error) dbError("Göç başvurusu silinemedi", error);
+  return true;
+}
+
+// =====================================================================
 // POWER_HISTORY — Güç seviyesi geçmişi
 // =====================================================================
 export async function getPowerHistory(memberId) {

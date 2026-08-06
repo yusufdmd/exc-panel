@@ -3,424 +3,153 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EXC Paneli</title>
-<link rel="stylesheet" href="css/style.css">
+<title>Excellence — Server 76 Palmon Survival Loncası</title>
+<meta name="description" content="Excellence, Server 76'nın önde gelen Palmon Survival loncasıdır. Stratejiyle, kararlılıkla ve kardeşlikle kurulmuş bir topluluk.">
+<link rel="stylesheet" href="css/landing.css">
 </head>
 <body>
-<div class="wrap">
 
-  <div class="topbar">
+<nav class="nav">
+  <div class="nav-inner">
     <div class="brand">
-      <div class="brand-mark">X</div>
-      <div class="brand-text">
-        <h1 id="t_appName">EXC Paneli</h1>
-        <p id="t_tagline">Üye · Rütbe · Güç &amp; Kamp Seviyesi · Etkinlik Takibi</p>
-      </div>
+      <div class="brand-mark">EX</div>
+      <div class="brand-name">EXCELLENCE</div>
     </div>
-    <div class="topbar-right">
-      <div class="lang-switch" id="langSwitch"></div>
-      <div class="sync"><span class="dot"></span><span id="syncText">…</span></div>
-      <div class="sync" id="authBox">
-        <span id="authStatus">…</span>
-      </div>
-      <button class="btn-refresh" id="loginBtn" onclick="openLoginModal()">
-        <span id="t_loginBtn">Giriş Yap</span>
-      </button>
-      <button class="btn-refresh admin-only" id="logoutBtn" onclick="doLogout()" style="display:none;">
-        <span id="t_logoutBtn">Çıkış Yap</span>
-      </button>
-      <button class="btn-refresh" onclick="exportBackup()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"/></svg>
-        <span id="t_exportBackup">Yedekle</span>
-      </button>
-      <button class="btn-refresh admin-only" onclick="document.getElementById('importFile').click()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21V9m0 0l-4 4m4-4l4 4M5 3h14"/></svg>
-        <span id="t_importBackup">İçe Aktar</span>
-      </button>
-      <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importBackup(this.files[0])">
-      <button class="btn-refresh" onclick="manualRefresh()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v6h6M20 20v-6h-6M4.5 15a8 8 0 0013.9 3.4M19.5 9A8 8 0 005.6 5.6"/></svg>
-        <span id="t_refresh">Yenile</span>
-      </button>
+    <div class="nav-links" id="navLinks">
+      <a href="#anasayfa">Ana Sayfa</a>
+      <a href="#hakkimizda">Hakkımızda</a>
+      <a href="#goc">Göçe Katıl</a>
+      <a href="#medya">YouTube</a>
+      <!-- TODO: Gerçek Discord davet linkinizi girin -->
+      <a href="#" target="_blank" rel="noopener">Discord</a>
+    </div>
+    <!-- TODO: Gerçek Discord davet linkinizi girin -->
+    <a class="nav-cta" href="#" target="_blank" rel="noopener">Discord'a Katıl</a>
+    <button class="nav-toggle" id="navToggle" aria-label="Menü">☰</button>
+  </div>
+</nav>
+
+<section class="hero" id="anasayfa">
+  <div class="hero-tag">Server 76 · Palmon Survival</div>
+  <h1>EXCELLENCE</h1>
+  <div class="hero-slogan">Biz Rekabet Etmeyiz<span class="dot">•</span>Biz Hükmederiz</div>
+  <p class="hero-desc">
+    Excellence, Server 76'nın önde gelen Palmon Survival loncasıdır. Strateji, kararlılık ve
+    kardeşlik üzerine kurulu bir topluluğuz — birlikte oynayan, birlikte büyüyen bir aileyiz.
+  </p>
+  <div class="hero-actions">
+    <!-- TODO: Gerçek Discord davet linkinizi girin -->
+    <a class="btn-gold" href="#" target="_blank" rel="noopener">Discord'a Katıl</a>
+    <a class="btn-outline" href="#goc">Göçe Katıl</a>
+  </div>
+</section>
+
+<div class="stats-strip">
+  <div class="stat-box"><div class="num" id="memberCount">—</div><div class="lbl">Üye</div></div>
+  <div class="stat-box"><div class="num">76</div><div class="lbl">Sunucu</div></div>
+  <div class="stat-box"><div class="num">Palmon Survival</div><div class="lbl">Oyun</div></div>
+  <div class="stat-box"><div class="num">Canlı</div><div class="lbl">Topluluk</div></div>
+</div>
+
+<section id="hakkimizda">
+  <div class="section-head">
+    <div class="section-tag">Hakkımızda</div>
+    <h2>Kim Olduğumuz</h2>
+    <p>Excellence, tek başına güç değil, birlikte hareket eden bir topluluktur.</p>
+  </div>
+  <div class="about-grid">
+    <div class="about-card">
+      <div class="icon">🛡️</div>
+      <h3>Strateji &amp; Kararlılık</h3>
+      <p>Her etkinlikte, her göç döneminde planlı hareket ederiz — rastgele değil, düşünerek kazanırız.</p>
+    </div>
+    <div class="about-card">
+      <div class="icon">🤝</div>
+      <h3>Kardeşlik</h3>
+      <p>Yeni katılan herkes ailenin bir parçası olur. Birbirimize destek oluruz, birlikte büyürüz.</p>
+    </div>
+    <div class="about-card">
+      <div class="icon">👑</div>
+      <h3>Hükmetme</h3>
+      <p>Server 76'da adımızı duyuran, hedeflerine ulaşan bir lonca — rekabet etmeyiz, hükmederiz.</p>
     </div>
   </div>
+</section>
 
-  <div class="stats" id="statsRow"></div>
-
-  <div class="tabs">
-    <div class="tab active" data-tab="members" onclick="switchTab('members')" id="t_tabMembers">Üyeler</div>
-    <div class="tab" data-tab="events" onclick="switchTab('events')" id="t_tabEvents">Etkinlikler</div>
-    <div class="tab" data-tab="board" onclick="switchTab('board')" id="t_tabBoard">Puan Sıralaması</div>
-    <div class="tab" data-tab="migration" onclick="switchTab('migration')" id="t_tabMigration">Göç</div>
-  </div>
-
-  <!-- MEMBERS -->
-  <div class="panel active" id="panel-members">
-    <div class="subtabs">
-      <div class="subtab active" data-mv="active" onclick="setMemberView('active')" id="t_subActiveMembers">Aktif Üyeler</div>
-      <div class="subtab" data-mv="old" onclick="setMemberView('old')" id="t_subOldMembers">Eski Üyeler (OLD)</div>
-      <div class="subtab" data-mv="migrated" onclick="setMemberView('migrated')" id="t_subMigratedMembers">Göç Edenler</div>
+<section class="migrate-section" id="goc">
+  <div class="migrate-wrap">
+    <div class="section-head">
+      <div class="section-tag">Başka Sunucudan mısınız?</div>
+      <h2>Göçe Katıl</h2>
+      <p>
+        Önümüzdeki göç döneminde Excellence'a katılmak ister misiniz? Aşağıdaki formu doldurun,
+        liderlik ekibimiz sizinle iletişime geçsin.
+      </p>
     </div>
-    <div class="toolbar">
-      <input class="search" id="memberSearch" oninput="renderMembers()">
-      <div class="filter-chip active" data-rank="ALL" onclick="setRankFilter('ALL')" id="t_filterAll">Tümü</div>
-      <div class="filter-chip" data-rank="R5" onclick="setRankFilter('R5')">R5</div>
-      <div class="filter-chip" data-rank="R4" onclick="setRankFilter('R4')">R4</div>
-      <div class="filter-chip" data-rank="R3" onclick="setRankFilter('R3')">R3</div>
-      <div class="filter-chip" data-rank="R2" onclick="setRankFilter('R2')">R2</div>
-      <div class="filter-chip" data-rank="R1" onclick="setRankFilter('R1')">R1</div>
-      <button class="btn-primary admin-only" onclick="openMemberModal()" id="t_addMember">+ Üye Ekle</button>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th onclick="setSort('rank')" id="t_thRank">Rütbe</th>
-            <th onclick="setSort('name')" id="t_thUsername">Kullanıcı Adı</th>
-            <th onclick="setSort('gameId')" id="t_thId">ID</th>
-            <th onclick="setSort('power')" id="t_thPower">Güç Seviyesi</th>
-            <th onclick="setSort('campSort')" id="t_thCamp">Kamp Seviyesi</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="memberRows"></tbody>
-      </table>
-      <div class="empty-state" id="memberEmpty" style="display:none;">
-        <h3 id="t_emptyMembersTitle">Henüz üye yok</h3>
-        <p id="t_emptyMembersDesc">"+ Üye Ekle" ile ilk üyeyi kaydet.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- EVENTS -->
-  <div class="panel" id="panel-events">
-    <div class="subtabs">
-      <div class="subtab active" data-sub="svs" onclick="switchSub('svs')">SVS</div>
-      <div class="subtab" data-sub="gvg" onclick="switchSub('gvg')">GVG</div>
-      <div class="subtab" data-sub="ss" onclick="switchSub('ss')">SS</div>
-      <div class="subtab" data-sub="kod" onclick="switchSub('kod')">King of Desert</div>
-      <div class="subtab" data-sub="other" onclick="switchSub('other')" id="t_subOther">Diğer</div>
-    </div>
-
-    <!-- SVS -->
-    <div class="subpanel active" id="sub-svs">
-      <div class="event-toolbar">
-        <div class="legend">
-          <span><i class="sw" style="background:var(--success)"></i><span id="t_legendJoined">Katıldı</span></span>
-          <span><i class="sw" style="background:var(--danger)"></i><span id="t_legendNotJoined">Katılmadı</span></span>
-          <span><i class="sw" style="background:var(--text-dim)"></i><span id="t_legendUnknown">Bilgi Yok</span></span>
+    <form class="lead-form" id="leadForm">
+      <div class="row">
+        <div class="field">
+          <label for="leadName">Kullanıcı Adı</label>
+          <input id="leadName" required>
         </div>
-        <button class="btn-ghost" onclick="openOverallReportModal('svs')" id="t_overallReport_svs">📊 Genel Rapor</button>
-        <button class="btn-primary admin-only" onclick="openWeekModal('svs')" id="t_addWeek_svs">+ Hafta Ekle</button>
-      </div>
-      <div class="table-wrap"><table id="tbl-svs"><thead></thead><tbody></tbody></table></div>
-      <div class="empty-state" id="empty-svs" style="display:none;"><h3 id="t_emptyWeeksTitle1">Henüz hafta yok</h3><p id="t_emptyWeeksDesc1">"+ Hafta Ekle" ile ilk haftayı oluştur.</p></div>
-    </div>
-
-    <!-- GVG -->
-    <div class="subpanel" id="sub-gvg">
-      <div class="event-toolbar">
-        <div class="legend">
-          <span><i class="sw" style="background:var(--success)"></i>≥ 43.500.000</span>
-          <span><i class="sw" style="background:var(--warn)"></i>13.200.000 – 43.499.999</span>
-          <span><i class="sw" style="background:var(--danger)"></i>≤ 13.199.999</span>
-        </div>
-        <button class="btn-ghost" onclick="openOverallReportModal('gvg')" id="t_overallReport_gvg">📊 Genel Rapor</button>
-        <button class="btn-primary admin-only" onclick="openWeekModal('gvg')" id="t_addWeek_gvg">+ Hafta Ekle</button>
-      </div>
-      <div class="table-wrap"><table id="tbl-gvg"><thead></thead><tbody></tbody></table></div>
-      <div class="empty-state" id="empty-gvg" style="display:none;"><h3 id="t_emptyWeeksTitle2">Henüz hafta yok</h3><p id="t_emptyWeeksDesc2">"+ Hafta Ekle" ile ilk haftayı oluştur.</p></div>
-    </div>
-
-    <!-- SS -->
-    <div class="subpanel" id="sub-ss">
-      <div class="event-toolbar">
-        <div class="legend">
-          <span><i class="sw" style="background:var(--success)"></i><span id="t_legendAttended">Kayıtlı ve Katıldı</span></span>
-          <span><i class="sw" style="background:var(--danger)"></i><span id="t_legendRegNotAttend">Kayıtlı, Katılmadı</span></span>
-          <span><i class="sw" style="background:var(--text-dim)"></i><span id="t_legendNoReg">Kayıt Yok</span></span>
-        </div>
-        <button class="btn-ghost" onclick="openOverallReportModal('ss')" id="t_overallReport_ss">📊 Genel Rapor</button>
-        <button class="btn-primary admin-only" onclick="openWeekModal('ss')" id="t_addWeek_ss">+ Hafta Ekle</button>
-      </div>
-      <div class="table-wrap"><table id="tbl-ss"><thead></thead><tbody></tbody></table></div>
-      <div class="empty-state" id="empty-ss" style="display:none;"><h3 id="t_emptyWeeksTitle3">Henüz hafta yok</h3><p id="t_emptyWeeksDesc3">"+ Hafta Ekle" ile ilk haftayı oluştur.</p></div>
-    </div>
-
-    <!-- KOD (King of Desert) -->
-    <div class="subpanel" id="sub-kod">
-      <div class="event-toolbar">
-        <div class="legend">
-          <span><i class="sw" style="background:var(--success)"></i><span id="t_legendJoinedKod">Katıldı</span></span>
-          <span><i class="sw" style="background:var(--danger)"></i><span id="t_legendNotJoinedKod">Katılmadı</span></span>
-          <span><i class="sw" style="background:var(--text-dim)"></i><span id="t_legendUnknownKod">Bilgi Yok</span></span>
-        </div>
-        <button class="btn-ghost" onclick="openOverallReportModal('kod')" id="t_overallReport_kod">📊 Genel Rapor</button>
-        <button class="btn-primary admin-only" onclick="openWeekModal('kod')" id="t_addWeek_kod">+ Hafta Ekle</button>
-      </div>
-      <div class="table-wrap"><table id="tbl-kod"><thead></thead><tbody></tbody></table></div>
-      <div class="empty-state" id="empty-kod" style="display:none;"><h3 id="t_emptyWeeksTitle5">Henüz hafta yok</h3><p id="t_emptyWeeksDesc5">"+ Hafta Ekle" ile ilk haftayı oluştur.</p></div>
-    </div>
-
-    <!-- OTHER -->
-    <div class="subpanel" id="sub-other">
-      <div class="event-toolbar">
-        <div class="legend">
-          <span><i class="sw" style="background:var(--success)"></i><span id="t_legendJoinedOther">Katıldı</span></span>
-          <span><i class="sw" style="background:var(--danger)"></i><span id="t_legendNotJoinedOther">Katılmadı</span></span>
-          <span><i class="sw" style="background:var(--text-dim)"></i><span id="t_legendUnknownOther">Bilgi Yok</span></span>
-        </div>
-        <button class="btn-ghost" onclick="openOverallReportModal('other')" id="t_overallReport_other">📊 Genel Rapor</button>
-        <button class="btn-primary admin-only" onclick="openWeekModal('other')" id="t_addEvent_other">+ Etkinlik Ekle</button>
-      </div>
-      <div class="table-wrap"><table id="tbl-other"><thead></thead><tbody></tbody></table></div>
-      <div class="empty-state" id="empty-other" style="display:none;"><h3 id="t_emptyWeeksTitle4">Henüz etkinlik yok</h3><p id="t_emptyWeeksDesc4">"+ Etkinlik Ekle" ile ilk etkinliği oluştur.</p></div>
-    </div>
-  </div>
-
-  <!-- BOARD -->
-  <div class="panel" id="panel-board">
-    <div class="table-wrap" id="boardWrap"></div>
-  </div>
-
-  <!-- MIGRATION -->
-  <div class="panel" id="panel-migration">
-    <div class="event-toolbar">
-      <div class="subtabs" id="migrationPeriodTabs"></div>
-      <button class="btn-primary admin-only" onclick="openPeriodModal()" id="t_addPeriod">+ Dönem Ekle</button>
-    </div>
-    <div class="empty-state" id="migrationPeriodEmpty" style="display:none;">
-      <h3 id="t_emptyPeriodsTitle">Henüz dönem yok</h3>
-      <p id="t_emptyPeriodsDesc">"+ Dönem Ekle" ile ilk göç dönemini oluştur.</p>
-    </div>
-    <div id="migrationPeriodContent" style="display:none;">
-      <div class="stats" id="migrationStatsRow"></div>
-      <div class="toolbar">
-        <input class="search" id="migrationSearch" oninput="renderMigration()">
-        <button class="btn-primary admin-only" onclick="openProspectModal()" id="t_addProspect">+ Aday Ekle</button>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th onclick="setMigrationSort('color')" id="t_thColor">Renk</th>
-              <th onclick="setMigrationSort('name')" id="t_thUsername2">Kullanıcı Adı</th>
-              <th onclick="setMigrationSort('gameId')" id="t_thId2">ID</th>
-              <th onclick="setMigrationSort('power')" id="t_thPower2">Güç Seviyesi</th>
-              <th onclick="setMigrationSort('server')" id="t_thServer">Sunucu</th>
-              <th onclick="setMigrationSort('status')" id="t_thMigrationStatus">Durum</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="migrationRows"></tbody>
-        </table>
-        <div class="empty-state" id="migrationEmpty" style="display:none;">
-          <h3 id="t_emptyMigrationTitle">Henüz aday yok</h3>
-          <p id="t_emptyMigrationDesc">"+ Aday Ekle" ile ilk göç adayını ekle.</p>
+        <div class="field">
+          <label for="leadContact">İletişim (Discord vb.)</label>
+          <input id="leadContact">
         </div>
       </div>
-    </div>
-  </div>
-
-</div>
-
-<!-- Login Modal -->
-<div class="overlay" id="loginOverlay">
-  <div class="modal">
-    <h2 id="t_loginTitle">Yönetici Girişi</h2>
-    <div class="field">
-      <label id="t_lblEmail">Kullanıcı Adı</label>
-      <input id="loginEmail" type="text" autocomplete="username">
-    </div>
-    <div class="field">
-      <label id="t_lblPassword">Şifre</label>
-      <input id="loginPassword" type="password" autocomplete="current-password">
-    </div>
-    <div class="modal-actions">
-      <button class="btn-ghost" onclick="closeLoginModal()" id="t_cancel4">Vazgeç</button>
-      <button class="btn-primary" onclick="doLogin()" id="t_loginSubmit">Giriş Yap</button>
-    </div>
-  </div>
-</div>
-
-<!-- Member Modal -->
-<div class="overlay" id="memberOverlay">
-  <div class="modal">
-    <h2 id="memberModalTitle">Üye Ekle</h2>
-    <input type="hidden" id="memberEditId">
-    <div class="field">
-      <label id="t_lblUsername">Kullanıcı Adı</label>
-      <input id="fName">
-    </div>
-    <div class="field-row">
-      <div class="field"><label id="t_lblGameId">ID Numarası</label><input id="fGameId"></div>
-      <div class="field"><label id="t_lblRank">Rütbe</label>
-        <select id="fRank">
-          <option value="R5">R5</option><option value="R4">R4</option><option value="R3">R3</option>
-          <option value="R2">R2</option><option value="R1" selected>R1</option>
-        </select>
+      <div class="row">
+        <div class="field">
+          <label for="leadServer">Mevcut Sunucu</label>
+          <input id="leadServer" type="number">
+        </div>
+        <div class="field">
+          <label for="leadPower">Güç Seviyesi</label>
+          <input id="leadPower" type="number">
+        </div>
       </div>
-    </div>
-    <div class="field-row">
-      <div class="field"><label id="t_lblPower">Güç Seviyesi</label><input id="fPower" type="number"></div>
-      <div class="field"><label id="t_lblCamp">Kamp Seviyesi</label>
-        <select id="fCamp"></select>
+      <div class="field">
+        <label for="leadMessage">Mesaj (opsiyonel)</label>
+        <textarea id="leadMessage" placeholder="Kendinizden kısaca bahsedin…"></textarea>
       </div>
-    </div>
-    <div class="field">
-      <label id="t_lblJoinedAt">Katılma Tarihi</label>
-      <input id="fJoinedAt" type="date">
-    </div>
-    <div class="toggle-row" onclick="toggleOld()">
-      <div class="toggle" id="oldToggle"></div>
-      <span id="t_lblOld" style="font-size:13px;">Eski üye (OLD)</span>
-    </div>
-    <div class="toggle-row" onclick="toggleMigrated()">
-      <div class="toggle" id="migratedToggle"></div>
-      <span id="t_lblMigrated" style="font-size:13px;">Başka sunucuya göç etti</span>
-    </div>
-    <div class="field" id="migratedToField" style="display:none;">
-      <label id="t_lblMigratedTo">Göç Ettiği Sunucu</label>
-      <input id="fMigratedTo" type="number">
-    </div>
-    <div class="field" id="userChangedField" style="display:none;">
-      <label id="t_lblUserChanged">Kullanıcı Değişikliği</label>
-      <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-        <button type="button" class="btn-ghost" onclick="markUserChanged()" id="t_userChangedBtn">🔄 Kullanıcı Değişti</button>
-        <span id="userChangedStatus" style="font-size:12px; color:var(--text-muted);"></span>
+      <div class="submit-row">
+        <button type="submit" class="btn-gold" id="leadSubmitBtn">Başvuruyu Gönder</button>
+        <span id="leadFormMessage"></span>
       </div>
-      <input type="hidden" id="fUserChangedAt">
+    </form>
+  </div>
+</section>
+
+<section id="medya">
+  <div class="section-head">
+    <div class="section-tag">Medya</div>
+    <h2>YouTube Kanalımız</h2>
+  </div>
+  <div class="media-card">
+    <div class="icon">▶️</div>
+    <p style="color:var(--text-muted); margin-bottom:20px;">Etkinlik özetleri, rehberler ve daha fazlası için kanalımıza göz atın.</p>
+    <!-- TODO: Gerçek YouTube kanal linkinizi girin -->
+    <a class="btn-gold" href="#" target="_blank" rel="noopener">Kanala Git</a>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-copy">© <span id="year"></span> Excellence — Server 76</div>
+    <div class="footer-links">
+      <a href="#hakkimizda">Hakkımızda</a>
+      <a href="#goc">Göçe Katıl</a>
+      <a href="panel/">Yönetim Girişi</a>
     </div>
-    <div class="modal-actions">
-      <button class="btn-ghost" onclick="closeMemberModal()" id="t_cancel1">Vazgeç</button>
-      <button class="btn-primary" onclick="saveMember()" id="t_save1">Kaydet</button>
+    <div class="social-links">
+      <!-- TODO: Gerçek sosyal medya linklerinizi girin -->
+      <a href="#" target="_blank" rel="noopener" title="YouTube">▶</a>
+      <a href="#" target="_blank" rel="noopener" title="Discord">💬</a>
+      <a href="#" target="_blank" rel="noopener" title="Instagram">📷</a>
     </div>
   </div>
-</div>
+</footer>
 
-<!-- Migration Prospect Modal (create/edit) -->
-<div class="overlay" id="prospectOverlay">
-  <div class="modal">
-    <h2 id="prospectModalTitle">Aday Ekle</h2>
-    <input type="hidden" id="prospectEditId">
-    <div class="field">
-      <label id="t_lblProspectName">Kullanıcı Adı</label>
-      <input id="pName">
-    </div>
-    <div class="field-row">
-      <div class="field"><label id="t_lblProspectId">ID Numarası</label><input id="pGameId"></div>
-      <div class="field"><label id="t_lblProspectPower">Güç Seviyesi</label><input id="pPower" type="number"></div>
-    </div>
-    <div class="field-row">
-      <div class="field"><label id="t_lblServer">Mevcut Sunucu</label><input id="pServer" type="number"></div>
-      <div class="field"><label id="t_lblColor">Unvan</label>
-        <select id="pColor"></select>
-      </div>
-    </div>
-    <div class="field">
-      <label id="t_lblMigrationStatus">Durum</label>
-      <select id="pStatus">
-        <option value="certain" id="t_statusCertainOpt">Kesin</option>
-        <option value="uncertain" id="t_statusUncertainOpt" selected>Belirsiz</option>
-      </select>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-ghost" onclick="closeProspectModal()" id="t_cancel5">Vazgeç</button>
-      <button class="btn-primary" onclick="saveProspect()" id="t_save5">Kaydet</button>
-    </div>
-  </div>
-</div>
-
-<!-- Week Modal (create/edit) -->
-<div class="overlay" id="weekOverlay">
-  <div class="modal">
-    <h2 id="weekModalTitle">Hafta Ekle</h2>
-    <input type="hidden" id="weekType">
-    <input type="hidden" id="weekEditId">
-    <div class="field"><label id="t_lblWeekLabel">Hafta Etiketi</label><input id="wkLabel" placeholder="Hafta 1"></div>
-    <div class="field"><label id="t_lblWeekDate">Tarih</label><input id="wkDate" type="date"></div>
-    <div class="modal-actions">
-      <button class="btn-ghost" onclick="closeWeekModal()" id="t_cancel2">Vazgeç</button>
-      <button class="btn-primary" onclick="saveWeek()" id="t_save2">Kaydet</button>
-    </div>
-  </div>
-</div>
-
-<!-- Migration Period Modal (create/edit) -->
-<div class="overlay" id="periodOverlay">
-  <div class="modal">
-    <h2 id="periodModalTitle">Dönem Ekle</h2>
-    <input type="hidden" id="periodEditId">
-    <div class="field"><label id="t_lblPeriodLabel">Dönem Etiketi</label><input id="prLabel" placeholder="Dönem 1"></div>
-    <div class="field"><label id="t_lblPeriodDate">Tarih</label><input id="prDate" type="date"></div>
-    <div class="modal-actions">
-      <button class="btn-ghost" onclick="closePeriodModal()" id="t_cancel6">Vazgeç</button>
-      <button class="btn-primary" onclick="savePeriod()" id="t_save6">Kaydet</button>
-    </div>
-  </div>
-</div>
-
-<!-- Week Entry Modal (bulk edit per type) -->
-<div class="overlay" id="entryOverlay">
-  <div class="modal wide">
-    <h2 id="entryTitle">Giriş</h2>
-    <input class="search" style="margin-bottom:12px;" id="entrySearch" oninput="renderEntryRows()">
-    <div style="max-height:50vh; overflow-y:auto;">
-      <table class="part-table" id="entryTable">
-        <thead id="entryThead"></thead>
-        <tbody id="entryRows"></tbody>
-      </table>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-ghost" onclick="closeEntryModal()" id="t_close1">Kapat</button>
-      <button class="btn-primary" onclick="saveEntry()" id="t_save3">Kaydet</button>
-    </div>
-  </div>
-</div>
-
-<!-- Week Report Modal (read-only, no login required) -->
-<div class="overlay" id="weekReportOverlay">
-  <div class="modal wide">
-    <h2 id="weekReportTitle">Hafta Raporu</h2>
-    <div id="weekReportBody" style="max-height:60vh; overflow-y:auto;"></div>
-    <div class="modal-actions">
-      <button class="btn-ghost" onclick="closeWeekReportModal()" id="t_close3">Kapat</button>
-    </div>
-  </div>
-</div>
-
-<!-- Overall Report Modal (read-only, no login required) -->
-<div class="overlay" id="overallReportOverlay">
-  <div class="modal wide">
-    <h2 id="t_overallReportTitle">Genel Rapor</h2>
-    <div id="overallReportBody" style="max-height:60vh; overflow-y:auto;"></div>
-    <div class="modal-actions">
-      <button class="btn-ghost" onclick="closeOverallReportModal()" id="t_close5">Kapat</button>
-    </div>
-  </div>
-</div>
-
-<!-- Power History Modal -->
-<div class="overlay" id="historyOverlay">
-  <div class="modal wide">
-    <h2 id="historyTitle">Güç Geçmişi</h2>
-    <div id="historyNameHistoryWrap"></div>
-    <div id="historyChartWrap"></div>
-    <div id="historyEventsWrap"></div>
-    <div style="max-height:55vh; overflow-y:auto;">
-      <table class="part-table" style="width:100%;">
-        <thead><tr><th id="t_thDate">Tarih</th><th id="t_thPowerVal">Güç</th><th id="t_thDelta">Fark</th></tr></thead>
-        <tbody id="historyRows"></tbody>
-      </table>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-ghost" onclick="closeHistoryModal()" id="t_close2">Kapat</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script type="module" src="js/app.js"></script>
+<script>document.getElementById("year").textContent = new Date().getFullYear();</script>
+<script type="module" src="js/landing.js"></script>
 </body>
 </html>

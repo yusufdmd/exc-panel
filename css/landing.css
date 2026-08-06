@@ -1,0 +1,205 @@
+/* =====================================================================
+   EXCELLENCE — landing.css
+   =====================================================================
+   Genel tanıtım sitesinin (kök index.html) stilleri. Bilinçli olarak
+   panel/css/style.css'ten BAĞIMSIZDIR (kendi :root paletini tanımlar) —
+   bu sayfa panelden ayrı, herkese açık bir "vitrin" olduğu için ikisinin
+   birbirine sıkı sıkıya bağlı olmasına gerek yok; aynı renk dilini
+   (altın + lacivert) paylaşır ama farklı düzen ihtiyaçları olabilir.
+   ===================================================================== */
+
+:root{
+  --bg-void: #070A10;
+  --bg-panel: #0F141D;
+  --bg-raised: #171E2A;
+  --line: #232C3B;
+  --text-primary: #EDEFF3;
+  --text-muted: #98A2B3;
+  --text-dim: #626C7E;
+  --gold: #E0A63A;
+  --gold-soft: #F3D793;
+  --cyan: #3FC1C9;
+  --danger: #E5484D;
+  --success: #4ADE80;
+  --font-display: 'Segoe UI Semibold', 'Arial Narrow', Arial, sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+*{ box-sizing:border-box; margin:0; padding:0; }
+html{ scroll-behavior:smooth; }
+body{
+  background: radial-gradient(ellipse at top, #131A26 0%, var(--bg-void) 65%);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  min-height:100vh;
+}
+img{ max-width:100%; display:block; }
+a{ color:inherit; }
+.wrap{ max-width:1180px; margin:0 auto; padding:0 24px; }
+
+/* ---------------------------------------------------------------------
+   Nav
+   --------------------------------------------------------------------- */
+.nav{
+  position:sticky; top:0; z-index:50;
+  background: rgba(7,10,16,0.88); backdrop-filter: blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.nav-inner{ display:flex; align-items:center; justify-content:space-between; padding:14px 24px; max-width:1180px; margin:0 auto; }
+.brand{ display:flex; align-items:center; gap:10px; font-family:var(--font-display); font-weight:700; letter-spacing:1px; }
+.brand-mark{
+  width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center;
+  background: linear-gradient(135deg, var(--gold), #B8791F); color:#1A1204; font-weight:800; font-size:15px;
+}
+.brand-name{ font-size:16px; color:var(--gold-soft); }
+.nav-links{ display:flex; gap:26px; font-size:13px; font-weight:600; letter-spacing:0.4px; text-transform:uppercase; }
+.nav-links a{ color:var(--text-muted); text-decoration:none; transition:color .15s; }
+.nav-links a:hover{ color:var(--gold-soft); }
+.nav-cta{
+  background: linear-gradient(135deg, var(--gold), #B8791F); color:#1A1204; border:none;
+  padding:10px 20px; border-radius:8px; font-size:13px; font-weight:700; letter-spacing:0.3px;
+  text-decoration:none; white-space:nowrap;
+}
+.nav-toggle{
+  display:none; background:none; border:1px solid var(--line); color:var(--text-primary);
+  width:38px; height:38px; border-radius:8px; font-size:16px; cursor:pointer;
+}
+
+/* ---------------------------------------------------------------------
+   Hero
+   --------------------------------------------------------------------- */
+.hero{
+  position:relative; overflow:hidden;
+  padding:96px 24px 80px; text-align:center;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(224,166,58,0.14), transparent 70%),
+    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(63,193,201,0.08), transparent 70%);
+  border-bottom:1px solid var(--line);
+}
+.hero::before{
+  content:''; position:absolute; inset:0; opacity:0.5; pointer-events:none;
+  background-image: radial-gradient(circle, rgba(224,166,58,0.10) 1px, transparent 1px);
+  background-size: 26px 26px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black, transparent 75%);
+}
+.hero-tag{
+  display:inline-block; font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+  color:var(--gold-soft); border:1px solid rgba(224,166,58,0.4); background:rgba(224,166,58,0.08);
+  padding:6px 16px; border-radius:100px; margin-bottom:22px; position:relative;
+}
+.hero h1{
+  position:relative; font-family:var(--font-display); font-weight:800;
+  font-size:clamp(48px, 9vw, 96px); letter-spacing:2px;
+  background: linear-gradient(180deg, var(--gold-soft) 0%, var(--gold) 55%, #A6721F 100%);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  text-shadow: 0 2px 24px rgba(224,166,58,0.25);
+  line-height:1;
+}
+.hero-slogan{
+  position:relative; margin-top:16px; font-size:14px; font-weight:700; letter-spacing:4px; text-transform:uppercase;
+  color:var(--text-primary);
+}
+.hero-slogan .dot{ color:var(--gold); margin:0 10px; }
+.hero-desc{
+  position:relative; max-width:620px; margin:26px auto 0; color:var(--text-muted); font-size:15px; line-height:1.7;
+}
+.hero-actions{ position:relative; margin-top:34px; display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+.btn-gold{
+  background: linear-gradient(135deg, var(--gold), #B8791F); color:#1A1204; border:none;
+  padding:14px 28px; border-radius:9px; font-size:14px; font-weight:700; letter-spacing:0.4px;
+  text-decoration:none; cursor:pointer; transition: transform .12s;
+}
+.btn-gold:hover{ transform:translateY(-2px); }
+.btn-outline{
+  background:none; border:1px solid var(--line); color:var(--text-primary);
+  padding:14px 28px; border-radius:9px; font-size:14px; font-weight:700; letter-spacing:0.4px;
+  text-decoration:none; transition: border-color .15s, color .15s;
+}
+.btn-outline:hover{ border-color:var(--gold); color:var(--gold-soft); }
+
+/* ---------------------------------------------------------------------
+   İstatistik şeridi
+   --------------------------------------------------------------------- */
+.stats-strip{
+  display:grid; grid-template-columns:repeat(4, 1fr); gap:1px;
+  background:var(--line); border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+}
+.stat-box{ background:var(--bg-panel); padding:28px 16px; text-align:center; }
+.stat-box .num{ font-family:var(--font-display); font-size:30px; font-weight:800; color:var(--gold-soft); }
+.stat-box .lbl{ margin-top:6px; font-size:11px; letter-spacing:1px; text-transform:uppercase; color:var(--text-dim); }
+
+/* ---------------------------------------------------------------------
+   Genel bölüm düzeni
+   --------------------------------------------------------------------- */
+section{ padding:88px 24px; }
+.section-head{ text-align:center; max-width:640px; margin:0 auto 48px; }
+.section-tag{ font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--gold-soft); }
+.section-head h2{ font-family:var(--font-display); font-size:clamp(28px,4vw,38px); margin-top:10px; letter-spacing:0.5px; }
+.section-head p{ margin-top:14px; color:var(--text-muted); font-size:15px; line-height:1.7; }
+
+/* Hakkımızda kart grid */
+.about-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; max-width:1180px; margin:0 auto; }
+.about-card{
+  background:var(--bg-panel); border:1px solid var(--line); border-radius:14px; padding:28px 24px;
+  transition: border-color .15s, transform .15s;
+}
+.about-card:hover{ border-color:rgba(224,166,58,0.4); transform:translateY(-3px); }
+.about-card .icon{ font-size:28px; margin-bottom:14px; }
+.about-card h3{ font-family:var(--font-display); font-size:16px; letter-spacing:0.3px; color:var(--gold-soft); margin-bottom:8px; }
+.about-card p{ color:var(--text-muted); font-size:13.5px; line-height:1.7; }
+
+/* ---------------------------------------------------------------------
+   Göçe Katıl formu
+   --------------------------------------------------------------------- */
+.migrate-section{ background:var(--bg-panel); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+.migrate-wrap{ max-width:640px; margin:0 auto; }
+.lead-form{ display:grid; gap:16px; margin-top:36px; }
+.lead-form .row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.field label{ display:block; font-size:11px; font-weight:700; letter-spacing:0.6px; text-transform:uppercase; color:var(--text-dim); margin-bottom:7px; }
+.field input, .field textarea{
+  width:100%; background:var(--bg-raised); border:1px solid var(--line); border-radius:8px;
+  padding:12px 14px; color:var(--text-primary); font-size:14px; font-family:var(--font-body);
+}
+.field input:focus, .field textarea:focus{ outline:none; border-color:var(--gold); }
+.field textarea{ resize:vertical; min-height:90px; }
+.lead-form .submit-row{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-top:6px; }
+#leadFormMessage{ font-size:13px; font-weight:600; }
+
+/* ---------------------------------------------------------------------
+   YouTube / medya bölümü
+   --------------------------------------------------------------------- */
+.media-card{
+  max-width:720px; margin:0 auto; background:var(--bg-panel); border:1px solid var(--line); border-radius:16px;
+  padding:40px; text-align:center;
+}
+.media-card .icon{ font-size:44px; margin-bottom:16px; }
+
+/* ---------------------------------------------------------------------
+   Footer
+   --------------------------------------------------------------------- */
+footer{ border-top:1px solid var(--line); padding:36px 24px; }
+.footer-inner{ max-width:1180px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; }
+.footer-links{ display:flex; gap:20px; font-size:12px; }
+.footer-links a{ color:var(--text-dim); text-decoration:none; }
+.footer-links a:hover{ color:var(--gold-soft); }
+.social-links{ display:flex; gap:12px; }
+.social-links a{
+  width:34px; height:34px; border-radius:8px; border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
+  color:var(--text-muted); text-decoration:none; font-size:14px; transition: border-color .15s, color .15s;
+}
+.social-links a:hover{ border-color:var(--gold); color:var(--gold-soft); }
+.footer-copy{ font-size:11px; color:var(--text-dim); }
+
+@media (max-width: 860px){
+  .nav-links{
+    display:none; position:absolute; top:100%; left:0; right:0; flex-direction:column; gap:0;
+    background:var(--bg-panel); border-bottom:1px solid var(--line); padding:8px 24px;
+  }
+  .nav-links.open{ display:flex; }
+  .nav-links a{ padding:14px 0; border-bottom:1px solid var(--line); }
+  .nav-links a:last-child{ border-bottom:none; }
+  .nav-toggle{ display:block; }
+  .about-grid{ grid-template-columns:1fr; }
+  .stats-strip{ grid-template-columns:repeat(2, 1fr); }
+  .lead-form .row{ grid-template-columns:1fr; }
+  section{ padding:64px 18px; }
+}

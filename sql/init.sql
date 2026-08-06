@@ -261,6 +261,40 @@ create trigger trg_migration_prospects_updated_at
   for each row execute function set_updated_at();
 
 -- =====================================================================
+-- 6.4) MIGRATION_LEADS — genel tanıtım sitesindeki "Göçe Katıl" formundan
+--      gelen, sunucu dışından herkesin gönderebildiği ham başvurular.
+--      Sadece admin görebilir; onaylanınca migration_prospects'e
+--      dönüştürülür (bkz. panel/js/migration.js -> processLead).
+-- =====================================================================
+create table if not exists migration_leads (
+  id             uuid primary key default gen_random_uuid(),
+  name           text not null,
+  contact        text,
+  current_server bigint,
+  power          bigint,
+  message        text,
+  created_at     timestamptz not null default now()
+);
+
+create index if not exists idx_migration_leads_created on migration_leads (created_at desc);
+
+-- NOT: migration_leads BİLEREK aşağıdaki 10) bölümündeki genel RLS
+-- döngüsüne (ve auth_policies.sql'e) dahil EDİLMEZ — çünkü o döngü
+-- insert'i sonunda sadece giriş yapmış kullanıcıya kısıtlar, ama bu
+-- tablonun tüm amacı GİRİŞ YAPMAMIŞ ziyaretçilerin form gönderebilmesi.
+-- Bu yüzden kendi özel politikalarını burada, doğrudan tanımlıyoruz.
+alter table migration_leads enable row level security;
+
+drop policy if exists migration_leads_insert_public on migration_leads;
+create policy migration_leads_insert_public on migration_leads for insert with check (true);
+
+drop policy if exists migration_leads_select_auth on migration_leads;
+create policy migration_leads_select_auth on migration_leads for select using (auth.role() = 'authenticated');
+
+drop policy if exists migration_leads_delete_auth on migration_leads;
+create policy migration_leads_delete_auth on migration_leads for delete using (auth.role() = 'authenticated');
+
+-- =====================================================================
 -- 7) SETTINGS — Uygulama geneli ayarlar (anahtar/değer)
 -- =====================================================================
 create table if not exists settings (
@@ -366,7 +400,7 @@ alter publication supabase_realtime add table
   ss_weeks, ss_records,
   other_weeks, other_records,
   kod_weeks, kod_records,
-  migration_periods, migration_prospects,
+  migration_periods, migration_prospects, migration_leads,
   settings, activity_logs;
 
 -- =====================================================================
