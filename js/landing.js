@@ -34,7 +34,7 @@ const DICT = {
     aboutCard3Title: "Dominance", aboutCard3Desc: "A guild that makes its name known on Server 76 and reaches its goals — we don't compete, we dominate.",
     migrateTag: "Coming From Another Server?",
     migrateDesc: "Want to join Excellence in the upcoming migration window? Fill out the form below and our leadership team will reach out.",
-    fieldName: "Username", fieldContact: "Contact (Discord, etc.)", fieldServer: "Current Server", fieldPower: "Power Level",
+    fieldName: "Username", fieldGameId: "ID Number", fieldContact: "Contact (Discord, etc.)", fieldServer: "Current Server", fieldPower: "Power Level",
     fieldMessage: "Message (optional)", fieldMessagePh: "Tell us a bit about yourself…",
     submitBtn: "Submit Application",
     msgNameRequired: "Please enter your username.", msgSending: "Sending…",
@@ -53,7 +53,7 @@ const DICT = {
     aboutCard3Title: "Hükmetme", aboutCard3Desc: "Server 76'da adımızı duyuran, hedeflerine ulaşan bir lonca — rekabet etmeyiz, hükmederiz.",
     migrateTag: "Başka Sunucudan mısınız?",
     migrateDesc: "Önümüzdeki göç döneminde Excellence'a katılmak ister misiniz? Aşağıdaki formu doldurun, liderlik ekibimiz sizinle iletişime geçsin.",
-    fieldName: "Kullanıcı Adı", fieldContact: "İletişim (Discord vb.)", fieldServer: "Mevcut Sunucu", fieldPower: "Güç Seviyesi",
+    fieldName: "Kullanıcı Adı", fieldGameId: "ID Numarası", fieldContact: "İletişim (Discord vb.)", fieldServer: "Mevcut Sunucu", fieldPower: "Güç Seviyesi",
     fieldMessage: "Mesaj (opsiyonel)", fieldMessagePh: "Kendinizden kısaca bahsedin…",
     submitBtn: "Başvuruyu Gönder",
     msgNameRequired: "Lütfen kullanıcı adınızı girin.", msgSending: "Gönderiliyor…",
@@ -72,7 +72,7 @@ const DICT = {
     aboutCard3Title: "Dominanz", aboutCard3Desc: "Eine Gilde, die auf Server 76 ihren Namen macht und ihre Ziele erreicht — wir konkurrieren nicht, wir dominieren.",
     migrateTag: "Kommst du von einem anderen Server?",
     migrateDesc: "Möchtest du Excellence im nächsten Migrationsfenster beitreten? Fülle das untenstehende Formular aus, unser Führungsteam meldet sich bei dir.",
-    fieldName: "Benutzername", fieldContact: "Kontakt (Discord usw.)", fieldServer: "Aktueller Server", fieldPower: "Machtstufe",
+    fieldName: "Benutzername", fieldGameId: "ID-Nummer", fieldContact: "Kontakt (Discord usw.)", fieldServer: "Aktueller Server", fieldPower: "Machtstufe",
     fieldMessage: "Nachricht (optional)", fieldMessagePh: "Erzähl uns kurz etwas über dich…",
     submitBtn: "Bewerbung Senden",
     msgNameRequired: "Bitte gib deinen Benutzernamen ein.", msgSending: "Wird gesendet…",
@@ -91,7 +91,7 @@ const DICT = {
     aboutCard3Title: "Dominio", aboutCard3Desc: "Un gremio que se hace notar en el Servidor 76 y alcanza sus metas — no competimos, dominamos.",
     migrateTag: "¿Vienes de Otro Servidor?",
     migrateDesc: "¿Quieres unirte a Excellence en la próxima ventana de migración? Completa el formulario a continuación y nuestro equipo de liderazgo se pondrá en contacto.",
-    fieldName: "Nombre de Usuario", fieldContact: "Contacto (Discord, etc.)", fieldServer: "Servidor Actual", fieldPower: "Nivel de Poder",
+    fieldName: "Nombre de Usuario", fieldGameId: "Número de ID", fieldContact: "Contacto (Discord, etc.)", fieldServer: "Servidor Actual", fieldPower: "Nivel de Poder",
     fieldMessage: "Mensaje (opcional)", fieldMessagePh: "Cuéntanos un poco sobre ti…",
     submitBtn: "Enviar Solicitud",
     msgNameRequired: "Por favor, introduce tu nombre de usuario.", msgSending: "Enviando…",
@@ -110,7 +110,7 @@ const DICT = {
     aboutCard3Title: "Domination", aboutCard3Desc: "Une guilde qui se fait connaître sur le Serveur 76 et atteint ses objectifs — nous ne rivalisons pas, nous dominons.",
     migrateTag: "Vous Venez d'un Autre Serveur ?",
     migrateDesc: "Vous voulez rejoindre Excellence lors de la prochaine fenêtre de migration ? Remplissez le formulaire ci-dessous, notre équipe de direction vous contactera.",
-    fieldName: "Nom d'Utilisateur", fieldContact: "Contact (Discord, etc.)", fieldServer: "Serveur Actuel", fieldPower: "Niveau de Puissance",
+    fieldName: "Nom d'Utilisateur", fieldGameId: "Numéro d'ID", fieldContact: "Contact (Discord, etc.)", fieldServer: "Serveur Actuel", fieldPower: "Niveau de Puissance",
     fieldMessage: "Message (optionnel)", fieldMessagePh: "Parlez-nous un peu de vous…",
     submitBtn: "Envoyer la Candidature",
     msgNameRequired: "Veuillez saisir votre nom d'utilisateur.", msgSending: "Envoi en cours…",
@@ -196,6 +196,7 @@ function setFormMessage(text, isError) {
 async function submitLead(event) {
   event.preventDefault();
   const name = document.getElementById("leadName").value.trim();
+  const gameId = document.getElementById("leadGameId").value.trim();
   const contact = document.getElementById("leadContact").value.trim();
   const serverRaw = document.getElementById("leadServer").value.trim();
   const powerRaw = document.getElementById("leadPower").value.trim();
@@ -212,6 +213,7 @@ async function submitLead(event) {
   try {
     await createMigrationLead({
       name,
+      game_id: gameId || null,
       contact: contact || null,
       current_server: serverRaw === "" ? null : (Number(serverRaw) || null),
       power: Number(powerRaw) || 0,

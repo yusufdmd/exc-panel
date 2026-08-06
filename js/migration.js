@@ -51,7 +51,7 @@ export function mapPeriod(row) {
 
 /** Supabase'ten dönen ham göç başvurusu (genel siteden gelen) satırını uygulamanın kullandığı şekle çevirir. */
 export function mapLead(row) {
-  return { id: row.id, name: row.name, contact: row.contact, server: row.current_server, power: row.power, message: row.message, createdAt: row.created_at };
+  return { id: row.id, name: row.name, gameId: row.game_id, contact: row.contact, server: row.current_server, power: row.power, message: row.message, createdAt: row.created_at };
 }
 
 /** Supabase'ten dönen ham göç adayı satırını uygulamanın kullandığı şekle çevirir. */
@@ -216,15 +216,20 @@ function renderMigrationStats(list) {
   `;
 }
 
-/** Genel tanıtım sitesinden gelen, henüz işlenmemiş ham başvuruları çizer (dönemden bağımsız, sadece admin görür). */
+/**
+ * Genel tanıtım sitesinden gelen, henüz işlenmemiş ham başvuruları çizer
+ * (dönemden bağımsız, sadece admin görür). Bölüm, başvuru olmasa bile
+ * HER ZAMAN görünür kalır (boş durum mesajıyla) — böylece admin bu
+ * özelliğin var olduğunu ve nerede olduğunu her zaman görebilir.
+ */
 function renderMigrationLeads() {
-  const section = document.getElementById("migrationLeadsSection");
   const hasLeads = state.migrationLeads.length > 0;
-  section.style.display = hasLeads ? "" : "none";
-  if (!hasLeads) return;
+  document.getElementById("migrationLeadsEmpty").style.display = hasLeads ? "none" : "block";
+  document.getElementById("migrationLeadsTableWrap").style.display = hasLeads ? "" : "none";
   document.getElementById("migrationLeadsRows").innerHTML = state.migrationLeads.map((lead) => `
     <tr>
       <td><span class="member-name">${escapeHtml(lead.name || "—")}</span></td>
+      <td class="member-id">${escapeHtml(lead.gameId || "—")}</td>
       <td>${escapeHtml(lead.contact || "—")}</td>
       <td class="num-cell">${escapeHtml(lead.server != null ? String(lead.server) : "—")}</td>
       <td class="num-cell">${formatPower(lead.power)}</td>
@@ -400,6 +405,7 @@ export function processLead(id) {
   openProspectModal();
   state.pendingLeadProcessingId = id;
   document.getElementById("pName").value = lead.name || "";
+  document.getElementById("pGameId").value = lead.gameId || "";
   document.getElementById("pServer").value = lead.server != null ? lead.server : "";
   document.getElementById("pPower").value = lead.power || "";
 }

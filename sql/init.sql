@@ -269,6 +269,7 @@ create trigger trg_migration_prospects_updated_at
 create table if not exists migration_leads (
   id             uuid primary key default gen_random_uuid(),
   name           text not null,
+  game_id        text,
   contact        text,
   current_server bigint,
   power          bigint,

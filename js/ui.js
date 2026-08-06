@@ -136,7 +136,8 @@ const DICT = {
     emptyMigrationTitle:'Henüz aday yok', emptyMigrationDesc:'"+ Aday Ekle" ile ilk göç adayını ekle.',
     toastProspectSaved:'Aday kaydedildi.', toastProspectDeleted:'Aday silindi.', confirmDeleteProspect:'Bu adayı silmek istediğinize emin misiniz?',
     approveProspectTitle:'Üye Olarak Onayla', confirmApproveProspect:'Bu adayı üye olarak onaylamak istediğinize emin misiniz? Eksik bilgileri dolduracağınız üye ekleme ekranına yönlendirileceksiniz.',
-    leadsHeading:'📥 Gelen Göç Talepleri', thLeadContact:'İletişim', thLeadMessage:'Mesaj', thLeadDate:'Tarih',
+    leadsHeading:'📥 Göç Başvuruları', thLeadContact:'İletişim', thLeadMessage:'Mesaj', thLeadDate:'Tarih',
+    emptyLeadsDesc:'Genel siteden gelen yeni başvurular burada görünecek.',
     processLeadTitle:'Aday Olarak İşle', confirmDismissLead:'Bu başvuruyu reddetmek/silmek istediğinize emin misiniz?',
     toastLeadDismissed:'Başvuru silindi.',
     statMigrationTotal:'Toplam Aday', migrationStatusCertain:'Kesin', migrationStatusUncertain:'Belirsiz',
@@ -175,6 +176,7 @@ const DICT = {
     subActiveMembers:'Aktif Üyeler', subOldMembers:'Eski Üyeler (OLD)',
     thDate:'Tarih', thPowerVal:'Güç', thDelta:'Fark', thExcused:'Mazeretli',
     loginTitle:'Yönetici Girişi', lblEmail:'E-posta', lblPassword:'Şifre', loginBtn:'Giriş Yap', logoutBtn:'Çıkış Yap',
+    gateDesc:'Bu panele sadece yönetici hesapları erişebilir.',
     loginFailed:'Giriş başarısız.', loginSuccess:'Giriş yapıldı.', logoutSuccess:'Çıkış yapıldı.',
     emailPasswordRequired:'Kullanıcı adı ve şifre gerekli.', viewOnlyLabel:'Salt okunur',
     previousNames:'Önceki Kullanıcı Adları',
@@ -195,7 +197,8 @@ const DICT = {
     emptyMigrationTitle:'No candidates yet', emptyMigrationDesc:'Use "+ Add Candidate" to add the first migration candidate.',
     toastProspectSaved:'Candidate saved.', toastProspectDeleted:'Candidate deleted.', confirmDeleteProspect:'Are you sure you want to delete this candidate?',
     approveProspectTitle:'Approve as Member', confirmApproveProspect:'Are you sure you want to approve this candidate as a member? You will be taken to the add-member screen to fill in the missing details.',
-    leadsHeading:'📥 Incoming Migration Requests', thLeadContact:'Contact', thLeadMessage:'Message', thLeadDate:'Date',
+    leadsHeading:'📥 Migration Applications', thLeadContact:'Contact', thLeadMessage:'Message', thLeadDate:'Date',
+    emptyLeadsDesc:'New applications from the main site will appear here.',
     processLeadTitle:'Process as Candidate', confirmDismissLead:'Are you sure you want to dismiss/delete this request?',
     toastLeadDismissed:'Request deleted.',
     statMigrationTotal:'Total Candidates', migrationStatusCertain:'Certain', migrationStatusUncertain:'Uncertain',
@@ -234,6 +237,7 @@ const DICT = {
     subActiveMembers:'Active Members', subOldMembers:'Old Members (OLD)',
     thDate:'Date', thPowerVal:'Power', thDelta:'Change', thExcused:'Excused',
     loginTitle:'Admin Login', lblEmail:'Email', lblPassword:'Password', loginBtn:'Sign In', logoutBtn:'Sign Out',
+    gateDesc:'Only admin accounts can access this panel.',
     loginFailed:'Sign-in failed.', loginSuccess:'Signed in.', logoutSuccess:'Signed out.',
     emailPasswordRequired:'Username and password are required.', viewOnlyLabel:'View only',
     previousNames:'Previous Usernames',
@@ -254,7 +258,8 @@ const DICT = {
     emptyMigrationTitle:'Noch keine Kandidaten', emptyMigrationDesc:'Mit "+ Kandidat hinzufügen" den ersten Migrationskandidaten hinzufügen.',
     toastProspectSaved:'Kandidat gespeichert.', toastProspectDeleted:'Kandidat gelöscht.', confirmDeleteProspect:'Diesen Kandidaten wirklich löschen?',
     approveProspectTitle:'Als Mitglied bestätigen', confirmApproveProspect:'Diesen Kandidaten wirklich als Mitglied bestätigen? Sie werden zum Formular für neue Mitglieder weitergeleitet, um die fehlenden Angaben zu ergänzen.',
-    leadsHeading:'📥 Eingehende Migrationsanfragen', thLeadContact:'Kontakt', thLeadMessage:'Nachricht', thLeadDate:'Datum',
+    leadsHeading:'📥 Migrationsbewerbungen', thLeadContact:'Kontakt', thLeadMessage:'Nachricht', thLeadDate:'Datum',
+    emptyLeadsDesc:'Neue Bewerbungen von der Hauptseite erscheinen hier.',
     processLeadTitle:'Als Kandidat bearbeiten', confirmDismissLead:'Diese Anfrage wirklich ablehnen/löschen?',
     toastLeadDismissed:'Anfrage gelöscht.',
     statMigrationTotal:'Kandidaten gesamt', migrationStatusCertain:'Sicher', migrationStatusUncertain:'Unsicher',
@@ -293,6 +298,7 @@ const DICT = {
     subActiveMembers:'Aktive Mitglieder', subOldMembers:'Alte Mitglieder (OLD)',
     thDate:'Datum', thPowerVal:'Macht', thDelta:'Änderung', thExcused:'Entschuldigt',
     loginTitle:'Admin-Anmeldung', lblEmail:'E-Mail', lblPassword:'Passwort', loginBtn:'Anmelden', logoutBtn:'Abmelden',
+    gateDesc:'Nur Administratorkonten haben Zugriff auf dieses Panel.',
     loginFailed:'Anmeldung fehlgeschlagen.', loginSuccess:'Angemeldet.', logoutSuccess:'Abgemeldet.',
     emailPasswordRequired:'Benutzername und Passwort sind erforderlich.', viewOnlyLabel:'Nur Ansicht',
     previousNames:'Frühere Benutzernamen',
@@ -313,7 +319,8 @@ const DICT = {
     emptyMigrationTitle:'Aún no hay candidatos', emptyMigrationDesc:'Usa "+ Añadir candidato" para agregar el primer candidato de migración.',
     toastProspectSaved:'Candidato guardado.', toastProspectDeleted:'Candidato eliminado.', confirmDeleteProspect:'¿Seguro que quieres eliminar a este candidato?',
     approveProspectTitle:'Aprobar como miembro', confirmApproveProspect:'¿Seguro que quieres aprobar a este candidato como miembro? Se te llevará a la pantalla de añadir miembro para completar los datos que faltan.',
-    leadsHeading:'📥 Solicitudes de Migración Entrantes', thLeadContact:'Contacto', thLeadMessage:'Mensaje', thLeadDate:'Fecha',
+    leadsHeading:'📥 Solicitudes de Migración', thLeadContact:'Contacto', thLeadMessage:'Mensaje', thLeadDate:'Fecha',
+    emptyLeadsDesc:'Las nuevas solicitudes del sitio principal aparecerán aquí.',
     processLeadTitle:'Procesar como Candidato', confirmDismissLead:'¿Seguro que quieres rechazar/eliminar esta solicitud?',
     toastLeadDismissed:'Solicitud eliminada.',
     statMigrationTotal:'Total de candidatos', migrationStatusCertain:'Seguro', migrationStatusUncertain:'Incierto',
@@ -352,6 +359,7 @@ const DICT = {
     subActiveMembers:'Miembros activos', subOldMembers:'Miembros antiguos (OLD)',
     thDate:'Fecha', thPowerVal:'Poder', thDelta:'Cambio', thExcused:'Justificado',
     loginTitle:'Inicio de sesión de administrador', lblEmail:'Correo electrónico', lblPassword:'Contraseña', loginBtn:'Iniciar sesión', logoutBtn:'Cerrar sesión',
+    gateDesc:'Solo las cuentas de administrador pueden acceder a este panel.',
     loginFailed:'Error al iniciar sesión.', loginSuccess:'Sesión iniciada.', logoutSuccess:'Sesión cerrada.',
     emailPasswordRequired:'Nombre de usuario y contraseña son obligatorios.', viewOnlyLabel:'Solo lectura',
     previousNames:'Nombres de usuario anteriores',
@@ -372,7 +380,8 @@ const DICT = {
     emptyMigrationTitle:'Aucun candidat pour le moment', emptyMigrationDesc:'Utilisez "+ Ajouter un candidat" pour ajouter le premier candidat à la migration.',
     toastProspectSaved:'Candidat enregistré.', toastProspectDeleted:'Candidat supprimé.', confirmDeleteProspect:'Voulez-vous vraiment supprimer ce candidat ?',
     approveProspectTitle:'Approuver comme membre', confirmApproveProspect:'Voulez-vous vraiment approuver ce candidat comme membre ? Vous serez redirigé vers l\'écran d\'ajout de membre pour compléter les informations manquantes.',
-    leadsHeading:'📥 Demandes de Migration Entrantes', thLeadContact:'Contact', thLeadMessage:'Message', thLeadDate:'Date',
+    leadsHeading:'📥 Candidatures de Migration', thLeadContact:'Contact', thLeadMessage:'Message', thLeadDate:'Date',
+    emptyLeadsDesc:'Les nouvelles candidatures du site principal apparaîtront ici.',
     processLeadTitle:'Traiter comme Candidat', confirmDismissLead:'Voulez-vous vraiment rejeter/supprimer cette demande ?',
     toastLeadDismissed:'Demande supprimée.',
     statMigrationTotal:'Total des candidats', migrationStatusCertain:'Certain', migrationStatusUncertain:'Incertain',
@@ -411,6 +420,7 @@ const DICT = {
     subActiveMembers:'Membres actifs', subOldMembers:'Anciens membres (OLD)',
     thDate:'Date', thPowerVal:'Puissance', thDelta:'Évolution', thExcused:'Excusé',
     loginTitle:'Connexion administrateur', lblEmail:'E-mail', lblPassword:'Mot de passe', loginBtn:'Se connecter', logoutBtn:'Se déconnecter',
+    gateDesc:'Seuls les comptes administrateurs peuvent accéder à ce panneau.',
     loginFailed:'Échec de la connexion.', loginSuccess:'Connecté.', logoutSuccess:'Déconnecté.',
     emailPasswordRequired:"Le nom d'utilisateur et le mot de passe sont requis.", viewOnlyLabel:'Lecture seule',
     previousNames:"Anciens noms d'utilisateur",
@@ -528,13 +538,13 @@ export function applyStaticText() {
   document.getElementById("t_thDelta").textContent = t("thDelta");
   document.getElementById("t_close2").textContent = t("close");
   document.getElementById("t_close3").textContent = t("close");
-  document.getElementById("t_loginTitle").textContent = t("loginTitle");
-  document.getElementById("t_lblEmail").textContent = t("lblUsername");
-  document.getElementById("t_lblPassword").textContent = t("lblPassword");
-  document.getElementById("t_loginBtn").textContent = t("loginBtn");
+  document.getElementById("t_gateTitle").textContent = t("loginTitle");
+  document.getElementById("t_gateDesc").textContent = t("gateDesc");
+  document.getElementById("t_gateLblUsername").textContent = t("lblUsername");
+  document.getElementById("t_gateLblPassword").textContent = t("lblPassword");
+  document.getElementById("t_gateSubmit").textContent = t("loginBtn");
+  document.getElementById("t_gateBackToSite").textContent = t("backToSite");
   document.getElementById("t_logoutBtn").textContent = t("logoutBtn");
-  document.getElementById("t_cancel4").textContent = t("cancel");
-  document.getElementById("t_loginSubmit").textContent = t("loginBtn");
   document.getElementById("t_tabMigration").textContent = t("tabMigration");
   document.getElementById("t_addProspect").textContent = t("addProspect");
   document.getElementById("t_addPeriod").textContent = t("addPeriod");
@@ -561,6 +571,8 @@ export function applyStaticText() {
   document.getElementById("t_leadsHeading").textContent = t("leadsHeading");
   document.getElementById("t_thLeadName2").textContent = t("thUsername");
   document.getElementById("t_thLeadContact").textContent = t("thLeadContact");
+  document.getElementById("t_thLeadId2").textContent = t("thId");
+  document.getElementById("t_emptyLeadsDesc").textContent = t("emptyLeadsDesc");
   document.getElementById("t_thLeadServer2").textContent = t("thServer");
   document.getElementById("t_thLeadPower2").textContent = t("thPower");
   document.getElementById("t_thLeadMessage").textContent = t("thLeadMessage");
@@ -838,7 +850,6 @@ export { campLevelSortValue };
 /** Admin oturumuna göre üst bar ve "admin-only" sınıflı öğelerin görünürlüğünü günceller. */
 export function updateAdminUI() {
   document.body.classList.toggle("is-admin", state.isAdmin);
-  document.getElementById("loginBtn").style.display = state.isAdmin ? "none" : "";
   document.getElementById("logoutBtn").style.display = state.isAdmin ? "" : "none";
   const statusEl = document.getElementById("authStatus");
   if (statusEl) statusEl.textContent = state.isAdmin ? (state.currentAdminUsername || t("logoutBtn")) : t("viewOnlyLabel");

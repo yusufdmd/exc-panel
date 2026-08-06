@@ -7,7 +7,26 @@
 <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
-<div class="wrap">
+
+<div class="auth-gate" id="authGate">
+  <div class="auth-gate-box">
+    <div class="brand-mark" style="width:48px; height:48px; font-size:20px; margin:0 auto 16px;">X</div>
+    <h2 id="t_gateTitle">Yönetici Girişi</h2>
+    <p id="t_gateDesc" style="color:var(--text-muted); font-size:13px; margin:10px 0 24px;">Bu panele sadece yönetici hesapları erişebilir.</p>
+    <div class="field">
+      <label id="t_gateLblUsername">Kullanıcı Adı</label>
+      <input id="loginEmail" type="text" autocomplete="username">
+    </div>
+    <div class="field">
+      <label id="t_gateLblPassword">Şifre</label>
+      <input id="loginPassword" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter') doLogin();">
+    </div>
+    <button class="btn-primary" style="width:100%; margin-top:8px;" onclick="doLogin()" id="t_gateSubmit">Giriş Yap</button>
+    <a href="../" class="btn-ghost" style="display:block; text-align:center; margin-top:14px; text-decoration:none;" id="t_gateBackToSite">← Ana Siteye Dön</a>
+  </div>
+</div>
+
+<div class="wrap" id="panelWrap" style="display:none;">
 
   <div class="topbar">
     <div class="brand">
@@ -24,9 +43,6 @@
       <div class="sync" id="authBox">
         <span id="authStatus">…</span>
       </div>
-      <button class="btn-refresh" id="loginBtn" onclick="openLoginModal()">
-        <span id="t_loginBtn">Giriş Yap</span>
-      </button>
       <button class="btn-refresh admin-only" id="logoutBtn" onclick="doLogout()" style="display:none;">
         <span id="t_logoutBtn">Çıkış Yap</span>
       </button>
@@ -186,13 +202,17 @@
 
   <!-- MIGRATION -->
   <div class="panel" id="panel-migration">
-    <div class="admin-only" id="migrationLeadsSection" style="display:none;">
-      <h3 style="font-size:13px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); margin-bottom:10px;" id="t_leadsHeading">📥 Gelen Göç Talepleri</h3>
-      <div class="table-wrap" style="margin-bottom:20px;">
+    <div class="admin-only" id="migrationLeadsSection">
+      <h3 style="font-size:13px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); margin-bottom:10px;" id="t_leadsHeading">📥 Göç Başvuruları</h3>
+      <div class="empty-state" id="migrationLeadsEmpty" style="display:none; padding:24px;">
+        <p id="t_emptyLeadsDesc">Genel siteden gelen yeni başvurular burada görünecek.</p>
+      </div>
+      <div class="table-wrap" id="migrationLeadsTableWrap" style="margin-bottom:20px;">
         <table>
           <thead>
             <tr>
               <th id="t_thLeadName2">Kullanıcı Adı</th>
+              <th id="t_thLeadId2">ID</th>
               <th id="t_thLeadContact">İletişim</th>
               <th id="t_thLeadServer2">Sunucu</th>
               <th id="t_thLeadPower2">Güç</th>
@@ -242,25 +262,6 @@
     </div>
   </div>
 
-</div>
-
-<!-- Login Modal -->
-<div class="overlay" id="loginOverlay">
-  <div class="modal">
-    <h2 id="t_loginTitle">Yönetici Girişi</h2>
-    <div class="field">
-      <label id="t_lblEmail">Kullanıcı Adı</label>
-      <input id="loginEmail" type="text" autocomplete="username">
-    </div>
-    <div class="field">
-      <label id="t_lblPassword">Şifre</label>
-      <input id="loginPassword" type="password" autocomplete="current-password">
-    </div>
-    <div class="modal-actions">
-      <button class="btn-ghost" onclick="closeLoginModal()" id="t_cancel4">Vazgeç</button>
-      <button class="btn-primary" onclick="doLogin()" id="t_loginSubmit">Giriş Yap</button>
-    </div>
-  </div>
 </div>
 
 <!-- Member Modal -->

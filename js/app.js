@@ -29,7 +29,7 @@ import {
   processLead, dismissLead
 } from "./migration.js";
 import { exportBackup, importBackup } from "./backup.js";
-import { openLoginModal, closeLoginModal, doLogin, doLogout } from "./auth.js";
+import { doLogin, doLogout } from "./auth.js";
 import "./gvg.js";
 import "./svs.js";
 import "./ss.js";
@@ -42,8 +42,13 @@ function settledList(result) {
   return result.status === "fulfilled" ? (result.value || []) : [];
 }
 
-/** Supabase'ten tüm veriyi (üyeler + dört etkinlik türü) çeker ve state'i günceller. */
+/**
+ * Supabase'ten tüm veriyi (üyeler + dört etkinlik türü) çeker ve state'i günceller.
+ * Admin girişi doğrulanmadan (bkz. auth.js -> updateGateVisibility) hiçbir şey
+ * çekmez — panel giriş kapısının arkasındayken gereksiz istek atılmasın diye.
+ */
 async function loadAll(silent) {
+  if (!state.isAdmin) return;
   try {
     document.getElementById("syncText").textContent = t("syncConnecting");
     const [
@@ -152,7 +157,7 @@ Object.assign(window, {
   renderMigration, setMigrationSort, openProspectModal, closeProspectModal, saveProspect, deleteProspect, approveProspect,
   selectMigrationPeriod, openPeriodModal, closePeriodModal, savePeriod, deletePeriod,
   processLead, dismissLead,
-  openLoginModal, closeLoginModal, doLogin, doLogout
+  doLogin, doLogout
 });
 
 // =====================================================================
@@ -161,4 +166,3 @@ Object.assign(window, {
 initLangFromStorage();
 buildLangSwitch();
 applyStaticText();
-loadAll();

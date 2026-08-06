@@ -20,7 +20,14 @@
 
 import { supabase } from "./supabase.js";
 import { ADMIN_LOGIN_DOMAIN } from "./config.js";
-import { state, t, showToast, updateAdminUI } from "./ui.js";
+import { state, t, showToast, updateAdminUI, reloadAllData } from "./ui.js";
+
+// Panel, admin oturumu doğrulanana kadar hiçbir veri yüklemez/göstermez
+// (bkz. updateGateVisibility) — sadece "sadece admin görebilsin" isteğini
+// karşılamak için; alttaki RLS select politikaları hâlâ herkese açıktır,
+// bu yüzden bu SADECE bir arayüz kapısıdır, veritabanı seviyesinde ek bir
+// kısıtlama değildir.
+let panelUnlocked = false;
 
 /** Yönetici arayüzünde yazılan kullanıcı adını Supabase Auth'un beklediği sahte email'e çevirir. */
 function usernameToAuthEmail(username) {
@@ -43,6 +50,26 @@ function applySession(session) {
   state.isAdmin = !!session;
   state.currentAdminUsername = session && session.user ? authEmailToUsername(session.user.email || "") : "";
   updateAdminUI();
+  updateGateVisibility();
+}
+
+/** Giriş kapısını (authGate) ve panelin kendisini (panelWrap) admin durumuna göre gösterir/gizler. */
+function updateGateVisibility() {
+  const gate = document.getElementById("authGate");
+  const wrap = document.getElementById("panelWrap");
+  if (!gate || !wrap) return; // bu dosya panel dışında bir sayfaya yüklenmiş olabilir (şu an olmuyor, ileride önlem)
+  if (state.isAdmin) {
+    gate.style.display = "none";
+    wrap.style.display = "";
+    if (!panelUnlocked) {
+      panelUnlocked = true;
+      reloadAllData();
+    }
+  } else {
+    gate.style.display = "";
+    wrap.style.display = "none";
+    panelUnlocked = false; // bir sonraki girişte veriyi yeniden çeksin
+  }
 }
 
 supabase.auth.onAuthStateChange((event, session) => {
@@ -52,18 +79,6 @@ supabase.auth.onAuthStateChange((event, session) => {
 supabase.auth.getSession().then(({ data }) => {
   applySession(data && data.session);
 });
-
-/** Giriş modalını temiz alanlarla açar. */
-export function openLoginModal() {
-  document.getElementById("loginEmail").value = "";
-  document.getElementById("loginPassword").value = "";
-  document.getElementById("loginOverlay").classList.add("active");
-}
-
-/** Giriş modalını kapatır. */
-export function closeLoginModal() {
-  document.getElementById("loginOverlay").classList.remove("active");
-}
 
 /** Giriş formundaki kullanıcı adı/şifre ile Supabase Auth oturumu açmayı dener. */
 export async function doLogin() {
@@ -81,7 +96,7 @@ export async function doLogin() {
     showToast(t("loginFailed"));
     return;
   }
-  closeLoginModal();
+  document.getElementById("loginPassword").value = "";
   showToast(t("loginSuccess"));
 }
 
