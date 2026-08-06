@@ -42,12 +42,12 @@ Modüller arasındaki bağımlılık tek yönlüdür (döngüsel import yok): `c
 
 ## 1.1) Yönetici (admin) girişi kurulumu
 
-Panel, verileri **herkes görebilsin ama sadece giriş yapan yönetici düzenleyebilsin** şeklinde çalışır. Bunu etkinleştirmek için iki adım gerekiyor — ikisi de bir kereliktir:
+Panel, verileri **sadece giriş yapan yöneticilerin görüp düzenleyebildiği** şekilde çalışır — üye/etkinlik/göç verileri herkese açık değildir (tek istisna: genel tanıtım sitesindeki [`index.html`](index.html) canlı üye SAYISI, isim/ID gibi ayrıntı içermeyen dar kapsamlı bir fonksiyon üzerinden herkese açık kalır). Bunu etkinleştirmek için iki adım gerekiyor — ikisi de bir kereliktir:
 
 1. **Bir yönetici hesabı oluştur:** Supabase Dashboard → **Authentication → Users → Add User**. Panelde giriş ekranı sana sadece bir "kullanıcı adı" gösterir, ama Supabase Auth arka planda hâlâ bir email adresi bekler — bu yüzden **email alanına** `<kullaniciadi>@excpaneli.local` formatında bir değer gir (örn. yönetici adın "lider" ise `lider@excpaneli.local`; domain [`js/config.js`](js/config.js) içindeki `ADMIN_LOGIN_DOMAIN` ile eşleşmeli). Gerçek bir domain olması gerekmiyor, hiçbir doğrulama e-postası gönderilmiyor — bu yüzden **"Auto Confirm User"** kutusunu mutlaka işaretle. Panelde giriş yaparken sadece `lider` yazman yeterli. Kaç yöneticin olacaksa o kadar kullanıcı ekleyebilirsin — hepsi kendi kullanıcı adıyla giriş yapabilir.
-2. **Yazma politikalarını sıkılaştır:** Supabase Dashboard → **SQL Editor**'e git, [`sql/auth_policies.sql`](sql/auth_policies.sql) içeriğinin tamamını yapıştırıp çalıştır. Bu, okuma (select) politikalarına dokunmadan, ekleme/güncelleme/silme işlemlerini sadece giriş yapmış kullanıcılarla sınırlar.
+2. **Okuma/yazma politikalarını sıkılaştır:** Supabase Dashboard → **SQL Editor**'e git, [`sql/auth_policies.sql`](sql/auth_policies.sql) içeriğinin tamamını yapıştırıp çalıştır. Bu, okuma (select) dahil tüm işlemleri sadece giriş yapmış kullanıcılarla sınırlar ve genel sitenin üye-sayısı fonksiyonunu oluşturur.
 
-Bundan sonra panelin sağ üstündeki **"Giriş Yap"** butonuna bu email/şifreyi girerek yönetici olarak oturum açabilirsin; oturum açılınca "+ Üye Ekle", "+ Hafta Ekle", satır düzenleme/silme gibi tüm yazma butonları görünür hâle gelir. Giriş yapılmadan bu butonlar hiç görünmez — ama asıl güvenlik `auth_policies.sql`'deki veritabanı kuralında, buton gizlemede değil.
+Bundan sonra `panel/` adresindeki giriş ekranına bu email/şifreyi girerek yönetici olarak oturum açabilirsin; giriş yapılmadan panelin içeriği (veriler dahil) hiç yüklenmez/görünmez — asıl güvenlik `auth_policies.sql`'deki veritabanı kuralında, arayüzün kapı olarak davranması sadece ek bir katmandır.
 
 ## 2) Yerel önizleme (opsiyonel)
 

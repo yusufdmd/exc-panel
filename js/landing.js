@@ -2,10 +2,15 @@
 // EXCELLENCE — landing.js
 // =====================================================================
 // Genel tanıtım sitesinin (kök index.html) mantığı: canlı AKTİF üye
-// sayısını gösterir (panelin "Toplam Üye" istatistiğiyle aynı kural —
+// SAYISINI gösterir (panelin "Toplam Üye" istatistiğiyle aynı kural —
 // OLD ve göç eden üyeler hariç), "Göçe Katıl" formunu göç başvuruları
 // tablosuna (migration_leads) gönderir, ve bu sayfaya özel bir dil
 // seçici (TR/EN/DE/ES/FR) sağlar.
+//
+// ÖNEMLİ: üye/etkinlik/göç verilerinin TAMAMI artık sadece admin girişiyle
+// okunabilir (bkz. sql/auth_policies.sql) — bu sayfa üye LİSTESİNE değil,
+// sadece dar kapsamlı bir RPC ile hesaplanan SAYIYA erişir
+// (getActiveMemberCount), isim/ID/güç gibi hiçbir ayrıntı çekmez.
 //
 // Panelden (panel/js/app.js ve aşağısı) TAMAMEN BAĞIMSIZDIR — sadece
 // paylaşılan database.js'i kullanır, kendi state/i18n mekanizması
@@ -14,7 +19,7 @@
 // bu kasıtlı bir fark, bu yüzden localStorage anahtarları da ayrıdır).
 // =====================================================================
 
-import { getMembers, createMigrationLead } from "./database.js";
+import { getActiveMemberCount, createMigrationLead } from "./database.js";
 
 const LANGUAGE_STORAGE_KEY = "exc-landing-lang";
 const DEFAULT_LANGUAGE = "en";
@@ -178,9 +183,8 @@ async function loadStats() {
   const countEl = document.getElementById("memberCount");
   if (!countEl) return;
   try {
-    const members = await getMembers();
-    const activeCount = members.filter((m) => !m.is_old && !m.is_migrated).length;
-    countEl.textContent = activeCount;
+    const count = await getActiveMemberCount();
+    countEl.textContent = count;
   } catch (error) {
     console.error("[Excellence] Üye sayısı alınamadı:", error);
     countEl.textContent = "—";

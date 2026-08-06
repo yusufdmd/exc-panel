@@ -41,6 +41,18 @@ export async function getMembers() {
   return data;
 }
 
+/**
+ * Genel tanıtım sitesi (index.html) için: members tablosunun tamamına
+ * (admin girişi gerektirir) değil, sadece aktif üye SAYISINA erişen,
+ * herkese açık dar kapsamlı bir RPC çağrısı (bkz. sql/auth_policies.sql
+ * -> get_active_member_count). İsim/ID/güç gibi hiçbir ayrıntı dönmez.
+ */
+export async function getActiveMemberCount() {
+  const { data, error } = await supabase.rpc("get_active_member_count");
+  if (error) dbError("Aktif üye sayısı alınamadı", error);
+  return data;
+}
+
 export async function getMember(id) {
   const { data, error } = await supabase
     .from("members")
