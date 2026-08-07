@@ -55,6 +55,7 @@ export const state = {
   pendingLeadProcessingId: null, // "İşle" ile aday ekleme formuna gidilirken hangi başvurunun dönüştürüldüğünü hatırlar (bkz. migration.js -> saveProspect)
   siteLinks: { discordUrl: "", youtubeUrl: "", instagramUrl: "" }, // genel tanıtım sitesindeki Discord/YouTube/Instagram linkleri (bkz. siteLinks.js)
   news: [], // ana sayfadaki "Haberler" bölümünün içeriği (bkz. news.js)
+  panelMode: null, // null: seçim ekranı, "data": veri paneli, "site": site editörü — her yeni girişte null'a döner (bkz. auth.js)
   migrationSortKey: "color",
   migrationSortDir: -1, // -1: varsayılan görünümde Altın üstte, Griye doğru azalan sıra
   currentTab: "members",
@@ -140,7 +141,9 @@ const DICT = {
     approveProspectTitle:'Üye Olarak Onayla', confirmApproveProspect:'Bu adayı üye olarak onaylamak istediğinize emin misiniz? Eksik bilgileri dolduracağınız üye ekleme ekranına yönlendirileceksiniz.',
     leadsHeading:'📥 Göç Başvuruları', thLeadContact:'İletişim', thLeadMessage:'Mesaj', thLeadDate:'Tarih',
     emptyLeadsDesc:'Genel siteden gelen yeni başvurular burada görünecek.',
-    siteLinksBtn:'Site Linkleri', siteLinksTitle:'Site Linkleri', siteLinksDesc:'Bu linkler genel tanıtım sitesinde (ana sayfa) kullanılır.',
+    siteLinksDesc:'Bu linkler genel tanıtım sitesinde (ana sayfa) kullanılır.',
+    chooserTitle:'Ne yapmak istersiniz?', chooserDataTitle:'Veri Paneli', chooserDataDesc:'Üyeler, etkinlikler, göç ve puan sıralaması.',
+    chooserSiteTitle:'Site Editörü', chooserSiteDesc:'Ana sayfa linkleri ve haberler.', backToChooser:'← Panel Seçimi', tabSiteLinks:'Site Linkleri',
     lblDiscordUrl:'Discord Davet Linki', lblYoutubeUrl:'YouTube Kanal Linki', lblInstagramUrl:'Instagram Linki',
     toastSiteLinksSaved:'Site linkleri kaydedildi.',
     tabNews:'Haberler', addNews:'+ Haber Ekle', newsAddTitle:'Haber Ekle', newsEditTitle:'Haberi Düzenle',
@@ -210,7 +213,9 @@ const DICT = {
     approveProspectTitle:'Approve as Member', confirmApproveProspect:'Are you sure you want to approve this candidate as a member? You will be taken to the add-member screen to fill in the missing details.',
     leadsHeading:'📥 Migration Applications', thLeadContact:'Contact', thLeadMessage:'Message', thLeadDate:'Date',
     emptyLeadsDesc:'New applications from the main site will appear here.',
-    siteLinksBtn:'Site Links', siteLinksTitle:'Site Links', siteLinksDesc:'These links are used on the public landing page (home page).',
+    siteLinksDesc:'These links are used on the public landing page (home page).',
+    chooserTitle:'What would you like to do?', chooserDataTitle:'Data Panel', chooserDataDesc:'Members, events, migration, and leaderboard.',
+    chooserSiteTitle:'Site Editor', chooserSiteDesc:'Home page links and news.', backToChooser:'← Panel Selection', tabSiteLinks:'Site Links',
     lblDiscordUrl:'Discord Invite Link', lblYoutubeUrl:'YouTube Channel Link', lblInstagramUrl:'Instagram Link',
     toastSiteLinksSaved:'Site links saved.',
     tabNews:'News', addNews:'+ Add News', newsAddTitle:'Add News', newsEditTitle:'Edit News',
@@ -280,7 +285,9 @@ const DICT = {
     approveProspectTitle:'Als Mitglied bestätigen', confirmApproveProspect:'Diesen Kandidaten wirklich als Mitglied bestätigen? Sie werden zum Formular für neue Mitglieder weitergeleitet, um die fehlenden Angaben zu ergänzen.',
     leadsHeading:'📥 Migrationsbewerbungen', thLeadContact:'Kontakt', thLeadMessage:'Nachricht', thLeadDate:'Datum',
     emptyLeadsDesc:'Neue Bewerbungen von der Hauptseite erscheinen hier.',
-    siteLinksBtn:'Website-Links', siteLinksTitle:'Website-Links', siteLinksDesc:'Diese Links werden auf der öffentlichen Startseite verwendet.',
+    siteLinksDesc:'Diese Links werden auf der öffentlichen Startseite verwendet.',
+    chooserTitle:'Was möchten Sie tun?', chooserDataTitle:'Datenpanel', chooserDataDesc:'Mitglieder, Events, Migration und Bestenliste.',
+    chooserSiteTitle:'Website-Editor', chooserSiteDesc:'Startseiten-Links und Neuigkeiten.', backToChooser:'← Panelauswahl', tabSiteLinks:'Website-Links',
     lblDiscordUrl:'Discord-Einladungslink', lblYoutubeUrl:'YouTube-Kanal-Link', lblInstagramUrl:'Instagram-Link',
     toastSiteLinksSaved:'Website-Links gespeichert.',
     tabNews:'Neuigkeiten', addNews:'+ Neuigkeit hinzufügen', newsAddTitle:'Neuigkeit hinzufügen', newsEditTitle:'Neuigkeit bearbeiten',
@@ -350,7 +357,9 @@ const DICT = {
     approveProspectTitle:'Aprobar como miembro', confirmApproveProspect:'¿Seguro que quieres aprobar a este candidato como miembro? Se te llevará a la pantalla de añadir miembro para completar los datos que faltan.',
     leadsHeading:'📥 Solicitudes de Migración', thLeadContact:'Contacto', thLeadMessage:'Mensaje', thLeadDate:'Fecha',
     emptyLeadsDesc:'Las nuevas solicitudes del sitio principal aparecerán aquí.',
-    siteLinksBtn:'Enlaces del Sitio', siteLinksTitle:'Enlaces del Sitio', siteLinksDesc:'Estos enlaces se usan en la página principal pública.',
+    siteLinksDesc:'Estos enlaces se usan en la página principal pública.',
+    chooserTitle:'¿Qué te gustaría hacer?', chooserDataTitle:'Panel de Datos', chooserDataDesc:'Miembros, eventos, migración y clasificación.',
+    chooserSiteTitle:'Editor del Sitio', chooserSiteDesc:'Enlaces y noticias de la página principal.', backToChooser:'← Selección de Panel', tabSiteLinks:'Enlaces del Sitio',
     lblDiscordUrl:'Enlace de invitación a Discord', lblYoutubeUrl:'Enlace del canal de YouTube', lblInstagramUrl:'Enlace de Instagram',
     toastSiteLinksSaved:'Enlaces del sitio guardados.',
     tabNews:'Noticias', addNews:'+ Añadir noticia', newsAddTitle:'Añadir noticia', newsEditTitle:'Editar noticia',
@@ -420,7 +429,9 @@ const DICT = {
     approveProspectTitle:'Approuver comme membre', confirmApproveProspect:'Voulez-vous vraiment approuver ce candidat comme membre ? Vous serez redirigé vers l\'écran d\'ajout de membre pour compléter les informations manquantes.',
     leadsHeading:'📥 Candidatures de Migration', thLeadContact:'Contact', thLeadMessage:'Message', thLeadDate:'Date',
     emptyLeadsDesc:'Les nouvelles candidatures du site principal apparaîtront ici.',
-    siteLinksBtn:'Liens du Site', siteLinksTitle:'Liens du Site', siteLinksDesc:'Ces liens sont utilisés sur la page d\'accueil publique.',
+    siteLinksDesc:'Ces liens sont utilisés sur la page d\'accueil publique.',
+    chooserTitle:'Que souhaitez-vous faire ?', chooserDataTitle:'Panneau de Données', chooserDataDesc:'Membres, événements, migration et classement.',
+    chooserSiteTitle:'Éditeur du Site', chooserSiteDesc:"Liens et actualités de la page d'accueil.", backToChooser:'← Sélection du Panneau', tabSiteLinks:'Liens du Site',
     lblDiscordUrl:"Lien d'invitation Discord", lblYoutubeUrl:'Lien de la chaîne YouTube', lblInstagramUrl:'Lien Instagram',
     toastSiteLinksSaved:'Liens du site enregistrés.',
     tabNews:'Actualités', addNews:'+ Ajouter une actualité', newsAddTitle:'Ajouter une actualité', newsEditTitle:"Modifier l'actualité",
@@ -620,14 +631,18 @@ export function applyStaticText() {
   document.getElementById("t_thLeadContact").textContent = t("thLeadContact");
   document.getElementById("t_thLeadId2").textContent = t("thId");
   document.getElementById("t_emptyLeadsDesc").textContent = t("emptyLeadsDesc");
-  document.getElementById("t_siteLinksBtn").textContent = t("siteLinksBtn");
-  document.getElementById("t_siteLinksTitle").textContent = t("siteLinksTitle");
   document.getElementById("t_siteLinksDesc").textContent = t("siteLinksDesc");
   document.getElementById("t_lblDiscordUrl").textContent = t("lblDiscordUrl");
   document.getElementById("t_lblYoutubeUrl").textContent = t("lblYoutubeUrl");
   document.getElementById("t_lblInstagramUrl").textContent = t("lblInstagramUrl");
-  document.getElementById("t_cancel7").textContent = t("cancel");
   document.getElementById("t_save7").textContent = t("save");
+  document.getElementById("t_tabSiteLinks").textContent = t("tabSiteLinks");
+  document.getElementById("t_chooserTitle").textContent = t("chooserTitle");
+  document.getElementById("t_chooserDataTitle").textContent = t("chooserDataTitle");
+  document.getElementById("t_chooserDataDesc").textContent = t("chooserDataDesc");
+  document.getElementById("t_chooserSiteTitle").textContent = t("chooserSiteTitle");
+  document.getElementById("t_chooserSiteDesc").textContent = t("chooserSiteDesc");
+  document.getElementById("t_backToChooser").textContent = t("backToChooser");
   document.getElementById("t_tabNews").textContent = t("tabNews");
   document.getElementById("t_addNews").textContent = t("addNews");
   document.getElementById("t_thNewsImage").textContent = t("thNewsImage");

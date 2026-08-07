@@ -2,12 +2,14 @@
 // EXC PANELİ — siteLinks.js
 // =====================================================================
 // Genel tanıtım sitesindeki (kök index.html) Discord/YouTube/Instagram
-// linklerini panelden düzenlemeyi sağlar. Veri tek satırlık site_links
+// linklerini panelden düzenlemeyi sağlar — "Site Editörü" katmanındaki
+// "Site Linkleri" sekmesi (bkz. panel/index.html -> panel-sitelinks; artık
+// bir modal DEĞİL, doğrudan bir sekme). Veri tek satırlık site_links
 // tablosunda tutulur — herkes okuyabilir (site üzerinde görünecekler
 // için), sadece admin güncelleyebilir (bkz. sql/add_site_links.sql).
 // =====================================================================
 
-import { getSiteLinks, updateSiteLinks } from "./database.js";
+import { updateSiteLinks } from "./database.js";
 import { state, t, showToast } from "./ui.js";
 
 /** Supabase'ten dönen ham satırı uygulamanın kullandığı şekle çevirir. */
@@ -19,15 +21,11 @@ export function mapSiteLinks(row) {
   };
 }
 
-export function openSiteLinksModal() {
+/** "Site Linkleri" sekmesine geçildiğinde formu state'teki güncel değerlerle doldurur. */
+export function populateSiteLinksForm() {
   document.getElementById("slDiscord").value = state.siteLinks.discordUrl || "";
   document.getElementById("slYoutube").value = state.siteLinks.youtubeUrl || "";
   document.getElementById("slInstagram").value = state.siteLinks.instagramUrl || "";
-  document.getElementById("siteLinksOverlay").classList.add("active");
-}
-
-export function closeSiteLinksModal() {
-  document.getElementById("siteLinksOverlay").classList.remove("active");
 }
 
 export async function saveSiteLinks() {
@@ -41,7 +39,6 @@ export async function saveSiteLinks() {
       instagram_url: instagramUrl || null
     });
     state.siteLinks = mapSiteLinks(row);
-    closeSiteLinksModal();
     showToast(t("toastSiteLinksSaved"));
   } catch (error) {
     console.error(error);

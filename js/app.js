@@ -18,7 +18,7 @@
 
 import { getMembers, getAllPowerHistory, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, getSiteLinks, getNews, subscribeToTables } from "./database.js";
 import { POLL_INTERVAL_MS } from "./config.js";
-import { state, t, showToast, buildLangSwitch, applyStaticText, initLangFromStorage, persistLanguage, renderAll, registerDataLoader } from "./ui.js";
+import { state, t, showToast, buildLangSwitch, applyStaticText, initLangFromStorage, persistLanguage, renderAll, registerDataLoader, registerRenderer } from "./ui.js";
 import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, saveMember, deleteMember, restoreMember, openHistoryModal, closeHistoryModal, setMemberView, setRankFilter, setSort } from "./members.js";
 import { mapWeek, mapEntry, openWeekModal, closeWeekModal, saveWeek, deleteWeek, openEntryModal, closeEntryModal, renderEntryRows, saveEntry, openWeekReportModal, closeWeekReportModal, openOverallReportModal, closeOverallReportModal, setOverallReportSort } from "./events.js";
 import { setBoardSort } from "./dashboard.js";
@@ -29,7 +29,7 @@ import {
   processLead, dismissLead
 } from "./migration.js";
 import { exportBackup, importBackup } from "./backup.js";
-import { mapSiteLinks, openSiteLinksModal, closeSiteLinksModal, saveSiteLinks } from "./siteLinks.js";
+import { mapSiteLinks, populateSiteLinksForm, saveSiteLinks } from "./siteLinks.js";
 import { mapNewsItem, openNewsModal, closeNewsModal, saveNews, deleteNews } from "./news.js";
 import { doLogin, doLogout } from "./auth.js";
 import "./gvg.js";
@@ -126,6 +126,46 @@ function switchTab(tab) {
   document.querySelectorAll(".tab").forEach((el) => el.classList.toggle("active", el.dataset.tab === tab));
   document.querySelectorAll(".panel").forEach((panel) => panel.classList.remove("active"));
   document.getElementById("panel-" + tab).classList.add("active");
+  if (tab === "sitelinks") populateSiteLinksForm();
+  renderAll();
+}
+
+// =====================================================================
+// PANEL KATMANI (Veri Paneli / Site Editörü) — giriş sonrası önce bir
+// seçim ekranı gösterilir, "data"/"site" seçildikten sonra ilgili sekme
+// çubuğu ve panelleri görünür olur. state.panelMode her yeni girişte
+// null'a döner (bkz. auth.js -> updateGateVisibility), ama bu ekranın
+// kendisi (renderPanelMode) her renderAll() çağrısında sadece MEVCUT
+// panelMode'u DOM'a uygular — realtime/yoklama güncellemeleri admin
+// başka bir sekmedeyken onu seçim ekranına GERİ ATMAZ.
+// =====================================================================
+function renderPanelMode() {
+  const chooser = document.getElementById("panelChooser");
+  if (!chooser) return; // panelWrap henüz DOM'a hiç render edilmemiş olabilir
+  const dataTabs = document.getElementById("dataTabs");
+  const siteTabs = document.getElementById("siteTabs");
+  const statsRow = document.getElementById("statsRow");
+  const dataOnlyActions = document.getElementById("dataOnlyActions");
+  const backBtn = document.getElementById("backToChooserBtn");
+  const isData = state.panelMode === "data";
+  const isSite = state.panelMode === "site";
+  chooser.style.display = state.panelMode ? "none" : "";
+  dataTabs.style.display = isData ? "" : "none";
+  siteTabs.style.display = isSite ? "" : "none";
+  statsRow.style.display = isData ? "" : "none";
+  dataOnlyActions.style.display = isData ? "contents" : "none";
+  backBtn.style.display = state.panelMode ? "" : "none";
+}
+registerRenderer(renderPanelMode);
+
+function selectPanelMode(mode) {
+  state.panelMode = mode;
+  switchTab(mode === "data" ? "members" : "sitelinks");
+}
+
+function backToChooser() {
+  state.panelMode = null;
+  document.querySelectorAll(".panel").forEach((panel) => panel.classList.remove("active"));
   renderAll();
 }
 
@@ -161,8 +201,9 @@ Object.assign(window, {
   renderMigration, setMigrationSort, openProspectModal, closeProspectModal, saveProspect, deleteProspect, approveProspect,
   selectMigrationPeriod, openPeriodModal, closePeriodModal, savePeriod, deletePeriod,
   processLead, dismissLead,
-  openSiteLinksModal, closeSiteLinksModal, saveSiteLinks,
+  saveSiteLinks,
   openNewsModal, closeNewsModal, saveNews, deleteNews,
+  selectPanelMode, backToChooser,
   doLogin, doLogout
 });
 

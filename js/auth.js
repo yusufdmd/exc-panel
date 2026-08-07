@@ -63,6 +63,7 @@ function updateGateVisibility() {
     wrap.style.display = "";
     if (!panelUnlocked) {
       panelUnlocked = true;
+      state.panelMode = null; // her yeni girişte "Veri Paneli / Site Editörü" seçim ekranından başlasın
       reloadAllData();
     }
   } else {
