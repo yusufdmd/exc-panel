@@ -161,6 +161,19 @@ section{ padding:88px 24px; }
 .about-card h3{ font-family:var(--font-display); font-size:16px; letter-spacing:0.3px; color:var(--gold-soft); margin-bottom:8px; }
 .about-card p{ color:var(--text-muted); font-size:13.5px; line-height:1.7; }
 
+/* Haberler / News */
+.news-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; max-width:1180px; margin:0 auto; }
+.news-card{
+  background:var(--bg-panel); border:1px solid var(--line); border-radius:14px; overflow:hidden;
+  transition: border-color .15s, transform .15s;
+}
+.news-card:hover{ border-color:rgba(224,166,58,0.4); transform:translateY(-3px); }
+.news-card img{ width:100%; height:160px; object-fit:cover; display:block; }
+.news-card-body{ padding:18px 20px; }
+.news-card .news-date{ font-size:11px; font-weight:700; letter-spacing:0.6px; text-transform:uppercase; color:var(--gold-soft); margin-bottom:8px; }
+.news-card h3{ font-family:var(--font-display); font-size:15px; letter-spacing:0.2px; margin-bottom:8px; }
+.news-card p{ color:var(--text-muted); font-size:13px; line-height:1.6; }
+
 /* ---------------------------------------------------------------------
    Göçe Katıl formu
    --------------------------------------------------------------------- */
@@ -212,7 +225,7 @@ footer{ border-top:1px solid var(--line); padding:36px 24px; }
   .nav-links a{ padding:14px 0; border-bottom:1px solid var(--line); }
   .nav-links a:last-child{ border-bottom:none; }
   .nav-toggle{ display:block; }
-  .about-grid{ grid-template-columns:1fr; }
+  .about-grid, .news-grid{ grid-template-columns:1fr; }
   .stats-strip{ grid-template-columns:repeat(2, 1fr); }
   .lead-form .row{ grid-template-columns:1fr; }
   section{ padding:64px 18px; }

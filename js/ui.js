@@ -54,6 +54,7 @@ export const state = {
   migrationLeads: [], // genel tanıtım sitesindeki formdan gelen, henüz işlenmemiş ham başvurular
   pendingLeadProcessingId: null, // "İşle" ile aday ekleme formuna gidilirken hangi başvurunun dönüştürüldüğünü hatırlar (bkz. migration.js -> saveProspect)
   siteLinks: { discordUrl: "", youtubeUrl: "", instagramUrl: "" }, // genel tanıtım sitesindeki Discord/YouTube/Instagram linkleri (bkz. siteLinks.js)
+  news: [], // ana sayfadaki "Haberler" bölümünün içeriği (bkz. news.js)
   migrationSortKey: "color",
   migrationSortDir: -1, // -1: varsayılan görünümde Altın üstte, Griye doğru azalan sıra
   currentTab: "members",
@@ -142,6 +143,12 @@ const DICT = {
     siteLinksBtn:'Site Linkleri', siteLinksTitle:'Site Linkleri', siteLinksDesc:'Bu linkler genel tanıtım sitesinde (ana sayfa) kullanılır.',
     lblDiscordUrl:'Discord Davet Linki', lblYoutubeUrl:'YouTube Kanal Linki', lblInstagramUrl:'Instagram Linki',
     toastSiteLinksSaved:'Site linkleri kaydedildi.',
+    tabNews:'Haberler', addNews:'+ Haber Ekle', newsAddTitle:'Haber Ekle', newsEditTitle:'Haberi Düzenle',
+    lblNewsTitle:'Başlık', lblNewsBody:'İçerik', lblNewsDate:'Tarih', lblNewsImage:'Resim',
+    newsTitleRequired:'Haber başlığı gerekli.', toastNewsSaved:'Haber kaydedildi.', toastNewsDeleted:'Haber silindi.',
+    confirmDeleteNews:'Bu haberi silmek istediğinize emin misiniz?',
+    emptyNewsTitle:'Henüz haber yok', emptyNewsDesc:'"+ Haber Ekle" ile ilk haberi ekle.',
+    thNewsImage:'Resim', thNewsTitle:'Başlık', thNewsDate:'Tarih',
     processLeadTitle:'Aday Olarak İşle', confirmDismissLead:'Bu başvuruyu reddetmek/silmek istediğinize emin misiniz?',
     toastLeadDismissed:'Başvuru silindi.',
     statMigrationTotal:'Toplam Aday', migrationStatusCertain:'Kesin', migrationStatusUncertain:'Belirsiz',
@@ -206,6 +213,12 @@ const DICT = {
     siteLinksBtn:'Site Links', siteLinksTitle:'Site Links', siteLinksDesc:'These links are used on the public landing page (home page).',
     lblDiscordUrl:'Discord Invite Link', lblYoutubeUrl:'YouTube Channel Link', lblInstagramUrl:'Instagram Link',
     toastSiteLinksSaved:'Site links saved.',
+    tabNews:'News', addNews:'+ Add News', newsAddTitle:'Add News', newsEditTitle:'Edit News',
+    lblNewsTitle:'Title', lblNewsBody:'Body', lblNewsDate:'Date', lblNewsImage:'Image',
+    newsTitleRequired:'News title is required.', toastNewsSaved:'News saved.', toastNewsDeleted:'News deleted.',
+    confirmDeleteNews:'Are you sure you want to delete this news item?',
+    emptyNewsTitle:'No news yet', emptyNewsDesc:'Use "+ Add News" to add the first news item.',
+    thNewsImage:'Image', thNewsTitle:'Title', thNewsDate:'Date',
     processLeadTitle:'Process as Candidate', confirmDismissLead:'Are you sure you want to dismiss/delete this request?',
     toastLeadDismissed:'Request deleted.',
     statMigrationTotal:'Total Candidates', migrationStatusCertain:'Certain', migrationStatusUncertain:'Uncertain',
@@ -270,6 +283,12 @@ const DICT = {
     siteLinksBtn:'Website-Links', siteLinksTitle:'Website-Links', siteLinksDesc:'Diese Links werden auf der öffentlichen Startseite verwendet.',
     lblDiscordUrl:'Discord-Einladungslink', lblYoutubeUrl:'YouTube-Kanal-Link', lblInstagramUrl:'Instagram-Link',
     toastSiteLinksSaved:'Website-Links gespeichert.',
+    tabNews:'Neuigkeiten', addNews:'+ Neuigkeit hinzufügen', newsAddTitle:'Neuigkeit hinzufügen', newsEditTitle:'Neuigkeit bearbeiten',
+    lblNewsTitle:'Titel', lblNewsBody:'Inhalt', lblNewsDate:'Datum', lblNewsImage:'Bild',
+    newsTitleRequired:'Ein Titel ist erforderlich.', toastNewsSaved:'Neuigkeit gespeichert.', toastNewsDeleted:'Neuigkeit gelöscht.',
+    confirmDeleteNews:'Diese Neuigkeit wirklich löschen?',
+    emptyNewsTitle:'Noch keine Neuigkeiten', emptyNewsDesc:'Mit "+ Neuigkeit hinzufügen" die erste anlegen.',
+    thNewsImage:'Bild', thNewsTitle:'Titel', thNewsDate:'Datum',
     processLeadTitle:'Als Kandidat bearbeiten', confirmDismissLead:'Diese Anfrage wirklich ablehnen/löschen?',
     toastLeadDismissed:'Anfrage gelöscht.',
     statMigrationTotal:'Kandidaten gesamt', migrationStatusCertain:'Sicher', migrationStatusUncertain:'Unsicher',
@@ -334,6 +353,12 @@ const DICT = {
     siteLinksBtn:'Enlaces del Sitio', siteLinksTitle:'Enlaces del Sitio', siteLinksDesc:'Estos enlaces se usan en la página principal pública.',
     lblDiscordUrl:'Enlace de invitación a Discord', lblYoutubeUrl:'Enlace del canal de YouTube', lblInstagramUrl:'Enlace de Instagram',
     toastSiteLinksSaved:'Enlaces del sitio guardados.',
+    tabNews:'Noticias', addNews:'+ Añadir noticia', newsAddTitle:'Añadir noticia', newsEditTitle:'Editar noticia',
+    lblNewsTitle:'Título', lblNewsBody:'Contenido', lblNewsDate:'Fecha', lblNewsImage:'Imagen',
+    newsTitleRequired:'El título de la noticia es obligatorio.', toastNewsSaved:'Noticia guardada.', toastNewsDeleted:'Noticia eliminada.',
+    confirmDeleteNews:'¿Seguro que quieres eliminar esta noticia?',
+    emptyNewsTitle:'Aún no hay noticias', emptyNewsDesc:'Usa "+ Añadir noticia" para agregar la primera.',
+    thNewsImage:'Imagen', thNewsTitle:'Título', thNewsDate:'Fecha',
     processLeadTitle:'Procesar como Candidato', confirmDismissLead:'¿Seguro que quieres rechazar/eliminar esta solicitud?',
     toastLeadDismissed:'Solicitud eliminada.',
     statMigrationTotal:'Total de candidatos', migrationStatusCertain:'Seguro', migrationStatusUncertain:'Incierto',
@@ -398,6 +423,12 @@ const DICT = {
     siteLinksBtn:'Liens du Site', siteLinksTitle:'Liens du Site', siteLinksDesc:'Ces liens sont utilisés sur la page d\'accueil publique.',
     lblDiscordUrl:"Lien d'invitation Discord", lblYoutubeUrl:'Lien de la chaîne YouTube', lblInstagramUrl:'Lien Instagram',
     toastSiteLinksSaved:'Liens du site enregistrés.',
+    tabNews:'Actualités', addNews:'+ Ajouter une actualité', newsAddTitle:'Ajouter une actualité', newsEditTitle:"Modifier l'actualité",
+    lblNewsTitle:'Titre', lblNewsBody:'Contenu', lblNewsDate:'Date', lblNewsImage:'Image',
+    newsTitleRequired:"Le titre de l'actualité est requis.", toastNewsSaved:'Actualité enregistrée.', toastNewsDeleted:'Actualité supprimée.',
+    confirmDeleteNews:'Voulez-vous vraiment supprimer cette actualité ?',
+    emptyNewsTitle:"Aucune actualité pour le moment", emptyNewsDesc:'Utilisez "+ Ajouter une actualité" pour ajouter la première.',
+    thNewsImage:'Image', thNewsTitle:'Titre', thNewsDate:'Date',
     processLeadTitle:'Traiter comme Candidat', confirmDismissLead:'Voulez-vous vraiment rejeter/supprimer cette demande ?',
     toastLeadDismissed:'Demande supprimée.',
     statMigrationTotal:'Total des candidats', migrationStatusCertain:'Certain', migrationStatusUncertain:'Incertain',
@@ -597,6 +628,19 @@ export function applyStaticText() {
   document.getElementById("t_lblInstagramUrl").textContent = t("lblInstagramUrl");
   document.getElementById("t_cancel7").textContent = t("cancel");
   document.getElementById("t_save7").textContent = t("save");
+  document.getElementById("t_tabNews").textContent = t("tabNews");
+  document.getElementById("t_addNews").textContent = t("addNews");
+  document.getElementById("t_thNewsImage").textContent = t("thNewsImage");
+  document.getElementById("t_thNewsTitle").textContent = t("thNewsTitle");
+  document.getElementById("t_thNewsDate").textContent = t("thNewsDate");
+  document.getElementById("t_emptyNewsTitle").textContent = t("emptyNewsTitle");
+  document.getElementById("t_emptyNewsDesc").textContent = t("emptyNewsDesc");
+  document.getElementById("t_lblNewsTitle").textContent = t("lblNewsTitle");
+  document.getElementById("t_lblNewsBody").textContent = t("lblNewsBody");
+  document.getElementById("t_lblNewsDate").textContent = t("lblNewsDate");
+  document.getElementById("t_lblNewsImage").textContent = t("lblNewsImage");
+  document.getElementById("t_cancel8").textContent = t("cancel");
+  document.getElementById("t_save8").textContent = t("save");
   document.getElementById("t_thLeadServer2").textContent = t("thServer");
   document.getElementById("t_thLeadPower2").textContent = t("thPower");
   document.getElementById("t_thLeadMessage").textContent = t("thLeadMessage");

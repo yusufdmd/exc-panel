@@ -395,6 +395,58 @@ export async function updateSiteLinks(payload) {
 }
 
 // =====================================================================
+// NEWS — ana sayfadaki "Haberler" bölümü. getNews herkese açıktır; diğerleri
+// admin oturumu gerektirir. Resimler Supabase Storage'a (news-images
+// bucket'ı) yüklenir, veritabanında sadece herkese açık URL tutulur.
+// =====================================================================
+export async function getNews() {
+  const { data, error } = await supabase
+    .from("news")
+    .select("*")
+    .order("published_at", { ascending: false })
+    .order("created_at", { ascending: false });
+  if (error) dbError("Haberler alınamadı", error);
+  return data;
+}
+
+export async function createNews(payload) {
+  const { data, error } = await supabase
+    .from("news")
+    .insert(payload)
+    .select()
+    .single();
+  if (error) dbError("Haber eklenemedi", error);
+  return data;
+}
+
+export async function updateNews(id, payload) {
+  const { data, error } = await supabase
+    .from("news")
+    .update(payload)
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) dbError("Haber güncellenemedi", error);
+  return data;
+}
+
+export async function deleteNews(id) {
+  const { error } = await supabase.from("news").delete().eq("id", id);
+  if (error) dbError("Haber silinemedi", error);
+  return true;
+}
+
+/** Haber resmini Supabase Storage'a ("news-images" bucket'ı) yükler ve herkese açık URL'ini döndürür. */
+export async function uploadNewsImage(file) {
+  const fileExt = (file.name.split(".").pop() || "jpg").toLowerCase();
+  const filePath = `${crypto.randomUUID()}.${fileExt}`;
+  const { error: uploadError } = await supabase.storage.from("news-images").upload(filePath, file);
+  if (uploadError) dbError("Resim yüklenemedi", uploadError);
+  const { data } = supabase.storage.from("news-images").getPublicUrl(filePath);
+  return data.publicUrl;
+}
+
+// =====================================================================
 // USERS — Liderler
 // =====================================================================
 export async function getUsers() {

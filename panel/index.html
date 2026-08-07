@@ -72,6 +72,7 @@
     <div class="tab" data-tab="events" onclick="switchTab('events')" id="t_tabEvents">Etkinlikler</div>
     <div class="tab" data-tab="board" onclick="switchTab('board')" id="t_tabBoard">Puan Sıralaması</div>
     <div class="tab" data-tab="migration" onclick="switchTab('migration')" id="t_tabMigration">Göç</div>
+    <div class="tab" data-tab="news" onclick="switchTab('news')" id="t_tabNews">Haberler</div>
   </div>
 
   <!-- MEMBERS -->
@@ -265,6 +266,30 @@
     </div>
   </div>
 
+  <!-- NEWS -->
+  <div class="panel" id="panel-news">
+    <div class="toolbar">
+      <button class="btn-primary admin-only" onclick="openNewsModal()" id="t_addNews">+ Haber Ekle</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th id="t_thNewsImage">Resim</th>
+            <th id="t_thNewsTitle">Başlık</th>
+            <th id="t_thNewsDate">Tarih</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="newsRows"></tbody>
+      </table>
+      <div class="empty-state" id="newsEmpty" style="display:none;">
+        <h3 id="t_emptyNewsTitle">Henüz haber yok</h3>
+        <p id="t_emptyNewsDesc">"+ Haber Ekle" ile ilk haberi ekle.</p>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- Member Modal -->
@@ -395,6 +420,28 @@
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closeSiteLinksModal()" id="t_cancel7">Vazgeç</button>
       <button class="btn-primary" onclick="saveSiteLinks()" id="t_save7">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- News Modal (create/edit) -->
+<div class="overlay" id="newsOverlay">
+  <div class="modal">
+    <h2 id="newsModalTitle">Haber Ekle</h2>
+    <input type="hidden" id="newsEditId">
+    <div class="field"><label id="t_lblNewsTitle">Başlık</label><input id="nTitle"></div>
+    <div class="field"><label id="t_lblNewsBody">İçerik</label><textarea id="nBody" rows="4"></textarea></div>
+    <div class="field"><label id="t_lblNewsDate">Tarih</label><input id="nDate" type="date"></div>
+    <div class="field">
+      <label id="t_lblNewsImage">Resim</label>
+      <input id="nImageFile" type="file" accept="image/*">
+      <div id="nImagePreviewWrap" style="margin-top:8px; display:none;">
+        <img id="nImagePreview" style="max-width:160px; max-height:160px; border-radius:8px; object-fit:cover;">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeNewsModal()" id="t_cancel8">Vazgeç</button>
+      <button class="btn-primary" onclick="saveNews()" id="t_save8">Kaydet</button>
     </div>
   </div>
 </div>

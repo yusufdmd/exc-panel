@@ -19,7 +19,18 @@
 // bu kasıtlı bir fark, bu yüzden localStorage anahtarları da ayrıdır).
 // =====================================================================
 
-import { getActiveMemberCount, getSiteLinks, createMigrationLead } from "./database.js";
+import { getActiveMemberCount, getSiteLinks, getNews, createMigrationLead } from "./database.js";
+
+/** Kullanıcıdan gelen metni (haber başlığı/içeriği) HTML içine güvenle basmak için kaçış uygular. */
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (char) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  }[char]));
+}
 
 const LANGUAGE_STORAGE_KEY = "exc-landing-lang";
 const DEFAULT_LANGUAGE = "en";
@@ -44,6 +55,7 @@ const DICT = {
     submitBtn: "Submit Application",
     msgNameRequired: "Please enter your username.", msgSending: "Sending…",
     msgSuccess: "Your application has been received! We'll be in touch soon.", msgError: "Something went wrong, please try again.",
+    newsTag: "News", newsSectionTitle: "Latest News",
     mediaTag: "Media", mediaTitle: "Our YouTube Channel", mediaDesc: "Check out our channel for event recaps, guides, and more.", mediaBtn: "Go to Channel"
   },
   tr: {
@@ -63,6 +75,7 @@ const DICT = {
     submitBtn: "Başvuruyu Gönder",
     msgNameRequired: "Lütfen kullanıcı adınızı girin.", msgSending: "Gönderiliyor…",
     msgSuccess: "Başvurunuz alındı! En kısa sürede sizinle iletişime geçeceğiz.", msgError: "Bir hata oluştu, lütfen tekrar deneyin.",
+    newsTag: "Haberler", newsSectionTitle: "Son Haberler",
     mediaTag: "Medya", mediaTitle: "YouTube Kanalımız", mediaDesc: "Etkinlik özetleri, rehberler ve daha fazlası için kanalımıza göz atın.", mediaBtn: "Kanala Git"
   },
   de: {
@@ -82,6 +95,7 @@ const DICT = {
     submitBtn: "Bewerbung Senden",
     msgNameRequired: "Bitte gib deinen Benutzernamen ein.", msgSending: "Wird gesendet…",
     msgSuccess: "Deine Bewerbung ist eingegangen! Wir melden uns bald bei dir.", msgError: "Etwas ist schiefgelaufen, bitte versuche es erneut.",
+    newsTag: "Neuigkeiten", newsSectionTitle: "Aktuelle Neuigkeiten",
     mediaTag: "Medien", mediaTitle: "Unser YouTube-Kanal", mediaDesc: "Schau auf unserem Kanal vorbei für Event-Zusammenfassungen, Guides und mehr.", mediaBtn: "Zum Kanal"
   },
   es: {
@@ -101,6 +115,7 @@ const DICT = {
     submitBtn: "Enviar Solicitud",
     msgNameRequired: "Por favor, introduce tu nombre de usuario.", msgSending: "Enviando…",
     msgSuccess: "¡Tu solicitud ha sido recibida! Nos pondremos en contacto pronto.", msgError: "Algo salió mal, por favor inténtalo de nuevo.",
+    newsTag: "Noticias", newsSectionTitle: "Últimas Noticias",
     mediaTag: "Medios", mediaTitle: "Nuestro Canal de YouTube", mediaDesc: "Visita nuestro canal para ver resúmenes de eventos, guías y más.", mediaBtn: "Ir al Canal"
   },
   fr: {
@@ -120,6 +135,7 @@ const DICT = {
     submitBtn: "Envoyer la Candidature",
     msgNameRequired: "Veuillez saisir votre nom d'utilisateur.", msgSending: "Envoi en cours…",
     msgSuccess: "Votre candidature a été reçue ! Nous vous contacterons bientôt.", msgError: "Une erreur s'est produite, veuillez réessayer.",
+    newsTag: "Actualités", newsSectionTitle: "Dernières Actualités",
     mediaTag: "Médias", mediaTitle: "Notre Chaîne YouTube", mediaDesc: "Découvrez notre chaîne pour des récapitulatifs d'événements, des guides et plus encore.", mediaBtn: "Aller à la Chaîne"
   }
 };
@@ -188,6 +204,34 @@ async function loadStats() {
   } catch (error) {
     console.error("[Excellence] Üye sayısı alınamadı:", error);
     countEl.textContent = "—";
+  }
+}
+
+/** "Haberler" bölümünü doldurur; hiç haber yoksa bölümü tamamen gizler. */
+async function loadNews() {
+  const section = document.getElementById("haberler");
+  const grid = document.getElementById("newsGrid");
+  if (!section || !grid) return;
+  try {
+    const items = await getNews();
+    if (!items.length) {
+      section.style.display = "none";
+      return;
+    }
+    grid.innerHTML = items.slice(0, 6).map((item) => `
+      <div class="news-card">
+        ${item.image_url ? `<img src="${escapeHtml(item.image_url)}" alt="">` : ""}
+        <div class="news-card-body">
+          <div class="news-date">${escapeHtml(item.published_at || "")}</div>
+          <h3>${escapeHtml(item.title)}</h3>
+          ${item.body ? `<p>${escapeHtml(item.body)}</p>` : ""}
+        </div>
+      </div>
+    `).join("");
+    section.style.display = "";
+  } catch (error) {
+    console.error("[Excellence] Haberler alınamadı:", error);
+    section.style.display = "none";
   }
 }
 
@@ -262,3 +306,4 @@ document.getElementById("navToggle").addEventListener("click", () => {
 initLang();
 loadStats();
 loadSiteLinks();
+loadNews();
