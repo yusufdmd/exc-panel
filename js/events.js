@@ -150,13 +150,10 @@ export function renderEntryRows() {
   const week = store.weeks.find((w) => w.id === weekId);
   const query = (document.getElementById("entrySearch").value || "").toLowerCase().trim();
   let list = filteredSortedMembers().filter((m) => !query || m.name.toLowerCase().includes(query) || String(m.gameId).toLowerCase().includes(query));
-  // GVG dışındaki türlerde, henüz kaydı olmayan muaf üyeler (yeni katılan/kullanıcısı değişen)
-  // toplu giriş listesinde HİÇ gösterilmez — aksi halde "Kaydet" ile hepsine varsayılan
-  // (unknown/0) gerçek bir kayıt yazılır ve muafiyet bir daha geri gelmez. GVG'de zaten
-  // muaf kavramı yok (bkz. gvgCellInfo), bu yüzden orada filtrelenmez.
-  if (type !== "gvg") {
-    list = list.filter((member) => !isExempt(member, week) || store.entries.some((e) => e.memberId === member.id && e.weekId === weekId));
-  }
+  // Henüz kaydı olmayan muaf üyeler (yeni katılan/kullanıcısı değişen) toplu giriş
+  // listesinde HİÇ gösterilmez — aksi halde "Kaydet" ile hepsine varsayılan
+  // (unknown/0) gerçek bir kayıt yazılır ve muafiyet bir daha geri gelmez.
+  list = list.filter((member) => !isExempt(member, week) || store.entries.some((e) => e.memberId === member.id && e.weekId === weekId));
   const rowsEl = document.getElementById("entryRows");
 
   if (type === "svs" || type === "other") {

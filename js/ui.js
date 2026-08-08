@@ -842,12 +842,12 @@ export function attendanceCellInfo(store, member, week) {
 }
 
 /** GVG türü bir hücrenin (üye × hafta) rengini ve metnini hesaplar. */
-// GVG'de "muaf" veya "kayıt yok" diye bir ara durum yoktur: bir hafta için hiç
-// kayıt girilmemişse, o hafta hiç aktif olunmadığı/oyuna girilmediği kabul
-// edilir ve 0 puan girilmiş gibi işlem görür (renk eşiği zaten 0'ı otomatik
-// kırmızı yapar, ayrı bir kural gerekmez).
+// Bir hafta için hiç kayıt girilmemişse ve üye o hafta henüz katılmamışsa
+// (bkz. isExempt) muaf sayılır (diğer etkinlik türleriyle aynı kural).
+// Katılmış olup kayıt girilmemişse 0 puan girilmiş gibi işlem görür.
 export function gvgCellInfo(store, member, week) {
   const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === week.id);
+  if (!entry && isExempt(member, week)) return { cls: "pill-gray", text: t("exemptLabel") };
   const points = entry ? (Number(entry.points) || 0) : 0;
   return { cls: gvgColorClass(points), text: String(points) };
 }
