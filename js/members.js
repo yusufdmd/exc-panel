@@ -30,6 +30,7 @@ import {
   elementBadge,
   buildElementPicker,
   setElementPickerActive,
+  renderElementFilter,
   gvgCellInfo,
   ssCellInfo,
   svsOtherCellInfo,
@@ -106,12 +107,14 @@ function renderStats() {
 // =====================================================================
 export function renderMembers() {
   renderStats();
+  renderElementFilter();
   const query = (document.getElementById("memberSearch").value || "").toLowerCase().trim();
   const list = state.members.filter((member) => {
     const matchesView = memberCategory(member) === state.memberView;
     const matchesRank = state.rankFilter === "ALL" || member.rank === state.rankFilter;
+    const matchesElement = state.elementFilter === "ALL" || member.teamElement === state.elementFilter;
     const matchesQuery = !query || (member.name || "").toLowerCase().includes(query) || String(member.gameId || "").toLowerCase().includes(query);
-    return matchesView && matchesRank && matchesQuery;
+    return matchesView && matchesRank && matchesElement && matchesQuery;
   });
 
   list.sort((a, b) => {
@@ -166,6 +169,12 @@ export function setMemberView(view) {
 export function setRankFilter(rank) {
   state.rankFilter = rank;
   document.querySelectorAll(".filter-chip").forEach((el) => el.classList.toggle("active", el.dataset.rank === rank));
+  renderMembers();
+}
+
+/** Element filtre rozetlerinden birine tıklanınca çağrılır; zaten seçiliyse tekrar tıklamak filtreyi kaldırır (Tümü). */
+export function setElementFilter(element) {
+  state.elementFilter = state.elementFilter === element ? "ALL" : element;
   renderMembers();
 }
 

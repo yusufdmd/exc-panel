@@ -64,6 +64,7 @@ export const state = {
   currentLang: DEFAULT_LANGUAGE,
   memberView: "active",
   rankFilter: "ALL",
+  elementFilter: "ALL", // "ALL" | "water" | "fire" | "earth" | "electric" (bkz. members.js -> setElementFilter)
   sortKey: "rank",
   sortDir: -1, // -1: varsayılan görünümde R5 üstte, R1'e doğru azalan sıra
   oldFlag: false,
@@ -979,6 +980,15 @@ export function setElementPickerActive(element) {
   document.querySelectorAll("#elementPicker .element-opt").forEach((el) => {
     el.classList.toggle("active", el.dataset.el === element);
   });
+}
+
+/** Üye tablosu araç çubuğundaki element filtre rozetlerini state.elementFilter'a göre (yeniden) çizer. */
+export function renderElementFilter() {
+  const container = document.getElementById("elementFilterRow");
+  if (!container) return;
+  container.innerHTML = ELEMENTS.map((el) =>
+    `<div class="element-opt ${state.elementFilter === el ? "active" : ""}" data-el="${el}" onclick="setElementFilter('${el}')" title="${elementLabel(el)}">${elementBadge(el, 26)}</div>`
+  ).join("");
 }
 
 export { ELEMENTS };
