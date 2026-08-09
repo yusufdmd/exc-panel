@@ -347,12 +347,17 @@ export async function saveMember() {
       if (state.oldFlag && !previous.isOld) oldSince = todayStr();
       if (!state.oldFlag) oldSince = null;
 
+      const userChangedAt = document.getElementById("fUserChangedAt").value || null;
+      // "Kullanıcı Değişti" bu kayıtta İLK KEZ işaretlendiyse (markUserChanged() ile
+      // fUserChangedAt bu oturumda değiştiyse), isim değişikliği "aynı kişi adını
+      // değiştirdi" değil, "hesabı yeni biri devraldı" anlamına gelir — bu iki durum
+      // oyuncu kartında ayrı gösterilir (bkz. buildNameHistoryHtml).
+      const userChangedJustSet = !!userChangedAt && userChangedAt !== (previous.userChangedAt ? previous.userChangedAt.slice(0, 10) : null);
+
       const nameHistory = Array.isArray(previous.nameHistory) ? [...previous.nameHistory] : [];
       if (previous.name && previous.name !== name) {
-        nameHistory.push({ name: previous.name, changedAt: todayStr() });
+        nameHistory.push({ name: previous.name, changedAt: todayStr(), type: userChangedJustSet ? "userChanged" : "renamed" });
       }
-
-      const userChangedAt = document.getElementById("fUserChangedAt").value || null;
 
       const row = await updateMember(editId, {
         name: name || null, game_id: gameId || null, rank, power, camp_level: campLevel,
@@ -539,13 +544,32 @@ function buildEventSummaryHtml(member) {
 }
 
 /** Bir üyenin eski kullanıcı adlarını (varsa) "Ad (tarih), Ad (tarih)" biçiminde listeler. */
+/**
+ * Aynı kişinin kendi adını değiştirmesi ("renamed") ile hesabın başka birine
+ * geçmesi ("userChanged", bkz. saveMember) ayrı gösterilir — ikincisi "aynı
+ * kişinin adı değişmiş" gibi bir yanılgıya yol açmasın diye farklı etiketle.
+ * Eski (tip bilgisi olmayan) kayıtlar geriye dönük uyumluluk için "renamed" sayılır.
+ */
 function buildNameHistoryHtml(member) {
   if (!Array.isArray(member.nameHistory) || !member.nameHistory.length) return "";
-  const items = member.nameHistory.map((entry) => `${escapeHtml(entry.name)} (${entry.changedAt})`).join(", ");
-  return `<div style="margin-bottom:14px; font-size:12px; color:var(--text-muted);">
-    <span style="text-transform:uppercase; letter-spacing:0.5px; color:var(--text-dim);">${t("previousNames")}:</span>
-    ${items}
-  </div>`;
+  const renamed = member.nameHistory.filter((entry) => (entry.type || "renamed") === "renamed");
+  const userChanged = member.nameHistory.filter((entry) => entry.type === "userChanged");
+  let html = "";
+  if (renamed.length) {
+    const items = renamed.map((entry) => `${escapeHtml(entry.name)} (${entry.changedAt})`).join(", ");
+    html += `<div style="margin-bottom:8px; font-size:12px; color:var(--text-muted);">
+      <span style="text-transform:uppercase; letter-spacing:0.5px; color:var(--text-dim);">${t("previousNames")}:</span>
+      ${items}
+    </div>`;
+  }
+  if (userChanged.length) {
+    const items = userChanged.map((entry) => `${escapeHtml(entry.name)} (${entry.changedAt})`).join(", ");
+    html += `<div style="margin-bottom:8px; font-size:12px; color:var(--warn);">
+      <span style="text-transform:uppercase; letter-spacing:0.5px;">${t("userChangedHistoryLabel")}:</span>
+      ${items}
+    </div>`;
+  }
+  return html;
 }
 
 export function openHistoryModal(id) {
