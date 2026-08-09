@@ -200,7 +200,7 @@ const DICT = {
     emailPasswordRequired:'Kullanıcı adı ve şifre gerekli.', viewOnlyLabel:'Salt okunur',
     previousNames:'Önceki Kullanıcı Adları',
     lblUserChanged:'Kullanıcı Değişikliği', userChangedBtn:'🔄 Kullanıcı Değişti',
-    confirmUserChanged:'Bu hesabı bugün itibariyle yeni bir kullanıcının devraldığını işaretlemek istiyor musunuz? Bu tarihten önceki etkinlik haftaları bu üye için otomatik olarak muaf sayılacak.',
+    confirmUserChanged:'Bu hesabı bugün itibariyle yeni bir kullanıcının devraldığını işaretlemek istiyor musunuz? Bu tarihten önceki etkinlik haftaları bu üye için otomatik olarak muaf sayılacak. Devam ederseniz kullanıcı adı alanı temizlenecek — yeni kullanıcının adını girip Kaydet\'e basmayı unutmayın (güç seviyesi değiştiyse onu da güncelleyebilirsiniz).',
     userChangedStagedLabel:'Kullanıcı değişikliği',
     subMigratedMembers:'Göç Edenler', lblMigratedTo:'Göç Ettiği Sunucu',
     lblMigrated:'Başka sunucuya göç etti', migratedTag:'Göç Etti',
@@ -279,7 +279,7 @@ const DICT = {
     emailPasswordRequired:'Username and password are required.', viewOnlyLabel:'View only',
     previousNames:'Previous Usernames',
     lblUserChanged:'User Change', userChangedBtn:'🔄 User Changed',
-    confirmUserChanged:'Mark this account as taken over by a new user as of today? Event weeks before this date will automatically be treated as exempt for this member.',
+    confirmUserChanged:'Mark this account as taken over by a new user as of today? Event weeks before this date will automatically be treated as exempt for this member. If you continue, the username field will be cleared — don\'t forget to enter the new user\'s name before saving (update power level too if it changed).',
     userChangedStagedLabel:'User changed',
     subMigratedMembers:'Migrated Members', lblMigratedTo:'Migrated To Server',
     lblMigrated:'Migrated to another server', migratedTag:'Migrated',
@@ -358,7 +358,7 @@ const DICT = {
     emailPasswordRequired:'Benutzername und Passwort sind erforderlich.', viewOnlyLabel:'Nur Ansicht',
     previousNames:'Frühere Benutzernamen',
     lblUserChanged:'Nutzerwechsel', userChangedBtn:'🔄 Nutzer gewechselt',
-    confirmUserChanged:'Soll dieses Konto ab heute als von einem neuen Nutzer übernommen markiert werden? Event-Wochen vor diesem Datum gelten für dieses Mitglied automatisch als befreit.',
+    confirmUserChanged:'Soll dieses Konto ab heute als von einem neuen Nutzer übernommen markiert werden? Event-Wochen vor diesem Datum gelten für dieses Mitglied automatisch als befreit. Wenn Sie fortfahren, wird das Benutzername-Feld geleert — vergessen Sie nicht, den Namen des neuen Nutzers einzugeben, bevor Sie speichern (aktualisieren Sie bei Bedarf auch die Machtstufe).',
     userChangedStagedLabel:'Nutzerwechsel',
     subMigratedMembers:'Abgewanderte Mitglieder', lblMigratedTo:'Migriert zu Server',
     lblMigrated:'Zu einem anderen Server abgewandert', migratedTag:'Abgewandert',
@@ -437,7 +437,7 @@ const DICT = {
     emailPasswordRequired:'Nombre de usuario y contraseña son obligatorios.', viewOnlyLabel:'Solo lectura',
     previousNames:'Nombres de usuario anteriores',
     lblUserChanged:'Cambio de Usuario', userChangedBtn:'🔄 Usuario Cambiado',
-    confirmUserChanged:'¿Marcar esta cuenta como asumida por un nuevo usuario a partir de hoy? Las semanas de eventos anteriores a esta fecha se considerarán automáticamente exentas para este miembro.',
+    confirmUserChanged:'¿Marcar esta cuenta como asumida por un nuevo usuario a partir de hoy? Las semanas de eventos anteriores a esta fecha se considerarán automáticamente exentas para este miembro. Si continúa, el campo de nombre de usuario se borrará — no olvide ingresar el nombre del nuevo usuario antes de guardar (actualice también el nivel de poder si cambió).',
     userChangedStagedLabel:'Cambio de usuario',
     subMigratedMembers:'Miembros Migrados', lblMigratedTo:'Migró al Servidor',
     lblMigrated:'Migró a otro servidor', migratedTag:'Migró',
@@ -516,7 +516,7 @@ const DICT = {
     emailPasswordRequired:"Le nom d'utilisateur et le mot de passe sont requis.", viewOnlyLabel:'Lecture seule',
     previousNames:"Anciens noms d'utilisateur",
     lblUserChanged:"Changement d'utilisateur", userChangedBtn:'🔄 Utilisateur Changé',
-    confirmUserChanged:"Marquer ce compte comme repris par un nouvel utilisateur à partir d'aujourd'hui ? Les semaines d'événements antérieures à cette date seront automatiquement considérées comme exemptées pour ce membre.",
+    confirmUserChanged:"Marquer ce compte comme repris par un nouvel utilisateur à partir d'aujourd'hui ? Les semaines d'événements antérieures à cette date seront automatiquement considérées comme exemptées pour ce membre. Si vous continuez, le champ du nom d'utilisateur sera vidé — n'oubliez pas de saisir le nom du nouvel utilisateur avant d'enregistrer (mettez aussi à jour le niveau de puissance si besoin).",
     userChangedStagedLabel:"Changement d'utilisateur",
     subMigratedMembers:'Membres Migrés', lblMigratedTo:'Migré vers le Serveur',
     lblMigrated:'A migré vers un autre serveur', migratedTag:'A migré',
@@ -947,16 +947,21 @@ export function ratioStatus(store, member) {
   return { num: numerator, den: denominator };
 }
 
-/** SS türü bir üyenin katılım oranını (x/y) hesaplar; gerçek kaydı olan haftalar muaf sayılmaz. */
+/**
+ * SS türü bir üyenin katılım oranını (x/y) hesaplar. Sadece gerçekten bir
+ * gruba ATANMIŞ (kayıt yapılmış) haftalar orana dahil edilir — "Kayıt Yok"
+ * haftaları (hiç gruba atanmamış) ne payda ne pay olarak sayılır, çünkü o
+ * hafta üye için hiç bir katılım fırsatı/kararı yoktu.
+ */
 export function ratioSs(store, member) {
-  const applicableWeeks = store.weeks.filter((week) => {
+  const registeredWeeks = store.weeks.filter((week) => {
     const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === week.id);
-    return !!entry || !isExempt(member, week);
+    return !!(entry && entry.group);
   });
-  const denominator = applicableWeeks.length;
-  const numerator = applicableWeeks.filter((week) => {
+  const denominator = registeredWeeks.length;
+  const numerator = registeredWeeks.filter((week) => {
     const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === week.id);
-    return entry && entry.group && entry.attended;
+    return !!entry.attended;
   }).length;
   return { num: numerator, den: denominator };
 }

@@ -264,12 +264,21 @@ export function setTeamElement(element) {
   setElementPickerActive(next);
 }
 
-/** Hesabı bugün itibariyle yeni bir kullanıcının devraldığını işaretler (kayıt "Kaydet" ile onaylanana kadar sadece formda bekler). */
+/**
+ * Hesabı bugün itibariyle yeni bir kullanıcının devraldığını işaretler (kayıt
+ * "Kaydet" ile onaylanana kadar sadece formda bekler). Genellikle değişen tek
+ * bilgi kullanıcı adı olduğu için (ID değişemez, kamp seviyesi/güç zaten
+ * elle düzenlenebilir alanlar) kullanıcı adı alanı bilerek boşaltılıp
+ * odaklanır — admin yeni kullanıcının adını girmeye zorlanır.
+ */
 export function markUserChanged() {
   if (!confirm(t("confirmUserChanged"))) return;
   const today = todayStr();
   document.getElementById("fUserChangedAt").value = today;
   document.getElementById("userChangedStatus").textContent = t("userChangedStagedLabel") + ": " + today;
+  const nameField = document.getElementById("fName");
+  nameField.value = "";
+  nameField.focus();
 }
 
 /** Verilen rütbe için kontenjan doluysa uyarı metni, aksi halde null döndürür. Göç eden üyeler kontenjana sayılmaz. */
@@ -467,8 +476,21 @@ function buildHistoryChart(history) {
   </svg>`;
 }
 
-/** Bir üyenin SVS/GVG/SS/Diğer etkinlik özetini, tablolardakiyle aynı renk kurallarıyla üretir. */
+/** Bir üyenin "Kullanıcı Değişti" eşik tarihini ("YYYY-MM-DD") döndürür; hiç işaretlenmemişse katılma tarihini kullanır. */
+function memberThreshold(member) {
+  return (member.userChangedAt || member.joinedAt || "").slice(0, 10);
+}
+
+/**
+ * Bir üyenin SVS/GVG/SS/Diğer etkinlik özetini, tablolardakiyle aynı renk
+ * kurallarıyla üretir. Üyenin "Kullanıcı Değişti" eşik tarihinden ÖNCEKİ
+ * haftalar buraya hiç dahil edilmez — o veriler hesabı önceden kullanan
+ * kişiye ait olduğu için, güncel kullanıcının oyuncu kartında görünmesi
+ * yanıltıcı olur (haftalık tablolarda/Genel Rapor'da hâlâ görünürler,
+ * sadece bu kişisel özet kartından gizlenir).
+ */
 function buildEventSummaryHtml(member) {
+  const threshold = memberThreshold(member);
   const sections = [
     { key: "svs", store: state.svs, title: "SVS" },
     { key: "gvg", store: state.gvg, title: "GVG" },
@@ -477,28 +499,35 @@ function buildEventSummaryHtml(member) {
     { key: "other", store: state.other, title: t("subOther") }
   ];
   const html = sections.map(({ key, store, title }) => {
-    if (!store.weeks.length) return "";
+    const weeks = threshold ? store.weeks.filter((week) => !week.date || week.date >= threshold) : store.weeks;
+    if (!weeks.length) return "";
+    // sumGvgPoints/sumStatusPoints haftaya bakmadan doğrudan entries üzerinden toplar,
+    // bu yüzden entries de görünür haftalarla eşleşecek şekilde filtrelenmeli — yoksa
+    // eşik öncesi haftaların puanları toplama sızar (chip'lerde gizli olsalar bile).
+    const visibleWeekIds = new Set(weeks.map((w) => w.id));
+    const visibleEntries = store.entries.filter((e) => visibleWeekIds.has(e.weekId));
+    const visibleStore = { weeks, entries: visibleEntries };
     let summary;
     if (key === "gvg") {
-      summary = t("lbGvgTotal") + ": " + sumGvgPoints(store, member.id);
+      summary = t("lbGvgTotal") + ": " + sumGvgPoints(visibleStore, member.id);
     } else if (key === "ss") {
-      const ratio = ratioSs(store, member);
+      const ratio = ratioSs(visibleStore, member);
       summary = t("lbSsRatio") + ": " + formatRatio(ratio.num, ratio.den);
     } else if (key === "kod") {
-      const ratio = ratioStatus(store, member);
+      const ratio = ratioStatus(visibleStore, member);
       summary = t("lbKodRatio") + ": " + formatRatio(ratio.num, ratio.den);
     } else {
-      const ratio = ratioStatus(store, member);
-      const total = sumStatusPoints(store, member.id);
+      const ratio = ratioStatus(visibleStore, member);
+      const total = sumStatusPoints(visibleStore, member.id);
       const ratioLabel = key === "svs" ? t("lbSvsRatio") : t("lbOtherRatio");
       const totalLabel = key === "svs" ? t("lbSvsTotal") : t("lbOtherTotal");
       summary = ratioLabel + ": " + formatRatio(ratio.num, ratio.den) + " · " + totalLabel + ": " + total;
     }
-    const chips = store.weeks.map((week) => {
-      const info = key === "gvg" ? gvgCellInfo(store, member, week)
-        : key === "ss" ? ssCellInfo(store, member, week)
-        : key === "kod" ? attendanceCellInfo(store, member, week)
-        : svsOtherCellInfo(store, member, week);
+    const chips = weeks.map((week) => {
+      const info = key === "gvg" ? gvgCellInfo(visibleStore, member, week)
+        : key === "ss" ? ssCellInfo(visibleStore, member, week)
+        : key === "kod" ? attendanceCellInfo(visibleStore, member, week)
+        : svsOtherCellInfo(visibleStore, member, week);
       return `<span class="cell-pill ${info.cls}" style="margin:3px 4px 3px 0;" title="${escapeHtml(week.label)}">${escapeHtml(week.label)}: ${info.text}</span>`;
     }).join("");
     return `<div style="margin-bottom:14px;">
@@ -525,9 +554,15 @@ export function openHistoryModal(id) {
   if (!member) return;
   document.getElementById("historyTitle").textContent = t("powerHistory") + " — " + member.name;
   document.getElementById("historyNameHistoryWrap").innerHTML = buildNameHistoryHtml(member);
-  const history = Array.isArray(member.powerHistory) && member.powerHistory.length
-    ? [...member.powerHistory].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))
-    : [{ date: (member.joinedAt || todayStr()).slice(0, 10), power: member.power || 0 }];
+  // "Kullanıcı Değişti" eşiğinden önceki güç kayıtları önceki kullanıcıya ait olduğu
+  // için oyuncu kartından gizlenir (bkz. buildEventSummaryHtml'deki aynı mantık).
+  const threshold = memberThreshold(member);
+  const visiblePowerHistory = Array.isArray(member.powerHistory)
+    ? member.powerHistory.filter((entry) => !threshold || entry.date >= threshold)
+    : [];
+  const history = visiblePowerHistory.length
+    ? [...visiblePowerHistory].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0))
+    : [{ date: threshold || todayStr(), power: member.power || 0 }];
   document.getElementById("historyChartWrap").innerHTML = buildHistoryChart(history);
   document.getElementById("historyEventsWrap").innerHTML = buildEventSummaryHtml(member);
   const rowsEl = document.getElementById("historyRows");
