@@ -27,6 +27,7 @@ import {
   RANK_ORDER,
   buildCampOptions,
   campLevelSortValue,
+  isDigitsOnly,
   elementBadge,
   buildElementPicker,
   setElementPickerActive,
@@ -300,12 +301,24 @@ export async function saveMember() {
     showToast(t("nameIdRequired"));
     return;
   }
+  // ID numarası girildiyse (göç eden üyeler için boş bırakılabilir), sadece rakamlardan oluşmalı ve tam 15 basamak olmalı.
+  if (gameId && !isDigitsOnly(gameId, 15)) {
+    showToast(t("invalidGameId"));
+    return;
+  }
   if (!confirmDuplicateGameId(gameId, editId)) return;
 
-  const power = Number(document.getElementById("fPower").value) || 0;
+  const powerRaw = document.getElementById("fPower").value.trim();
+  const teamPowerRaw = document.getElementById("fTeamPower").value.trim();
+  if ((powerRaw && !isDigitsOnly(powerRaw)) || (teamPowerRaw && !isDigitsOnly(teamPowerRaw)) || (migratedToRaw && !isDigitsOnly(migratedToRaw))) {
+    showToast(t("invalidNumberField"));
+    return;
+  }
+
+  const power = Number(powerRaw) || 0;
   const rank = document.getElementById("fRank").value;
   const campLevel = document.getElementById("fCamp").value;
-  const teamPower = Number(document.getElementById("fTeamPower").value) || 0;
+  const teamPower = Number(teamPowerRaw) || 0;
   const teamElement = document.getElementById("fTeamElement").value || null;
   const joinedAt = document.getElementById("fJoinedAt").value || todayStr();
 

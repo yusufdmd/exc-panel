@@ -170,6 +170,8 @@ const DICT = {
     cancel:'Vazgeç', save:'Kaydet', close:'Kapat',
     toastMemberSaved:'Üye kaydedildi.', toastMemberDeleted:'Üye silindi.', confirmDeleteMember:'Bu üyeyi silmek istediğinize emin misiniz?',
     nameIdRequired:'Kullanıcı adı ve ID zorunludur.',
+    invalidGameId:'ID Numarası sadece rakamlardan oluşmalı ve tam olarak 15 basamak olmalıdır.',
+    invalidNumberField:'Bu alan sadece rakamlardan oluşmalıdır.',
     addWeek:'+ Hafta Ekle', weekAddTitle:'Hafta Ekle', lblWeekLabel:'Hafta Etiketi', lblWeekDate:'Tarih', weekNameRequired:'Hafta etiketi gerekli.',
     toastWeekSaved:'Hafta eklendi.', toastWeekDeleted:'Hafta silindi.', confirmDeleteWeek:'Bu haftayı ve tüm verilerini silmek istiyor musunuz?',
     emptyWeeksTitle:'Henüz hafta yok', emptyWeeksDesc:'"+ Hafta Ekle" ile ilk haftayı oluştur.',
@@ -244,6 +246,8 @@ const DICT = {
     cancel:'Cancel', save:'Save', close:'Close',
     toastMemberSaved:'Member saved.', toastMemberDeleted:'Member deleted.', confirmDeleteMember:'Are you sure you want to delete this member?',
     nameIdRequired:'Username and ID are required.',
+    invalidGameId:'ID Number must contain only digits and be exactly 15 digits long.',
+    invalidNumberField:'This field must contain only digits.',
     addWeek:'+ Add Week', weekAddTitle:'Add Week', lblWeekLabel:'Week Label', lblWeekDate:'Date', weekNameRequired:'Week label is required.',
     toastWeekSaved:'Week added.', toastWeekDeleted:'Week deleted.', confirmDeleteWeek:'Delete this week and all its data?',
     emptyWeeksTitle:'No weeks yet', emptyWeeksDesc:'Use "+ Add Week" to create the first one.',
@@ -318,6 +322,8 @@ const DICT = {
     cancel:'Abbrechen', save:'Speichern', close:'Schließen',
     toastMemberSaved:'Mitglied gespeichert.', toastMemberDeleted:'Mitglied gelöscht.', confirmDeleteMember:'Dieses Mitglied wirklich löschen?',
     nameIdRequired:'Benutzername und ID sind erforderlich.',
+    invalidGameId:'Die ID-Nummer darf nur aus Ziffern bestehen und muss genau 15 Ziffern lang sein.',
+    invalidNumberField:'Dieses Feld darf nur Ziffern enthalten.',
     addWeek:'+ Woche hinzufügen', weekAddTitle:'Woche hinzufügen', lblWeekLabel:'Wochenbezeichnung', lblWeekDate:'Datum', weekNameRequired:'Wochenbezeichnung erforderlich.',
     toastWeekSaved:'Woche hinzugefügt.', toastWeekDeleted:'Woche gelöscht.', confirmDeleteWeek:'Diese Woche und alle Daten löschen?',
     emptyWeeksTitle:'Noch keine Woche', emptyWeeksDesc:'Mit "+ Woche hinzufügen" die erste anlegen.',
@@ -392,6 +398,8 @@ const DICT = {
     cancel:'Cancelar', save:'Guardar', close:'Cerrar',
     toastMemberSaved:'Miembro guardado.', toastMemberDeleted:'Miembro eliminado.', confirmDeleteMember:'¿Seguro que quieres eliminar a este miembro?',
     nameIdRequired:'El nombre de usuario y el ID son obligatorios.',
+    invalidGameId:'El número de ID debe contener solo dígitos y tener exactamente 15 dígitos.',
+    invalidNumberField:'Este campo debe contener solo dígitos.',
     addWeek:'+ Añadir semana', weekAddTitle:'Añadir semana', lblWeekLabel:'Etiqueta de semana', lblWeekDate:'Fecha', weekNameRequired:'La etiqueta de semana es obligatoria.',
     toastWeekSaved:'Semana añadida.', toastWeekDeleted:'Semana eliminada.', confirmDeleteWeek:'¿Eliminar esta semana y todos sus datos?',
     emptyWeeksTitle:'Aún no hay semanas', emptyWeeksDesc:'Usa "+ Añadir semana" para crear la primera.',
@@ -466,6 +474,8 @@ const DICT = {
     cancel:'Annuler', save:'Enregistrer', close:'Fermer',
     toastMemberSaved:'Membre enregistré.', toastMemberDeleted:'Membre supprimé.', confirmDeleteMember:'Voulez-vous vraiment supprimer ce membre ?',
     nameIdRequired:"Le nom d'utilisateur et l'ID sont obligatoires.",
+    invalidGameId:"Le numéro d'ID doit contenir uniquement des chiffres et comporter exactement 15 chiffres.",
+    invalidNumberField:'Ce champ ne doit contenir que des chiffres.',
     addWeek:'+ Ajouter une semaine', weekAddTitle:'Ajouter une semaine', lblWeekLabel:'Libellé de la semaine', lblWeekDate:'Date', weekNameRequired:'Le libellé de la semaine est requis.',
     toastWeekSaved:'Semaine ajoutée.', toastWeekDeleted:'Semaine supprimée.', confirmDeleteWeek:'Supprimer cette semaine et toutes ses données ?',
     emptyWeeksTitle:'Aucune semaine pour le moment', emptyWeeksDesc:'Utilisez "+ Ajouter une semaine" pour créer la première.',
@@ -821,6 +831,19 @@ export function cellInfoHtml(info) {
 /** Bugünün tarihini "YYYY-MM-DD" biçiminde döndürür. */
 export function todayStr() {
   return new Date().toISOString().slice(0, 10);
+}
+
+/**
+ * Bir metnin sadece rakamlardan oluşup oluşmadığını kontrol eder (harf, boşluk,
+ * eksi işareti, ondalık nokta, "e" bilimsel gösterimi — hiçbiri kabul edilmez).
+ * `exactLength` verilirse basamak sayısı da tam olarak eşleşmelidir (üye ID'si
+ * için 15 basamak kuralı gibi). Boş metin için false döner — çağıran taraf,
+ * alanın opsiyonel olduğu durumlarda boşluğu ayrıca kontrol etmelidir.
+ */
+export function isDigitsOnly(value, exactLength) {
+  if (!/^\d+$/.test(value)) return false;
+  if (exactLength && value.length !== exactLength) return false;
+  return true;
 }
 
 // =====================================================================

@@ -32,6 +32,7 @@ import {
   escapeHtml,
   formatPower,
   todayStr,
+  isDigitsOnly,
   migrationColorClass,
   migrationColorLabel,
   migrationStatusClass,
@@ -317,8 +318,19 @@ export async function saveProspect() {
   const editId = document.getElementById("prospectEditId").value;
   const name = document.getElementById("pName").value.trim();
   const gameId = document.getElementById("pGameId").value.trim();
-  const power = Number(document.getElementById("pPower").value) || 0;
+  const powerRaw = document.getElementById("pPower").value.trim();
   const serverRaw = document.getElementById("pServer").value.trim();
+
+  if (gameId && !isDigitsOnly(gameId, 15)) {
+    showToast(t("invalidGameId"));
+    return;
+  }
+  if ((powerRaw && !isDigitsOnly(powerRaw)) || (serverRaw && !isDigitsOnly(serverRaw))) {
+    showToast(t("invalidNumberField"));
+    return;
+  }
+
+  const power = Number(powerRaw) || 0;
   const server = serverRaw === "" ? null : (Number(serverRaw) || null);
   const color = document.getElementById("pColor").value;
   const status = document.getElementById("pStatus").value;

@@ -17,7 +17,7 @@
 import { createWeek as dbCreateWeek, updateWeek as dbUpdateWeek, deleteWeek as dbDeleteWeek, upsertRecordsBulk } from "./database.js";
 import {
   state, t, showToast, escapeHtml, rankClass, statusOf, gvgColorClass, formatPower, formatRatio, renderAll,
-  cellInfoHtml, svsOtherCellInfo, ssCellInfo, attendanceCellInfo, gvgCellInfo, isExempt,
+  cellInfoHtml, svsOtherCellInfo, ssCellInfo, attendanceCellInfo, gvgCellInfo, isExempt, isDigitsOnly,
   ratioStatus, ratioSs, sumGvgPoints, RANK_ORDER
 } from "./ui.js";
 import { filteredSortedMembers } from "./members.js";
@@ -236,6 +236,15 @@ export async function saveEntry() {
       payloads.push({ week_id: weekId, member_id: memberId, status, points, excused });
     });
   } else if (type === "gvg") {
+    // Tüm satırlar geçerli olmadan hiçbiri kaydedilmez (kısmi/tutarsız bir kayıt kalmasın diye).
+    const invalidRow = [...document.querySelectorAll("#entryRows tr")].some((tr) => {
+      const raw = tr.querySelector(".pts-input").value.trim();
+      return raw && !isDigitsOnly(raw);
+    });
+    if (invalidRow) {
+      showToast(t("invalidNumberField"));
+      return;
+    }
     document.querySelectorAll("#entryRows tr").forEach((tr) => {
       const memberId = tr.querySelector(".pts-input").dataset.mid;
       const points = Number(tr.querySelector(".pts-input").value) || 0;
