@@ -56,6 +56,7 @@ export const state = {
   pendingLeadProcessingId: null, // "İşle" ile aday ekleme formuna gidilirken hangi başvurunun dönüştürüldüğünü hatırlar (bkz. migration.js -> saveProspect)
   siteLinks: { discordUrl: "", youtubeUrl: "", instagramUrl: "" }, // genel tanıtım sitesindeki Discord/YouTube/Instagram linkleri (bkz. siteLinks.js)
   news: [], // ana sayfadaki "Haberler" bölümünün içeriği (bkz. news.js)
+  activityLog: [], // "Aktivite" sekmesindeki admin aktivite kaydı (bkz. activity.js)
   panelMode: null, // null: seçim ekranı, "data": veri paneli, "site": site editörü — her yeni girişte null'a döner (bkz. auth.js)
   migrationSortKey: "color",
   migrationSortDir: -1, // -1: varsayılan görünümde Altın üstte, Griye doğru azalan sıra
@@ -207,7 +208,10 @@ const DICT = {
     weekEditTitle:'Haftayı Düzenle', eventEditTitle:'Etkinliği Düzenle',
     overallReportBtn:'📊 Genel Rapor', overallReport:'Genel Rapor', thWeeks:'Haftalar',
     thTeam:'1. Takım', lblTeamPower:'1. Takım Gücü', lblTeamElement:'1. Takım Elementi',
-    elementWater:'Su', elementFire:'Ateş', elementEarth:'Toprak', elementElectric:'Elektrik', elementNone:'Element Yok' },
+    elementWater:'Su', elementFire:'Ateş', elementEarth:'Toprak', elementElectric:'Elektrik', elementNone:'Element Yok',
+    tabActivity:'Aktivite', thWhen:'Tarih', thAdmin:'Admin', thAction:'İşlem', thEntity:'Üye',
+    actionCreated:'Eklendi', actionUpdated:'Güncellendi', actionDeleted:'Silindi', actionRestored:'Geri Alındı',
+    emptyActivityTitle:'Henüz aktivite yok', emptyActivityDesc:'Üye ekleme/düzenleme/silme işlemleri burada listelenecek.' },
   en: { appName:'EXC Panel', tagline:'Members · Rank · Power & Camp Level · Event Tracking', refresh:'Refresh', backToSite:'← Back to Site',
     syncConnecting:'Connecting…', syncLive:'Live — everyone sees this', syncError:'Connection error',
     tabMembers:'Members', tabEvents:'Events', tabBoard:'Leaderboard', tabMigration:'Migration',
@@ -283,7 +287,10 @@ const DICT = {
     weekEditTitle:'Edit Week', eventEditTitle:'Edit Event',
     overallReportBtn:'📊 Overall Report', overallReport:'Overall Report', thWeeks:'Weeks',
     thTeam:'1st Team', lblTeamPower:'1st Team Power', lblTeamElement:'1st Team Element',
-    elementWater:'Water', elementFire:'Fire', elementEarth:'Earth', elementElectric:'Electric', elementNone:'No Element' },
+    elementWater:'Water', elementFire:'Fire', elementEarth:'Earth', elementElectric:'Electric', elementNone:'No Element',
+    tabActivity:'Activity', thWhen:'Date', thAdmin:'Admin', thAction:'Action', thEntity:'Member',
+    actionCreated:'Created', actionUpdated:'Updated', actionDeleted:'Deleted', actionRestored:'Restored',
+    emptyActivityTitle:'No activity yet', emptyActivityDesc:'Member add/edit/delete actions will be listed here.' },
   de: { appName:'EXC Panel', tagline:'Mitglieder · Rang · Machtstufe & Basisstufe · Event-Tracking', refresh:'Aktualisieren', backToSite:'← Zur Website',
     syncConnecting:'Verbinde…', syncLive:'Live — alle sehen dies', syncError:'Verbindungsfehler',
     tabMembers:'Mitglieder', tabEvents:'Events', tabBoard:'Bestenliste', tabMigration:'Migration',
@@ -359,7 +366,10 @@ const DICT = {
     weekEditTitle:'Woche bearbeiten', eventEditTitle:'Event bearbeiten',
     overallReportBtn:'📊 Gesamtbericht', overallReport:'Gesamtbericht', thWeeks:'Wochen',
     thTeam:'1. Team', lblTeamPower:'1. Team-Stärke', lblTeamElement:'1. Team-Element',
-    elementWater:'Wasser', elementFire:'Feuer', elementEarth:'Erde', elementElectric:'Elektro', elementNone:'Kein Element' },
+    elementWater:'Wasser', elementFire:'Feuer', elementEarth:'Erde', elementElectric:'Elektro', elementNone:'Kein Element',
+    tabActivity:'Aktivität', thWhen:'Datum', thAdmin:'Admin', thAction:'Aktion', thEntity:'Mitglied',
+    actionCreated:'Erstellt', actionUpdated:'Aktualisiert', actionDeleted:'Gelöscht', actionRestored:'Wiederhergestellt',
+    emptyActivityTitle:'Noch keine Aktivität', emptyActivityDesc:'Mitglied hinzufügen/bearbeiten/löschen wird hier aufgelistet.' },
   es: { appName:'Panel EXC', tagline:'Miembros · Rango · Poder y Nivel de Campamento · Seguimiento de Eventos', refresh:'Actualizar', backToSite:'← Volver al Sitio',
     syncConnecting:'Conectando…', syncLive:'En vivo — todos lo ven', syncError:'Error de conexión',
     tabMembers:'Miembros', tabEvents:'Eventos', tabBoard:'Clasificación', tabMigration:'Migración',
@@ -435,7 +445,10 @@ const DICT = {
     weekEditTitle:'Editar semana', eventEditTitle:'Editar evento',
     overallReportBtn:'📊 Informe General', overallReport:'Informe General', thWeeks:'Semanas',
     thTeam:'1er Equipo', lblTeamPower:'Poder del 1er Equipo', lblTeamElement:'Elemento del 1er Equipo',
-    elementWater:'Agua', elementFire:'Fuego', elementEarth:'Tierra', elementElectric:'Eléctrico', elementNone:'Sin Elemento' },
+    elementWater:'Agua', elementFire:'Fuego', elementEarth:'Tierra', elementElectric:'Eléctrico', elementNone:'Sin Elemento',
+    tabActivity:'Actividad', thWhen:'Fecha', thAdmin:'Admin', thAction:'Acción', thEntity:'Miembro',
+    actionCreated:'Creado', actionUpdated:'Actualizado', actionDeleted:'Eliminado', actionRestored:'Restaurado',
+    emptyActivityTitle:'Aún no hay actividad', emptyActivityDesc:'Las acciones de agregar/editar/eliminar miembros se listarán aquí.' },
   fr: { appName:'Panneau EXC', tagline:'Membres · Rang · Puissance et Niveau de Camp · Suivi des Événements', refresh:'Actualiser', backToSite:'← Retour au Site',
     syncConnecting:'Connexion…', syncLive:'En direct — visible par tous', syncError:'Erreur de connexion',
     tabMembers:'Membres', tabEvents:'Événements', tabBoard:'Classement', tabMigration:'Migration',
@@ -511,7 +524,10 @@ const DICT = {
     weekEditTitle:'Modifier la semaine', eventEditTitle:"Modifier l'événement",
     overallReportBtn:'📊 Rapport Global', overallReport:'Rapport Global', thWeeks:'Semaines',
     thTeam:'1ère Équipe', lblTeamPower:'Puissance de la 1ère Équipe', lblTeamElement:'Élément de la 1ère Équipe',
-    elementWater:'Eau', elementFire:'Feu', elementEarth:'Terre', elementElectric:'Électrique', elementNone:'Aucun Élément' }
+    elementWater:'Eau', elementFire:'Feu', elementEarth:'Terre', elementElectric:'Électrique', elementNone:'Aucun Élément',
+    tabActivity:'Activité', thWhen:'Date', thAdmin:'Admin', thAction:'Action', thEntity:'Membre',
+    actionCreated:'Créé', actionUpdated:'Mis à jour', actionDeleted:'Supprimé', actionRestored:'Restauré',
+    emptyActivityTitle:'Aucune activité pour le moment', emptyActivityDesc:'Les ajouts/modifications/suppressions de membres seront listés ici.' }
 };
 
 /**
@@ -629,6 +645,13 @@ export function applyStaticText() {
   document.getElementById("t_gateBackToSite").textContent = t("backToSite");
   document.getElementById("t_logoutBtn").textContent = t("logoutBtn");
   document.getElementById("t_tabMigration").textContent = t("tabMigration");
+  document.getElementById("t_tabActivity").textContent = t("tabActivity");
+  document.getElementById("t_thWhen").textContent = t("thWhen");
+  document.getElementById("t_thAdmin").textContent = t("thAdmin");
+  document.getElementById("t_thAction").textContent = t("thAction");
+  document.getElementById("t_thEntity").textContent = t("thEntity");
+  document.getElementById("t_emptyActivityTitle").textContent = t("emptyActivityTitle");
+  document.getElementById("t_emptyActivityDesc").textContent = t("emptyActivityDesc");
   document.getElementById("t_addProspect").textContent = t("addProspect");
   document.getElementById("t_addPeriod").textContent = t("addPeriod");
   document.getElementById("t_lblPeriodLabel").textContent = t("lblPeriodLabel");

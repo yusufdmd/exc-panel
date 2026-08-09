@@ -93,6 +93,7 @@
     <div class="tab" data-tab="events" onclick="switchTab('events')" id="t_tabEvents">Etkinlikler</div>
     <div class="tab" data-tab="board" onclick="switchTab('board')" id="t_tabBoard">Puan Sıralaması</div>
     <div class="tab" data-tab="migration" onclick="switchTab('migration')" id="t_tabMigration">Göç</div>
+    <div class="tab" data-tab="activity" onclick="switchTab('activity')" id="t_tabActivity">Aktivite</div>
   </div>
 
   <div class="tabs" id="siteTabs" style="display:none;">
@@ -291,6 +292,27 @@
           <h3 id="t_emptyMigrationTitle">Henüz aday yok</h3>
           <p id="t_emptyMigrationDesc">"+ Aday Ekle" ile ilk göç adayını ekle.</p>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIVITY -->
+  <div class="panel" id="panel-activity">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th id="t_thWhen">Tarih</th>
+            <th id="t_thAdmin">Admin</th>
+            <th id="t_thAction">İşlem</th>
+            <th id="t_thEntity">Üye</th>
+          </tr>
+        </thead>
+        <tbody id="activityRows"></tbody>
+      </table>
+      <div class="empty-state" id="activityEmpty" style="display:none;">
+        <h3 id="t_emptyActivityTitle">Henüz aktivite yok</h3>
+        <p id="t_emptyActivityDesc">Üye ekleme/düzenleme/silme işlemleri burada listelenecek.</p>
       </div>
     </div>
   </div>

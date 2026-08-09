@@ -12,7 +12,7 @@
 // bağımlılık tek yönlüdür, döngü oluşmaz.
 // =====================================================================
 
-import { createMember, updateMember, deleteMember as dbDeleteMember, addPowerHistoryEntry, deleteMigrationProspect } from "./database.js";
+import { createMember, updateMember, deleteMember as dbDeleteMember, addPowerHistoryEntry, deleteMigrationProspect, logActivity } from "./database.js";
 import { RANK_LIMITS } from "./config.js";
 import {
   state,
@@ -362,6 +362,7 @@ export async function saveMember() {
         await addPowerHistoryEntry(editId, history[history.length - 1].date, power);
       }
       state.members[index] = { ...mapMember(row), powerHistory: history };
+      await logActivity("updated", "member", editId, { name: name || previous.name || "İsimsiz" }, state.currentAdminUsername);
     } else {
       const today = todayStr();
       const row = await createMember({
@@ -373,6 +374,7 @@ export async function saveMember() {
       });
       await addPowerHistoryEntry(row.id, today, power);
       state.members.push({ ...mapMember(row), powerHistory: [{ date: today, power }] });
+      await logActivity("created", "member", row.id, { name: name || "İsimsiz" }, state.currentAdminUsername);
 
       // "Onayla" akışından geldiyse (bkz. migration.js -> approveProspect), üye başarıyla
       // oluşturulduktan sonra göç adayını da temizler. Bu adım kendi try/catch'inde tutulur
@@ -399,6 +401,7 @@ export async function saveMember() {
 
 export async function deleteMember(id) {
   if (!confirm(t("confirmDeleteMember"))) return;
+  const target = state.members.find((m) => m.id === id);
   try {
     await dbDeleteMember(id);
     state.members = state.members.filter((m) => m.id !== id);
@@ -406,6 +409,7 @@ export async function deleteMember(id) {
     state.gvg.entries = state.gvg.entries.filter((e) => e.memberId !== id);
     state.ss.entries = state.ss.entries.filter((e) => e.memberId !== id);
     state.other.entries = state.other.entries.filter((e) => e.memberId !== id);
+    await logActivity("deleted", "member", id, { name: (target && target.name) || "İsimsiz" }, state.currentAdminUsername);
     renderAll();
     showToast(t("toastMemberDeleted"));
   } catch (error) {
@@ -425,6 +429,7 @@ export async function restoreMember(id) {
   try {
     const row = await updateMember(id, { is_old: false, old_since: null });
     state.members[index] = { ...mapMember(row), powerHistory: state.members[index].powerHistory };
+    await logActivity("restored", "member", id, { name: row.name || "İsimsiz" }, state.currentAdminUsername);
     renderAll();
     showToast(t("toastMemberSaved"));
   } catch (error) {
