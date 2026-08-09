@@ -126,6 +126,7 @@
             <th onclick="setSort('gameId')" id="t_thId">ID</th>
             <th onclick="setSort('power')" id="t_thPower">Güç Seviyesi</th>
             <th onclick="setSort('campSort')" id="t_thCamp">Kamp Seviyesi</th>
+            <th onclick="setSort('teamPower')" id="t_thTeam">1. Takım</th>
             <th></th>
           </tr>
         </thead>
@@ -350,6 +351,14 @@
       <div class="field"><label id="t_lblPower">Güç Seviyesi</label><input id="fPower" type="number"></div>
       <div class="field"><label id="t_lblCamp">Kamp Seviyesi</label>
         <select id="fCamp"></select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label id="t_lblTeamPower">1. Takım Gücü</label><input id="fTeamPower" type="number"></div>
+      <div class="field">
+        <label id="t_lblTeamElement">1. Takım Elementi</label>
+        <div class="element-picker" id="elementPicker"></div>
+        <input type="hidden" id="fTeamElement">
       </div>
     </div>
     <div class="field">

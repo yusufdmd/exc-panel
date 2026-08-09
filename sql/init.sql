@@ -31,6 +31,8 @@ create table if not exists members (
   rank                text not null check (rank in ('R5','R4','R3','R2','R1')),
   camp_level          text not null default '1',
   power               bigint not null default 0,
+  team_power          bigint not null default 0, -- 1. takımın toplam gücü (bkz. add_member_team.sql)
+  team_element        text check (team_element in ('water','fire','earth','electric')), -- 1. takımın elementi
   is_old              boolean not null default false,
   old_since           date,
   is_migrated         boolean not null default false, -- true ise bu üye başka bir sunucuya göç etmiştir ("Göç Edenler" sekmesi)

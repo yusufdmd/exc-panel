@@ -19,7 +19,7 @@
 import { getMembers, getAllPowerHistory, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, getSiteLinks, getNews, subscribeToTables } from "./database.js";
 import { POLL_INTERVAL_MS } from "./config.js";
 import { state, t, showToast, buildLangSwitch, applyStaticText, initLangFromStorage, persistLanguage, renderAll, registerDataLoader, registerRenderer } from "./ui.js";
-import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, saveMember, deleteMember, restoreMember, openHistoryModal, closeHistoryModal, setMemberView, setRankFilter, setSort } from "./members.js";
+import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember, openHistoryModal, closeHistoryModal, setMemberView, setRankFilter, setSort } from "./members.js";
 import { mapWeek, mapEntry, openWeekModal, closeWeekModal, saveWeek, deleteWeek, openEntryModal, closeEntryModal, renderEntryRows, saveEntry, openWeekReportModal, closeWeekReportModal, openOverallReportModal, closeOverallReportModal, setOverallReportSort } from "./events.js";
 import { setBoardSort } from "./dashboard.js";
 import {
@@ -191,7 +191,7 @@ function setLang(lang) {
 Object.assign(window, {
   exportBackup, importBackup, manualRefresh,
   switchTab, switchSub, setMemberView, setRankFilter, setSort, renderMembers,
-  openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, saveMember, deleteMember, restoreMember,
+  openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember,
   openWeekModal, closeWeekModal, saveWeek, deleteWeek,
   openEntryModal, closeEntryModal, saveEntry, renderEntryRows,
   openWeekReportModal, closeWeekReportModal,

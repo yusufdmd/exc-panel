@@ -22,7 +22,8 @@ import {
   LANGUAGES,
   DEFAULT_LANGUAGE,
   MIGRATION_COLORS,
-  MIGRATION_COLOR_ORDER
+  MIGRATION_COLOR_ORDER,
+  ELEMENTS
 } from "./config.js";
 
 // ---------------------------------------------------------------------
@@ -201,7 +202,9 @@ const DICT = {
     lblMigrated:'Başka sunucuya göç etti', migratedTag:'Göç Etti',
     weekReport:'Hafta Raporu', zoneGreen:'Yeşil Bölge', zoneYellow:'Sarı Bölge', zoneRed:'Kırmızı Bölge',
     weekEditTitle:'Haftayı Düzenle', eventEditTitle:'Etkinliği Düzenle',
-    overallReportBtn:'📊 Genel Rapor', overallReport:'Genel Rapor', thWeeks:'Haftalar' },
+    overallReportBtn:'📊 Genel Rapor', overallReport:'Genel Rapor', thWeeks:'Haftalar',
+    thTeam:'1. Takım', lblTeamPower:'1. Takım Gücü', lblTeamElement:'1. Takım Elementi',
+    elementWater:'Su', elementFire:'Ateş', elementEarth:'Toprak', elementElectric:'Elektrik', elementNone:'Element Yok' },
   en: { appName:'EXC Panel', tagline:'Members · Rank · Power & Camp Level · Event Tracking', refresh:'Refresh', backToSite:'← Back to Site',
     syncConnecting:'Connecting…', syncLive:'Live — everyone sees this', syncError:'Connection error',
     tabMembers:'Members', tabEvents:'Events', tabBoard:'Leaderboard', tabMigration:'Migration',
@@ -273,7 +276,9 @@ const DICT = {
     lblMigrated:'Migrated to another server', migratedTag:'Migrated',
     weekReport:'Week Report', zoneGreen:'Green Zone', zoneYellow:'Yellow Zone', zoneRed:'Red Zone',
     weekEditTitle:'Edit Week', eventEditTitle:'Edit Event',
-    overallReportBtn:'📊 Overall Report', overallReport:'Overall Report', thWeeks:'Weeks' },
+    overallReportBtn:'📊 Overall Report', overallReport:'Overall Report', thWeeks:'Weeks',
+    thTeam:'1st Team', lblTeamPower:'1st Team Power', lblTeamElement:'1st Team Element',
+    elementWater:'Water', elementFire:'Fire', elementEarth:'Earth', elementElectric:'Electric', elementNone:'No Element' },
   de: { appName:'EXC Panel', tagline:'Mitglieder · Rang · Machtstufe & Basisstufe · Event-Tracking', refresh:'Aktualisieren', backToSite:'← Zur Website',
     syncConnecting:'Verbinde…', syncLive:'Live — alle sehen dies', syncError:'Verbindungsfehler',
     tabMembers:'Mitglieder', tabEvents:'Events', tabBoard:'Bestenliste', tabMigration:'Migration',
@@ -345,7 +350,9 @@ const DICT = {
     lblMigrated:'Zu einem anderen Server abgewandert', migratedTag:'Abgewandert',
     weekReport:'Wochenbericht', zoneGreen:'Grüne Zone', zoneYellow:'Gelbe Zone', zoneRed:'Rote Zone',
     weekEditTitle:'Woche bearbeiten', eventEditTitle:'Event bearbeiten',
-    overallReportBtn:'📊 Gesamtbericht', overallReport:'Gesamtbericht', thWeeks:'Wochen' },
+    overallReportBtn:'📊 Gesamtbericht', overallReport:'Gesamtbericht', thWeeks:'Wochen',
+    thTeam:'1. Team', lblTeamPower:'1. Team-Stärke', lblTeamElement:'1. Team-Element',
+    elementWater:'Wasser', elementFire:'Feuer', elementEarth:'Erde', elementElectric:'Elektro', elementNone:'Kein Element' },
   es: { appName:'Panel EXC', tagline:'Miembros · Rango · Poder y Nivel de Campamento · Seguimiento de Eventos', refresh:'Actualizar', backToSite:'← Volver al Sitio',
     syncConnecting:'Conectando…', syncLive:'En vivo — todos lo ven', syncError:'Error de conexión',
     tabMembers:'Miembros', tabEvents:'Eventos', tabBoard:'Clasificación', tabMigration:'Migración',
@@ -417,7 +424,9 @@ const DICT = {
     lblMigrated:'Migró a otro servidor', migratedTag:'Migró',
     weekReport:'Informe Semanal', zoneGreen:'Zona Verde', zoneYellow:'Zona Amarilla', zoneRed:'Zona Roja',
     weekEditTitle:'Editar semana', eventEditTitle:'Editar evento',
-    overallReportBtn:'📊 Informe General', overallReport:'Informe General', thWeeks:'Semanas' },
+    overallReportBtn:'📊 Informe General', overallReport:'Informe General', thWeeks:'Semanas',
+    thTeam:'1er Equipo', lblTeamPower:'Poder del 1er Equipo', lblTeamElement:'Elemento del 1er Equipo',
+    elementWater:'Agua', elementFire:'Fuego', elementEarth:'Tierra', elementElectric:'Eléctrico', elementNone:'Sin Elemento' },
   fr: { appName:'Panneau EXC', tagline:'Membres · Rang · Puissance et Niveau de Camp · Suivi des Événements', refresh:'Actualiser', backToSite:'← Retour au Site',
     syncConnecting:'Connexion…', syncLive:'En direct — visible par tous', syncError:'Erreur de connexion',
     tabMembers:'Membres', tabEvents:'Événements', tabBoard:'Classement', tabMigration:'Migration',
@@ -489,7 +498,9 @@ const DICT = {
     lblMigrated:'A migré vers un autre serveur', migratedTag:'A migré',
     weekReport:'Rapport Hebdomadaire', zoneGreen:'Zone Verte', zoneYellow:'Zone Jaune', zoneRed:'Zone Rouge',
     weekEditTitle:'Modifier la semaine', eventEditTitle:"Modifier l'événement",
-    overallReportBtn:'📊 Rapport Global', overallReport:'Rapport Global', thWeeks:'Semaines' }
+    overallReportBtn:'📊 Rapport Global', overallReport:'Rapport Global', thWeeks:'Semaines',
+    thTeam:'1ère Équipe', lblTeamPower:'Puissance de la 1ère Équipe', lblTeamElement:'Élément de la 1ère Équipe',
+    elementWater:'Eau', elementFire:'Feu', elementEarth:'Terre', elementElectric:'Électrique', elementNone:'Aucun Élément' }
 };
 
 /**
@@ -535,6 +546,7 @@ export function applyStaticText() {
   document.getElementById("t_thId").textContent = t("thId");
   document.getElementById("t_thPower").textContent = t("thPower");
   document.getElementById("t_thCamp").textContent = t("thCamp");
+  document.getElementById("t_thTeam").textContent = t("thTeam");
   document.getElementById("t_emptyMembersTitle").textContent = t("emptyMembersTitle");
   document.getElementById("t_emptyMembersDesc").textContent = t("emptyMembersDesc");
   document.getElementById("t_lblUsername").textContent = t("lblUsername");
@@ -542,6 +554,8 @@ export function applyStaticText() {
   document.getElementById("t_lblRank").textContent = t("lblRank");
   document.getElementById("t_lblPower").textContent = t("lblPower");
   document.getElementById("t_lblCamp").textContent = t("lblCamp");
+  document.getElementById("t_lblTeamPower").textContent = t("lblTeamPower");
+  document.getElementById("t_lblTeamElement").textContent = t("lblTeamElement");
   document.getElementById("t_lblJoinedAt").textContent = t("lblJoinedAt");
   document.getElementById("t_lblOld").textContent = t("lblOld");
   document.getElementById("t_cancel1").textContent = t("cancel");
@@ -921,6 +935,53 @@ export function buildMigrationColorOptions() {
 }
 
 export { campLevelSortValue };
+
+// =====================================================================
+// 1. TAKIM ELEMENTİ ROZETLERİ
+// =====================================================================
+// Palmon Survival'daki dört elementin (su/ateş/toprak/elektrik) oyun içi
+// ikonlarını birebir KOPYALAMAYAN, aynı fikri (damla/alev/dağ/şimşek + renk)
+// taşıyan özgün SVG rozetler. Hem üye tablosunda hem de üye formundaki
+// element seçicide (bkz. buildElementPicker) kullanılır.
+const ELEMENT_STYLE = {
+  water: { bg: "#1E6FB8", glyph: '<path d="M12 3.5c-2.6 4-4.6 7.1-4.6 9.9a4.6 4.6 0 0 0 9.2 0c0-2.8-2-5.9-4.6-9.9z"/>' },
+  fire: { bg: "#C23B3B", glyph: '<path d="M12 2.5c.8 2.6 2.9 3.6 2.9 6.3 0 .9-.3 1.7-.8 2.3.6-.2 1.2-.6 1.5-1.2.8 1.1 1.1 2.2 1.1 3.1a4.7 4.7 0 0 1-9.4 0c0-2.3 1.5-3.9 2.6-5.1-.1.8.1 1.5.5 2C9.2 8.1 10.3 5.7 12 2.5z"/>' },
+  earth: { bg: "#B5822A", glyph: '<path d="M12 3 5.5 16.5h4.2L12 11l2.3 5.5h4.2L12 3z"/>' },
+  electric: { bg: "#7A3BC2", glyph: '<path d="M13.2 2.5 6.8 13h3.6l-.9 8.5 7.2-10.8h-3.7l.9-8.2z"/>' }
+};
+
+/** Bir elementin çevrilmiş adını döndürür ("water" -> t("elementWater") gibi). */
+function elementLabel(element) {
+  return t("element" + element.charAt(0).toUpperCase() + element.slice(1));
+}
+
+/** Bir üyenin 1. takım elementi için dairesel bir SVG rozet üretir. Element yoksa boş döner. */
+export function elementBadge(element, size) {
+  const style = ELEMENT_STYLE[element];
+  if (!style) return "";
+  const px = size || 22;
+  return `<span class="element-badge" style="--el-bg:${style.bg}; width:${px}px; height:${px}px;" title="${elementLabel(element)}">
+    <svg viewBox="0 0 24 24" width="${Math.round(px * 0.56)}" height="${Math.round(px * 0.56)}" fill="#fff">${style.glyph}</svg>
+  </span>`;
+}
+
+/** Üye formundaki element seçici butonlarını (4 sabit element) doldurur; tıklanınca setTeamElement (members.js) çağrılır. */
+export function buildElementPicker() {
+  const container = document.getElementById("elementPicker");
+  if (!container) return;
+  container.innerHTML = ELEMENTS.map((el) =>
+    `<div class="element-opt" data-el="${el}" onclick="setTeamElement('${el}')" title="${elementLabel(el)}">${elementBadge(el, 32)}</div>`
+  ).join("");
+}
+
+/** Element seçicide hangi butonun aktif (seçili) göründüğünü günceller. */
+export function setElementPickerActive(element) {
+  document.querySelectorAll("#elementPicker .element-opt").forEach((el) => {
+    el.classList.toggle("active", el.dataset.el === element);
+  });
+}
+
+export { ELEMENTS };
 
 // =====================================================================
 // ADMIN GÖRÜNÜRLÜĞÜ

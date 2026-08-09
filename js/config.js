@@ -30,6 +30,11 @@ export const GVG_THRESHOLDS = {
 };
 
 // ---------------------------------------------------------------------
+// 1. takım elementleri (Palmon Survival'daki dört element).
+// ---------------------------------------------------------------------
+export const ELEMENTS = ["water", "fire", "earth", "electric"];
+
+// ---------------------------------------------------------------------
 // Kamp seviyesi seçenekleri: AOM-5 .. AOM-1, ardından 30 .. 1
 // ---------------------------------------------------------------------
 export const CAMP_LEVELS = (() => {

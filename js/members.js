@@ -27,6 +27,9 @@ import {
   RANK_ORDER,
   buildCampOptions,
   campLevelSortValue,
+  elementBadge,
+  buildElementPicker,
+  setElementPickerActive,
   gvgCellInfo,
   ssCellInfo,
   svsOtherCellInfo,
@@ -48,6 +51,8 @@ export function mapMember(row) {
     rank: row.rank,
     campLevel: row.camp_level,
     power: row.power,
+    teamPower: row.team_power || 0,
+    teamElement: row.team_element || null,
     isOld: row.is_old,
     oldSince: row.old_since,
     joinedAt: row.joined_at,
@@ -140,6 +145,7 @@ export function renderMembers() {
       <td class="member-id">${escapeHtml(String(member.gameId || "—"))}</td>
       <td class="num-cell" title="${Number(member.power) || 0}">${formatPower(member.power)}</td>
       <td class="num-cell">${escapeHtml(String(member.campLevel || "-"))}</td>
+      <td class="num-cell">${member.teamPower ? `${elementBadge(member.teamElement, 20)} <span style="vertical-align:middle;">${formatPower(member.teamPower)}</span>` : "—"}</td>
       <td><div class="row-actions">
         <button class="icon-btn" onclick="openHistoryModal('${member.id}')" title="${t("powerHistory")}">📈</button>
         ${state.memberView === "old" ? `<button class="icon-btn admin-only" onclick="restoreMember('${member.id}')" title="${t("restoreMember")}">↺</button>` : ""}
@@ -186,6 +192,7 @@ function syncMemberStatusToggles() {
 export function openMemberModal(id) {
   state.pendingProspectApprovalId = null; // varsayılan: normal ekleme/düzenleme, göç adayı onay akışı değil (bkz. migration.js -> approveProspect)
   buildCampOptions();
+  buildElementPicker();
   document.getElementById("memberEditId").value = id || "";
   if (id) {
     const member = state.members.find((m) => m.id === id);
@@ -195,6 +202,9 @@ export function openMemberModal(id) {
     document.getElementById("fRank").value = member.rank;
     document.getElementById("fPower").value = member.power;
     document.getElementById("fCamp").value = member.campLevel;
+    document.getElementById("fTeamPower").value = member.teamPower || "";
+    document.getElementById("fTeamElement").value = member.teamElement || "";
+    setElementPickerActive(member.teamElement || "");
     document.getElementById("fJoinedAt").value = member.joinedAt ? member.joinedAt.slice(0, 10) : "";
     document.getElementById("fMigratedTo").value = member.migratedTo != null ? member.migratedTo : "";
     document.getElementById("fUserChangedAt").value = member.userChangedAt ? member.userChangedAt.slice(0, 10) : "";
@@ -204,7 +214,8 @@ export function openMemberModal(id) {
     state.migratedFlag = !!member.isMigrated;
   } else {
     document.getElementById("memberModalTitle").textContent = t("memberAddTitle");
-    ["fName", "fGameId", "fPower", "fMigratedTo"].forEach((fieldId) => { document.getElementById(fieldId).value = ""; });
+    ["fName", "fGameId", "fPower", "fMigratedTo", "fTeamPower", "fTeamElement"].forEach((fieldId) => { document.getElementById(fieldId).value = ""; });
+    setElementPickerActive("");
     document.getElementById("fRank").value = "R1";
     document.getElementById("fCamp").value = "1";
     document.getElementById("fJoinedAt").value = todayStr();
@@ -233,6 +244,14 @@ export function toggleMigrated() {
   state.migratedFlag = !state.migratedFlag;
   if (state.migratedFlag) state.oldFlag = false; // "eski üye" ve "göç etti" birbirini dışlar
   syncMemberStatusToggles();
+}
+
+/** Element seçicide bir elemente tıklanınca çağrılır; zaten seçiliyse tekrar tıklamak seçimi kaldırır. */
+export function setTeamElement(element) {
+  const hidden = document.getElementById("fTeamElement");
+  const next = hidden.value === element ? "" : element;
+  hidden.value = next;
+  setElementPickerActive(next);
 }
 
 /** Hesabı bugün itibariyle yeni bir kullanıcının devraldığını işaretler (kayıt "Kaydet" ile onaylanana kadar sadece formda bekler). */
@@ -277,6 +296,8 @@ export async function saveMember() {
   const power = Number(document.getElementById("fPower").value) || 0;
   const rank = document.getElementById("fRank").value;
   const campLevel = document.getElementById("fCamp").value;
+  const teamPower = Number(document.getElementById("fTeamPower").value) || 0;
+  const teamElement = document.getElementById("fTeamElement").value || null;
   const joinedAt = document.getElementById("fJoinedAt").value || todayStr();
 
   if (!state.oldFlag && !state.migratedFlag) {
@@ -304,6 +325,7 @@ export async function saveMember() {
 
       const row = await updateMember(editId, {
         name: name || null, game_id: gameId || null, rank, power, camp_level: campLevel,
+        team_power: teamPower, team_element: teamElement,
         is_old: state.oldFlag, old_since: oldSince, name_history: nameHistory,
         is_migrated: state.migratedFlag, migrated_to_server: migratedTo,
         user_changed_at: userChangedAt, joined_at: joinedAt
@@ -322,6 +344,7 @@ export async function saveMember() {
       const today = todayStr();
       const row = await createMember({
         name: name || null, game_id: gameId || null, rank, power, camp_level: campLevel,
+        team_power: teamPower, team_element: teamElement,
         is_old: state.oldFlag, old_since: state.oldFlag ? today : null,
         is_migrated: state.migratedFlag, migrated_to_server: migratedTo,
         joined_at: joinedAt
