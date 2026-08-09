@@ -115,7 +115,6 @@
       <div class="filter-chip" data-rank="R3" onclick="setRankFilter('R3')">R3</div>
       <div class="filter-chip" data-rank="R2" onclick="setRankFilter('R2')">R2</div>
       <div class="filter-chip" data-rank="R1" onclick="setRankFilter('R1')">R1</div>
-      <div class="element-filter-row" id="elementFilterRow"></div>
       <button class="btn-primary admin-only" onclick="openMemberModal()" id="t_addMember">+ Üye Ekle</button>
     </div>
     <div class="table-wrap">
@@ -127,7 +126,10 @@
             <th onclick="setSort('gameId')" id="t_thId">ID</th>
             <th onclick="setSort('power')" id="t_thPower">Güç Seviyesi</th>
             <th onclick="setSort('campSort')" id="t_thCamp">Kamp Seviyesi</th>
-            <th onclick="setSort('teamPower')" id="t_thTeam">1. Takım</th>
+            <th class="th-team">
+              <span onclick="setSort('teamPower')" id="t_thTeam">1. Takım</span>
+              <div class="element-filter-row" id="elementFilterRow"></div>
+            </th>
             <th></th>
           </tr>
         </thead>

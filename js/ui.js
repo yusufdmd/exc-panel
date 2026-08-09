@@ -982,12 +982,12 @@ export function setElementPickerActive(element) {
   });
 }
 
-/** Üye tablosu araç çubuğundaki element filtre rozetlerini state.elementFilter'a göre (yeniden) çizer. */
+/** "1. Takım" tablo başlığındaki element filtre rozetlerini state.elementFilter'a göre (yeniden) çizer. */
 export function renderElementFilter() {
   const container = document.getElementById("elementFilterRow");
   if (!container) return;
   container.innerHTML = ELEMENTS.map((el) =>
-    `<div class="element-opt ${state.elementFilter === el ? "active" : ""}" data-el="${el}" onclick="setElementFilter('${el}')" title="${elementLabel(el)}">${elementBadge(el, 26)}</div>`
+    `<div class="element-opt ${state.elementFilter === el ? "active" : ""}" data-el="${el}" onclick="event.stopPropagation(); setElementFilter('${el}')" title="${elementLabel(el)}">${elementBadge(el, 16)}</div>`
   ).join("");
 }
 
