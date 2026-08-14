@@ -580,7 +580,9 @@ export function openHistoryModal(id) {
   const member = state.members.find((m) => m.id === id);
   if (!member) return;
   document.getElementById("historyTitle").textContent = t("powerHistory") + " — " + member.name;
-  document.getElementById("historyNameHistoryWrap").innerHTML = buildNameHistoryHtml(member);
+  // Önceki kullanıcı adı / "Kullanıcı Değişti" geçmişi idari bir bilgidir —
+  // üye (viewer) rolü hiç görmez, sadece admin görür.
+  document.getElementById("historyNameHistoryWrap").innerHTML = state.isMember ? "" : buildNameHistoryHtml(member);
   // "Kullanıcı Değişti" eşiğinden önceki güç kayıtları önceki kullanıcıya ait olduğu
   // için oyuncu kartından gizlenir (bkz. buildEventSummaryHtml'deki aynı mantık).
   const threshold = memberThreshold(member);
