@@ -78,6 +78,7 @@ export const state = {
   overallReportSortDir: -1,
   historyMemberId: null,
   isAdmin: false,
+  isMember: false, // true: salt okunur "üye" rolü (bkz. sql/add_member_role.sql) — Üyeler/Etkinlikler/Puan Sıralaması görür, düzenleyemez, Göç/Aktivite/Site Editörü'nü hiç görmez
   currentAdminUsername: "" // auth.js buraya Supabase oturumundaki sahte email'i (bkz. ADMIN_LOGIN_DOMAIN) DEĞİL, kullanıcıya gösterilecek çıplak kullanıcı adını yazar
 };
 
@@ -195,7 +196,7 @@ const DICT = {
     subActiveMembers:'Aktif Üyeler', subOldMembers:'Eski Üyeler (OLD)',
     thDate:'Tarih', thPowerVal:'Güç', thDelta:'Fark', thExcused:'Mazeretli',
     loginTitle:'Yönetici Girişi', lblEmail:'E-posta', lblPassword:'Şifre', loginBtn:'Giriş Yap', logoutBtn:'Çıkış Yap',
-    gateDesc:'Bu panele sadece yönetici hesapları erişebilir.',
+    gateDesc:'Bu panele giriş yapmak için hesabınızla oturum açın.',
     loginFailed:'Giriş başarısız.', loginSuccess:'Giriş yapıldı.', logoutSuccess:'Çıkış yapıldı.',
     emailPasswordRequired:'Kullanıcı adı ve şifre gerekli.', viewOnlyLabel:'Salt okunur',
     previousNames:'Önceki Kullanıcı Adları',
@@ -275,7 +276,7 @@ const DICT = {
     subActiveMembers:'Active Members', subOldMembers:'Old Members (OLD)',
     thDate:'Date', thPowerVal:'Power', thDelta:'Change', thExcused:'Excused',
     loginTitle:'Admin Login', lblEmail:'Email', lblPassword:'Password', loginBtn:'Sign In', logoutBtn:'Sign Out',
-    gateDesc:'Only admin accounts can access this panel.',
+    gateDesc:'Sign in with your account to access this panel.',
     loginFailed:'Sign-in failed.', loginSuccess:'Signed in.', logoutSuccess:'Signed out.',
     emailPasswordRequired:'Username and password are required.', viewOnlyLabel:'View only',
     previousNames:'Previous Usernames',
@@ -355,7 +356,7 @@ const DICT = {
     subActiveMembers:'Aktive Mitglieder', subOldMembers:'Alte Mitglieder (OLD)',
     thDate:'Datum', thPowerVal:'Macht', thDelta:'Änderung', thExcused:'Entschuldigt',
     loginTitle:'Admin-Anmeldung', lblEmail:'E-Mail', lblPassword:'Passwort', loginBtn:'Anmelden', logoutBtn:'Abmelden',
-    gateDesc:'Nur Administratorkonten haben Zugriff auf dieses Panel.',
+    gateDesc:'Melden Sie sich mit Ihrem Konto an, um auf dieses Panel zuzugreifen.',
     loginFailed:'Anmeldung fehlgeschlagen.', loginSuccess:'Angemeldet.', logoutSuccess:'Abgemeldet.',
     emailPasswordRequired:'Benutzername und Passwort sind erforderlich.', viewOnlyLabel:'Nur Ansicht',
     previousNames:'Frühere Benutzernamen',
@@ -435,7 +436,7 @@ const DICT = {
     subActiveMembers:'Miembros activos', subOldMembers:'Miembros antiguos (OLD)',
     thDate:'Fecha', thPowerVal:'Poder', thDelta:'Cambio', thExcused:'Justificado',
     loginTitle:'Inicio de sesión de administrador', lblEmail:'Correo electrónico', lblPassword:'Contraseña', loginBtn:'Iniciar sesión', logoutBtn:'Cerrar sesión',
-    gateDesc:'Solo las cuentas de administrador pueden acceder a este panel.',
+    gateDesc:'Inicie sesión con su cuenta para acceder a este panel.',
     loginFailed:'Error al iniciar sesión.', loginSuccess:'Sesión iniciada.', logoutSuccess:'Sesión cerrada.',
     emailPasswordRequired:'Nombre de usuario y contraseña son obligatorios.', viewOnlyLabel:'Solo lectura',
     previousNames:'Nombres de usuario anteriores',
@@ -515,7 +516,7 @@ const DICT = {
     subActiveMembers:'Membres actifs', subOldMembers:'Anciens membres (OLD)',
     thDate:'Date', thPowerVal:'Puissance', thDelta:'Évolution', thExcused:'Excusé',
     loginTitle:'Connexion administrateur', lblEmail:'E-mail', lblPassword:'Mot de passe', loginBtn:'Se connecter', logoutBtn:'Se déconnecter',
-    gateDesc:'Seuls les comptes administrateurs peuvent accéder à ce panneau.',
+    gateDesc:'Connectez-vous avec votre compte pour accéder à ce panneau.',
     loginFailed:'Échec de la connexion.', loginSuccess:'Connecté.', logoutSuccess:'Déconnecté.',
     emailPasswordRequired:"Le nom d'utilisateur et le mot de passe sont requis.", viewOnlyLabel:'Lecture seule',
     previousNames:"Anciens noms d'utilisateur",
@@ -1057,10 +1058,14 @@ export { ELEMENTS };
 // görünürlüğünü `state.isAdmin`'e göre günceller. Kimlik doğrulama
 // mantığının kendisi (giriş/çıkış, Supabase Auth çağrıları) auth.js'de.
 
-/** Admin oturumuna göre üst bar ve "admin-only" sınıflı öğelerin görünürlüğünü günceller. */
+/** Admin/üye oturumuna göre üst bar ve "admin-only" sınıflı öğelerin görünürlüğünü günceller. */
 export function updateAdminUI() {
+  const loggedIn = state.isAdmin || state.isMember;
   document.body.classList.toggle("is-admin", state.isAdmin);
-  document.getElementById("logoutBtn").style.display = state.isAdmin ? "" : "none";
+  document.getElementById("logoutBtn").style.display = loggedIn ? "" : "none";
   const statusEl = document.getElementById("authStatus");
-  if (statusEl) statusEl.textContent = state.isAdmin ? (state.currentAdminUsername || t("logoutBtn")) : t("viewOnlyLabel");
+  if (!statusEl) return;
+  if (state.isAdmin) statusEl.textContent = state.currentAdminUsername || t("logoutBtn");
+  else if (state.isMember) statusEl.textContent = (state.currentAdminUsername ? state.currentAdminUsername + " · " : "") + t("viewOnlyLabel");
+  else statusEl.textContent = t("viewOnlyLabel");
 }

@@ -47,13 +47,17 @@ function settledList(result) {
 
 /**
  * Supabase'ten tüm veriyi (üyeler + dört etkinlik türü) çeker ve state'i günceller.
- * Admin girişi doğrulanmadan (bkz. auth.js -> updateGateVisibility) hiçbir şey
- * çekmez — panel giriş kapısının arkasındayken gereksiz istek atılmasın diye.
+ * Ne admin ne üye girişi doğrulanmadan (bkz. auth.js -> updateGateVisibility)
+ * hiçbir şey çekmez — panel giriş kapısının arkasındayken gereksiz istek
+ * atılmasın diye. Üye (viewer) rolü için Göç/Aktivite çağrıları hiç
+ * yapılmaz — zaten RLS bunları engeller, boşuna "izin reddedildi" hatası
+ * üretmemek için baştan atlanır (bkz. sql/add_member_role.sql).
  */
 async function loadAll(silent) {
-  if (!state.isAdmin) return;
+  if (!state.isAdmin && !state.isMember) return;
   try {
     document.getElementById("syncText").textContent = t("syncConnecting");
+    const restricted = state.isMember;
     const [
       membersRes, historyRes,
       svsWeeksRes, svsRecordsRes,
@@ -69,7 +73,11 @@ async function loadAll(silent) {
       getWeeks("ss"), getAllRecords("ss"),
       getWeeks("kod"), getAllRecords("kod"),
       getWeeks("other"), getAllRecords("other"),
-      getMigrationPeriods(), getMigrationProspects(), getMigrationLeads(), getSiteLinks(), getNews(), getRecentActivity()
+      restricted ? Promise.resolve([]) : getMigrationPeriods(),
+      restricted ? Promise.resolve([]) : getMigrationProspects(),
+      restricted ? Promise.resolve([]) : getMigrationLeads(),
+      getSiteLinks(), getNews(),
+      restricted ? Promise.resolve([]) : getRecentActivity()
     ]);
 
     const historyByMember = {};
@@ -140,6 +148,11 @@ function switchTab(tab) {
 // kendisi (renderPanelMode) her renderAll() çağrısında sadece MEVCUT
 // panelMode'u DOM'a uygular — realtime/yoklama güncellemeleri admin
 // başka bir sekmedeyken onu seçim ekranına GERİ ATMAZ.
+//
+// Üye (viewer) rolü bu katmanı hiç görmez: seçim ekranı atlanır (bkz.
+// auth.js -> panelMode her zaman "data"), Site Editörü'ne hiç geçilemez,
+// ve Veri Paneli içindeki Göç/Aktivite sekmeleri (hassas veri) tek tek
+// gizlenir — bunlar zaten RLS'te de kapalı, burası sadece arayüz.
 // =====================================================================
 function renderPanelMode() {
   const chooser = document.getElementById("panelChooser");
@@ -149,23 +162,30 @@ function renderPanelMode() {
   const statsRow = document.getElementById("statsRow");
   const dataOnlyActions = document.getElementById("dataOnlyActions");
   const backBtn = document.getElementById("backToChooserBtn");
+  const restricted = state.isMember;
   const isData = state.panelMode === "data";
-  const isSite = state.panelMode === "site";
-  chooser.style.display = state.panelMode ? "none" : "";
+  const isSite = state.panelMode === "site" && !restricted;
+  chooser.style.display = (state.panelMode || restricted) ? "none" : "";
   dataTabs.style.display = isData ? "" : "none";
   siteTabs.style.display = isSite ? "" : "none";
   statsRow.style.display = isData ? "" : "none";
-  dataOnlyActions.style.display = isData ? "contents" : "none";
-  backBtn.style.display = state.panelMode ? "" : "none";
+  dataOnlyActions.style.display = isData && !restricted ? "contents" : "none";
+  backBtn.style.display = state.panelMode && !restricted ? "" : "none";
+  const migrationTab = document.querySelector('#dataTabs .tab[data-tab="migration"]');
+  const activityTab = document.querySelector('#dataTabs .tab[data-tab="activity"]');
+  if (migrationTab) migrationTab.style.display = restricted ? "none" : "";
+  if (activityTab) activityTab.style.display = restricted ? "none" : "";
 }
 registerRenderer(renderPanelMode);
 
 function selectPanelMode(mode) {
+  if (state.isMember) return; // üye rolü seçim ekranını hiç görmez, buraya erişemez
   state.panelMode = mode;
   switchTab(mode === "data" ? "members" : "sitelinks");
 }
 
 function backToChooser() {
+  if (state.isMember) return; // üye rolü için dönülecek bir seçim ekranı yok
   state.panelMode = null;
   document.querySelectorAll(".panel").forEach((panel) => panel.classList.remove("active"));
   renderAll();

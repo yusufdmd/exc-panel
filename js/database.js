@@ -53,6 +53,22 @@ export async function getActiveMemberCount() {
   return data;
 }
 
+/**
+ * Giriş yapmış kullanıcının rolünü (bkz. sql/add_member_role.sql ->
+ * current_user_role()) döndürür — "admin" veya "viewer" (salt okunur üye).
+ * Çağrı başarısız olursa (RPC henüz yoksa, ağ hatası vb.) en kısıtlı role
+ * ("viewer") düşülür — hatalı açık değil, hatalı kapalı davranmak güvenli
+ * olan taraf.
+ */
+export async function getCurrentUserRole() {
+  const { data, error } = await supabase.rpc("current_user_role");
+  if (error) {
+    console.error("[EXC Paneli][DB] Rol alınamadı:", error);
+    return "viewer";
+  }
+  return data;
+}
+
 export async function getMember(id) {
   const { data, error } = await supabase
     .from("members")

@@ -1,32 +1,33 @@
 // =====================================================================
 // EXC PANELİ — auth.js
 // =====================================================================
-// Yönetici girişi/çıkışı ve oturum durumu bu dosyada yönetilir.
-//
-// Herkes veriyi görebilir (okuma politikaları herkese açık); sadece
-// giriş yapmış bir yönetici veri ekleyip/düzenleyip/silebilir. Gerçek
-// yetkilendirme veritabanı seviyesinde (sql/auth_policies.sql'deki RLS
-// politikaları) sağlanır — bu dosya sadece Supabase Auth ile oturum
-// açıp kapatmaktan ve arayüzün admin durumunu yansıtmasından sorumludur.
+// Giriş/çıkış ve oturum durumu bu dosyada yönetilir. İki rol vardır
+// (bkz. sql/add_member_role.sql -> current_user_role()):
+//   - admin:  her şeyi görür ve düzenler.
+//   - viewer: sadece Üyeler/Etkinlikler/Puan Sıralaması'nı GÖRÜR (salt
+//     okunur) — Göç, Aktivite ve Site Editörü'nü hiç göremez. Bu tek bir
+//     paylaşılan giriş (tüm lonca üyeleri aynı hesabı kullanır).
+// Gerçek yetkilendirme veritabanı seviyesinde (RLS) sağlanır — bu dosya
+// sadece Supabase Auth ile oturum açıp kapatmaktan ve arayüzün rolü
+// yansıtmasından sorumludur.
 //
 // Kullanıcı adı <-> email dönüşümü: Supabase Auth teknik olarak bir
-// email adresi bekler, ama yönetici arayüzde sadece bir "kullanıcı adı"
-// görür/yazar. "kullaniciadi" girildiğinde arka planda
+// email adresi bekler, ama arayüzde sadece bir "kullanıcı adı" görülür/
+// yazılır. "kullaniciadi" girildiğinde arka planda
 // "kullaniciadi@<ADMIN_LOGIN_DOMAIN>" adresine çevrilir. Gerçek bir
-// domain olması gerekmez, hiçbir e-posta gönderilmez — yönetici
-// hesapları Supabase Dashboard'da "Auto Confirm User" işaretlenerek
+// domain olması gerekmez, hiçbir e-posta gönderilmez — hem admin hem
+// üye hesapları Supabase Dashboard'da "Auto Confirm User" işaretlenerek
 // oluşturulur (bkz. README.md).
 // =====================================================================
 
 import { supabase } from "./supabase.js";
 import { ADMIN_LOGIN_DOMAIN } from "./config.js";
 import { state, t, showToast, updateAdminUI, reloadAllData } from "./ui.js";
+import { getCurrentUserRole } from "./database.js";
 
-// Panel, admin oturumu doğrulanana kadar hiçbir veri yüklemez/göstermez
-// (bkz. updateGateVisibility) — sadece "sadece admin görebilsin" isteğini
-// karşılamak için; alttaki RLS select politikaları hâlâ herkese açıktır,
-// bu yüzden bu SADECE bir arayüz kapısıdır, veritabanı seviyesinde ek bir
-// kısıtlama değildir.
+// Panel, oturum doğrulanana kadar (admin ya da üye) hiçbir veri yüklemez/
+// göstermez (bkz. updateGateVisibility) — gerçek erişim sınırı RLS'te,
+// bu sadece bir arayüz kapısıdır.
 let panelUnlocked = false;
 
 /** Yönetici arayüzünde yazılan kullanıcı adını Supabase Auth'un beklediği sahte email'e çevirir. */
@@ -44,26 +45,39 @@ function authEmailToUsername(email) {
 /**
  * Supabase'ten gelen oturum bilgisini paylaşılan state'e yazar ve
  * arayüzü günceller. `onAuthStateChange` (her giriş/çıkışta) ve
- * `getSession` (sayfa ilk açıldığında) aynı mantığı kullanır.
+ * `getSession` (sayfa ilk açıldığında) aynı mantığı kullanır. Oturum varsa
+ * veritabanından rol (admin/viewer) sorgulanır — state.isAdmin ve
+ * state.isMember birbirini dışlar (bkz. sql/add_member_role.sql).
  */
-function applySession(session) {
-  state.isAdmin = !!session;
-  state.currentAdminUsername = session && session.user ? authEmailToUsername(session.user.email || "") : "";
+async function applySession(session) {
+  const loggedIn = !!session;
+  state.currentAdminUsername = loggedIn && session.user ? authEmailToUsername(session.user.email || "") : "";
+  if (loggedIn) {
+    const role = await getCurrentUserRole();
+    state.isAdmin = role === "admin";
+    state.isMember = !state.isAdmin;
+  } else {
+    state.isAdmin = false;
+    state.isMember = false;
+  }
   updateAdminUI();
   updateGateVisibility();
 }
 
-/** Giriş kapısını (authGate) ve panelin kendisini (panelWrap) admin durumuna göre gösterir/gizler. */
+/** Giriş kapısını (authGate) ve panelin kendisini (panelWrap) admin/üye durumuna göre gösterir/gizler. */
 function updateGateVisibility() {
   const gate = document.getElementById("authGate");
   const wrap = document.getElementById("panelWrap");
   if (!gate || !wrap) return; // bu dosya panel dışında bir sayfaya yüklenmiş olabilir (şu an olmuyor, ileride önlem)
-  if (state.isAdmin) {
+  const loggedIn = state.isAdmin || state.isMember;
+  if (loggedIn) {
     gate.style.display = "none";
     wrap.style.display = "";
     if (!panelUnlocked) {
       panelUnlocked = true;
-      state.panelMode = null; // her yeni girişte "Veri Paneli / Site Editörü" seçim ekranından başlasın
+      // Admin her yeni girişte "Veri Paneli / Site Editörü" seçim ekranından başlar;
+      // üye rolü bu seçimi hiç görmez, doğrudan salt okunur veri görünümüne girer.
+      state.panelMode = state.isMember ? "data" : null;
       reloadAllData();
     }
   } else {
