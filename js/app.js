@@ -181,6 +181,16 @@ function renderPanelMode() {
   const migratedMembersTab = document.querySelector('.subtab[data-mv="migrated"]');
   if (oldMembersTab) oldMembersTab.style.display = restricted ? "none" : "";
   if (migratedMembersTab) migratedMembersTab.style.display = restricted ? "none" : "";
+  // Üye rolü chooser'ı hiç görmediği için normalde "Veri Paneli"ni seçerken
+  // çalışan switchTab() hiç tetiklenmez — ilk girişte hiçbir panel/sekme aktif
+  // olmaz ve ekran boş görünür. Henüz aktif bir panel yoksa burada Etkinlikler
+  // sekmesi otomatik açılır (switchTab kendi renderAll()'ını tetikler, bu
+  // yüzden hemen return edilir — sonraki geçişte panel zaten aktif olacağından
+  // tekrar çalışmaz).
+  if (restricted && isData && !document.querySelector(".panel.active")) {
+    switchTab("events");
+    return;
+  }
 }
 registerRenderer(renderPanelMode);
 
