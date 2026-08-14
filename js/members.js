@@ -162,6 +162,9 @@ export function renderMembers() {
 registerRenderer(renderMembers);
 
 export function setMemberView(view) {
+  // Üye (viewer) rolü sadece "Aktif Üyeler"i görebilir (bkz. app.js -> renderPanelMode,
+  // bu sekmeleri zaten arayüzden gizler) — burada da savunma amaçlı engellenir.
+  if (state.isMember && view !== "active") return;
   state.memberView = view;
   document.querySelectorAll(".subtab[data-mv]").forEach((el) => el.classList.toggle("active", el.dataset.mv === view));
   renderMembers();

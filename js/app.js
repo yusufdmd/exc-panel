@@ -175,6 +175,12 @@ function renderPanelMode() {
   const activityTab = document.querySelector('#dataTabs .tab[data-tab="activity"]');
   if (migrationTab) migrationTab.style.display = restricted ? "none" : "";
   if (activityTab) activityTab.style.display = restricted ? "none" : "";
+  // Üye rolü üye listesinde sadece "Aktif Üyeler"i görür — eski/göç eden üye
+  // alt sekmeleri de gizlenir (bkz. members.js -> setMemberView'daki eşleşen koruma).
+  const oldMembersTab = document.querySelector('.subtab[data-mv="old"]');
+  const migratedMembersTab = document.querySelector('.subtab[data-mv="migrated"]');
+  if (oldMembersTab) oldMembersTab.style.display = restricted ? "none" : "";
+  if (migratedMembersTab) migratedMembersTab.style.display = restricted ? "none" : "";
 }
 registerRenderer(renderPanelMode);
 
