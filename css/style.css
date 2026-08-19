@@ -114,10 +114,15 @@ body{
 .btn-ghost{ background:none; border:1px solid var(--line); color:var(--text-muted); padding:9px 14px; border-radius:8px; font-size:12px; cursor:pointer; }
 .btn-ghost:hover{ color:var(--text-primary); border-color:var(--text-dim); }
 
-.table-wrap{ background:var(--bg-panel); border:1px solid var(--line); border-radius:14px; overflow:auto; max-width:100%; }
+/* max-height + overflow:auto, thead'i position:sticky ile sabitleyebilmek için
+   gerekli — table-wrap gerçek bir scroll konteynerine dönüşmeden (yani sayfanın
+   kendisi kaydırılırken) sticky en üstte kalıcı olarak çalışmaz. İçerik bu
+   yükseklikten kısaysa kutu zaten içeriğe göre küçülür, kısa tabloları etkilemez. */
+.table-wrap{ background:var(--bg-panel); border:1px solid var(--line); border-radius:14px; overflow:auto; max-width:100%; max-height:70vh; }
 table{ width:100%; border-collapse:collapse; }
-thead th{ text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.6px; color:var(--text-dim); padding:12px 16px; border-bottom:1px solid var(--line); cursor:pointer; user-select:none; white-space:nowrap; }
+thead th{ text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:0.6px; color:var(--text-dim); padding:12px 16px; border-bottom:1px solid var(--line); cursor:pointer; user-select:none; white-space:nowrap; position:sticky; top:0; background:var(--bg-panel); z-index:3; }
 thead th:hover{ color:var(--text-muted); }
+thead th.sticky-col{ z-index:4; } /* hem üste hem sola sabitlenen köşe hücreler, diğer sabit hücrelerin üzerinde kalsın */
 tbody td{ padding:12px 16px; border-bottom:1px solid var(--line); font-size:13px; vertical-align:middle; white-space:nowrap; }
 tbody tr:last-child td{ border-bottom:none; }
 tbody tr:nth-child(even){ background: rgba(255,255,255,0.025); }
