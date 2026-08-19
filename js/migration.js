@@ -65,7 +65,8 @@ export function mapProspect(row) {
     power: row.power,
     server: row.server,
     color: row.color,
-    status: row.status
+    status: row.status,
+    failed: !!row.failed
   };
 }
 
@@ -175,6 +176,8 @@ function sortedProspects() {
   const query = (document.getElementById("migrationSearch").value || "").toLowerCase().trim();
   const list = state.migration.filter((p) => {
     if (p.periodId !== state.migrationActivePeriodId) return false;
+    const matchesView = state.migrationView === "failed" ? !!p.failed : !p.failed;
+    if (!matchesView) return false;
     return !query || (p.name || "").toLowerCase().includes(query) || String(p.gameId || "").toLowerCase().includes(query);
   });
   list.sort((a, b) => {
@@ -211,8 +214,9 @@ function sortedProspects() {
 function renderMigrationStats(list) {
   const counts = { gold: 0, purple: 0, blue: 0, gray: 0, unknown: 0 };
   list.forEach((p) => { counts[p.color] = (counts[p.color] || 0) + 1; });
+  const totalLabel = state.migrationView === "failed" ? t("statMigrationFailedTotal") : t("statMigrationTotal");
   document.getElementById("migrationStatsRow").innerHTML = `
-    <div class="stat-card"><div class="num">${list.length}</div><div class="lbl">${t("statMigrationTotal")}</div></div>
+    <div class="stat-card"><div class="num">${list.length}</div><div class="lbl">${totalLabel}</div></div>
     ${MIGRATION_COLORS.map((color) => `<div class="stat-card ${color}"><div class="num">${counts[color]}</div><div class="lbl">${migrationColorLabel(color)}</div></div>`).join("")}
   `;
 }
@@ -251,7 +255,10 @@ export function renderMigration() {
   const list = sortedProspects();
   renderMigrationStats(list);
   const rowsEl = document.getElementById("migrationRows");
+  const isFailedView = state.migrationView === "failed";
   document.getElementById("migrationEmpty").style.display = list.length ? "none" : "block";
+  document.getElementById("t_emptyMigrationTitle").textContent = t(isFailedView ? "emptyMigrationFailedTitle" : "emptyMigrationTitle");
+  document.getElementById("t_emptyMigrationDesc").textContent = t(isFailedView ? "emptyMigrationFailedDesc" : "emptyMigrationDesc");
   rowsEl.innerHTML = list.map((p) => `
     <tr class="migration-row-${p.color}">
       <td><span class="rank-badge ${migrationColorClass(p.color)}">${migrationColorLabel(p.color)}</span></td>
@@ -261,14 +268,27 @@ export function renderMigration() {
       <td class="num-cell">${escapeHtml(p.server != null ? String(p.server) : "—")}</td>
       <td><span class="cell-pill ${migrationStatusClass(p.status)}">${migrationStatusLabel(p.status)}</span></td>
       <td><div class="row-actions">
-        <button class="icon-btn admin-only" onclick="approveProspect('${p.id}')" title="${t("approveProspectTitle")}">✅</button>
-        <button class="icon-btn admin-only" onclick="openProspectModal('${p.id}')">✎</button>
+        ${isFailedView ? `
+          <button class="icon-btn admin-only" onclick="restoreProspect('${p.id}')" title="${t("restoreProspectTitle")}">↺</button>
+          <button class="icon-btn admin-only" onclick="openProspectModal('${p.id}')">✎</button>
+        ` : `
+          <button class="icon-btn admin-only" onclick="approveProspect('${p.id}')" title="${t("approveProspectTitle")}">✅</button>
+          <button class="icon-btn admin-only" onclick="openProspectModal('${p.id}')">✎</button>
+          <button class="icon-btn danger admin-only" onclick="markProspectFailed('${p.id}')" title="${t("markFailedTitle")}">🚫</button>
+        `}
         <button class="icon-btn danger admin-only" onclick="deleteProspect('${p.id}')">✕</button>
       </div></td>
     </tr>
   `).join("");
 }
 registerRenderer(renderMigration);
+
+/** "Adaylar" / "Başarısız" alt sekmeleri arasında geçiş yapar (bkz. sortedProspects). */
+export function setMigrationView(view) {
+  state.migrationView = view;
+  document.querySelectorAll('.subtab[data-mstatus]').forEach((el) => el.classList.toggle("active", el.dataset.mstatus === view));
+  renderMigration();
+}
 
 export function setMigrationSort(key) {
   if (state.migrationSortKey === key) {
@@ -376,6 +396,39 @@ export async function deleteProspect(id) {
     state.migration = state.migration.filter((p) => p.id !== id);
     renderAll();
     showToast(t("toastProspectDeleted"));
+  } catch (error) {
+    console.error(error);
+    showToast("Error");
+  }
+}
+
+/**
+ * Bir adayı, yeterli kontenjan olmadığı (veya başka bir nedenle göç
+ * gerçekleşmediği) için "Başarısız" olarak işaretler — aday "Adaylar"
+ * listesinden kaybolup "Başarısız" sekmesinde görünür hale gelir.
+ */
+export async function markProspectFailed(id) {
+  if (!confirm(t("confirmMarkFailed"))) return;
+  try {
+    const row = await updateMigrationProspect(id, { failed: true });
+    const index = state.migration.findIndex((p) => p.id === id);
+    if (index >= 0) state.migration[index] = mapProspect(row);
+    renderAll();
+    showToast(t("toastProspectFailed"));
+  } catch (error) {
+    console.error(error);
+    showToast("Error");
+  }
+}
+
+/** "Başarısız" işaretini kaldırıp adayı tekrar normal "Adaylar" listesine döndürür. */
+export async function restoreProspect(id) {
+  try {
+    const row = await updateMigrationProspect(id, { failed: false });
+    const index = state.migration.findIndex((p) => p.id === id);
+    if (index >= 0) state.migration[index] = mapProspect(row);
+    renderAll();
+    showToast(t("toastProspectSaved"));
   } catch (error) {
     console.error(error);
     showToast("Error");

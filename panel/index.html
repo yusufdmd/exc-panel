@@ -269,6 +269,10 @@
     </div>
     <div id="migrationPeriodContent" style="display:none;">
       <div class="stats" id="migrationStatsRow"></div>
+      <div class="subtabs">
+        <div class="subtab active" data-mstatus="active" onclick="setMigrationView('active')" id="t_subMigrationActive">Adaylar</div>
+        <div class="subtab" data-mstatus="failed" onclick="setMigrationView('failed')" id="t_subMigrationFailed">Başarısız</div>
+      </div>
       <div class="toolbar">
         <input class="search" id="migrationSearch" oninput="renderMigration()">
         <button class="btn-primary admin-only" onclick="openProspectModal()" id="t_addProspect">+ Aday Ekle</button>

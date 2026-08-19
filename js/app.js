@@ -23,9 +23,10 @@ import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld,
 import { mapWeek, mapEntry, openWeekModal, closeWeekModal, saveWeek, deleteWeek, openEntryModal, closeEntryModal, renderEntryRows, saveEntry, openWeekReportModal, closeWeekReportModal, openOverallReportModal, closeOverallReportModal, setOverallReportSort } from "./events.js";
 import { setBoardSort } from "./dashboard.js";
 import {
-  mapPeriod, mapProspect, mapLead, renderMigration, setMigrationSort,
+  mapPeriod, mapProspect, mapLead, renderMigration, setMigrationSort, setMigrationView,
   selectMigrationPeriod, openPeriodModal, closePeriodModal, savePeriod, deletePeriod,
   openProspectModal, closeProspectModal, saveProspect, deleteProspect, approveProspect,
+  markProspectFailed, restoreProspect,
   processLead, dismissLead
 } from "./migration.js";
 import { exportBackup, importBackup } from "./backup.js";
@@ -236,7 +237,8 @@ Object.assign(window, {
   openOverallReportModal, closeOverallReportModal, setOverallReportSort,
   openHistoryModal, closeHistoryModal,
   setBoardSort, setLang,
-  renderMigration, setMigrationSort, openProspectModal, closeProspectModal, saveProspect, deleteProspect, approveProspect,
+  renderMigration, setMigrationSort, setMigrationView, openProspectModal, closeProspectModal, saveProspect, deleteProspect, approveProspect,
+  markProspectFailed, restoreProspect,
   selectMigrationPeriod, openPeriodModal, closePeriodModal, savePeriod, deletePeriod,
   processLead, dismissLead,
   saveSiteLinks,

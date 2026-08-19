@@ -58,6 +58,7 @@ export const state = {
   news: [], // ana sayfadaki "Haberler" bölümünün içeriği (bkz. news.js)
   activityLog: [], // "Aktivite" sekmesindeki admin aktivite kaydı (bkz. activity.js)
   panelMode: null, // null: seçim ekranı, "data": veri paneli, "site": site editörü — her yeni girişte null'a döner (bkz. auth.js)
+  migrationView: "active", // "active" | "failed" — seçili göç döneminde hangi alt liste gösteriliyor (bkz. migration.js -> setMigrationView)
   migrationSortKey: "color",
   migrationSortDir: -1, // -1: varsayılan görünümde Altın üstte, Griye doğru azalan sıra
   currentTab: "members",
@@ -159,6 +160,10 @@ const DICT = {
     processLeadTitle:'Aday Olarak İşle', confirmDismissLead:'Bu başvuruyu reddetmek/silmek istediğinize emin misiniz?',
     toastLeadDismissed:'Başvuru silindi.',
     statMigrationTotal:'Toplam Aday', migrationStatusCertain:'Kesin', migrationStatusUncertain:'Belirsiz',
+    subMigrationActive:'Adaylar', subMigrationFailed:'Başarısız', statMigrationFailedTotal:'Toplam Başarısız',
+    markFailedTitle:'Başarısız İşaretle (Kontenjan Yok)', confirmMarkFailed:'Bu adayı, yeterli kontenjan olmadığı için göç edemedi diye işaretlemek istiyor musunuz? Aday "Başarısız" sekmesine taşınacak.',
+    toastProspectFailed:'Aday başarısız olarak işaretlendi.', restoreProspectTitle:'Aday Listesine Geri Al',
+    emptyMigrationFailedTitle:'Henüz başarısız aday yok', emptyMigrationFailedDesc:'Kontenjan yetersizliği vb. nedenlerle göç edemeyen adaylar burada listelenir.',
     addPeriod:'+ Dönem Ekle', periodAddTitle:'Dönem Ekle', periodEditTitle:'Dönemi Düzenle', lblPeriodLabel:'Dönem Etiketi',
     periodNameRequired:'Dönem etiketi gerekli.', confirmDeletePeriod:'Bu dönemi silmek istediğinize emin misiniz? İçindeki tüm adaylar da silinecek.',
     toastPeriodSaved:'Dönem kaydedildi.', toastPeriodDeleted:'Dönem silindi.',
@@ -239,6 +244,10 @@ const DICT = {
     processLeadTitle:'Process as Candidate', confirmDismissLead:'Are you sure you want to dismiss/delete this request?',
     toastLeadDismissed:'Request deleted.',
     statMigrationTotal:'Total Candidates', migrationStatusCertain:'Certain', migrationStatusUncertain:'Uncertain',
+    subMigrationActive:'Candidates', subMigrationFailed:'Failed', statMigrationFailedTotal:'Total Failed',
+    markFailedTitle:'Mark as Failed (No Slot Available)', confirmMarkFailed:'Mark this candidate as unable to migrate due to insufficient slots? They will move to the "Failed" tab.',
+    toastProspectFailed:'Candidate marked as failed.', restoreProspectTitle:'Restore to Candidate List',
+    emptyMigrationFailedTitle:'No failed candidates yet', emptyMigrationFailedDesc:'Candidates who couldn\'t migrate (e.g. no available slot) are listed here.',
     addPeriod:'+ Add Period', periodAddTitle:'Add Period', periodEditTitle:'Edit Period', lblPeriodLabel:'Period Label',
     periodNameRequired:'Period label is required.', confirmDeletePeriod:'Are you sure you want to delete this period? All candidates in it will also be deleted.',
     toastPeriodSaved:'Period saved.', toastPeriodDeleted:'Period deleted.',
@@ -319,6 +328,10 @@ const DICT = {
     processLeadTitle:'Als Kandidat bearbeiten', confirmDismissLead:'Diese Anfrage wirklich ablehnen/löschen?',
     toastLeadDismissed:'Anfrage gelöscht.',
     statMigrationTotal:'Kandidaten gesamt', migrationStatusCertain:'Sicher', migrationStatusUncertain:'Unsicher',
+    subMigrationActive:'Kandidaten', subMigrationFailed:'Gescheitert', statMigrationFailedTotal:'Gescheitert gesamt',
+    markFailedTitle:'Als gescheitert markieren (kein Platz frei)', confirmMarkFailed:'Diesen Kandidaten als "konnte wegen Platzmangel nicht migrieren" markieren? Er wird in den Tab "Gescheitert" verschoben.',
+    toastProspectFailed:'Kandidat als gescheitert markiert.', restoreProspectTitle:'Zurück zur Kandidatenliste',
+    emptyMigrationFailedTitle:'Noch keine gescheiterten Kandidaten', emptyMigrationFailedDesc:'Kandidaten, die nicht migrieren konnten (z. B. kein freier Platz), werden hier aufgelistet.',
     addPeriod:'+ Zeitraum hinzufügen', periodAddTitle:'Zeitraum hinzufügen', periodEditTitle:'Zeitraum bearbeiten', lblPeriodLabel:'Zeitraumbezeichnung',
     periodNameRequired:'Zeitraumbezeichnung erforderlich.', confirmDeletePeriod:'Diesen Zeitraum wirklich löschen? Alle Kandidaten darin werden ebenfalls gelöscht.',
     toastPeriodSaved:'Zeitraum gespeichert.', toastPeriodDeleted:'Zeitraum gelöscht.',
@@ -399,6 +412,10 @@ const DICT = {
     processLeadTitle:'Procesar como Candidato', confirmDismissLead:'¿Seguro que quieres rechazar/eliminar esta solicitud?',
     toastLeadDismissed:'Solicitud eliminada.',
     statMigrationTotal:'Total de candidatos', migrationStatusCertain:'Seguro', migrationStatusUncertain:'Incierto',
+    subMigrationActive:'Candidatos', subMigrationFailed:'Fallidos', statMigrationFailedTotal:'Total Fallidos',
+    markFailedTitle:'Marcar como Fallido (Sin Cupo)', confirmMarkFailed:'¿Marcar a este candidato como no pudo migrar por falta de cupo? Se moverá a la pestaña "Fallidos".',
+    toastProspectFailed:'Candidato marcado como fallido.', restoreProspectTitle:'Restaurar a la Lista de Candidatos',
+    emptyMigrationFailedTitle:'Aún no hay candidatos fallidos', emptyMigrationFailedDesc:'Los candidatos que no pudieron migrar (p. ej. sin cupo disponible) se listan aquí.',
     addPeriod:'+ Añadir periodo', periodAddTitle:'Añadir periodo', periodEditTitle:'Editar periodo', lblPeriodLabel:'Etiqueta del periodo',
     periodNameRequired:'La etiqueta del periodo es obligatoria.', confirmDeletePeriod:'¿Seguro que quieres eliminar este periodo? También se eliminarán todos los candidatos que contiene.',
     toastPeriodSaved:'Periodo guardado.', toastPeriodDeleted:'Periodo eliminado.',
@@ -479,6 +496,10 @@ const DICT = {
     processLeadTitle:'Traiter comme Candidat', confirmDismissLead:'Voulez-vous vraiment rejeter/supprimer cette demande ?',
     toastLeadDismissed:'Demande supprimée.',
     statMigrationTotal:'Total des candidats', migrationStatusCertain:'Certain', migrationStatusUncertain:'Incertain',
+    subMigrationActive:'Candidats', subMigrationFailed:'Échoués', statMigrationFailedTotal:'Total Échoués',
+    markFailedTitle:"Marquer comme échoué (pas de place disponible)", confirmMarkFailed:"Marquer ce candidat comme n'ayant pas pu migrer faute de place ? Il sera déplacé vers l'onglet « Échoués ».",
+    toastProspectFailed:'Candidat marqué comme échoué.', restoreProspectTitle:'Restaurer dans la liste des candidats',
+    emptyMigrationFailedTitle:"Aucun candidat échoué pour l'instant", emptyMigrationFailedDesc:"Les candidats n'ayant pas pu migrer (ex. pas de place disponible) sont listés ici.",
     addPeriod:'+ Ajouter une période', periodAddTitle:'Ajouter une période', periodEditTitle:'Modifier la période', lblPeriodLabel:'Libellé de la période',
     periodNameRequired:'Le libellé de la période est requis.', confirmDeletePeriod:'Voulez-vous vraiment supprimer cette période ? Tous les candidats qu\'elle contient seront également supprimés.',
     toastPeriodSaved:'Période enregistrée.', toastPeriodDeleted:'Période supprimée.',
@@ -673,6 +694,8 @@ export function applyStaticText() {
   document.getElementById("t_thServer").textContent = t("thServer");
   document.getElementById("t_emptyMigrationTitle").textContent = t("emptyMigrationTitle");
   document.getElementById("t_emptyMigrationDesc").textContent = t("emptyMigrationDesc");
+  document.getElementById("t_subMigrationActive").textContent = t("subMigrationActive");
+  document.getElementById("t_subMigrationFailed").textContent = t("subMigrationFailed");
   document.getElementById("t_lblProspectName").textContent = t("lblUsername");
   document.getElementById("t_lblProspectId").textContent = t("lblGameId");
   document.getElementById("t_lblProspectPower").textContent = t("lblPower");

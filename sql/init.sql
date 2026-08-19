@@ -250,6 +250,7 @@ create table if not exists migration_prospects (
   server      bigint, -- adayın şu an hangi sunucuda olduğu
   color       text not null default 'unknown' check (color in ('gold','purple','blue','gray','unknown')), -- göç unvanı: Altın > Mor > Mavi > Gri > Bilinmiyor
   status      text not null default 'uncertain' check (status in ('certain','uncertain')), -- bize kesin mi belirsiz mi geleceği (Göç Planı)
+  failed      boolean not null default false, -- kontenjan yetersizliği vb. nedenlerle göç edemedi (bkz. add_migration_failed.sql)
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );
