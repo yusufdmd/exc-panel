@@ -154,26 +154,28 @@ section{ padding:88px 24px; }
 .section-head p{ margin-top:14px; color:var(--text-muted); font-size:15px; line-height:1.7; }
 
 /* Hakkımızda / Göçe Katıl / YouTube bölümleri, gönderilen afiş
-   görsellerini TÜM bölümü kaplayan bir arka plan (ana plan) olarak
-   kullanır — hero'daki .hero-bg ile aynı mantık. Görsellerin içindeki
-   İngilizce başlık/açıklama koyu geçişle bastırılır; üstte GERÇEK,
-   çok dilli .section-head metni okunaklı şekilde render edilir, böylece
-   her dil kendi çevirisini görür, sadece İngilizce görmez. */
+   görsellerini bölümün TAMAMINI kaplayan bir arka plan (ana plan) olarak
+   kullanır — hero'daki .hero-bg ile aynı mantık. Ama görselin içindeki
+   İngilizce başlık aynı yerde GERÇEK metinle çakışınca (blur/karartma ne
+   kadar artırılsa da) okunaksız bir karmaşaya dönüşüyordu — o yüzden
+   metin ve görsel artık AYNI pikselleri paylaşmıyor: gerçek içerik
+   yarı saydam koyu bir "pano" (.section-plate) üzerinde duruyor, afiş
+   sadece panonun etrafında/kenarlarında görünüyor. */
 .section-with-bg{ position:relative; overflow:hidden; }
 .section-bg{
-  position:absolute; inset:0; z-index:0;
+  position:absolute; inset:-24px; z-index:0;
   background-size:cover; background-position:center; background-repeat:no-repeat;
+  filter: blur(3px) brightness(0.8) saturate(0.95);
 }
-.section-bg::after{
-  content:''; position:absolute; inset:0;
-  background: linear-gradient(180deg, rgba(7,10,16,0.82) 0%, rgba(7,10,16,0.55) 35%, rgba(7,10,16,0.82) 100%);
+.section-with-bg .section-plate,
+.section-with-bg .migrate-wrap{
+  position:relative; z-index:1;
+  max-width:1040px; margin:0 auto;
+  background: rgba(7,10,16,0.9);
+  border:1px solid rgba(224,166,58,0.25);
+  border-radius:20px;
+  padding:48px 40px;
 }
-.section-with-bg .section-head,
-.section-with-bg .about-grid,
-.section-with-bg .migrate-wrap,
-.section-with-bg .media-card{ position:relative; z-index:1; }
-.section-with-bg .section-head h2{ text-shadow: 0 2px 16px rgba(0,0,0,0.7); }
-.section-with-bg .section-head p{ color:var(--text-primary); text-shadow: 0 2px 10px rgba(0,0,0,0.7); }
 
 /* Hakkımızda kart grid */
 .about-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; max-width:1180px; margin:0 auto; }
