@@ -216,6 +216,7 @@ footer{ border-top:1px solid var(--line); padding:36px 24px; }
   color:var(--text-muted); text-decoration:none; font-size:14px; transition: border-color .15s, color .15s;
 }
 .social-links a:hover{ border-color:var(--gold); color:var(--gold-soft); }
+.social-links a svg{ width:17px; height:17px; }
 .footer-copy{ font-size:11px; color:var(--text-dim); }
 
 @media (max-width: 860px){
