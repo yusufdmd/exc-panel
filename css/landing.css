@@ -147,6 +147,25 @@ a{ color:inherit; }
    Genel bölüm düzeni
    --------------------------------------------------------------------- */
 section{ padding:88px 24px; }
+
+/* Hakkımızda / Göçe Katıl / YouTube bölümlerinin arka planına atmosfer
+   sanatı eklemek için ortak katman — hero'daki .hero-bg ile aynı mantık:
+   tam kaplayan görsel + üstte koyu geçiş, gerçek içerik (kart/form/buton)
+   bunun üzerinde okunaklı kalsın diye z-index:1 alıyor. */
+.section-with-bg{ position:relative; overflow:hidden; }
+.section-bg{
+  position:absolute; inset:0; z-index:0;
+  background-size:cover; background-position:center; background-repeat:no-repeat;
+}
+.section-bg::after{
+  content:''; position:absolute; inset:0;
+  background: linear-gradient(180deg, rgba(7,10,16,0.88) 0%, rgba(7,10,16,0.72) 40%, rgba(7,10,16,0.88) 100%);
+}
+.section-with-bg .section-head,
+.section-with-bg .about-grid,
+.section-with-bg .migrate-wrap,
+.section-with-bg .media-card{ position:relative; z-index:1; }
+
 .section-head{ text-align:center; max-width:640px; margin:0 auto 48px; }
 .section-tag{ font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--gold-soft); }
 .section-head h2{ font-family:var(--font-display); font-size:clamp(28px,4vw,38px); margin-top:10px; letter-spacing:0.5px; }
@@ -179,7 +198,7 @@ section{ padding:88px 24px; }
 /* ---------------------------------------------------------------------
    Göçe Katıl formu
    --------------------------------------------------------------------- */
-.migrate-section{ background:var(--bg-panel); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+.migrate-section{ border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
 .migrate-wrap{ max-width:640px; margin:0 auto; }
 .lead-form{ display:grid; gap:16px; margin-top:36px; }
 .lead-form .row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
