@@ -142,6 +142,17 @@ export function renderBoard() {
     return 0;
   });
 
+  // Katılım sütununa göre sıralıyken, %50 eşiğinin altına düşen ilk satırın
+  // index'ini bulup ona ayırıcı bir üst çizgi (threshold-cut) ekliyoruz.
+  let thresholdIndex = -1;
+  if (state.boardSortKey === "participation") {
+    for (let i = 1; i < rows.length; i++) {
+      const prevAbove = rows[i - 1].participation.pct != null && rows[i - 1].participation.pct >= PARTICIPATION_THRESHOLD;
+      const currAbove = rows[i].participation.pct != null && rows[i].participation.pct >= PARTICIPATION_THRESHOLD;
+      if (prevAbove !== currAbove) { thresholdIndex = i; break; }
+    }
+  }
+
   wrap.innerHTML = `
     <table>
       <thead>
@@ -159,8 +170,8 @@ export function renderBoard() {
         </tr>
       </thead>
       <tbody>
-        ${rows.map((row) => `
-          <tr>
+        ${rows.map((row, i) => `
+          <tr class="${i === thresholdIndex ? "threshold-cut" : ""}">
             <td><span class="rank-badge ${rankClass(row.member.rank)}" style="font-size:11px;padding:2px 8px;">${row.member.rank}</span></td>
             <td class="member-name member-name-link" onclick="openHistoryModal('${row.member.id}')" title="${t("powerHistory")}">${escapeHtml(row.member.name)}</td>
             <td class="num-cell"><span class="cell-pill ${gvgColorClass(row.gvgPts)}">${row.gvgPts}</span></td>
