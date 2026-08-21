@@ -7,6 +7,23 @@
 <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
+<script>
+  // Tema tercihini JS modülleri yüklenmeden ÖNCE uygular, böylece sayfa
+  // önce koyu (varsayılan CSS), sonra açık temaya "yanıp sönmez" (FOUC).
+  // Anahtar js/ui.js -> THEME_STORAGE_KEY ile AYNI olmalı.
+  (function () {
+    try {
+      if (localStorage.getItem('exc-theme') !== 'dark') document.body.classList.add('light-theme');
+    } catch (e) {
+      document.body.classList.add('light-theme');
+    }
+  })();
+</script>
+
+<button class="theme-toggle-fab" id="themeToggle" onclick="toggleTheme()" title="Tema">
+  <svg id="themeIconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+  <svg id="themeIconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+</button>
 
 <div class="auth-gate" id="authGate">
   <div class="auth-gate-box">
@@ -157,8 +174,8 @@
     <div class="subpanel active" id="sub-svs">
       <div class="event-toolbar">
         <div class="legend">
-          <span><i class="sw" style="background:var(--success)"></i><span id="t_legendJoined">Katıldı</span></span>
-          <span><i class="sw" style="background:var(--danger)"></i><span id="t_legendNotJoined">Katılmadı</span></span>
+          <span><i class="sw" style="background:var(--success-ink)"></i><span id="t_legendJoined">Katıldı</span></span>
+          <span><i class="sw" style="background:var(--danger-ink)"></i><span id="t_legendNotJoined">Katılmadı</span></span>
           <span><i class="sw" style="background:var(--text-dim)"></i><span id="t_legendUnknown">Bilgi Yok</span></span>
         </div>
         <button class="btn-ghost" onclick="openOverallReportModal('svs')" id="t_overallReport_svs">📊 Genel Rapor</button>
@@ -172,9 +189,9 @@
     <div class="subpanel" id="sub-gvg">
       <div class="event-toolbar">
         <div class="legend">
-          <span><i class="sw" style="background:var(--success)"></i>≥ 43.500.000</span>
-          <span><i class="sw" style="background:var(--warn)"></i>13.200.000 – 43.499.999</span>
-          <span><i class="sw" style="background:var(--danger)"></i>≤ 13.199.999</span>
+          <span><i class="sw" style="background:var(--success-ink)"></i>≥ 43.500.000</span>
+          <span><i class="sw" style="background:var(--warn-ink)"></i>13.200.000 – 43.499.999</span>
+          <span><i class="sw" style="background:var(--danger-ink)"></i>≤ 13.199.999</span>
         </div>
         <button class="btn-ghost" onclick="openOverallReportModal('gvg')" id="t_overallReport_gvg">📊 Genel Rapor</button>
         <button class="btn-primary admin-only" onclick="openWeekModal('gvg')" id="t_addWeek_gvg">+ Hafta Ekle</button>
@@ -187,8 +204,8 @@
     <div class="subpanel" id="sub-ss">
       <div class="event-toolbar">
         <div class="legend">
-          <span><i class="sw" style="background:var(--success)"></i><span id="t_legendAttended">Kayıtlı ve Katıldı</span></span>
-          <span><i class="sw" style="background:var(--danger)"></i><span id="t_legendRegNotAttend">Kayıtlı, Katılmadı</span></span>
+          <span><i class="sw" style="background:var(--success-ink)"></i><span id="t_legendAttended">Kayıtlı ve Katıldı</span></span>
+          <span><i class="sw" style="background:var(--danger-ink)"></i><span id="t_legendRegNotAttend">Kayıtlı, Katılmadı</span></span>
           <span><i class="sw" style="background:var(--text-dim)"></i><span id="t_legendNoReg">Kayıt Yok</span></span>
         </div>
         <button class="btn-ghost" onclick="openOverallReportModal('ss')" id="t_overallReport_ss">📊 Genel Rapor</button>
@@ -202,8 +219,8 @@
     <div class="subpanel" id="sub-kod">
       <div class="event-toolbar">
         <div class="legend">
-          <span><i class="sw" style="background:var(--success)"></i><span id="t_legendJoinedKod">Katıldı</span></span>
-          <span><i class="sw" style="background:var(--danger)"></i><span id="t_legendNotJoinedKod">Katılmadı</span></span>
+          <span><i class="sw" style="background:var(--success-ink)"></i><span id="t_legendJoinedKod">Katıldı</span></span>
+          <span><i class="sw" style="background:var(--danger-ink)"></i><span id="t_legendNotJoinedKod">Katılmadı</span></span>
           <span><i class="sw" style="background:var(--text-dim)"></i><span id="t_legendUnknownKod">Bilgi Yok</span></span>
         </div>
         <button class="btn-ghost" onclick="openOverallReportModal('kod')" id="t_overallReport_kod">📊 Genel Rapor</button>
@@ -217,8 +234,8 @@
     <div class="subpanel" id="sub-other">
       <div class="event-toolbar">
         <div class="legend">
-          <span><i class="sw" style="background:var(--success)"></i><span id="t_legendJoinedOther">Katıldı</span></span>
-          <span><i class="sw" style="background:var(--danger)"></i><span id="t_legendNotJoinedOther">Katılmadı</span></span>
+          <span><i class="sw" style="background:var(--success-ink)"></i><span id="t_legendJoinedOther">Katıldı</span></span>
+          <span><i class="sw" style="background:var(--danger-ink)"></i><span id="t_legendNotJoinedOther">Katılmadı</span></span>
           <span><i class="sw" style="background:var(--text-dim)"></i><span id="t_legendUnknownOther">Bilgi Yok</span></span>
         </div>
         <button class="btn-ghost" onclick="openOverallReportModal('other')" id="t_overallReport_other">📊 Genel Rapor</button>

@@ -175,11 +175,11 @@ export function renderBoard() {
             <td><span class="rank-badge ${rankClass(row.member.rank)}" style="font-size:11px;padding:2px 8px;">${row.member.rank}</span></td>
             <td class="member-name member-name-link" onclick="openHistoryModal('${row.member.id}')" title="${t("powerHistory")}">${escapeHtml(row.member.name)}</td>
             <td class="num-cell"><span class="cell-pill ${gvgColorClass(row.gvgPts)}">${row.gvgPts}</span></td>
-            <td class="num-cell" style="color:var(--cyan); font-weight:700;">${row.svsPts}</td>
+            <td class="num-cell" style="color:var(--cyan-ink); font-weight:700;">${row.svsPts}</td>
             <td class="num-cell">${formatRatio(row.svsRatio.num, row.svsRatio.den)}</td>
             <td class="num-cell">${formatRatio(row.ssRatio.num, row.ssRatio.den)}</td>
             <td class="num-cell">${formatRatio(row.kodRatio.num, row.kodRatio.den)}</td>
-            <td class="num-cell" style="color:var(--cyan); font-weight:700;">${row.otherPts}</td>
+            <td class="num-cell" style="color:var(--cyan-ink); font-weight:700;">${row.otherPts}</td>
             <td class="num-cell">${formatRatio(row.otherRatio.num, row.otherRatio.den)}</td>
             <td class="num-cell">${participationCellHtml(row.participation)}</td>
           </tr>

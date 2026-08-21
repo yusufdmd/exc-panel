@@ -477,9 +477,9 @@ function buildHistoryChart(history) {
     return { x, y, h };
   });
   const polylinePoints = points.map((p) => p.x.toFixed(1) + "," + p.y.toFixed(1)).join(" ");
-  const circles = points.map((p) => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="var(--cyan)" stroke="var(--bg-panel)" stroke-width="2"><title>${escapeHtml(p.h.date)}: ${formatPower(p.h.power)}</title></circle>`).join("");
+  const circles = points.map((p) => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="var(--cyan-ink)" stroke="var(--bg-panel)" stroke-width="2"><title>${escapeHtml(p.h.date)}: ${formatPower(p.h.power)}</title></circle>`).join("");
   return `<svg viewBox="0 0 ${width} ${height}" style="width:100%; height:150px; display:block; margin-bottom:16px;">
-    <polyline points="${polylinePoints}" fill="none" stroke="var(--cyan)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    <polyline points="${polylinePoints}" fill="none" stroke="var(--cyan-ink)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
     ${circles}
   </svg>`;
 }
@@ -567,7 +567,7 @@ function buildNameHistoryHtml(member) {
   }
   if (userChanged.length) {
     const items = userChanged.map((entry) => `${escapeHtml(entry.name)} (${entry.changedAt})`).join(", ");
-    html += `<div style="margin-bottom:8px; font-size:12px; color:var(--warn);">
+    html += `<div style="margin-bottom:8px; font-size:12px; color:var(--warn-ink);">
       <span style="text-transform:uppercase; letter-spacing:0.5px;">${t("userChangedHistoryLabel")}:</span>
       ${items}
     </div>`;
@@ -600,7 +600,7 @@ export function openHistoryModal(id) {
     let deltaHtml = '<span style="color:var(--text-dim);">—</span>';
     if (previousPower != null) {
       const delta = Number(entry.power) - Number(previousPower);
-      const color = delta > 0 ? "var(--success)" : delta < 0 ? "var(--danger)" : "var(--text-dim)";
+      const color = delta > 0 ? "var(--success-ink)" : delta < 0 ? "var(--danger-ink)" : "var(--text-dim)";
       const sign = delta > 0 ? "+" : "";
       deltaHtml = `<span style="color:${color}; font-family:var(--font-mono); font-weight:700;">${sign}${formatPower(delta)}</span>`;
     }

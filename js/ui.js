@@ -30,6 +30,7 @@ import {
 // Sabitler
 // ---------------------------------------------------------------------
 const LANGUAGE_STORAGE_KEY = "exc-lang";
+const THEME_STORAGE_KEY = "exc-theme"; // panel/index.html'deki FOUC-önleyici satır-içi script ile AYNI anahtar
 const TOAST_DISPLAY_DURATION_MS = 2200;
 const LANG_FLAG_LABELS = { tr: "TR", en: "EN", de: "DE", es: "ES", fr: "FR" };
 
@@ -81,7 +82,8 @@ export const state = {
   historyMemberId: null,
   isAdmin: false,
   isMember: false, // true: salt okunur "üye" rolü (bkz. sql/add_member_role.sql) — Üyeler/Etkinlikler/Puan Sıralaması görür, düzenleyemez, Göç/Aktivite/Site Editörü'nü hiç görmez
-  currentAdminUsername: "" // auth.js buraya Supabase oturumundaki sahte email'i (bkz. ADMIN_LOGIN_DOMAIN) DEĞİL, kullanıcıya gösterilecek çıplak kullanıcı adını yazar
+  currentAdminUsername: "", // auth.js buraya Supabase oturumundaki sahte email'i (bkz. ADMIN_LOGIN_DOMAIN) DEĞİL, kullanıcıya gösterilecek çıplak kullanıcı adını yazar
+  currentTheme: "light" // "light" | "dark" — varsayılan açık; koyu mod tercihe bağlı (bkz. initThemeFromStorage/setTheme). panel/index.html'deki satır-içi script, JS modülleri yüklenmeden ÖNCE body sınıfını aynı localStorage anahtarına göre uygulayıp yanıp-sönmeyi (FOUC) önler.
 };
 
 export { RANK_ORDER, MIGRATION_COLORS, MIGRATION_COLOR_ORDER };
@@ -222,7 +224,8 @@ const DICT = {
     elementWater:'Su', elementFire:'Ateş', elementEarth:'Toprak', elementElectric:'Elektrik', elementNone:'Element Yok',
     tabActivity:'Aktivite', thWhen:'Tarih', thAdmin:'Admin', thAction:'İşlem', thEntity:'Üye',
     actionCreated:'Eklendi', actionUpdated:'Güncellendi', actionDeleted:'Silindi', actionRestored:'Geri Alındı',
-    emptyActivityTitle:'Henüz aktivite yok', emptyActivityDesc:'Üye ekleme/düzenleme/silme işlemleri burada listelenecek.' },
+    emptyActivityTitle:'Henüz aktivite yok', emptyActivityDesc:'Üye ekleme/düzenleme/silme işlemleri burada listelenecek.',
+    switchToDark:'Koyu temaya geç', switchToLight:'Açık temaya geç' },
   en: { appName:'EXC Panel', tagline:'Members · Rank · Power & Camp Level · Event Tracking', refresh:'Refresh', backToSite:'← Back to Site',
     syncConnecting:'Connecting…', syncLive:'Live — everyone sees this', syncError:'Connection error',
     tabMembers:'Members', tabEvents:'Events', tabBoard:'Leaderboard', tabMigration:'Migration',
@@ -309,7 +312,8 @@ const DICT = {
     elementWater:'Water', elementFire:'Fire', elementEarth:'Earth', elementElectric:'Electric', elementNone:'No Element',
     tabActivity:'Activity', thWhen:'Date', thAdmin:'Admin', thAction:'Action', thEntity:'Member',
     actionCreated:'Created', actionUpdated:'Updated', actionDeleted:'Deleted', actionRestored:'Restored',
-    emptyActivityTitle:'No activity yet', emptyActivityDesc:'Member add/edit/delete actions will be listed here.' },
+    emptyActivityTitle:'No activity yet', emptyActivityDesc:'Member add/edit/delete actions will be listed here.',
+    switchToDark:'Switch to dark theme', switchToLight:'Switch to light theme' },
   de: { appName:'EXC Panel', tagline:'Mitglieder · Rang · Machtstufe & Basisstufe · Event-Tracking', refresh:'Aktualisieren', backToSite:'← Zur Website',
     syncConnecting:'Verbinde…', syncLive:'Live — alle sehen dies', syncError:'Verbindungsfehler',
     tabMembers:'Mitglieder', tabEvents:'Events', tabBoard:'Bestenliste', tabMigration:'Migration',
@@ -396,7 +400,8 @@ const DICT = {
     elementWater:'Wasser', elementFire:'Feuer', elementEarth:'Erde', elementElectric:'Elektro', elementNone:'Kein Element',
     tabActivity:'Aktivität', thWhen:'Datum', thAdmin:'Admin', thAction:'Aktion', thEntity:'Mitglied',
     actionCreated:'Erstellt', actionUpdated:'Aktualisiert', actionDeleted:'Gelöscht', actionRestored:'Wiederhergestellt',
-    emptyActivityTitle:'Noch keine Aktivität', emptyActivityDesc:'Mitglied hinzufügen/bearbeiten/löschen wird hier aufgelistet.' },
+    emptyActivityTitle:'Noch keine Aktivität', emptyActivityDesc:'Mitglied hinzufügen/bearbeiten/löschen wird hier aufgelistet.',
+    switchToDark:'Zum dunklen Thema wechseln', switchToLight:'Zum hellen Thema wechseln' },
   es: { appName:'Panel EXC', tagline:'Miembros · Rango · Poder y Nivel de Campamento · Seguimiento de Eventos', refresh:'Actualizar', backToSite:'← Volver al Sitio',
     syncConnecting:'Conectando…', syncLive:'En vivo — todos lo ven', syncError:'Error de conexión',
     tabMembers:'Miembros', tabEvents:'Eventos', tabBoard:'Clasificación', tabMigration:'Migración',
@@ -483,7 +488,8 @@ const DICT = {
     elementWater:'Agua', elementFire:'Fuego', elementEarth:'Tierra', elementElectric:'Eléctrico', elementNone:'Sin Elemento',
     tabActivity:'Actividad', thWhen:'Fecha', thAdmin:'Admin', thAction:'Acción', thEntity:'Miembro',
     actionCreated:'Creado', actionUpdated:'Actualizado', actionDeleted:'Eliminado', actionRestored:'Restaurado',
-    emptyActivityTitle:'Aún no hay actividad', emptyActivityDesc:'Las acciones de agregar/editar/eliminar miembros se listarán aquí.' },
+    emptyActivityTitle:'Aún no hay actividad', emptyActivityDesc:'Las acciones de agregar/editar/eliminar miembros se listarán aquí.',
+    switchToDark:'Cambiar a tema oscuro', switchToLight:'Cambiar a tema claro' },
   fr: { appName:'Panneau EXC', tagline:'Membres · Rang · Puissance et Niveau de Camp · Suivi des Événements', refresh:'Actualiser', backToSite:'← Retour au Site',
     syncConnecting:'Connexion…', syncLive:'En direct — visible par tous', syncError:'Erreur de connexion',
     tabMembers:'Membres', tabEvents:'Événements', tabBoard:'Classement', tabMigration:'Migration',
@@ -570,7 +576,8 @@ const DICT = {
     elementWater:'Eau', elementFire:'Feu', elementEarth:'Terre', elementElectric:'Électrique', elementNone:'Aucun Élément',
     tabActivity:'Activité', thWhen:'Date', thAdmin:'Admin', thAction:'Action', thEntity:'Membre',
     actionCreated:'Créé', actionUpdated:'Mis à jour', actionDeleted:'Supprimé', actionRestored:'Restauré',
-    emptyActivityTitle:'Aucune activité pour le moment', emptyActivityDesc:'Les ajouts/modifications/suppressions de membres seront listés ici.' }
+    emptyActivityTitle:'Aucune activité pour le moment', emptyActivityDesc:'Les ajouts/modifications/suppressions de membres seront listés ici.',
+    switchToDark:'Passer au thème sombre', switchToLight:'Passer au thème clair' }
 };
 
 /**
@@ -765,6 +772,7 @@ export function applyStaticText() {
   buildCampOptions();
   buildMigrationColorOptions();
   document.title = t("appName");
+  updateThemeToggleUI();
 }
 
 /**
@@ -789,6 +797,50 @@ export function persistLanguage(lang) {
   } catch (error) {
     // Depolama kullanılamıyorsa tercih sadece bu oturum için geçerli olur.
   }
+}
+
+/**
+ * Tarayıcıda kayıtlı tema tercihini `state.currentTheme`'e yükler
+ * (varsayılan "light"). Sayfa gövdesindeki `light-theme` sınıfı zaten
+ * panel/index.html'in en başındaki satır-içi script tarafından JS
+ * modülleri yüklenmeden ÖNCE uygulanmış olur — burada sadece uygulama
+ * durumunu (state) o kararla eşitliyoruz, sınıfı tekrar değiştirmiyoruz.
+ */
+export function initThemeFromStorage() {
+  try {
+    const saved = localStorage.getItem(THEME_STORAGE_KEY);
+    state.currentTheme = saved === "dark" ? "dark" : "light";
+  } catch (error) {
+    state.currentTheme = "light";
+  }
+}
+
+/** Açık/koyu temayı değiştirir, body sınıfını günceller ve tercihi kaydeder. */
+export function setTheme(theme) {
+  state.currentTheme = theme === "dark" ? "dark" : "light";
+  document.body.classList.toggle("light-theme", state.currentTheme === "light");
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, state.currentTheme);
+  } catch (error) {
+    // Depolama kullanılamıyorsa tercih sadece bu oturum için geçerli olur.
+  }
+  updateThemeToggleUI();
+}
+
+export function toggleTheme() {
+  setTheme(state.currentTheme === "dark" ? "light" : "dark");
+}
+
+/** Tema düğmesindeki ikonu ve başlığı geçerli temaya göre günceller. */
+export function updateThemeToggleUI() {
+  const sun = document.getElementById("themeIconSun");
+  const moon = document.getElementById("themeIconMoon");
+  const btn = document.getElementById("themeToggle");
+  if (!sun || !moon) return;
+  const isLight = state.currentTheme === "light";
+  sun.style.display = isLight ? "" : "none";
+  moon.style.display = isLight ? "none" : "";
+  if (btn) btn.title = t(isLight ? "switchToDark" : "switchToLight");
 }
 
 // =====================================================================

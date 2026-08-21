@@ -309,8 +309,8 @@ function buildStatusReportHtml(store, week, members) {
     if (status === "joined") joined.push(member.name);
     else if (status === "absent") absent.push(entry.excused ? member.name + " (M)" : member.name);
   });
-  return reportSection(t("legendJoined"), "var(--success)", joined)
-    + reportSection(t("legendNotJoined"), "var(--danger)", absent);
+  return reportSection(t("legendJoined"), "var(--success-ink)", joined)
+    + reportSection(t("legendNotJoined"), "var(--danger-ink)", absent);
 }
 
 /** SS türü haftalık rapor: A/B grubu ayrı ayrı katıldı/katılmadı listeleri. */
@@ -325,8 +325,8 @@ function buildSsReportHtml(store, week, members) {
   });
   const groupSection = (label, bucket) => `<div style="margin-bottom:8px;">
       <div style="font-size:13px; font-weight:700; margin-bottom:8px;">${escapeHtml(label)}</div>
-      ${reportSection(t("legendJoined"), "var(--success)", bucket.joined)}
-      ${reportSection(t("legendNotJoined"), "var(--danger)", bucket.absent)}
+      ${reportSection(t("legendJoined"), "var(--success-ink)", bucket.joined)}
+      ${reportSection(t("legendNotJoined"), "var(--danger-ink)", bucket.absent)}
     </div>`;
   return groupSection(t("groupA"), groups.A) + groupSection(t("groupB"), groups.B);
 }
@@ -339,9 +339,9 @@ function buildGvgReportHtml(store, week, members) {
     const points = entry ? (Number(entry.points) || 0) : 0;
     zones[gvgColorClass(points)].push(member.name + " (" + formatPower(points) + ")");
   });
-  return reportSection(t("zoneGreen"), "var(--success)", zones["pill-green"])
-    + reportSection(t("zoneYellow"), "var(--warn)", zones["pill-yellow"])
-    + reportSection(t("zoneRed"), "var(--danger)", zones["pill-red"]);
+  return reportSection(t("zoneGreen"), "var(--success-ink)", zones["pill-green"])
+    + reportSection(t("zoneYellow"), "var(--warn-ink)", zones["pill-yellow"])
+    + reportSection(t("zoneRed"), "var(--danger-ink)", zones["pill-red"]);
 }
 
 /** Herkesin görebildiği, salt okunur haftalık katılım/puan raporunu açar. */
@@ -393,7 +393,7 @@ function buildOverallReportRow(type, store, member) {
 function buildOverallReportRowGvg(store, member) {
   const total = sumGvgPoints(store, member.id);
   const chips = store.weeks.map((week) => overallReportChip(week, gvgCellInfo(store, member, week))).join("");
-  return { member, sortValue: total, summaryHtml: `<span style="color:var(--cyan); font-weight:700;">${formatPower(total)}</span>`, chips };
+  return { member, sortValue: total, summaryHtml: `<span style="color:var(--cyan-ink); font-weight:700;">${formatPower(total)}</span>`, chips };
 }
 
 /** Genel rapor satırlarını, tıklanan sütuna göre (lider tablosuyla aynı desende) sıralar. */

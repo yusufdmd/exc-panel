@@ -18,7 +18,7 @@
 
 import { getMembers, getAllPowerHistory, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, getSiteLinks, getNews, getRecentActivity, subscribeToTables } from "./database.js";
 import { POLL_INTERVAL_MS } from "./config.js";
-import { state, t, showToast, buildLangSwitch, applyStaticText, initLangFromStorage, persistLanguage, renderAll, registerDataLoader, registerRenderer } from "./ui.js";
+import { state, t, showToast, buildLangSwitch, applyStaticText, initLangFromStorage, persistLanguage, initThemeFromStorage, toggleTheme, renderAll, registerDataLoader, registerRenderer } from "./ui.js";
 import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember, openHistoryModal, closeHistoryModal, setMemberView, setRankFilter, setElementFilter, setSort } from "./members.js";
 import { mapWeek, mapEntry, openWeekModal, closeWeekModal, saveWeek, deleteWeek, openEntryModal, closeEntryModal, renderEntryRows, saveEntry, openWeekReportModal, closeWeekReportModal, openOverallReportModal, closeOverallReportModal, setOverallReportSort } from "./events.js";
 import { setBoardSort, openParticipationReportModal, closeParticipationReportModal } from "./dashboard.js";
@@ -244,12 +244,13 @@ Object.assign(window, {
   saveSiteLinks,
   openNewsModal, closeNewsModal, saveNews, deleteNews,
   selectPanelMode, backToChooser,
-  doLogin, doLogout
+  doLogin, doLogout, toggleTheme
 });
 
 // =====================================================================
 // BAŞLANGIÇ
 // =====================================================================
 initLangFromStorage();
+initThemeFromStorage();
 buildLangSwitch();
 applyStaticText();
