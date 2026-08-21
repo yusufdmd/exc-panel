@@ -74,6 +74,7 @@ export const state = {
   entryContext: null, // { type: 'svs'|'gvg'|'ss'|'other', weekId }
   boardSortKey: "gvgPts",
   boardSortDir: -1,
+  boardSearch: "",
   overallReportType: null,
   overallReportSortKey: "rank",
   overallReportSortDir: -1,
@@ -195,6 +196,8 @@ const DICT = {
     entryTitleOther:'Diğer Etkinlik Girişi', thStatus:'Durum',
     lbRankCol:'Sıra', lbMember:'Üye', lbGvgTotal:'GVG Toplam', lbSvsTotal:'SVS Toplam', lbSvsRatio:'SVS Katılım', lbSsRatio:'SS Katılım', lbKodRatio:'KoD Katılım', lbOtherTotal:'Diğer Toplam', lbOtherRatio:'Diğer Katılım',
     lbParticipation:'Genel Katılım (Son 4 Hafta)', belowThresholdTitle:'Katılım %50\'nin altında',
+    participationReportBtn:'📊 Katılım Raporu', participationReportTitle:'Katılım Raporu',
+    groupAboveThreshold:'🟢 Eşik Üstü (≥ %50)', groupBelowThreshold:'🔴 Eşik Altı (< %50)', groupNoData:'⚪ Henüz Veri Yok',
     exemptLabel:'Muaf', powerHistory:'Güç Geçmişi', restoreMember:'Aktif Üyeye Al',
     exportBackupLabel:'Yedekle', importBackupLabel:'İçe Aktar', backupSuccess:'Yedek indirildi.',
     importConfirm:'Bu dosyadaki veriler herkesin gördüğü ortak veriyle değiştirilecek. Devam edilsin mi?',
@@ -280,6 +283,8 @@ const DICT = {
     entryTitleOther:'Other Event Entry', thStatus:'Status',
     lbRankCol:'Rank', lbMember:'Member', lbGvgTotal:'GVG Total', lbSvsTotal:'SVS Total', lbSvsRatio:'SVS Attendance', lbSsRatio:'SS Attendance', lbKodRatio:'KoD Attendance', lbOtherTotal:'Other Total', lbOtherRatio:'Other Attendance',
     lbParticipation:'Overall Participation (Last 4 Weeks)', belowThresholdTitle:'Participation below 50%',
+    participationReportBtn:'📊 Participation Report', participationReportTitle:'Participation Report',
+    groupAboveThreshold:'🟢 Above Threshold (≥ 50%)', groupBelowThreshold:'🔴 Below Threshold (< 50%)', groupNoData:'⚪ No Data Yet',
     exemptLabel:'Exempt', powerHistory:'Power History', restoreMember:'Restore to Active',
     exportBackupLabel:'Backup', importBackupLabel:'Import', backupSuccess:'Backup downloaded.',
     importConfirm:'This file will replace the shared data everyone sees. Continue?',
@@ -365,6 +370,8 @@ const DICT = {
     entryTitleOther:'Sonstiger Event-Eintrag', thStatus:'Status',
     lbRankCol:'Platz', lbMember:'Mitglied', lbGvgTotal:'GVG Gesamt', lbSvsTotal:'SVS Gesamt', lbSvsRatio:'SVS Teilnahme', lbSsRatio:'SS Teilnahme', lbKodRatio:'KoD Teilnahme', lbOtherTotal:'Sonstige Gesamt', lbOtherRatio:'Sonstige Teilnahme',
     lbParticipation:'Gesamtteilnahme (Letzte 4 Wochen)', belowThresholdTitle:'Teilnahme unter 50%',
+    participationReportBtn:'📊 Teilnahmebericht', participationReportTitle:'Teilnahmebericht',
+    groupAboveThreshold:'🟢 Über dem Schwellenwert (≥ 50%)', groupBelowThreshold:'🔴 Unter dem Schwellenwert (< 50%)', groupNoData:'⚪ Noch keine Daten',
     exemptLabel:'Befreit', powerHistory:'Machtverlauf', restoreMember:'Wieder aktivieren',
     exportBackupLabel:'Sichern', importBackupLabel:'Importieren', backupSuccess:'Backup heruntergeladen.',
     importConfirm:'Diese Datei ersetzt die von allen gesehenen gemeinsamen Daten. Fortfahren?',
@@ -450,6 +457,8 @@ const DICT = {
     entryTitleOther:'Registro de otro evento', thStatus:'Estado',
     lbRankCol:'Puesto', lbMember:'Miembro', lbGvgTotal:'Total GVG', lbSvsTotal:'Total SVS', lbSvsRatio:'Asistencia SVS', lbSsRatio:'Asistencia SS', lbKodRatio:'Asistencia KoD', lbOtherTotal:'Total Otro', lbOtherRatio:'Asistencia Otro',
     lbParticipation:'Participación General (Últimas 4 Semanas)', belowThresholdTitle:'Participación por debajo del 50%',
+    participationReportBtn:'📊 Informe de Participación', participationReportTitle:'Informe de Participación',
+    groupAboveThreshold:'🟢 Por Encima del Umbral (≥ 50%)', groupBelowThreshold:'🔴 Por Debajo del Umbral (< 50%)', groupNoData:'⚪ Aún Sin Datos',
     exemptLabel:'Exento', powerHistory:'Historial de poder', restoreMember:'Reactivar miembro',
     exportBackupLabel:'Respaldar', importBackupLabel:'Importar', backupSuccess:'Copia de seguridad descargada.',
     importConfirm:'Este archivo reemplazará los datos compartidos que todos ven. ¿Continuar?',
@@ -535,6 +544,8 @@ const DICT = {
     entryTitleOther:'Saisie autre événement', thStatus:'Statut',
     lbRankCol:'Rang', lbMember:'Membre', lbGvgTotal:'Total GVG', lbSvsTotal:'Total SVS', lbSvsRatio:'Participation SVS', lbSsRatio:'Participation SS', lbKodRatio:'Participation KoD', lbOtherTotal:'Total Autre', lbOtherRatio:'Participation Autre',
     lbParticipation:'Participation Globale (4 Dernières Semaines)', belowThresholdTitle:'Participation inférieure à 50%',
+    participationReportBtn:'📊 Rapport de Participation', participationReportTitle:'Rapport de Participation',
+    groupAboveThreshold:'🟢 Au-dessus du Seuil (≥ 50%)', groupBelowThreshold:'🔴 En Dessous du Seuil (< 50%)', groupNoData:'⚪ Pas Encore de Données',
     exemptLabel:'Exempté', powerHistory:'Historique de puissance', restoreMember:'Réactiver le membre',
     exportBackupLabel:'Sauvegarder', importBackupLabel:'Importer', backupSuccess:'Sauvegarde téléchargée.',
     importConfirm:'Ce fichier remplacera les données partagées visibles par tous. Continuer ?',
@@ -633,6 +644,10 @@ export function applyStaticText() {
   });
   document.getElementById("t_overallReportTitle").textContent = t("overallReport");
   document.getElementById("t_close5").textContent = t("close");
+  document.getElementById("boardSearch").placeholder = t("searchMember");
+  document.getElementById("t_participationReportBtn").textContent = t("participationReportBtn");
+  document.getElementById("t_participationReportTitle").textContent = t("participationReportTitle");
+  document.getElementById("t_close8").textContent = t("close");
   document.getElementById("t_legendJoined").textContent = t("legendJoined");
   document.getElementById("t_legendNotJoined").textContent = t("legendNotJoined");
   document.getElementById("t_legendUnknown").textContent = t("legendUnknown");

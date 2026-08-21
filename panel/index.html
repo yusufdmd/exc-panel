@@ -231,6 +231,10 @@
 
   <!-- BOARD -->
   <div class="panel" id="panel-board">
+    <div class="toolbar">
+      <input class="search" id="boardSearch" oninput="renderBoard()">
+      <button class="btn-ghost" onclick="openParticipationReportModal()" id="t_participationReportBtn">📊 Katılım Raporu</button>
+    </div>
     <div class="table-wrap" id="boardWrap"></div>
   </div>
 
@@ -535,6 +539,16 @@
 </div>
 
 <!-- Overall Report Modal (read-only, no login required) -->
+<div class="overlay" id="participationReportOverlay">
+  <div class="modal wide">
+    <h2 id="t_participationReportTitle">Katılım Raporu</h2>
+    <div id="participationReportBody" style="max-height:60vh; overflow-y:auto;"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeParticipationReportModal()" id="t_close8">Kapat</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="overallReportOverlay">
   <div class="modal wide">
     <h2 id="t_overallReportTitle">Genel Rapor</h2>

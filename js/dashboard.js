@@ -89,7 +89,9 @@ export function setBoardSort(key) {
 
 export function renderBoard() {
   const wrap = document.getElementById("boardWrap");
-  const activeList = activeMembers();
+  const searchEl = document.getElementById("boardSearch");
+  const query = (searchEl ? searchEl.value : "").toLowerCase().trim();
+  const activeList = activeMembers().filter((member) => !query || member.name.toLowerCase().includes(query) || String(member.gameId || "").toLowerCase().includes(query));
   if (!activeList.length) {
     wrap.innerHTML = `<div class="empty-state"><h3>${t("boardEmptyTitle")}</h3><p>${t("boardEmptyDesc")}</p></div>`;
     return;
@@ -184,4 +186,49 @@ function participationCellHtml(participation) {
   const title = participation.pct < PARTICIPATION_THRESHOLD ? ` title="${t("belowThresholdTitle")}"` : "";
   return `<span class="cell-pill ${cls}"${title}>${participation.attended}/${participation.applicable} (${pctLabel})</span>`;
 }
+/**
+ * Tüm aktif üyeleri katılım eşiğine göre üç gruba (eşik altı / eşik üstü /
+ * henüz veri yok) ayırıp bir rapor modalı olarak gösterir — "kimlerin hangi
+ * grupta olduğunu renge göre görelim" isteğine karşılık gelir. Puan
+ * Sıralaması'ndaki arama kutusundan BAĞIMSIZDIR, her zaman tüm aktif
+ * üyeleri kapsar.
+ */
+export function openParticipationReportModal() {
+  const rows = activeMembers().map((member) => ({ member, participation: participationScore(member) }));
+  const above = rows
+    .filter((r) => r.participation.pct != null && r.participation.pct >= PARTICIPATION_THRESHOLD)
+    .sort((a, b) => b.participation.pct - a.participation.pct);
+  const below = rows
+    .filter((r) => r.participation.pct != null && r.participation.pct < PARTICIPATION_THRESHOLD)
+    .sort((a, b) => b.participation.pct - a.participation.pct);
+  const noData = rows
+    .filter((r) => r.participation.pct == null)
+    .sort((a, b) => a.member.name.localeCompare(b.member.name));
+
+  const group = (title, list, cls) => {
+    if (!list.length) return "";
+    const items = list.map((r) => `
+      <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--line);">
+        <span>${escapeHtml(r.member.name)}</span>
+        <span class="cell-pill ${cls}">${r.participation.pct != null ? `${r.participation.attended}/${r.participation.applicable} (${Math.round(r.participation.pct * 100)}%)` : "—"}</span>
+      </div>
+    `).join("");
+    return `<div style="margin-bottom:20px;">
+      <h3 style="font-size:13px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); margin-bottom:8px;">${title} (${list.length})</h3>
+      ${items}
+    </div>`;
+  };
+
+  document.getElementById("participationReportBody").innerHTML =
+    group(t("groupBelowThreshold"), below, "pill-red") +
+    group(t("groupAboveThreshold"), above, "pill-green") +
+    group(t("groupNoData"), noData, "pill-gray");
+
+  document.getElementById("participationReportOverlay").classList.add("active");
+}
+
+export function closeParticipationReportModal() {
+  document.getElementById("participationReportOverlay").classList.remove("active");
+}
+
 registerRenderer(renderBoard);
