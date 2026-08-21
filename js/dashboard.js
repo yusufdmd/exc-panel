@@ -20,10 +20,62 @@ import {
   sumStatusPoints,
   ratioStatus,
   ratioSs,
+  isExempt,
+  statusOf,
   RANK_ORDER,
   registerRenderer
 } from "./ui.js";
 import { activeMembers } from "./members.js";
+
+const PARTICIPATION_WEEK_WINDOW = 4; // her etkinlik türü için dikkate alınan en yeni hafta sayısı
+const PARTICIPATION_THRESHOLD = 0.5; // altında kalanlar kırmızıyla işaretlenir (bkz. renderBoard)
+
+/** Bir haftanın store'daki en yeni N haftadan biri olup olmadığına bakmadan, tarihe göre en yeni N haftayı döndürür. */
+function latestWeeks(store, count) {
+  return [...store.weeks].sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, count);
+}
+
+/**
+ * Bir üyenin SVS/SS/KoD/GVG için son 4 haftalık verisine göre birleşik katılım
+ * oranını hesaplar (bkz. Discord'daki "guild roster ranked by participation"
+ * talebi). "Diğer" etkinlik türü bu skora dahil edilmez — talep sadece bu dört
+ * türü sayıyor. Üyenin muaf olduğu haftalar (katılmadan/kullanıcı değişmeden
+ * önceki haftalar) ne payda ne pay olarak sayılır — isExempt ile aynı kural.
+ *
+ * "Katıldı" sayılma kuralı türe göre değişir:
+ *   - SVS / King of Desert: kayıt durumu "joined" ise.
+ *   - SS: bir gruba atanmış VE fiilen katılmışsa (ratioSs ile aynı mantık).
+ *   - GVG: 0'dan fazla puan girilmişse (GVG'de ayrı bir katıldı/katılmadı alanı yok).
+ */
+function participationScore(member) {
+  let attended = 0;
+  let applicable = 0;
+
+  [state.svs, state.kod].forEach((store) => {
+    latestWeeks(store, PARTICIPATION_WEEK_WINDOW).forEach((week) => {
+      if (isExempt(member, week)) return;
+      applicable++;
+      const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === week.id);
+      if (statusOf(entry) === "joined") attended++;
+    });
+  });
+
+  latestWeeks(state.ss, PARTICIPATION_WEEK_WINDOW).forEach((week) => {
+    if (isExempt(member, week)) return;
+    applicable++;
+    const entry = state.ss.entries.find((e) => e.memberId === member.id && e.weekId === week.id);
+    if (entry && entry.group && entry.attended) attended++;
+  });
+
+  latestWeeks(state.gvg, PARTICIPATION_WEEK_WINDOW).forEach((week) => {
+    if (isExempt(member, week)) return;
+    applicable++;
+    const entry = state.gvg.entries.find((e) => e.memberId === member.id && e.weekId === week.id);
+    if (entry && (Number(entry.points) || 0) > 0) attended++;
+  });
+
+  return { attended, applicable, pct: applicable ? attended / applicable : null };
+}
 
 export function setBoardSort(key) {
   if (state.boardSortKey === key) {
@@ -51,7 +103,8 @@ export function renderBoard() {
     const kodRatio = ratioStatus(state.kod, member);
     const otherPts = sumStatusPoints(state.other, member.id);
     const otherRatio = ratioStatus(state.other, member);
-    return { member, gvgPts, svsPts, svsRatio, ssRatio, kodRatio, otherPts, otherRatio };
+    const participation = participationScore(member);
+    return { member, gvgPts, svsPts, svsRatio, ssRatio, kodRatio, otherPts, otherRatio, participation };
   });
 
   rows.sort((a, b) => {
@@ -75,6 +128,9 @@ export function renderBoard() {
     } else if (state.boardSortKey === "otherRatio") {
       valueA = a.otherRatio.den ? a.otherRatio.num / a.otherRatio.den : -1;
       valueB = b.otherRatio.den ? b.otherRatio.num / b.otherRatio.den : -1;
+    } else if (state.boardSortKey === "participation") {
+      valueA = a.participation.pct != null ? a.participation.pct : -1;
+      valueB = b.participation.pct != null ? b.participation.pct : -1;
     } else {
       valueA = a[state.boardSortKey];
       valueB = b[state.boardSortKey];
@@ -97,6 +153,7 @@ export function renderBoard() {
           <th onclick="setBoardSort('kodRatio')">${t("lbKodRatio")}</th>
           <th onclick="setBoardSort('otherPts')">${t("lbOtherTotal")}</th>
           <th onclick="setBoardSort('otherRatio')">${t("lbOtherRatio")}</th>
+          <th onclick="setBoardSort('participation')">${t("lbParticipation")}</th>
         </tr>
       </thead>
       <tbody>
@@ -111,10 +168,20 @@ export function renderBoard() {
             <td class="num-cell">${formatRatio(row.kodRatio.num, row.kodRatio.den)}</td>
             <td class="num-cell" style="color:var(--cyan); font-weight:700;">${row.otherPts}</td>
             <td class="num-cell">${formatRatio(row.otherRatio.num, row.otherRatio.den)}</td>
+            <td class="num-cell">${participationCellHtml(row.participation)}</td>
           </tr>
         `).join("")}
       </tbody>
     </table>
   `;
+}
+
+/** Katılım oranı hücresini (x/y (%) + eşik altındaysa kırmızı uyarı) üretir. */
+function participationCellHtml(participation) {
+  if (participation.pct == null) return `<span class="cell-pill pill-gray">—</span>`;
+  const pctLabel = Math.round(participation.pct * 100) + "%";
+  const cls = participation.pct < PARTICIPATION_THRESHOLD ? "pill-red" : "pill-green";
+  const title = participation.pct < PARTICIPATION_THRESHOLD ? ` title="${t("belowThresholdTitle")}"` : "";
+  return `<span class="cell-pill ${cls}"${title}>${participation.attended}/${participation.applicable} (${pctLabel})</span>`;
 }
 registerRenderer(renderBoard);
