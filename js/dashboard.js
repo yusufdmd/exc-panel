@@ -162,7 +162,7 @@ export function renderBoard() {
         ${rows.map((row) => `
           <tr>
             <td><span class="rank-badge ${rankClass(row.member.rank)}" style="font-size:11px;padding:2px 8px;">${row.member.rank}</span></td>
-            <td class="member-name">${escapeHtml(row.member.name)}</td>
+            <td class="member-name member-name-link" onclick="openHistoryModal('${row.member.id}')" title="${t("powerHistory")}">${escapeHtml(row.member.name)}</td>
             <td class="num-cell"><span class="cell-pill ${gvgColorClass(row.gvgPts)}">${row.gvgPts}</span></td>
             <td class="num-cell" style="color:var(--cyan); font-weight:700;">${row.svsPts}</td>
             <td class="num-cell">${formatRatio(row.svsRatio.num, row.svsRatio.den)}</td>
