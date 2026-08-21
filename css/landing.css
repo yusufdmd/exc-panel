@@ -215,8 +215,9 @@ footer{ border-top:1px solid var(--line); padding:36px 24px; }
   width:34px; height:34px; border-radius:8px; border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
   color:var(--text-muted); text-decoration:none; font-size:14px; transition: border-color .15s, color .15s;
 }
-.social-links a:hover{ border-color:var(--gold); color:var(--gold-soft); }
-.social-links a svg{ width:17px; height:17px; }
+.social-links a:hover{ border-color:var(--gold); }
+.social-links a svg{ width:17px; height:17px; transition: transform .15s; }
+.social-links a:hover svg{ transform:scale(1.12); }
 .footer-copy{ font-size:11px; color:var(--text-dim); }
 
 @media (max-width: 860px){
