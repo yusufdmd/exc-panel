@@ -153,49 +153,30 @@ section{ padding:88px 24px; }
 .section-head h2{ font-family:var(--font-display); font-size:clamp(28px,4vw,38px); margin-top:10px; letter-spacing:0.5px; }
 .section-head p{ margin-top:14px; color:var(--text-muted); font-size:15px; line-height:1.7; }
 
-/* Hakkımızda / Göçe Katıl / YouTube bölümleri, gönderilen afiş
-   görsellerini bölümün TAMAMINI kaplayan, tam netlikte (bulanıklaştırma/
-   karartma YOK) bir arka plan olarak kullanır — görsel kendi başlığıyla
-   birlikte olduğu gibi görünsün diye. Metin çakışmasını önlemek için artık
-   üstüne AYRI bir başlık metni BİNDİRİLMİYOR; onun yerine gerçek/işlevsel
-   kontroller (kartlar, form, buton) küçük punto ile bölümün ALT kenarına
-   yaslanıyor — görselin başlığının olduğu üst/orta alan tamamen açıkta
-   kalıyor. Sadece en alt şerit, o küçük metinler okunaklı kalsın diye
-   hafifçe karartılıyor. */
-.section-with-bg{
-  position:relative; overflow:hidden;
-  min-height:560px;
-  display:flex; flex-direction:column; justify-content:flex-end;
-  padding-top:40px; padding-bottom:36px;
+/* Hakkımızda / Göçe Katıl / YouTube başlıkları, gönderilen hazır afiş
+   görselleriyle geliyor (başlık + açıklama görselin içinde basılı) —
+   görsel kendi bloğunda, sabit/kontrollü bir çerçevede duruyor; gerçek
+   içerik (kartlar/form/buton) ALTINDA, sayfanın normal akışında, görselle
+   AYNI pikselleri hiç paylaşmadan render ediliyor. Görseli bölümün
+   tamamına yayıp üstüne metin bindirmeyi birkaç farklı şekilde denedik
+   (tam ekran arka plan + gerçek başlık, opak pano, alta yaslama) — hepsi
+   ya okunaksız bir çakışmaya ya da görselle uyumsuz bir görünüme
+   dönüştü. Bu düzen en sağlam/öngörülebilir sonucu veriyor. */
+.section-banner{
+  max-width:720px; width:100%; margin:0 auto;
+  border-radius:10px; box-shadow: 0 12px 40px rgba(0,0,0,0.45);
 }
-/* Göçe Katıl formu diğer ikisinden daha uzun (6+ alan) — alt şeride
-   yaslanan içerik görselin hâlâ açık/net üst kısmına taşmasın diye
-   bu bölüme daha fazla yükseklik veriyoruz. */
-.migrate-section.section-with-bg{ min-height:700px; }
-.section-bg{
-  position:absolute; inset:0; z-index:0;
-  background-size:cover; background-position:center; background-repeat:no-repeat;
-}
-.section-bg::after{
-  content:''; position:absolute; inset:0;
-  background: linear-gradient(180deg, transparent 0%, transparent 46%, rgba(7,10,16,0.6) 78%, rgba(7,10,16,0.88) 100%);
-}
-.section-with-bg .about-grid,
-.section-with-bg .migrate-wrap,
-.section-with-bg .media-card{ position:relative; z-index:1; }
 
-/* Hakkımızda kart grid — afiş görselinin alt kenarına yaslandığı için
-   küçük punto/az boşluklu kompakt bir düzen. */
-.about-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; max-width:1180px; margin:0 auto; width:100%; }
+/* Hakkımızda kart grid */
+.about-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; max-width:1180px; margin:0 auto; }
 .about-card{
-  background:rgba(15,20,29,0.92); border:1px solid var(--line); border-radius:12px; padding:16px 18px;
+  background:var(--bg-panel); border:1px solid var(--line); border-radius:14px; padding:28px 24px;
   transition: border-color .15s, transform .15s;
-  backdrop-filter: blur(6px);
 }
 .about-card:hover{ border-color:rgba(224,166,58,0.4); transform:translateY(-3px); }
-.about-card .icon{ font-size:20px; margin-bottom:8px; }
-.about-card h3{ font-family:var(--font-display); font-size:13px; letter-spacing:0.3px; color:var(--gold-soft); margin-bottom:4px; }
-.about-card p{ color:var(--text-muted); font-size:11.5px; line-height:1.55; }
+.about-card .icon{ font-size:28px; margin-bottom:14px; }
+.about-card h3{ font-family:var(--font-display); font-size:16px; letter-spacing:0.3px; color:var(--gold-soft); margin-bottom:8px; }
+.about-card p{ color:var(--text-muted); font-size:13.5px; line-height:1.7; }
 
 /* Haberler / News */
 .news-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; max-width:1180px; margin:0 auto; }
@@ -214,36 +195,27 @@ section{ padding:88px 24px; }
    Göçe Katıl formu
    --------------------------------------------------------------------- */
 .migrate-section{ border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
-.migrate-wrap{ max-width:600px; width:100%; margin:0 auto; }
-/* Afiş görselinin alt kenarına yaslandığı için form da kompakt/küçük punto. */
-.lead-form{ display:grid; gap:10px; }
-.lead-form .row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.field label{
-  display:block; font-size:10px; font-weight:700; letter-spacing:0.6px; text-transform:uppercase;
-  color:var(--text-primary); margin-bottom:4px; text-shadow:0 1px 6px rgba(0,0,0,0.8);
-}
+.migrate-wrap{ max-width:640px; margin:0 auto; }
+.lead-form{ display:grid; gap:16px; margin-top:36px; }
+.lead-form .row{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.field label{ display:block; font-size:11px; font-weight:700; letter-spacing:0.6px; text-transform:uppercase; color:var(--text-dim); margin-bottom:7px; }
 .field input, .field textarea{
-  width:100%; background:rgba(23,30,42,0.92); border:1px solid var(--line); border-radius:7px;
-  padding:8px 10px; color:var(--text-primary); font-size:12.5px; font-family:var(--font-body);
+  width:100%; background:var(--bg-raised); border:1px solid var(--line); border-radius:8px;
+  padding:12px 14px; color:var(--text-primary); font-size:14px; font-family:var(--font-body);
 }
 .field input:focus, .field textarea:focus{ outline:none; border-color:var(--gold); }
-.field textarea{ resize:vertical; min-height:56px; }
-.lead-form .submit-row{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-top:2px; }
-#leadFormMessage{ font-size:12px; font-weight:600; text-shadow:0 1px 6px rgba(0,0,0,0.8); }
+.field textarea{ resize:vertical; min-height:90px; }
+.lead-form .submit-row{ display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-top:6px; }
+#leadFormMessage{ font-size:13px; font-weight:600; }
 
 /* ---------------------------------------------------------------------
    YouTube / medya bölümü
    --------------------------------------------------------------------- */
 .media-card{
-  max-width:520px; width:100%; margin:0 auto; background:rgba(15,20,29,0.92); border:1px solid var(--line); border-radius:14px;
-  padding:20px 24px; text-align:center; backdrop-filter: blur(6px);
+  max-width:720px; margin:0 auto; background:var(--bg-panel); border:1px solid var(--line); border-radius:16px;
+  padding:40px; text-align:center;
 }
-.media-card .icon{ font-size:26px; margin-bottom:8px; }
-.media-card p{ font-size:12.5px; }
-
-/* Afiş görselinin üstüne oturan üç bölümde (Hakkımızda/Göçe Katıl/YouTube)
-   düğmeler de küçük punto ile, kompakt kalıyor. */
-.section-with-bg .btn-gold{ padding:9px 20px; font-size:12.5px; }
+.media-card .icon{ font-size:44px; margin-bottom:16px; }
 
 /* ---------------------------------------------------------------------
    Footer
