@@ -45,12 +45,8 @@ a{ color:inherit; }
   border-bottom:1px solid var(--line);
 }
 .nav-inner{ display:flex; align-items:center; justify-content:space-between; padding:14px 24px; max-width:1180px; margin:0 auto; }
-.brand{ display:flex; align-items:center; gap:10px; font-family:var(--font-display); font-weight:700; letter-spacing:1px; }
-.brand-mark{
-  width:34px; height:34px; border-radius:8px; display:flex; align-items:center; justify-content:center;
-  background: linear-gradient(135deg, var(--gold), #B8791F); color:#1A1204; font-weight:800; font-size:15px;
-}
-.brand-name{ font-size:16px; color:var(--gold-soft); }
+.brand{ display:flex; align-items:center; gap:10px; }
+.brand-logo{ height:44px; width:auto; display:block; }
 .nav-links{ display:flex; gap:26px; font-size:13px; font-weight:600; letter-spacing:0.4px; text-transform:uppercase; }
 .nav-links a{ color:var(--text-muted); text-decoration:none; transition:color .15s; }
 .nav-links a:hover{ color:var(--gold-soft); }
@@ -83,40 +79,46 @@ a{ color:inherit; }
    --------------------------------------------------------------------- */
 .hero{
   position:relative; overflow:hidden;
-  padding:96px 24px 80px; text-align:center;
-  background:
-    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(224,166,58,0.14), transparent 70%),
-    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(63,193,201,0.08), transparent 70%);
+  padding:110px 24px 90px; text-align:center;
   border-bottom:1px solid var(--line);
 }
-.hero::before{
-  content:''; position:absolute; inset:0; opacity:0.5; pointer-events:none;
+/* Atmosfer görseli (şövalye + ejderha) tam genişlik arka plan olarak;
+   üstteki/alttaki koyu geçişler sticky nav'a ve altındaki istatistik
+   şeridine sert bir kesim olmadan yumuşak geçsin diye eklendi. */
+.hero-bg{
+  position:absolute; inset:0; z-index:0;
+  background-size:cover; background-position:center 32%; background-repeat:no-repeat;
+}
+.hero-bg::after{
+  content:''; position:absolute; inset:0;
+  background:
+    linear-gradient(180deg, rgba(7,10,16,0.55) 0%, rgba(7,10,16,0.25) 30%, rgba(7,10,16,0.55) 70%, rgba(7,10,16,0.92) 100%),
+    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(224,166,58,0.10), transparent 70%);
+}
+.hero::after{
+  content:''; position:absolute; inset:0; opacity:0.4; pointer-events:none; z-index:0;
   background-image: radial-gradient(circle, rgba(224,166,58,0.10) 1px, transparent 1px);
   background-size: 26px 26px;
   mask-image: radial-gradient(ellipse 70% 60% at 50% 30%, black, transparent 75%);
 }
 .hero-tag{
+  position:relative; z-index:1;
   display:inline-block; font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase;
-  color:var(--gold-soft); border:1px solid rgba(224,166,58,0.4); background:rgba(224,166,58,0.08);
-  padding:6px 16px; border-radius:100px; margin-bottom:22px; position:relative;
+  color:var(--gold-soft); border:1px solid rgba(224,166,58,0.4); background:rgba(7,10,16,0.5);
+  padding:6px 16px; border-radius:100px; margin-bottom:26px;
+  backdrop-filter: blur(4px);
 }
-.hero h1{
-  position:relative; font-family:var(--font-display); font-weight:800;
-  font-size:clamp(48px, 9vw, 96px); letter-spacing:2px;
-  background: linear-gradient(180deg, var(--gold-soft) 0%, var(--gold) 55%, #A6721F 100%);
-  -webkit-background-clip:text; background-clip:text; color:transparent;
-  text-shadow: 0 2px 24px rgba(224,166,58,0.25);
-  line-height:1;
+.hero-logo{
+  position:relative; z-index:1;
+  width:100%; max-width:620px; margin:0 auto;
+  filter: drop-shadow(0 4px 30px rgba(0,0,0,0.55));
 }
-.hero-slogan{
-  position:relative; margin-top:16px; font-size:14px; font-weight:700; letter-spacing:4px; text-transform:uppercase;
-  color:var(--text-primary);
-}
-.hero-slogan .dot{ color:var(--gold); margin:0 10px; }
 .hero-desc{
-  position:relative; max-width:620px; margin:26px auto 0; color:var(--text-muted); font-size:15px; line-height:1.7;
+  position:relative; z-index:1;
+  max-width:620px; margin:22px auto 0; color:var(--text-primary); font-size:15px; line-height:1.7;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.6);
 }
-.hero-actions{ position:relative; margin-top:34px; display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+.hero-actions{ position:relative; z-index:1; margin-top:34px; display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
 .btn-gold{
   background: linear-gradient(135deg, var(--gold), #B8791F); color:#1A1204; border:none;
   padding:14px 28px; border-radius:9px; font-size:14px; font-weight:700; letter-spacing:0.4px;
