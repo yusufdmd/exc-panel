@@ -68,7 +68,7 @@ export const MIGRATION_COLOR_ORDER = { gold: 5, purple: 4, blue: 3, gray: 2, unk
 // Diller
 // ---------------------------------------------------------------------
 export const LANGUAGES = ["en", "tr", "de", "es", "fr"];
-export const DEFAULT_LANGUAGE = "tr";
+export const DEFAULT_LANGUAGE = "en";
 
 // ---------------------------------------------------------------------
 // Gerçek zamanlı bağlantı kesilirse devreye giren yedek "yoklama" aralığı (ms).
