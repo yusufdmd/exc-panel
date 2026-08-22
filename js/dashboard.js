@@ -157,8 +157,8 @@ export function renderBoard() {
     <table>
       <thead>
         <tr>
-          <th onclick="setBoardSort('rank')">${t("thRank")}</th>
-          <th onclick="setBoardSort('name')">${t("lbMember")}</th>
+          <th class="sticky-col" onclick="setBoardSort('rank')">${t("thRank")}</th>
+          <th class="sticky-col" style="left:70px;" onclick="setBoardSort('name')">${t("lbMember")}</th>
           <th onclick="setBoardSort('gvgPts')">${t("lbGvgTotal")}</th>
           <th onclick="setBoardSort('svsPts')">${t("lbSvsTotal")}</th>
           <th onclick="setBoardSort('svsRatio')">${t("lbSvsRatio")}</th>
@@ -172,8 +172,8 @@ export function renderBoard() {
       <tbody>
         ${rows.map((row, i) => `
           <tr class="${i === thresholdIndex ? "threshold-cut" : ""}">
-            <td><span class="rank-badge ${rankClass(row.member.rank)}" style="font-size:11px;padding:2px 8px;">${row.member.rank}</span></td>
-            <td class="member-name member-name-link" onclick="openHistoryModal('${row.member.id}')" title="${t("powerHistory")}">${escapeHtml(row.member.name)}</td>
+            <td class="sticky-col"><span class="rank-badge ${rankClass(row.member.rank)}" style="font-size:11px;padding:2px 8px;">${row.member.rank}</span></td>
+            <td class="sticky-col member-name member-name-link" style="left:70px;" onclick="openHistoryModal('${row.member.id}')" title="${t("powerHistory")}">${escapeHtml(row.member.name)}</td>
             <td class="num-cell"><span class="cell-pill ${gvgColorClass(row.gvgPts)}">${row.gvgPts}</span></td>
             <td class="num-cell" style="color:var(--cyan-ink); font-weight:700;">${row.svsPts}</td>
             <td class="num-cell">${formatRatio(row.svsRatio.num, row.svsRatio.den)}</td>
