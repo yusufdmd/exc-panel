@@ -199,27 +199,15 @@ thead th.sticky-col{ z-index:4; } /* hem üste hem sola sabitlenen köşe hücre
 tbody td{ padding:12px 16px; border-bottom:1px solid var(--line); font-size:13px; vertical-align:middle; white-space:nowrap; }
 tbody tr{ transition: background-color .12s; }
 tbody tr:last-child td{ border-bottom:none; }
-tbody tr:nth-child(even){ background: rgba(255,255,255,0.025); }
-tbody tr:nth-child(even) .sticky-col{ background: #181C25; }
-body.light-theme tbody tr:nth-child(even){ background: rgba(0,0,0,0.02); }
-body.light-theme tbody tr:nth-child(even) .sticky-col{ background: #FAFAFA; }
-
-/* Üyeler tablosunda satırlar rütbeye göre renklenir (aynı satırdaki zebra tonunun yerine geçer). */
-tbody tr.rank-row-r5{ background: rgba(224,166,58,0.1); }
-tbody tr.rank-row-r4{ background: rgba(169,135,232,0.1); }
-tbody tr.rank-row-r3{ background: rgba(63,193,201,0.1); }
-tbody tr.rank-row-r2{ background: rgba(108,142,239,0.1); }
-tbody tr.rank-row-r1{ background: rgba(124,133,152,0.1); }
-tbody tr.rank-row-r5 .sticky-col{ background: #272422; }
-tbody tr.rank-row-r4 .sticky-col{ background: #212133; }
-tbody tr.rank-row-r3 .sticky-col{ background: #172730; }
-tbody tr.rank-row-r2 .sticky-col{ background: #1B2234; }
-tbody tr.rank-row-r1 .sticky-col{ background: #1D212B; }
-body.light-theme tbody tr.rank-row-r5 .sticky-col{ background: #FCF6EB; }
-body.light-theme tbody tr.rank-row-r4 .sticky-col{ background: #F6F3FD; }
-body.light-theme tbody tr.rank-row-r3 .sticky-col{ background: #ECF9FA; }
-body.light-theme tbody tr.rank-row-r2 .sticky-col{ background: #F0F4FD; }
-body.light-theme tbody tr.rank-row-r1 .sticky-col{ background: #F2F3F5; }
+/* Düz iki tonlu "zebra" satır bandı (Excel'deki koşullu biçimlendirme gibi) —
+   önceden üyeler tablosunda satırın TAMAMI rütbeye göre 5 farklı renkte
+   hafif tonlanıyordu; rozetlerdeki renklerle üst üste binince okunabilirliği
+   düşürdüğü bildirildi. Rütbe/durum bilgisi zaten rozet ve pillerde var,
+   satır bandının tek işi metni net bir zeminde tutmak. --bg-panel/--bg-raised
+   zaten her iki temada da tanımlı olduğu için ayrı açık/koyu varyant
+   gerekmiyor. */
+tbody tr:nth-child(even){ background: var(--bg-raised); }
+tbody tr:nth-child(even) .sticky-col{ background: var(--bg-raised); }
 
 /* Göç sekmesinde satırlar aday renk skalasına (Altın>Mor>Mavi>Gri) göre renklenir. */
 tbody tr.migration-row-gold{ background: rgba(224,166,58,0.18); }

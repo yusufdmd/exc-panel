@@ -143,7 +143,7 @@ export function renderMembers() {
   const rowsEl = document.getElementById("memberRows");
   document.getElementById("memberEmpty").style.display = list.length ? "none" : "block";
   rowsEl.innerHTML = list.map((member) => `
-    <tr class="rank-row-${member.rank.toLowerCase()}">
+    <tr>
       <td class="sticky-col"><span class="rank-badge ${rankClass(member.rank)}">${member.rank}<span class="chev">${rankChevrons(member.rank)}</span></span></td>
       <td class="sticky-col" style="left:90px;"><span class="member-name">${escapeHtml(member.name || "—")}</span>${member.isOld ? `<span class="old-tag">OLD${state.memberView === "old" && member.oldSince ? " · " + member.oldSince : ""}</span>` : ""}${member.isMigrated ? `<span class="old-tag">${t("migratedTag")}${member.migratedTo != null ? " · " + member.migratedTo : ""}</span>` : ""}</td>
       <td class="member-id">${escapeHtml(String(member.gameId || "—"))}</td>
