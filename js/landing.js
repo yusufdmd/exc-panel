@@ -259,11 +259,13 @@ function showVideoSlide(index, immediate) {
   videoRotatorIndex = index;
   const img = document.getElementById("videoSlideImg");
   const link = document.getElementById("videoSlideLink");
+  const titleEl = document.getElementById("videoSlideTitle");
   const apply = () => {
     img.src = item.thumb;
     img.alt = item.title || "";
     link.href = item.url;
     img.classList.remove("fading");
+    if (titleEl) titleEl.textContent = item.title || "";
   };
   if (immediate) {
     apply();

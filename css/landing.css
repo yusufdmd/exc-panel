@@ -237,9 +237,22 @@ section{ padding:88px 24px; }
   display:flex; align-items:center; justify-content:center;
   color:var(--gold-soft); font-size:18px; padding-left:3px;
 }
-.video-dots{ display:flex; gap:6px; justify-content:center; margin-top:12px; }
-.video-dot{ width:7px; height:7px; border-radius:50%; background:var(--line); cursor:pointer; transition: background .15s, transform .15s; border:none; padding:0; }
-.video-dot.active{ background:var(--gold); transform:scale(1.3); }
+.video-slide-title{ margin-top:12px; font-size:13.5px; font-weight:600; color:var(--text-primary); min-height:1.4em; }
+/* Görünen nokta küçük kalsın diye ::before ile çiziliyor, ama gerçek
+   tıklanabilir/dokunulabilir alan (buton kutusunun kendisi) parmakla
+   rahat basılabilecek kadar büyük — "noktalar zor tıklanıyor" geri
+   bildirimine karşılık. */
+.video-dots{ display:flex; gap:2px; justify-content:center; margin-top:10px; }
+.video-dot{
+  width:28px; height:28px; display:flex; align-items:center; justify-content:center;
+  background:none; border:none; cursor:pointer; padding:0;
+}
+.video-dot::before{
+  content:''; width:8px; height:8px; border-radius:50%; background:var(--line);
+  transition: background .15s, transform .15s;
+}
+.video-dot:hover::before{ background:var(--text-dim); }
+.video-dot.active::before{ background:var(--gold); transform:scale(1.3); }
 
 /* ---------------------------------------------------------------------
    Footer
