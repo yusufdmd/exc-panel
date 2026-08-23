@@ -56,7 +56,8 @@ const DICT = {
     msgNameRequired: "Please enter your username.", msgSending: "Sending…",
     msgSuccess: "Your application has been received! We'll be in touch soon.", msgError: "Something went wrong, please try again.",
     newsTag: "News", newsSectionTitle: "Latest News",
-    mediaTag: "Media", mediaTitle: "Our YouTube Channel", mediaDesc: "Check out our channel for event recaps, guides, and more.", mediaBtn: "Go to Channel"
+    mediaTag: "Media", mediaTitle: "Our YouTube Channel", mediaDesc: "Check out our channel for event recaps, guides, and more.", mediaBtn: "Go to Channel",
+    switchToDark: "Switch to dark theme", switchToLight: "Switch to light theme"
   },
   tr: {
     navHome: "Ana Sayfa", navAbout: "Hakkımızda", navMigrate: "Göçe Katıl", navMedia: "YouTube", navDiscord: "Discord", navPanel: "Panel",
@@ -76,7 +77,8 @@ const DICT = {
     msgNameRequired: "Lütfen kullanıcı adınızı girin.", msgSending: "Gönderiliyor…",
     msgSuccess: "Başvurunuz alındı! En kısa sürede sizinle iletişime geçeceğiz.", msgError: "Bir hata oluştu, lütfen tekrar deneyin.",
     newsTag: "Haberler", newsSectionTitle: "Son Haberler",
-    mediaTag: "Medya", mediaTitle: "YouTube Kanalımız", mediaDesc: "Etkinlik özetleri, rehberler ve daha fazlası için kanalımıza göz atın.", mediaBtn: "Kanala Git"
+    mediaTag: "Medya", mediaTitle: "YouTube Kanalımız", mediaDesc: "Etkinlik özetleri, rehberler ve daha fazlası için kanalımıza göz atın.", mediaBtn: "Kanala Git",
+    switchToDark: "Koyu temaya geç", switchToLight: "Açık temaya geç"
   },
   de: {
     navHome: "Startseite", navAbout: "Über uns", navMigrate: "Migration beitreten", navMedia: "YouTube", navDiscord: "Discord", navPanel: "Panel",
@@ -96,7 +98,8 @@ const DICT = {
     msgNameRequired: "Bitte gib deinen Benutzernamen ein.", msgSending: "Wird gesendet…",
     msgSuccess: "Deine Bewerbung ist eingegangen! Wir melden uns bald bei dir.", msgError: "Etwas ist schiefgelaufen, bitte versuche es erneut.",
     newsTag: "Neuigkeiten", newsSectionTitle: "Aktuelle Neuigkeiten",
-    mediaTag: "Medien", mediaTitle: "Unser YouTube-Kanal", mediaDesc: "Schau auf unserem Kanal vorbei für Event-Zusammenfassungen, Guides und mehr.", mediaBtn: "Zum Kanal"
+    mediaTag: "Medien", mediaTitle: "Unser YouTube-Kanal", mediaDesc: "Schau auf unserem Kanal vorbei für Event-Zusammenfassungen, Guides und mehr.", mediaBtn: "Zum Kanal",
+    switchToDark: "Zum dunklen Thema wechseln", switchToLight: "Zum hellen Thema wechseln"
   },
   es: {
     navHome: "Inicio", navAbout: "Nosotros", navMigrate: "Únete a la Migración", navMedia: "YouTube", navDiscord: "Discord", navPanel: "Panel",
@@ -116,7 +119,8 @@ const DICT = {
     msgNameRequired: "Por favor, introduce tu nombre de usuario.", msgSending: "Enviando…",
     msgSuccess: "¡Tu solicitud ha sido recibida! Nos pondremos en contacto pronto.", msgError: "Algo salió mal, por favor inténtalo de nuevo.",
     newsTag: "Noticias", newsSectionTitle: "Últimas Noticias",
-    mediaTag: "Medios", mediaTitle: "Nuestro Canal de YouTube", mediaDesc: "Visita nuestro canal para ver resúmenes de eventos, guías y más.", mediaBtn: "Ir al Canal"
+    mediaTag: "Medios", mediaTitle: "Nuestro Canal de YouTube", mediaDesc: "Visita nuestro canal para ver resúmenes de eventos, guías y más.", mediaBtn: "Ir al Canal",
+    switchToDark: "Cambiar a tema oscuro", switchToLight: "Cambiar a tema claro"
   },
   fr: {
     navHome: "Accueil", navAbout: "À propos", navMigrate: "Rejoindre la Migration", navMedia: "YouTube", navDiscord: "Discord", navPanel: "Panel",
@@ -136,7 +140,8 @@ const DICT = {
     msgNameRequired: "Veuillez saisir votre nom d'utilisateur.", msgSending: "Envoi en cours…",
     msgSuccess: "Votre candidature a été reçue ! Nous vous contacterons bientôt.", msgError: "Une erreur s'est produite, veuillez réessayer.",
     newsTag: "Actualités", newsSectionTitle: "Dernières Actualités",
-    mediaTag: "Médias", mediaTitle: "Notre Chaîne YouTube", mediaDesc: "Découvrez notre chaîne pour des récapitulatifs d'événements, des guides et plus encore.", mediaBtn: "Aller à la Chaîne"
+    mediaTag: "Médias", mediaTitle: "Notre Chaîne YouTube", mediaDesc: "Découvrez notre chaîne pour des récapitulatifs d'événements, des guides et plus encore.", mediaBtn: "Aller à la Chaîne",
+    switchToDark: "Passer au thème sombre", switchToLight: "Passer au thème clair"
   }
 };
 
@@ -188,6 +193,53 @@ function initLang() {
   }
   buildLangSwitch();
   applyI18n();
+}
+
+// =====================================================================
+// Açık/koyu tema — panelinkiyle aynı anahtar/mantık, ama bu sayfaya özel
+// AYRI bir localStorage anahtarıyla (panelin tercihini karıştırmasın diye).
+// Varsayılan KOYU kalır (bu sayfa kasıtlı olarak atmosferik/koyu bir
+// "vitrin"); açık tema sadece kullanıcı tercih ederse açılır. index.html'in
+// en başındaki satır-içi script, body sınıfını bu modüller yüklenmeden
+// ÖNCE aynı anahtara göre uygulayıp yanıp-sönmeyi (FOUC) önler — burada
+// sadece o kararla state'i eşitleyip ikon/başlığı güncelliyoruz.
+// =====================================================================
+const THEME_STORAGE_KEY = "exc-landing-theme";
+let currentTheme = "dark";
+
+function updateThemeToggleUI() {
+  const sun = document.getElementById("themeIconSun");
+  const moon = document.getElementById("themeIconMoon");
+  const btn = document.getElementById("themeToggle");
+  if (!sun || !moon) return;
+  const isLight = currentTheme === "light";
+  sun.style.display = isLight ? "" : "none";
+  moon.style.display = isLight ? "none" : "";
+  if (btn) btn.title = isLight ? t("switchToDark") : t("switchToLight");
+}
+
+function setTheme(theme) {
+  currentTheme = theme === "light" ? "light" : "dark";
+  document.body.classList.toggle("light-theme", currentTheme === "light");
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, currentTheme);
+  } catch (error) {
+    // localStorage kullanılamıyorsa tercih sadece bu oturum için geçerli olur.
+  }
+  updateThemeToggleUI();
+}
+
+function toggleTheme() {
+  setTheme(currentTheme === "light" ? "dark" : "light");
+}
+
+function initTheme() {
+  try {
+    currentTheme = localStorage.getItem(THEME_STORAGE_KEY) === "light" ? "light" : "dark";
+  } catch (error) {
+    currentTheme = "dark";
+  }
+  updateThemeToggleUI();
 }
 
 /**
@@ -456,7 +508,10 @@ document.getElementById("navToggle").addEventListener("click", () => {
 });
 
 initLang();
+initTheme();
 loadStats();
 loadSiteLinks();
 loadNews();
 loadFeaturedVideos();
+
+window.toggleTheme = toggleTheme; // #themeToggle butonunun satır-içi onclick'i için (bkz. index.html)
