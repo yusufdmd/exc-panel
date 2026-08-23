@@ -243,9 +243,12 @@ async function loadNews() {
 // (mediaIconFallback) görünmeye devam eder.
 // =====================================================================
 const VIDEO_ROTATE_INTERVAL_MS = 6000;
+const VIDEO_HOVER_PREVIEW_DELAY_MS = 400; // hızlıca üzerinden geçilirse önizleme başlamasın diye küçük bir gecikme
 let videoRotatorItems = [];
 let videoRotatorIndex = 0;
 let videoRotatorTimer = null;
+let videoHoverTimer = null;
+let videoPreviewActive = false;
 
 /** "https://youtu.be/ID", "...watch?v=ID", "...embed/ID", "...shorts/ID" gibi yaygın biçimlerden 11 karakterlik video ID'sini çıkarır. */
 function extractYoutubeId(url) {
@@ -253,10 +256,31 @@ function extractYoutubeId(url) {
   return match ? match[1] : null;
 }
 
+/**
+ * YouTube'un "maxresdefault" (1280x720) görseli her videoda yüklenmemiş
+ * olabilir — öyle bir durumda 120x90'lık gri bir yer tutucu döner. Önce
+ * onu dener, yer tutucuya denk gelirse "hqdefault" (480x360) görseline
+ * düşer. Sonuç, tekrar denemeye gerek kalmasın diye item üzerinde önbelleğe alınır.
+ */
+function resolveVideoThumb(item) {
+  return new Promise((resolve) => {
+    const maxres = `https://img.youtube.com/vi/${item.videoId}/maxresdefault.jpg`;
+    const hq = `https://img.youtube.com/vi/${item.videoId}/hqdefault.jpg`;
+    const probe = new Image();
+    probe.onload = () => {
+      item.thumb = (probe.naturalWidth === 120 && probe.naturalHeight === 90) ? hq : maxres;
+      resolve();
+    };
+    probe.onerror = () => { item.thumb = hq; resolve(); };
+    probe.src = maxres;
+  });
+}
+
 function showVideoSlide(index, immediate) {
   const item = videoRotatorItems[index];
   if (!item) return;
   videoRotatorIndex = index;
+  stopVideoPreview();
   const img = document.getElementById("videoSlideImg");
   const link = document.getElementById("videoSlideLink");
   const titleEl = document.getElementById("videoSlideTitle");
@@ -292,6 +316,31 @@ function goToVideoSlide(index) {
   restartVideoRotatorTimer();
 }
 
+/** Fare, aktif video görselinin üzerine gelince YouTube'un sessiz/otomatik oynatan gömülü oynatıcısıyla kısa bir önizleme başlatır. */
+function startVideoPreview() {
+  const item = videoRotatorItems[videoRotatorIndex];
+  const link = document.getElementById("videoSlideLink");
+  if (!item || !link || videoPreviewActive) return;
+  videoPreviewActive = true;
+  clearInterval(videoRotatorTimer); // önizleme sürerken vitrin bir sonraki videoya kaymasın
+  const iframe = document.createElement("iframe");
+  iframe.className = "video-preview-frame";
+  iframe.src = `https://www.youtube-nocookie.com/embed/${item.videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&playsinline=1&loop=1&playlist=${item.videoId}`;
+  iframe.title = item.title || "";
+  iframe.allow = "autoplay; encrypted-media";
+  iframe.setAttribute("frameborder", "0");
+  link.appendChild(iframe);
+}
+
+function stopVideoPreview() {
+  clearTimeout(videoHoverTimer);
+  if (!videoPreviewActive) return;
+  videoPreviewActive = false;
+  const frame = document.querySelector(".video-preview-frame");
+  if (frame) frame.remove();
+  restartVideoRotatorTimer();
+}
+
 /** Video vitrinini doldurur; hiç video yoksa eski sabit ▶️ ikonuna geri döner. */
 async function loadFeaturedVideos() {
   const rotator = document.getElementById("videoRotator");
@@ -302,7 +351,7 @@ async function loadFeaturedVideos() {
     videoRotatorItems = rows
       .map((row) => {
         const id = extractYoutubeId(row.url);
-        return id ? { url: row.url, title: row.title, thumb: `https://img.youtube.com/vi/${id}/hqdefault.jpg` } : null;
+        return id ? { url: row.url, title: row.title, videoId: id, thumb: `https://img.youtube.com/vi/${id}/hqdefault.jpg` } : null;
       })
       .filter(Boolean);
 
@@ -312,6 +361,9 @@ async function loadFeaturedVideos() {
       return;
     }
 
+    // Kaliteli (maxresdefault) görselleri, ilk gösterimde titreşim olmasın diye önceden çözer.
+    await Promise.all(videoRotatorItems.map(resolveVideoThumb));
+
     if (fallbackIcon) fallbackIcon.style.display = "none";
     rotator.style.display = "";
     document.getElementById("videoDots").innerHTML = videoRotatorItems.map((_, i) =>
@@ -320,6 +372,12 @@ async function loadFeaturedVideos() {
     document.querySelectorAll("#videoDots .video-dot").forEach((dot, i) => {
       dot.addEventListener("click", () => goToVideoSlide(i));
     });
+    const link = document.getElementById("videoSlideLink");
+    link.addEventListener("mouseenter", () => {
+      clearTimeout(videoHoverTimer);
+      videoHoverTimer = setTimeout(startVideoPreview, VIDEO_HOVER_PREVIEW_DELAY_MS);
+    });
+    link.addEventListener("mouseleave", stopVideoPreview);
     showVideoSlide(0, true);
     restartVideoRotatorTimer();
   } catch (error) {
