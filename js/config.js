@@ -67,7 +67,7 @@ export const MIGRATION_COLOR_ORDER = { gold: 5, purple: 4, blue: 3, gray: 2, unk
 // ---------------------------------------------------------------------
 // Diller
 // ---------------------------------------------------------------------
-export const LANGUAGES = ["en", "tr", "de", "es", "fr"];
+export const LANGUAGES = ["en", "tr", "de", "es", "fr", "vi"];
 export const DEFAULT_LANGUAGE = "en";
 
 // ---------------------------------------------------------------------

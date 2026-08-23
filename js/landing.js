@@ -34,8 +34,8 @@ function escapeHtml(value) {
 
 const LANGUAGE_STORAGE_KEY = "exc-landing-lang";
 const DEFAULT_LANGUAGE = "en";
-const LANGS = ["en", "tr", "de", "es", "fr"];
-const LANG_LABEL = { en: "EN", tr: "TR", de: "DE", es: "ES", fr: "FR" };
+const LANGS = ["en", "tr", "de", "es", "fr", "vi"];
+const LANG_LABEL = { en: "EN", tr: "TR", de: "DE", es: "ES", fr: "FR", vi: "VI" };
 
 const DICT = {
   en: {
@@ -142,6 +142,27 @@ const DICT = {
     newsTag: "Actualités", newsSectionTitle: "Dernières Actualités",
     mediaTag: "Médias", mediaTitle: "Notre Chaîne YouTube", mediaDesc: "Découvrez notre chaîne pour des récapitulatifs d'événements, des guides et plus encore.", mediaBtn: "Aller à la Chaîne",
     switchToDark: "Passer au thème sombre", switchToLight: "Passer au thème clair"
+  },
+  vi: {
+    navHome: "Trang chủ", navAbout: "Giới thiệu", navMigrate: "Tham gia Di chuyển", navMedia: "YouTube", navDiscord: "Discord", navPanel: "Bảng điều khiển",
+    ctaDiscordJoin: "Tham gia Discord",
+    heroSlogan: "Chúng Tôi Không Cạnh Tranh•Chúng Tôi Thống Trị",
+    heroDesc: "Excellence là bang hội Palmon Survival hàng đầu của Server 76. Một cộng đồng được xây dựng trên chiến lược, sự tận tâm và tình huynh đệ — một gia đình cùng chơi và cùng phát triển.",
+    statMembers: "Thành viên", statServer: "Máy chủ", statGame: "Trò chơi", statCommunity: "Cộng đồng", statLiveValue: "Trực tiếp",
+    aboutTag: "Giới thiệu", aboutTitle: "Chúng Tôi Là Ai", aboutDesc: "Excellence không chỉ là sức mạnh — đó là một cộng đồng hành động như một.",
+    aboutCard1Title: "Chiến lược & Tận tâm", aboutCard1Desc: "Chúng tôi hành động có kế hoạch trong mọi sự kiện, mọi đợt di chuyển — chúng tôi thắng nhờ suy nghĩ, không phải may rủi.",
+    aboutCard2Title: "Tình Huynh Đệ", aboutCard2Desc: "Mọi người khi gia nhập đều trở thành một phần của gia đình. Chúng tôi hỗ trợ lẫn nhau và cùng nhau phát triển.",
+    aboutCard3Title: "Thống Trị", aboutCard3Desc: "Một bang hội khẳng định tên tuổi trên Server 76 và đạt được mục tiêu của mình — chúng tôi không cạnh tranh, chúng tôi thống trị.",
+    migrateTag: "Đến Từ Máy Chủ Khác?",
+    migrateDesc: "Muốn gia nhập Excellence trong đợt di chuyển sắp tới? Điền vào biểu mẫu bên dưới, đội ngũ lãnh đạo của chúng tôi sẽ liên hệ với bạn.",
+    fieldName: "Tên người dùng", fieldGameId: "Số ID", fieldContact: "Liên hệ (Discord, v.v.)", fieldServer: "Máy chủ Hiện tại", fieldPower: "Sức mạnh",
+    fieldMessage: "Tin nhắn (tùy chọn)", fieldMessagePh: "Hãy cho chúng tôi biết đôi điều về bạn…",
+    submitBtn: "Gửi Đơn Đăng ký",
+    msgNameRequired: "Vui lòng nhập tên người dùng của bạn.", msgSending: "Đang gửi…",
+    msgSuccess: "Đơn đăng ký của bạn đã được tiếp nhận! Chúng tôi sẽ sớm liên hệ với bạn.", msgError: "Đã có lỗi xảy ra, vui lòng thử lại.",
+    newsTag: "Tin tức", newsSectionTitle: "Tin tức Mới nhất",
+    mediaTag: "Phương tiện", mediaTitle: "Kênh YouTube Của Chúng Tôi", mediaDesc: "Ghé thăm kênh của chúng tôi để xem tóm tắt sự kiện, hướng dẫn và nhiều hơn nữa.", mediaBtn: "Đến Kênh",
+    switchToDark: "Chuyển sang giao diện tối", switchToLight: "Chuyển sang giao diện sáng"
   }
 };
 
