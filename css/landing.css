@@ -217,6 +217,30 @@ section{ padding:88px 24px; }
 }
 .media-card .icon{ font-size:44px; margin-bottom:16px; }
 
+/* Panelden yönetilen video vitrini — sırayla dönen YouTube thumbnail'leri,
+   belirli aralıklarla otomatik geçer (bkz. js/landing.js -> loadFeaturedVideos). */
+.video-rotator{ margin-bottom:20px; }
+.video-slide-link{ position:relative; display:block; border-radius:12px; overflow:hidden; background:var(--bg-raised); }
+.video-slide-img{
+  width:100%; aspect-ratio:16/9; object-fit:cover; display:block;
+  transition: opacity .3s ease; background:var(--bg-raised);
+}
+.video-slide-img.fading{ opacity:0; }
+.video-play-overlay{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  background: rgba(7,10,16,0.15); transition: background .15s;
+}
+.video-slide-link:hover .video-play-overlay{ background: rgba(7,10,16,0.35); }
+.video-play-icon{
+  width:52px; height:52px; border-radius:50%;
+  background: rgba(7,10,16,0.65); backdrop-filter: blur(2px);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--gold-soft); font-size:18px; padding-left:3px;
+}
+.video-dots{ display:flex; gap:6px; justify-content:center; margin-top:12px; }
+.video-dot{ width:7px; height:7px; border-radius:50%; background:var(--line); cursor:pointer; transition: background .15s, transform .15s; border:none; padding:0; }
+.video-dot.active{ background:var(--gold); transform:scale(1.3); }
+
 /* ---------------------------------------------------------------------
    Footer
    --------------------------------------------------------------------- */

@@ -463,6 +463,47 @@ export async function uploadNewsImage(file) {
 }
 
 // =====================================================================
+// FEATURED_VIDEOS — ana sayfadaki "YouTube Kanalımız" bölümünde dönen
+// video vitrini. Okuma herkese açık, yazma admin oturumu gerektirir.
+// =====================================================================
+export async function getFeaturedVideos() {
+  const { data, error } = await supabase
+    .from("featured_videos")
+    .select("*")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: false });
+  if (error) dbError("Videolar alınamadı", error);
+  return data;
+}
+
+export async function createFeaturedVideo(payload) {
+  const { data, error } = await supabase
+    .from("featured_videos")
+    .insert(payload)
+    .select()
+    .single();
+  if (error) dbError("Video eklenemedi", error);
+  return data;
+}
+
+export async function updateFeaturedVideo(id, payload) {
+  const { data, error } = await supabase
+    .from("featured_videos")
+    .update(payload)
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) dbError("Video güncellenemedi", error);
+  return data;
+}
+
+export async function deleteFeaturedVideo(id) {
+  const { error } = await supabase.from("featured_videos").delete().eq("id", id);
+  if (error) dbError("Video silinemedi", error);
+  return true;
+}
+
+// =====================================================================
 // USERS — Liderler
 // =====================================================================
 export async function getUsers() {

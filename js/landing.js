@@ -14,12 +14,12 @@
 //
 // Panelden (panel/js/app.js ve aşağısı) TAMAMEN BAĞIMSIZDIR — sadece
 // paylaşılan database.js'i kullanır, kendi state/i18n mekanizması
-// vardır ve panelinkiyle KARIŞTIRILMAZ (panel varsayılan olarak
-// Türkçe açılır, bu sayfa ise ilk ziyaretçiler için İngilizce açılır —
-// bu kasıtlı bir fark, bu yüzden localStorage anahtarları da ayrıdır).
+// vardır ve panelinkiyle KARIŞTIRILMAZ (ikisi de varsayılan olarak
+// İngilizce açılır ama tercihler ayrı localStorage anahtarlarında
+// tutulur, biri diğerini etkilemez).
 // =====================================================================
 
-import { getActiveMemberCount, getSiteLinks, getNews, createMigrationLead } from "./database.js";
+import { getActiveMemberCount, getSiteLinks, getNews, getFeaturedVideos, createMigrationLead } from "./database.js";
 
 /** Kullanıcıdan gelen metni (haber başlığı/içeriği) HTML içine güvenle basmak için kaçış uygular. */
 function escapeHtml(value) {
@@ -235,6 +235,98 @@ async function loadNews() {
   }
 }
 
+// =====================================================================
+// Video vitrini — YouTube bölümünde, panelden ("Videolar") eklenen
+// video linklerinin thumbnail'lerini sırayla döndürür. Görsel için
+// YouTube'un kendi öngörülebilir thumbnail URL'i kullanılır, ayrı bir
+// API çağrısı gerekmez. Hiç video eklenmemişse bölüm eski ▶️ ikonuyla
+// (mediaIconFallback) görünmeye devam eder.
+// =====================================================================
+const VIDEO_ROTATE_INTERVAL_MS = 6000;
+let videoRotatorItems = [];
+let videoRotatorIndex = 0;
+let videoRotatorTimer = null;
+
+/** "https://youtu.be/ID", "...watch?v=ID", "...embed/ID", "...shorts/ID" gibi yaygın biçimlerden 11 karakterlik video ID'sini çıkarır. */
+function extractYoutubeId(url) {
+  const match = String(url || "").match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+  return match ? match[1] : null;
+}
+
+function showVideoSlide(index, immediate) {
+  const item = videoRotatorItems[index];
+  if (!item) return;
+  videoRotatorIndex = index;
+  const img = document.getElementById("videoSlideImg");
+  const link = document.getElementById("videoSlideLink");
+  const apply = () => {
+    img.src = item.thumb;
+    img.alt = item.title || "";
+    link.href = item.url;
+    img.classList.remove("fading");
+  };
+  if (immediate) {
+    apply();
+  } else {
+    img.classList.add("fading");
+    setTimeout(apply, 200);
+  }
+  document.querySelectorAll("#videoDots .video-dot").forEach((dot, i) => {
+    dot.classList.toggle("active", i === index);
+  });
+}
+
+function restartVideoRotatorTimer() {
+  clearInterval(videoRotatorTimer);
+  if (videoRotatorItems.length > 1) {
+    videoRotatorTimer = setInterval(() => {
+      showVideoSlide((videoRotatorIndex + 1) % videoRotatorItems.length);
+    }, VIDEO_ROTATE_INTERVAL_MS);
+  }
+}
+
+function goToVideoSlide(index) {
+  showVideoSlide(index);
+  restartVideoRotatorTimer();
+}
+
+/** Video vitrinini doldurur; hiç video yoksa eski sabit ▶️ ikonuna geri döner. */
+async function loadFeaturedVideos() {
+  const rotator = document.getElementById("videoRotator");
+  const fallbackIcon = document.getElementById("mediaIconFallback");
+  if (!rotator) return;
+  try {
+    const rows = await getFeaturedVideos();
+    videoRotatorItems = rows
+      .map((row) => {
+        const id = extractYoutubeId(row.url);
+        return id ? { url: row.url, title: row.title, thumb: `https://img.youtube.com/vi/${id}/hqdefault.jpg` } : null;
+      })
+      .filter(Boolean);
+
+    if (!videoRotatorItems.length) {
+      rotator.style.display = "none";
+      if (fallbackIcon) fallbackIcon.style.display = "";
+      return;
+    }
+
+    if (fallbackIcon) fallbackIcon.style.display = "none";
+    rotator.style.display = "";
+    document.getElementById("videoDots").innerHTML = videoRotatorItems.map((_, i) =>
+      `<button class="video-dot${i === 0 ? " active" : ""}" aria-label="${i + 1}"></button>`
+    ).join("");
+    document.querySelectorAll("#videoDots .video-dot").forEach((dot, i) => {
+      dot.addEventListener("click", () => goToVideoSlide(i));
+    });
+    showVideoSlide(0, true);
+    restartVideoRotatorTimer();
+  } catch (error) {
+    console.error("[Excellence] Videolar alınamadı:", error);
+    rotator.style.display = "none";
+    if (fallbackIcon) fallbackIcon.style.display = "";
+  }
+}
+
 /**
  * Discord/YouTube/Instagram bağlantılarını Supabase'ten (herkese açık,
  * dar kapsamlı site_links tablosu) çekip sayfadaki ilgili `data-link`
@@ -307,3 +399,4 @@ initLang();
 loadStats();
 loadSiteLinks();
 loadNews();
+loadFeaturedVideos();

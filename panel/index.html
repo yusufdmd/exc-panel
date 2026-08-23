@@ -116,6 +116,7 @@
   <div class="tabs" id="siteTabs" style="display:none;">
     <div class="tab" data-tab="sitelinks" onclick="switchTab('sitelinks')" id="t_tabSiteLinks">Site Linkleri</div>
     <div class="tab" data-tab="news" onclick="switchTab('news')" id="t_tabNews">Haberler</div>
+    <div class="tab" data-tab="videos" onclick="switchTab('videos')" id="t_tabVideos">Videolar</div>
   </div>
 
   <!-- MEMBERS -->
@@ -377,6 +378,29 @@
     </div>
   </div>
 
+  <!-- VIDEOS -->
+  <div class="panel" id="panel-videos">
+    <div class="toolbar">
+      <button class="btn-primary admin-only" onclick="openVideoModal()" id="t_addVideo">+ Video Ekle</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th id="t_thVideoThumb">Görsel</th>
+            <th id="t_thVideoTitle">Başlık</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="videoRows"></tbody>
+      </table>
+      <div class="empty-state" id="videosEmpty" style="display:none;">
+        <h3 id="t_emptyVideosTitle">Henüz video yok</h3>
+        <p id="t_emptyVideosDesc">"+ Video Ekle" ile ilk videoyu ekle.</p>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- Member Modal -->
@@ -522,6 +546,20 @@
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closeNewsModal()" id="t_cancel8">Vazgeç</button>
       <button class="btn-primary" onclick="saveNews()" id="t_save8">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- Video Modal -->
+<div class="overlay" id="videoOverlay">
+  <div class="modal">
+    <h2 id="videoModalTitle">Video Ekle</h2>
+    <input type="hidden" id="videoEditId">
+    <div class="field"><label id="t_lblVideoUrl">YouTube Video Linki</label><input id="vUrl" placeholder="https://youtube.com/watch?v=..."></div>
+    <div class="field"><label id="t_lblVideoTitle">Başlık (opsiyonel)</label><input id="vTitle"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeVideoModal()" id="t_cancel9">Vazgeç</button>
+      <button class="btn-primary" onclick="saveVideo()" id="t_save9">Kaydet</button>
     </div>
   </div>
 </div>

@@ -129,7 +129,14 @@
     <img class="section-banner" src="images/youtube-banner.jpg" alt="Our YouTube Channel">
   </div>
   <div class="media-card">
-    <div class="icon">▶️</div>
+    <div class="video-rotator" id="videoRotator" style="display:none;">
+      <a class="video-slide-link" id="videoSlideLink" target="_blank" rel="noopener">
+        <img class="video-slide-img" id="videoSlideImg" alt="">
+        <div class="video-play-overlay"><span class="video-play-icon">▶</span></div>
+      </a>
+      <div class="video-dots" id="videoDots"></div>
+    </div>
+    <div class="icon" id="mediaIconFallback">▶️</div>
     <p style="color:var(--text-muted); margin-bottom:20px;" data-i18n="mediaDesc">Check out our channel for event recaps, guides, and more.</p>
     <a class="btn-gold" href="#" target="_blank" rel="noopener" data-i18n="mediaBtn" data-link="youtube">Go to Channel</a>
   </div>

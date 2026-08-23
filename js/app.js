@@ -16,7 +16,7 @@
 // o dosyalar hiç çalıştırılmaz ve tabloları hiç çizilmez.
 // =====================================================================
 
-import { getMembers, getAllPowerHistory, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, getSiteLinks, getNews, getRecentActivity, subscribeToTables } from "./database.js";
+import { getMembers, getAllPowerHistory, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, getSiteLinks, getNews, getFeaturedVideos, getRecentActivity, subscribeToTables } from "./database.js";
 import { POLL_INTERVAL_MS } from "./config.js";
 import { state, t, showToast, buildLangSwitch, applyStaticText, initLangFromStorage, persistLanguage, initThemeFromStorage, toggleTheme, renderAll, registerDataLoader, registerRenderer } from "./ui.js";
 import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember, openHistoryModal, closeHistoryModal, setMemberView, setRankFilter, setElementFilter, setSort } from "./members.js";
@@ -32,6 +32,7 @@ import {
 import { exportBackup, importBackup } from "./backup.js";
 import { mapSiteLinks, populateSiteLinksForm, saveSiteLinks } from "./siteLinks.js";
 import { mapNewsItem, openNewsModal, closeNewsModal, saveNews, deleteNews } from "./news.js";
+import { mapVideoItem, openVideoModal, closeVideoModal, saveVideo, deleteVideo, moveVideo } from "./videos.js";
 import { mapActivity } from "./activity.js";
 import { doLogin, doLogout } from "./auth.js";
 import "./gvg.js";
@@ -66,7 +67,7 @@ async function loadAll(silent) {
       ssWeeksRes, ssRecordsRes,
       kodWeeksRes, kodRecordsRes,
       otherWeeksRes, otherRecordsRes,
-      migrationPeriodsRes, migrationRes, migrationLeadsRes, siteLinksRes, newsRes, activityRes
+      migrationPeriodsRes, migrationRes, migrationLeadsRes, siteLinksRes, newsRes, videosRes, activityRes
     ] = await Promise.allSettled([
       getMembers(), getAllPowerHistory(),
       getWeeks("svs"), getAllRecords("svs"),
@@ -77,7 +78,7 @@ async function loadAll(silent) {
       restricted ? Promise.resolve([]) : getMigrationPeriods(),
       restricted ? Promise.resolve([]) : getMigrationProspects(),
       restricted ? Promise.resolve([]) : getMigrationLeads(),
-      getSiteLinks(), getNews(),
+      getSiteLinks(), getNews(), getFeaturedVideos(),
       restricted ? Promise.resolve([]) : getRecentActivity()
     ]);
 
@@ -102,6 +103,7 @@ async function loadAll(silent) {
     state.migrationLeads = settledList(migrationLeadsRes).map(mapLead);
     state.siteLinks = mapSiteLinks(siteLinksRes.status === "fulfilled" ? siteLinksRes.value : null);
     state.news = settledList(newsRes).map(mapNewsItem);
+    state.featuredVideos = settledList(videosRes).map(mapVideoItem);
     state.activityLog = settledList(activityRes).map(mapActivity);
 
     document.getElementById("syncText").textContent = t("syncLive");
@@ -122,7 +124,7 @@ setInterval(() => loadAll(true), POLL_INTERVAL_MS);
 
 let realtimeReloadTimer = null;
 subscribeToTables(
-  ["members", "power_history", "gvg_weeks", "gvg_records", "svs_weeks", "svs_records", "ss_weeks", "ss_records", "kod_weeks", "kod_records", "other_weeks", "other_records", "migration_periods", "migration_prospects", "migration_leads", "site_links", "news", "activity_logs"],
+  ["members", "power_history", "gvg_weeks", "gvg_records", "svs_weeks", "svs_records", "ss_weeks", "ss_records", "kod_weeks", "kod_records", "other_weeks", "other_records", "migration_periods", "migration_prospects", "migration_leads", "site_links", "news", "featured_videos", "activity_logs"],
   () => {
     clearTimeout(realtimeReloadTimer);
     realtimeReloadTimer = setTimeout(() => loadAll(true), REALTIME_RELOAD_DEBOUNCE_MS);
@@ -243,6 +245,7 @@ Object.assign(window, {
   processLead, dismissLead,
   saveSiteLinks,
   openNewsModal, closeNewsModal, saveNews, deleteNews,
+  openVideoModal, closeVideoModal, saveVideo, deleteVideo, moveVideo,
   selectPanelMode, backToChooser,
   doLogin, doLogout, toggleTheme
 });

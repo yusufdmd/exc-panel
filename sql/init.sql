@@ -397,6 +397,42 @@ drop policy if exists news_images_delete_auth on storage.objects;
 create policy news_images_delete_auth on storage.objects for delete using (bucket_id = 'news-images' and auth.role() = 'authenticated');
 
 -- =====================================================================
+-- 7.3) FEATURED_VIDEOS — ana sayfadaki "YouTube Kanalımız" bölümünde
+--      dönen video vitrini. NEWS ile aynı sebeple genel RLS döngüsüne
+--      dahil edilmez. Görseller YouTube'un kendi thumbnail URL'lerinden
+--      çekilir, ayrı bir dosya yüklemesi/bucket gerekmez.
+-- =====================================================================
+create table if not exists featured_videos (
+  id            uuid primary key default gen_random_uuid(),
+  url           text not null,
+  title         text,
+  sort_order    int not null default 0,
+  created_at    timestamptz not null default now(),
+  updated_at    timestamptz not null default now()
+);
+
+create index if not exists idx_featured_videos_sort on featured_videos (sort_order asc, created_at desc);
+
+drop trigger if exists trg_featured_videos_updated_at on featured_videos;
+create trigger trg_featured_videos_updated_at
+  before update on featured_videos
+  for each row execute function set_updated_at();
+
+alter table featured_videos enable row level security;
+
+drop policy if exists featured_videos_select_all on featured_videos;
+create policy featured_videos_select_all on featured_videos for select using (true);
+
+drop policy if exists featured_videos_insert_auth on featured_videos;
+create policy featured_videos_insert_auth on featured_videos for insert with check (auth.role() = 'authenticated');
+
+drop policy if exists featured_videos_update_auth on featured_videos;
+create policy featured_videos_update_auth on featured_videos for update using (auth.role() = 'authenticated') with check (auth.role() = 'authenticated');
+
+drop policy if exists featured_videos_delete_auth on featured_videos;
+create policy featured_videos_delete_auth on featured_videos for delete using (auth.role() = 'authenticated');
+
+-- =====================================================================
 -- 8) USERS — Liderler / gelecekteki giriş sistemi için
 -- =====================================================================
 create table if not exists users (
@@ -489,7 +525,7 @@ alter publication supabase_realtime add table
   other_weeks, other_records,
   kod_weeks, kod_records,
   migration_periods, migration_prospects, migration_leads,
-  settings, site_links, news, activity_logs;
+  settings, site_links, news, featured_videos, activity_logs;
 
 -- =====================================================================
 -- BİTTİ

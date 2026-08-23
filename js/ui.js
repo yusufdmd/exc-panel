@@ -57,6 +57,7 @@ export const state = {
   pendingLeadProcessingId: null, // "İşle" ile aday ekleme formuna gidilirken hangi başvurunun dönüştürüldüğünü hatırlar (bkz. migration.js -> saveProspect)
   siteLinks: { discordUrl: "", youtubeUrl: "", instagramUrl: "" }, // genel tanıtım sitesindeki Discord/YouTube/Instagram linkleri (bkz. siteLinks.js)
   news: [], // ana sayfadaki "Haberler" bölümünün içeriği (bkz. news.js)
+  featuredVideos: [], // ana sayfadaki "YouTube Kanalımız" bölümünde dönen video vitrini (bkz. videos.js)
   activityLog: [], // "Aktivite" sekmesindeki admin aktivite kaydı (bkz. activity.js)
   panelMode: null, // null: seçim ekranı, "data": veri paneli, "site": site editörü — her yeni girişte null'a döner (bkz. auth.js)
   migrationView: "active", // "active" | "failed" — seçili göç döneminde hangi alt liste gösteriliyor (bkz. migration.js -> setMigrationView)
@@ -160,6 +161,12 @@ const DICT = {
     confirmDeleteNews:'Bu haberi silmek istediğinize emin misiniz?',
     emptyNewsTitle:'Henüz haber yok', emptyNewsDesc:'"+ Haber Ekle" ile ilk haberi ekle.',
     thNewsImage:'Resim', thNewsTitle:'Başlık', thNewsDate:'Tarih',
+    tabVideos:'Videolar', addVideo:'+ Video Ekle', videoAddTitle:'Video Ekle', videoEditTitle:'Videoyu Düzenle',
+    lblVideoUrl:'YouTube Video Linki', lblVideoTitle:'Başlık (opsiyonel)',
+    invalidVideoUrl:'Geçerli bir YouTube video linki girin.', toastVideoSaved:'Video kaydedildi.', toastVideoDeleted:'Video silindi.',
+    confirmDeleteVideo:'Bu videoyu silmek istediğinize emin misiniz?',
+    emptyVideosTitle:'Henüz video yok', emptyVideosDesc:'"+ Video Ekle" ile ilk videoyu ekle.',
+    thVideoThumb:'Görsel', thVideoTitle:'Başlık', moveUp:'Yukarı Taşı', moveDown:'Aşağı Taşı',
     processLeadTitle:'Aday Olarak İşle', confirmDismissLead:'Bu başvuruyu reddetmek/silmek istediğinize emin misiniz?',
     toastLeadDismissed:'Başvuru silindi.',
     statMigrationTotal:'Toplam Aday', migrationStatusCertain:'Kesin', migrationStatusUncertain:'Belirsiz',
@@ -248,6 +255,12 @@ const DICT = {
     confirmDeleteNews:'Are you sure you want to delete this news item?',
     emptyNewsTitle:'No news yet', emptyNewsDesc:'Use "+ Add News" to add the first news item.',
     thNewsImage:'Image', thNewsTitle:'Title', thNewsDate:'Date',
+    tabVideos:'Videos', addVideo:'+ Add Video', videoAddTitle:'Add Video', videoEditTitle:'Edit Video',
+    lblVideoUrl:'YouTube Video Link', lblVideoTitle:'Title (optional)',
+    invalidVideoUrl:'Enter a valid YouTube video link.', toastVideoSaved:'Video saved.', toastVideoDeleted:'Video deleted.',
+    confirmDeleteVideo:'Are you sure you want to delete this video?',
+    emptyVideosTitle:'No videos yet', emptyVideosDesc:'Use "+ Add Video" to add the first video.',
+    thVideoThumb:'Image', thVideoTitle:'Title', moveUp:'Move Up', moveDown:'Move Down',
     processLeadTitle:'Process as Candidate', confirmDismissLead:'Are you sure you want to dismiss/delete this request?',
     toastLeadDismissed:'Request deleted.',
     statMigrationTotal:'Total Candidates', migrationStatusCertain:'Certain', migrationStatusUncertain:'Uncertain',
@@ -336,6 +349,12 @@ const DICT = {
     confirmDeleteNews:'Diese Neuigkeit wirklich löschen?',
     emptyNewsTitle:'Noch keine Neuigkeiten', emptyNewsDesc:'Mit "+ Neuigkeit hinzufügen" die erste anlegen.',
     thNewsImage:'Bild', thNewsTitle:'Titel', thNewsDate:'Datum',
+    tabVideos:'Videos', addVideo:'+ Video hinzufügen', videoAddTitle:'Video hinzufügen', videoEditTitle:'Video bearbeiten',
+    lblVideoUrl:'YouTube-Videolink', lblVideoTitle:'Titel (optional)',
+    invalidVideoUrl:'Geben Sie einen gültigen YouTube-Videolink ein.', toastVideoSaved:'Video gespeichert.', toastVideoDeleted:'Video gelöscht.',
+    confirmDeleteVideo:'Dieses Video wirklich löschen?',
+    emptyVideosTitle:'Noch keine Videos', emptyVideosDesc:'Mit "+ Video hinzufügen" das erste hinzufügen.',
+    thVideoThumb:'Bild', thVideoTitle:'Titel', moveUp:'Nach oben', moveDown:'Nach unten',
     processLeadTitle:'Als Kandidat bearbeiten', confirmDismissLead:'Diese Anfrage wirklich ablehnen/löschen?',
     toastLeadDismissed:'Anfrage gelöscht.',
     statMigrationTotal:'Kandidaten gesamt', migrationStatusCertain:'Sicher', migrationStatusUncertain:'Unsicher',
@@ -424,6 +443,12 @@ const DICT = {
     confirmDeleteNews:'¿Seguro que quieres eliminar esta noticia?',
     emptyNewsTitle:'Aún no hay noticias', emptyNewsDesc:'Usa "+ Añadir noticia" para agregar la primera.',
     thNewsImage:'Imagen', thNewsTitle:'Título', thNewsDate:'Fecha',
+    tabVideos:'Videos', addVideo:'+ Añadir video', videoAddTitle:'Añadir video', videoEditTitle:'Editar video',
+    lblVideoUrl:'Enlace de video de YouTube', lblVideoTitle:'Título (opcional)',
+    invalidVideoUrl:'Introduce un enlace de video de YouTube válido.', toastVideoSaved:'Video guardado.', toastVideoDeleted:'Video eliminado.',
+    confirmDeleteVideo:'¿Seguro que quieres eliminar este video?',
+    emptyVideosTitle:'Aún no hay videos', emptyVideosDesc:'Usa "+ Añadir video" para agregar el primero.',
+    thVideoThumb:'Imagen', thVideoTitle:'Título', moveUp:'Subir', moveDown:'Bajar',
     processLeadTitle:'Procesar como Candidato', confirmDismissLead:'¿Seguro que quieres rechazar/eliminar esta solicitud?',
     toastLeadDismissed:'Solicitud eliminada.',
     statMigrationTotal:'Total de candidatos', migrationStatusCertain:'Seguro', migrationStatusUncertain:'Incierto',
@@ -512,6 +537,12 @@ const DICT = {
     confirmDeleteNews:'Voulez-vous vraiment supprimer cette actualité ?',
     emptyNewsTitle:"Aucune actualité pour le moment", emptyNewsDesc:'Utilisez "+ Ajouter une actualité" pour ajouter la première.',
     thNewsImage:'Image', thNewsTitle:'Titre', thNewsDate:'Date',
+    tabVideos:'Vidéos', addVideo:'+ Ajouter une vidéo', videoAddTitle:'Ajouter une vidéo', videoEditTitle:'Modifier la vidéo',
+    lblVideoUrl:'Lien de la vidéo YouTube', lblVideoTitle:'Titre (facultatif)',
+    invalidVideoUrl:'Entrez un lien de vidéo YouTube valide.', toastVideoSaved:'Vidéo enregistrée.', toastVideoDeleted:'Vidéo supprimée.',
+    confirmDeleteVideo:'Voulez-vous vraiment supprimer cette vidéo ?',
+    emptyVideosTitle:'Aucune vidéo pour le moment', emptyVideosDesc:'Utilisez "+ Ajouter une vidéo" pour ajouter la première.',
+    thVideoThumb:'Image', thVideoTitle:'Titre', moveUp:'Monter', moveDown:'Descendre',
     processLeadTitle:'Traiter comme Candidat', confirmDismissLead:'Voulez-vous vraiment rejeter/supprimer cette demande ?',
     toastLeadDismissed:'Demande supprimée.',
     statMigrationTotal:'Total des candidats', migrationStatusCertain:'Certain', migrationStatusUncertain:'Incertain',
@@ -760,6 +791,16 @@ export function applyStaticText() {
   document.getElementById("t_lblNewsImage").textContent = t("lblNewsImage");
   document.getElementById("t_cancel8").textContent = t("cancel");
   document.getElementById("t_save8").textContent = t("save");
+  document.getElementById("t_tabVideos").textContent = t("tabVideos");
+  document.getElementById("t_addVideo").textContent = t("addVideo");
+  document.getElementById("t_thVideoThumb").textContent = t("thVideoThumb");
+  document.getElementById("t_thVideoTitle").textContent = t("thVideoTitle");
+  document.getElementById("t_emptyVideosTitle").textContent = t("emptyVideosTitle");
+  document.getElementById("t_emptyVideosDesc").textContent = t("emptyVideosDesc");
+  document.getElementById("t_lblVideoUrl").textContent = t("lblVideoUrl");
+  document.getElementById("t_lblVideoTitle").textContent = t("lblVideoTitle");
+  document.getElementById("t_cancel9").textContent = t("cancel");
+  document.getElementById("t_save9").textContent = t("save");
   document.getElementById("t_thLeadServer2").textContent = t("thServer");
   document.getElementById("t_thLeadPower2").textContent = t("thPower");
   document.getElementById("t_thLeadMessage").textContent = t("thLeadMessage");
