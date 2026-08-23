@@ -238,8 +238,13 @@ section{ padding:88px 24px; }
   color:var(--gold-soft); font-size:18px; padding-left:3px;
 }
 /* Fare video görselinin üzerine gelince (bkz. js/landing.js -> startVideoPreview)
-   YouTube'un sessiz/otomatik oynatan gömülü oynatıcısı bunun üzerine biner. */
-.video-preview-frame{ position:absolute; inset:0; width:100%; height:100%; border:none; z-index:2; }
+   YouTube'un sessiz/otomatik oynatan gömülü oynatıcısı bunun üzerine biner.
+   pointer-events:none KASITLI — aksi halde tıklamalar bizim linkimize değil
+   YouTube'un kendi gömülü oynatıcı arayüzüne gidiyor (ör. onun "bağlantıyı
+   kopyala" özelliği, izin eksikliğinden hatayla başarısız oluyordu);
+   böylece önizleme sadece görsel kalır, tıklama her zaman videoyu asıl
+   sayfamızdaki linkten açar. */
+.video-preview-frame{ position:absolute; inset:0; width:100%; height:100%; border:none; z-index:2; pointer-events:none; }
 .video-slide-title{ margin-top:12px; font-size:13.5px; font-weight:600; color:var(--text-primary); min-height:1.4em; }
 /* Görünen nokta küçük kalsın diye ::before ile çiziliyor, ama gerçek
    tıklanabilir/dokunulabilir alan (buton kutusunun kendisi) parmakla
