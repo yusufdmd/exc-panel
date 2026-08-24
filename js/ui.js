@@ -174,6 +174,10 @@ const DICT = {
     markFailedTitle:'Başarısız İşaretle (Kontenjan Yok)', confirmMarkFailed:'Bu adayı, yeterli kontenjan olmadığı için göç edemedi diye işaretlemek istiyor musunuz? Aday "Başarısız" sekmesine taşınacak.',
     toastProspectFailed:'Aday başarısız olarak işaretlendi.', restoreProspectTitle:'Aday Listesine Geri Al',
     emptyMigrationFailedTitle:'Henüz başarısız aday yok', emptyMigrationFailedDesc:'Kontenjan yetersizliği vb. nedenlerle göç edemeyen adaylar burada listelenir.',
+    subMigrationConfirmed:'Onayda', statMigrationConfirmedTotal:'Toplam Onayda',
+    markConfirmedTitle:'Onayda Olarak İşaretle', confirmMarkConfirmed:'Bu adayı doğrulandı ve göç edeceği kesinleşti olarak işaretlemek istediğinize emin misiniz? "Onayda" sekmesine taşınacak.',
+    toastProspectConfirmed:'Aday onayda olarak işaretlendi.', unconfirmTitle:'Adaylar Listesine Geri Al',
+    emptyMigrationConfirmedTitle:'Henüz onaylı aday yok', emptyMigrationConfirmedDesc:'Adaylar sekmesinden ➡️ ile bir adayı buraya taşıyabilirsiniz.',
     addPeriod:'+ Dönem Ekle', periodAddTitle:'Dönem Ekle', periodEditTitle:'Dönemi Düzenle', lblPeriodLabel:'Dönem Etiketi',
     periodNameRequired:'Dönem etiketi gerekli.', confirmDeletePeriod:'Bu dönemi silmek istediğinize emin misiniz? İçindeki tüm adaylar da silinecek.',
     toastPeriodSaved:'Dönem kaydedildi.', toastPeriodDeleted:'Dönem silindi.',
@@ -268,6 +272,10 @@ const DICT = {
     markFailedTitle:'Mark as Failed (No Slot Available)', confirmMarkFailed:'Mark this candidate as unable to migrate due to insufficient slots? They will move to the "Failed" tab.',
     toastProspectFailed:'Candidate marked as failed.', restoreProspectTitle:'Restore to Candidate List',
     emptyMigrationFailedTitle:'No failed candidates yet', emptyMigrationFailedDesc:'Candidates who couldn\'t migrate (e.g. no available slot) are listed here.',
+    subMigrationConfirmed:'Confirmed', statMigrationConfirmedTotal:'Total Confirmed',
+    markConfirmedTitle:'Mark as Confirmed', confirmMarkConfirmed:'Are you sure you want to mark this candidate as verified and certain to migrate? They will move to the "Confirmed" tab.',
+    toastProspectConfirmed:'Candidate marked as confirmed.', unconfirmTitle:'Send Back to Candidate List',
+    emptyMigrationConfirmedTitle:'No confirmed candidates yet', emptyMigrationConfirmedDesc:'Use ➡️ on a candidate in the Candidates tab to move them here.',
     addPeriod:'+ Add Period', periodAddTitle:'Add Period', periodEditTitle:'Edit Period', lblPeriodLabel:'Period Label',
     periodNameRequired:'Period label is required.', confirmDeletePeriod:'Are you sure you want to delete this period? All candidates in it will also be deleted.',
     toastPeriodSaved:'Period saved.', toastPeriodDeleted:'Period deleted.',
@@ -362,6 +370,10 @@ const DICT = {
     markFailedTitle:'Als gescheitert markieren (kein Platz frei)', confirmMarkFailed:'Diesen Kandidaten als "konnte wegen Platzmangel nicht migrieren" markieren? Er wird in den Tab "Gescheitert" verschoben.',
     toastProspectFailed:'Kandidat als gescheitert markiert.', restoreProspectTitle:'Zurück zur Kandidatenliste',
     emptyMigrationFailedTitle:'Noch keine gescheiterten Kandidaten', emptyMigrationFailedDesc:'Kandidaten, die nicht migrieren konnten (z. B. kein freier Platz), werden hier aufgelistet.',
+    subMigrationConfirmed:'Bestätigt', statMigrationConfirmedTotal:'Bestätigt gesamt',
+    markConfirmedTitle:'Als Bestätigt Markieren', confirmMarkConfirmed:'Diesen Kandidaten wirklich als bestätigt und sicher migrierend markieren? Er wird in den Tab "Bestätigt" verschoben.',
+    toastProspectConfirmed:'Kandidat als bestätigt markiert.', unconfirmTitle:'Zurück zur Kandidatenliste (Bestätigung aufheben)',
+    emptyMigrationConfirmedTitle:'Noch keine bestätigten Kandidaten', emptyMigrationConfirmedDesc:'Verwende ➡️ bei einem Kandidaten im Tab "Kandidaten", um ihn hierher zu verschieben.',
     addPeriod:'+ Zeitraum hinzufügen', periodAddTitle:'Zeitraum hinzufügen', periodEditTitle:'Zeitraum bearbeiten', lblPeriodLabel:'Zeitraumbezeichnung',
     periodNameRequired:'Zeitraumbezeichnung erforderlich.', confirmDeletePeriod:'Diesen Zeitraum wirklich löschen? Alle Kandidaten darin werden ebenfalls gelöscht.',
     toastPeriodSaved:'Zeitraum gespeichert.', toastPeriodDeleted:'Zeitraum gelöscht.',
@@ -456,6 +468,10 @@ const DICT = {
     markFailedTitle:'Marcar como Fallido (Sin Cupo)', confirmMarkFailed:'¿Marcar a este candidato como no pudo migrar por falta de cupo? Se moverá a la pestaña "Fallidos".',
     toastProspectFailed:'Candidato marcado como fallido.', restoreProspectTitle:'Restaurar a la Lista de Candidatos',
     emptyMigrationFailedTitle:'Aún no hay candidatos fallidos', emptyMigrationFailedDesc:'Los candidatos que no pudieron migrar (p. ej. sin cupo disponible) se listan aquí.',
+    subMigrationConfirmed:'Confirmados', statMigrationConfirmedTotal:'Total Confirmados',
+    markConfirmedTitle:'Marcar como Confirmado', confirmMarkConfirmed:'¿Seguro que quieres marcar este candidato como verificado y con migración segura? Se moverá a la pestaña "Confirmados".',
+    toastProspectConfirmed:'Candidato marcado como confirmado.', unconfirmTitle:'Devolver a la Lista de Candidatos',
+    emptyMigrationConfirmedTitle:'Aún no hay candidatos confirmados', emptyMigrationConfirmedDesc:'Usa ➡️ en un candidato de la pestaña Candidatos para moverlo aquí.',
     addPeriod:'+ Añadir periodo', periodAddTitle:'Añadir periodo', periodEditTitle:'Editar periodo', lblPeriodLabel:'Etiqueta del periodo',
     periodNameRequired:'La etiqueta del periodo es obligatoria.', confirmDeletePeriod:'¿Seguro que quieres eliminar este periodo? También se eliminarán todos los candidatos que contiene.',
     toastPeriodSaved:'Periodo guardado.', toastPeriodDeleted:'Periodo eliminado.',
@@ -550,6 +566,10 @@ const DICT = {
     markFailedTitle:"Marquer comme échoué (pas de place disponible)", confirmMarkFailed:"Marquer ce candidat comme n'ayant pas pu migrer faute de place ? Il sera déplacé vers l'onglet « Échoués ».",
     toastProspectFailed:'Candidat marqué comme échoué.', restoreProspectTitle:'Restaurer dans la liste des candidats',
     emptyMigrationFailedTitle:"Aucun candidat échoué pour l'instant", emptyMigrationFailedDesc:"Les candidats n'ayant pas pu migrer (ex. pas de place disponible) sont listés ici.",
+    subMigrationConfirmed:'Confirmés', statMigrationConfirmedTotal:'Total Confirmés',
+    markConfirmedTitle:'Marquer comme Confirmé', confirmMarkConfirmed:"Voulez-vous vraiment marquer ce candidat comme vérifié et certain de migrer ? Il sera déplacé vers l'onglet « Confirmés ».",
+    toastProspectConfirmed:'Candidat marqué comme confirmé.', unconfirmTitle:'Renvoyer à la liste des candidats',
+    emptyMigrationConfirmedTitle:"Aucun candidat confirmé pour l'instant", emptyMigrationConfirmedDesc:"Utilisez ➡️ sur un candidat dans l'onglet Candidats pour le déplacer ici.",
     addPeriod:'+ Ajouter une période', periodAddTitle:'Ajouter une période', periodEditTitle:'Modifier la période', lblPeriodLabel:'Libellé de la période',
     periodNameRequired:'Le libellé de la période est requis.', confirmDeletePeriod:'Voulez-vous vraiment supprimer cette période ? Tous les candidats qu\'elle contient seront également supprimés.',
     toastPeriodSaved:'Période enregistrée.', toastPeriodDeleted:'Période supprimée.',
@@ -644,6 +664,10 @@ const DICT = {
     markFailedTitle:'Đánh dấu Thất bại (Hết Chỗ)', confirmMarkFailed:'Đánh dấu ứng viên này là không thể di chuyển do hết chỗ? Họ sẽ được chuyển sang tab "Thất bại".',
     toastProspectFailed:'Đã đánh dấu ứng viên là thất bại.', restoreProspectTitle:'Khôi phục về Danh sách Ứng viên',
     emptyMigrationFailedTitle:'Chưa có ứng viên thất bại nào', emptyMigrationFailedDesc:'Các ứng viên không thể di chuyển (vd. hết chỗ) được liệt kê ở đây.',
+    subMigrationConfirmed:'Đã Xác nhận', statMigrationConfirmedTotal:'Tổng Đã Xác nhận',
+    markConfirmedTitle:'Đánh dấu Đã Xác nhận', confirmMarkConfirmed:'Bạn có chắc muốn đánh dấu ứng viên này là đã xác minh và chắc chắn sẽ di chuyển không? Họ sẽ được chuyển sang tab "Đã Xác nhận".',
+    toastProspectConfirmed:'Đã đánh dấu ứng viên là đã xác nhận.', unconfirmTitle:'Trả về Danh sách Ứng viên',
+    emptyMigrationConfirmedTitle:'Chưa có ứng viên nào được xác nhận', emptyMigrationConfirmedDesc:'Dùng ➡️ trên một ứng viên ở tab Ứng viên để chuyển họ vào đây.',
     addPeriod:'+ Thêm Đợt', periodAddTitle:'Thêm Đợt', periodEditTitle:'Sửa Đợt', lblPeriodLabel:'Tên Đợt',
     periodNameRequired:'Tên đợt là bắt buộc.', confirmDeletePeriod:'Bạn có chắc muốn xóa đợt này không? Tất cả ứng viên trong đó cũng sẽ bị xóa.',
     toastPeriodSaved:'Đã lưu đợt.', toastPeriodDeleted:'Đã xóa đợt.',
@@ -847,6 +871,7 @@ export function applyStaticText() {
   document.getElementById("t_emptyMigrationTitle").textContent = t("emptyMigrationTitle");
   document.getElementById("t_emptyMigrationDesc").textContent = t("emptyMigrationDesc");
   document.getElementById("t_subMigrationActive").textContent = t("subMigrationActive");
+  document.getElementById("t_subMigrationConfirmed").textContent = t("subMigrationConfirmed");
   document.getElementById("t_subMigrationFailed").textContent = t("subMigrationFailed");
   document.getElementById("t_lblProspectName").textContent = t("lblUsername");
   document.getElementById("t_lblProspectId").textContent = t("lblGameId");
