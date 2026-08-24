@@ -27,6 +27,7 @@ import {
   selectMigrationPeriod, openPeriodModal, closePeriodModal, savePeriod, deletePeriod,
   openProspectModal, closeProspectModal, saveProspect, deleteProspect, approveProspect,
   markProspectFailed, restoreProspect, markProspectConfirmed, unconfirmProspect,
+  setMigrationColorFilter, setMigrationStatusFilter,
   processLead, dismissLead
 } from "./migration.js";
 import { exportBackup, importBackup } from "./backup.js";
@@ -241,6 +242,7 @@ Object.assign(window, {
   setBoardSort, openParticipationReportModal, closeParticipationReportModal, setLang,
   renderMigration, setMigrationSort, setMigrationView, openProspectModal, closeProspectModal, saveProspect, deleteProspect, approveProspect,
   markProspectFailed, restoreProspect, markProspectConfirmed, unconfirmProspect,
+  setMigrationColorFilter, setMigrationStatusFilter,
   selectMigrationPeriod, openPeriodModal, closePeriodModal, savePeriod, deletePeriod,
   processLead, dismissLead,
   saveSiteLinks,

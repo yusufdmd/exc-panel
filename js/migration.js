@@ -48,6 +48,9 @@ import { openMemberModal } from "./members.js";
 /** "Durum" sütununu sıralarken kesinlik derecesine göre kullanılan sıra: Kesin > Yedek > Belirsiz. */
 const MIGRATION_STATUS_ORDER = { certain: 2, waitlist: 1, uncertain: 0 };
 
+/** Durum çip filtresinde gösterilen sıra (bkz. renderMigrationFilterChips). */
+const MIGRATION_STATUS_VALUES = ["certain", "waitlist", "uncertain"];
+
 /** Supabase'ten dönen ham göç dönemi satırını uygulamanın kullandığı şekle çevirir. */
 export function mapPeriod(row) {
   return { id: row.id, label: row.label, date: row.period_date || "" };
@@ -187,7 +190,12 @@ function sortedProspects() {
       : state.migrationView === "confirmed" ? (!p.failed && !!p.confirmed)
       : (!p.failed && !p.confirmed);
     if (!matchesView) return false;
-    return !query || (p.name || "").toLowerCase().includes(query) || String(p.gameId || "").toLowerCase().includes(query);
+    if (state.migrationColorFilter !== "ALL" && p.color !== state.migrationColorFilter) return false;
+    if (state.migrationStatusFilter !== "ALL" && p.status !== state.migrationStatusFilter) return false;
+    return !query
+      || (p.name || "").toLowerCase().includes(query)
+      || String(p.gameId || "").toLowerCase().includes(query)
+      || String(p.server || "").includes(query);
   });
   list.sort((a, b) => {
     let valueA;
@@ -260,10 +268,35 @@ function renderMigrationLeads() {
   `).join("");
 }
 
+/** Unvan (Renk) ve Durum çip filtrelerini toolbar içine çizer (bkz. setMigrationColorFilter/setMigrationStatusFilter). */
+function renderMigrationFilterChips() {
+  document.getElementById("migrationColorChips").innerHTML = `
+    <div class="filter-chip ${state.migrationColorFilter === "ALL" ? "active" : ""}" onclick="setMigrationColorFilter('ALL')">${t("filterAll")}</div>
+    ${MIGRATION_COLORS.map((color) => `<div class="filter-chip ${state.migrationColorFilter === color ? "active" : ""}" onclick="setMigrationColorFilter('${color}')">${migrationColorLabel(color)}</div>`).join("")}
+  `;
+  document.getElementById("migrationStatusChips").innerHTML = `
+    <div class="filter-chip ${state.migrationStatusFilter === "ALL" ? "active" : ""}" onclick="setMigrationStatusFilter('ALL')">${t("filterAll")}</div>
+    ${MIGRATION_STATUS_VALUES.map((status) => `<div class="filter-chip ${state.migrationStatusFilter === status ? "active" : ""}" onclick="setMigrationStatusFilter('${status}')">${migrationStatusLabel(status)}</div>`).join("")}
+  `;
+}
+
+/** Unvan (Renk) çip filtresini değiştirir — sadece migration.js'e özgü, members.js'deki setRankFilter'dan bağımsızdır. */
+export function setMigrationColorFilter(color) {
+  state.migrationColorFilter = color;
+  renderMigration();
+}
+
+/** Durum çip filtresini değiştirir. */
+export function setMigrationStatusFilter(status) {
+  state.migrationStatusFilter = status;
+  renderMigration();
+}
+
 export function renderMigration() {
   renderMigrationLeads();
   renderMigrationPeriodTabs();
   if (!state.migrationActivePeriodId) return;
+  renderMigrationFilterChips();
   const list = sortedProspects();
   renderMigrationStats(list);
   const rowsEl = document.getElementById("migrationRows");

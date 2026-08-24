@@ -63,6 +63,8 @@ export const state = {
   migrationView: "active", // "active" | "failed" — seçili göç döneminde hangi alt liste gösteriliyor (bkz. migration.js -> setMigrationView)
   migrationSortKey: "color",
   migrationSortDir: -1, // -1: varsayılan görünümde Altın üstte, Griye doğru azalan sıra
+  migrationColorFilter: "ALL", // "ALL" | MIGRATION_COLORS içinden biri (bkz. migration.js -> setMigrationColorFilter)
+  migrationStatusFilter: "ALL", // "ALL" | "certain" | "waitlist" | "uncertain" (bkz. migration.js -> setMigrationStatusFilter)
   currentTab: "members",
   currentSub: "svs",
   currentLang: DEFAULT_LANGUAGE,
