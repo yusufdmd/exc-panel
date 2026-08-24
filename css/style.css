@@ -209,12 +209,16 @@ tbody tr:last-child td{ border-bottom:none; }
 tbody tr:nth-child(even){ background: var(--bg-raised); }
 tbody tr:nth-child(even) .sticky-col{ background: var(--bg-raised); }
 
-/* Göç sekmesinde satırlar aday renk skalasına (Altın>Mor>Mavi>Gri) göre renklenir. */
-tbody tr.migration-row-gold{ background: rgba(224,166,58,0.18); }
-tbody tr.migration-row-purple{ background: rgba(169,135,232,0.18); }
-tbody tr.migration-row-blue{ background: rgba(108,142,239,0.18); }
-tbody tr.migration-row-gray{ background: rgba(124,133,152,0.18); }
-tbody tr.migration-row-unknown{ background: rgba(90,98,114,0.18); }
+/* Göç sekmesinde satırlar aday renk skalasına (Altın>Mor>Mavi>Gri) göre renklenir.
+   Eskiden Mavi/Gri/Bilinmiyor neredeyse aynı mavi-gri ton ailesindeydi (hepsi ~220°
+   civarı) ve satırlar arasında fark seçilmiyordu; renk çemberinde birbirinden uzak
+   tonlar seçildi (amber ~39° / yeşil ~149° / mavi ~209° / mor ~277°), Bilinmiyor ise
+   bilerek tamamen nötr (rengi olmayan) tutuldu ki "henüz sınıflandırılmadı" hissi versin. */
+tbody tr.migration-row-gold{ background: rgba(224,163,52,0.18); }
+tbody tr.migration-row-purple{ background: rgba(178,102,224,0.18); }
+tbody tr.migration-row-blue{ background: rgba(56,142,224,0.18); }
+tbody tr.migration-row-gray{ background: rgba(45,181,110,0.16); }
+tbody tr.migration-row-unknown{ background: rgba(140,140,140,0.13); }
 
 tbody tr:hover{ background: var(--bg-raised); }
 tbody tr.old-row{ opacity:0.55; }
