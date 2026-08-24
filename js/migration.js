@@ -70,7 +70,8 @@ export function mapProspect(row) {
     color: row.color,
     status: row.status,
     failed: !!row.failed,
-    confirmed: !!row.confirmed
+    confirmed: !!row.confirmed,
+    note: row.note || ""
   };
 }
 
@@ -277,7 +278,7 @@ export function renderMigration() {
   rowsEl.innerHTML = list.map((p) => `
     <tr class="migration-row-${p.color}">
       <td><span class="rank-badge ${migrationColorClass(p.color)}">${migrationColorLabel(p.color)}</span></td>
-      <td><span class="member-name">${escapeHtml(p.name || "—")}</span></td>
+      <td><span class="member-name">${escapeHtml(p.name || "—")}</span>${p.note ? `<div style="font-size:11px; color:var(--text-dim); white-space:normal; max-width:220px;">${escapeHtml(p.note)}</div>` : ""}</td>
       <td class="member-id">${escapeHtml(String(p.gameId || "—"))}</td>
       <td class="num-cell" title="${Number(p.power) || 0}">${formatPower(p.power)}</td>
       <td class="num-cell">${escapeHtml(p.server != null ? String(p.server) : "—")}</td>
@@ -340,9 +341,10 @@ export function openProspectModal(id) {
     document.getElementById("pServer").value = prospect.server != null ? prospect.server : "";
     document.getElementById("pColor").value = prospect.color;
     document.getElementById("pStatus").value = prospect.status;
+    document.getElementById("pNote").value = prospect.note || "";
   } else {
     document.getElementById("prospectModalTitle").textContent = t("prospectAddTitle");
-    ["pName", "pGameId", "pPower", "pServer"].forEach((fieldId) => { document.getElementById(fieldId).value = ""; });
+    ["pName", "pGameId", "pPower", "pServer", "pNote"].forEach((fieldId) => { document.getElementById(fieldId).value = ""; });
     document.getElementById("pColor").value = "unknown";
     document.getElementById("pStatus").value = "uncertain";
   }
@@ -374,15 +376,16 @@ export async function saveProspect() {
   const server = serverRaw === "" ? null : (Number(serverRaw) || null);
   const color = document.getElementById("pColor").value;
   const status = document.getElementById("pStatus").value;
+  const note = document.getElementById("pNote").value.trim();
 
   try {
     if (editId) {
-      const payload = { name: name || null, game_id: gameId || null, power, server, color, status };
+      const payload = { name: name || null, game_id: gameId || null, power, server, color, status, note: note || null };
       const row = await updateMigrationProspect(editId, payload);
       const index = state.migration.findIndex((p) => p.id === editId);
       if (index >= 0) state.migration[index] = mapProspect(row);
     } else {
-      const payload = { period_id: state.migrationActivePeriodId, name: name || null, game_id: gameId || null, power, server, color, status };
+      const payload = { period_id: state.migrationActivePeriodId, name: name || null, game_id: gameId || null, power, server, color, status, note: note || null };
       const row = await createMigrationProspect(payload);
       state.migration.push(mapProspect(row));
 

@@ -143,7 +143,7 @@ const DICT = {
     syncConnecting:'Bağlanıyor…', syncLive:'Canlı — herkes görüyor', syncError:'Bağlantı hatası',
     tabMembers:'Üyeler', tabEvents:'Etkinlikler', tabBoard:'Puan Sıralaması', tabMigration:'Göç',
     addProspect:'+ Aday Ekle', prospectAddTitle:'Aday Ekle', prospectEditTitle:'Adayı Düzenle',
-    lblColor:'Unvan', thColor:'Unvan', thServer:'Sunucu', lblServer:'Mevcut Sunucu',
+    lblColor:'Unvan', thColor:'Unvan', thServer:'Sunucu', lblServer:'Mevcut Sunucu', lblProspectNote:'Tahmini Gidecek Lonca/Not',
     colorGold:'İmparatorluk Rakibi', colorPurple:'Hudut Kaptanı', colorBlue:'Keşif Peşinde', colorGray:'Gezgin', colorUnknown:'Bilinmiyor',
     emptyMigrationTitle:'Henüz aday yok', emptyMigrationDesc:'"+ Aday Ekle" ile ilk göç adayını ekle.',
     toastProspectSaved:'Aday kaydedildi.', toastProspectDeleted:'Aday silindi.', confirmDeleteProspect:'Bu adayı silmek istediğinize emin misiniz?',
@@ -241,7 +241,7 @@ const DICT = {
     syncConnecting:'Connecting…', syncLive:'Live — everyone sees this', syncError:'Connection error',
     tabMembers:'Members', tabEvents:'Events', tabBoard:'Leaderboard', tabMigration:'Migration',
     addProspect:'+ Add Candidate', prospectAddTitle:'Add Candidate', prospectEditTitle:'Edit Candidate',
-    lblColor:'Title', thColor:'Title', thServer:'Server', lblServer:'Current Server',
+    lblColor:'Title', thColor:'Title', thServer:'Server', lblServer:'Current Server', lblProspectNote:'Predicted Destination Guild/Note',
     colorGold:'Empire Challenger', colorPurple:'Frontier Captain', colorBlue:'Discovery Seeker', colorGray:'Voyager', colorUnknown:'Unknown',
     emptyMigrationTitle:'No candidates yet', emptyMigrationDesc:'Use "+ Add Candidate" to add the first migration candidate.',
     toastProspectSaved:'Candidate saved.', toastProspectDeleted:'Candidate deleted.', confirmDeleteProspect:'Are you sure you want to delete this candidate?',
@@ -339,7 +339,7 @@ const DICT = {
     syncConnecting:'Verbinde…', syncLive:'Live — alle sehen dies', syncError:'Verbindungsfehler',
     tabMembers:'Mitglieder', tabEvents:'Events', tabBoard:'Bestenliste', tabMigration:'Migration',
     addProspect:'+ Kandidat hinzufügen', prospectAddTitle:'Kandidat hinzufügen', prospectEditTitle:'Kandidat bearbeiten',
-    lblColor:'Titel', thColor:'Titel', thServer:'Server', lblServer:'Aktueller Server',
+    lblColor:'Titel', thColor:'Titel', thServer:'Server', lblServer:'Aktueller Server', lblProspectNote:'Voraussichtliche Zielgilde/Notiz',
     colorGold:'Reichsherausforderer', colorPurple:'Grenzkapitän', colorBlue:'Entdeckungssuchender', colorGray:'Reisender', colorUnknown:'Unbekannt',
     emptyMigrationTitle:'Noch keine Kandidaten', emptyMigrationDesc:'Mit "+ Kandidat hinzufügen" den ersten Migrationskandidaten hinzufügen.',
     toastProspectSaved:'Kandidat gespeichert.', toastProspectDeleted:'Kandidat gelöscht.', confirmDeleteProspect:'Diesen Kandidaten wirklich löschen?',
@@ -437,7 +437,7 @@ const DICT = {
     syncConnecting:'Conectando…', syncLive:'En vivo — todos lo ven', syncError:'Error de conexión',
     tabMembers:'Miembros', tabEvents:'Eventos', tabBoard:'Clasificación', tabMigration:'Migración',
     addProspect:'+ Añadir candidato', prospectAddTitle:'Añadir candidato', prospectEditTitle:'Editar candidato',
-    lblColor:'Título', thColor:'Título', thServer:'Servidor', lblServer:'Servidor actual',
+    lblColor:'Título', thColor:'Título', thServer:'Servidor', lblServer:'Servidor actual', lblProspectNote:'Gremio de Destino Previsto/Nota',
     colorGold:'Retador del Imperio', colorPurple:'Capitán de Frontera', colorBlue:'Buscador de Descubrimientos', colorGray:'Viajero', colorUnknown:'Desconocido',
     emptyMigrationTitle:'Aún no hay candidatos', emptyMigrationDesc:'Usa "+ Añadir candidato" para agregar el primer candidato de migración.',
     toastProspectSaved:'Candidato guardado.', toastProspectDeleted:'Candidato eliminado.', confirmDeleteProspect:'¿Seguro que quieres eliminar a este candidato?',
@@ -535,7 +535,7 @@ const DICT = {
     syncConnecting:'Connexion…', syncLive:'En direct — visible par tous', syncError:'Erreur de connexion',
     tabMembers:'Membres', tabEvents:'Événements', tabBoard:'Classement', tabMigration:'Migration',
     addProspect:'+ Ajouter un candidat', prospectAddTitle:'Ajouter un candidat', prospectEditTitle:'Modifier le candidat',
-    lblColor:'Titre', thColor:'Titre', thServer:'Serveur', lblServer:'Serveur actuel',
+    lblColor:'Titre', thColor:'Titre', thServer:'Serveur', lblServer:'Serveur actuel', lblProspectNote:'Guilde de Destination Prévue/Note',
     colorGold:"Challenger de l'Empire", colorPurple:'Capitaine de Frontière', colorBlue:'Chercheur de Découvertes', colorGray:'Voyageur', colorUnknown:'Inconnu',
     emptyMigrationTitle:'Aucun candidat pour le moment', emptyMigrationDesc:'Utilisez "+ Ajouter un candidat" pour ajouter le premier candidat à la migration.',
     toastProspectSaved:'Candidat enregistré.', toastProspectDeleted:'Candidat supprimé.', confirmDeleteProspect:'Voulez-vous vraiment supprimer ce candidat ?',
@@ -633,7 +633,7 @@ const DICT = {
     syncConnecting:'Đang kết nối…', syncLive:'Trực tiếp — mọi người đều thấy điều này', syncError:'Lỗi kết nối',
     tabMembers:'Thành viên', tabEvents:'Sự kiện', tabBoard:'Bảng xếp hạng', tabMigration:'Di chuyển',
     addProspect:'+ Thêm Ứng viên', prospectAddTitle:'Thêm Ứng viên', prospectEditTitle:'Sửa Ứng viên',
-    lblColor:'Danh hiệu', thColor:'Danh hiệu', thServer:'Máy chủ', lblServer:'Máy chủ Hiện tại',
+    lblColor:'Danh hiệu', thColor:'Danh hiệu', thServer:'Máy chủ', lblServer:'Máy chủ Hiện tại', lblProspectNote:'Bang hội Dự kiến Đến/Ghi chú',
     colorGold:'Người Thách thức Đế chế', colorPurple:'Đội trưởng Biên cương', colorBlue:'Người Tìm kiếm Khám phá', colorGray:'Người Lữ hành', colorUnknown:'Không rõ',
     emptyMigrationTitle:'Chưa có ứng viên nào', emptyMigrationDesc:'Dùng "+ Thêm Ứng viên" để thêm ứng viên di chuyển đầu tiên.',
     toastProspectSaved:'Đã lưu ứng viên.', toastProspectDeleted:'Đã xóa ứng viên.', confirmDeleteProspect:'Bạn có chắc muốn xóa ứng viên này không?',
@@ -924,6 +924,7 @@ export function applyStaticText() {
   document.getElementById("t_thLeadPower2").textContent = t("thPower");
   document.getElementById("t_thLeadMessage").textContent = t("thLeadMessage");
   document.getElementById("t_thLeadDate").textContent = t("thLeadDate");
+  document.getElementById("t_lblProspectNote").textContent = t("lblProspectNote");
   document.getElementById("t_statusCertainOpt").textContent = t("migrationStatusCertain");
   document.getElementById("t_statusWaitlistOpt").textContent = t("migrationStatusWaitlist");
   document.getElementById("t_statusUncertainOpt").textContent = t("migrationStatusUncertain");
