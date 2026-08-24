@@ -169,7 +169,7 @@ const DICT = {
     thVideoThumb:'Görsel', thVideoTitle:'Başlık', moveUp:'Yukarı Taşı', moveDown:'Aşağı Taşı',
     processLeadTitle:'Aday Olarak İşle', confirmDismissLead:'Bu başvuruyu reddetmek/silmek istediğinize emin misiniz?',
     toastLeadDismissed:'Başvuru silindi.',
-    statMigrationTotal:'Toplam Aday', migrationStatusCertain:'Kesin', migrationStatusUncertain:'Belirsiz',
+    statMigrationTotal:'Toplam Aday', migrationStatusCertain:'Kesin', migrationStatusWaitlist:'Yedek', migrationStatusUncertain:'Belirsiz',
     subMigrationActive:'Adaylar', subMigrationFailed:'Başarısız', statMigrationFailedTotal:'Toplam Başarısız',
     markFailedTitle:'Başarısız İşaretle (Kontenjan Yok)', confirmMarkFailed:'Bu adayı, yeterli kontenjan olmadığı için göç edemedi diye işaretlemek istiyor musunuz? Aday "Başarısız" sekmesine taşınacak.',
     toastProspectFailed:'Aday başarısız olarak işaretlendi.', restoreProspectTitle:'Aday Listesine Geri Al',
@@ -267,7 +267,7 @@ const DICT = {
     thVideoThumb:'Image', thVideoTitle:'Title', moveUp:'Move Up', moveDown:'Move Down',
     processLeadTitle:'Process as Candidate', confirmDismissLead:'Are you sure you want to dismiss/delete this request?',
     toastLeadDismissed:'Request deleted.',
-    statMigrationTotal:'Total Candidates', migrationStatusCertain:'Certain', migrationStatusUncertain:'Uncertain',
+    statMigrationTotal:'Total Candidates', migrationStatusCertain:'Certain', migrationStatusWaitlist:'Waitlisted', migrationStatusUncertain:'Uncertain',
     subMigrationActive:'Candidates', subMigrationFailed:'Failed', statMigrationFailedTotal:'Total Failed',
     markFailedTitle:'Mark as Failed (No Slot Available)', confirmMarkFailed:'Mark this candidate as unable to migrate due to insufficient slots? They will move to the "Failed" tab.',
     toastProspectFailed:'Candidate marked as failed.', restoreProspectTitle:'Restore to Candidate List',
@@ -365,7 +365,7 @@ const DICT = {
     thVideoThumb:'Bild', thVideoTitle:'Titel', moveUp:'Nach oben', moveDown:'Nach unten',
     processLeadTitle:'Als Kandidat bearbeiten', confirmDismissLead:'Diese Anfrage wirklich ablehnen/löschen?',
     toastLeadDismissed:'Anfrage gelöscht.',
-    statMigrationTotal:'Kandidaten gesamt', migrationStatusCertain:'Sicher', migrationStatusUncertain:'Unsicher',
+    statMigrationTotal:'Kandidaten gesamt', migrationStatusCertain:'Sicher', migrationStatusWaitlist:'Warteliste', migrationStatusUncertain:'Unsicher',
     subMigrationActive:'Kandidaten', subMigrationFailed:'Gescheitert', statMigrationFailedTotal:'Gescheitert gesamt',
     markFailedTitle:'Als gescheitert markieren (kein Platz frei)', confirmMarkFailed:'Diesen Kandidaten als "konnte wegen Platzmangel nicht migrieren" markieren? Er wird in den Tab "Gescheitert" verschoben.',
     toastProspectFailed:'Kandidat als gescheitert markiert.', restoreProspectTitle:'Zurück zur Kandidatenliste',
@@ -463,7 +463,7 @@ const DICT = {
     thVideoThumb:'Imagen', thVideoTitle:'Título', moveUp:'Subir', moveDown:'Bajar',
     processLeadTitle:'Procesar como Candidato', confirmDismissLead:'¿Seguro que quieres rechazar/eliminar esta solicitud?',
     toastLeadDismissed:'Solicitud eliminada.',
-    statMigrationTotal:'Total de candidatos', migrationStatusCertain:'Seguro', migrationStatusUncertain:'Incierto',
+    statMigrationTotal:'Total de candidatos', migrationStatusCertain:'Seguro', migrationStatusWaitlist:'Lista de Espera', migrationStatusUncertain:'Incierto',
     subMigrationActive:'Candidatos', subMigrationFailed:'Fallidos', statMigrationFailedTotal:'Total Fallidos',
     markFailedTitle:'Marcar como Fallido (Sin Cupo)', confirmMarkFailed:'¿Marcar a este candidato como no pudo migrar por falta de cupo? Se moverá a la pestaña "Fallidos".',
     toastProspectFailed:'Candidato marcado como fallido.', restoreProspectTitle:'Restaurar a la Lista de Candidatos',
@@ -561,7 +561,7 @@ const DICT = {
     thVideoThumb:'Image', thVideoTitle:'Titre', moveUp:'Monter', moveDown:'Descendre',
     processLeadTitle:'Traiter comme Candidat', confirmDismissLead:'Voulez-vous vraiment rejeter/supprimer cette demande ?',
     toastLeadDismissed:'Demande supprimée.',
-    statMigrationTotal:'Total des candidats', migrationStatusCertain:'Certain', migrationStatusUncertain:'Incertain',
+    statMigrationTotal:'Total des candidats', migrationStatusCertain:'Certain', migrationStatusWaitlist:"Liste d'Attente", migrationStatusUncertain:'Incertain',
     subMigrationActive:'Candidats', subMigrationFailed:'Échoués', statMigrationFailedTotal:'Total Échoués',
     markFailedTitle:"Marquer comme échoué (pas de place disponible)", confirmMarkFailed:"Marquer ce candidat comme n'ayant pas pu migrer faute de place ? Il sera déplacé vers l'onglet « Échoués ».",
     toastProspectFailed:'Candidat marqué comme échoué.', restoreProspectTitle:'Restaurer dans la liste des candidats',
@@ -659,7 +659,7 @@ const DICT = {
     thVideoThumb:'Hình ảnh', thVideoTitle:'Tiêu đề', moveUp:'Di chuyển Lên', moveDown:'Di chuyển Xuống',
     processLeadTitle:'Xử lý thành Ứng viên', confirmDismissLead:'Bạn có chắc muốn từ chối/xóa yêu cầu này không?',
     toastLeadDismissed:'Đã xóa yêu cầu.',
-    statMigrationTotal:'Tổng Ứng viên', migrationStatusCertain:'Chắc chắn', migrationStatusUncertain:'Không chắc chắn',
+    statMigrationTotal:'Tổng Ứng viên', migrationStatusCertain:'Chắc chắn', migrationStatusWaitlist:'Danh sách Chờ', migrationStatusUncertain:'Không chắc chắn',
     subMigrationActive:'Ứng viên', subMigrationFailed:'Thất bại', statMigrationFailedTotal:'Tổng Thất bại',
     markFailedTitle:'Đánh dấu Thất bại (Hết Chỗ)', confirmMarkFailed:'Đánh dấu ứng viên này là không thể di chuyển do hết chỗ? Họ sẽ được chuyển sang tab "Thất bại".',
     toastProspectFailed:'Đã đánh dấu ứng viên là thất bại.', restoreProspectTitle:'Khôi phục về Danh sách Ứng viên',
@@ -925,6 +925,7 @@ export function applyStaticText() {
   document.getElementById("t_thLeadMessage").textContent = t("thLeadMessage");
   document.getElementById("t_thLeadDate").textContent = t("thLeadDate");
   document.getElementById("t_statusCertainOpt").textContent = t("migrationStatusCertain");
+  document.getElementById("t_statusWaitlistOpt").textContent = t("migrationStatusWaitlist");
   document.getElementById("t_statusUncertainOpt").textContent = t("migrationStatusUncertain");
   document.getElementById("t_cancel5").textContent = t("cancel");
   document.getElementById("t_save5").textContent = t("save");
@@ -1062,14 +1063,18 @@ export function migrationColorLabel(color) {
   return t({ gold: "colorGold", purple: "colorPurple", blue: "colorBlue", gray: "colorGray", unknown: "colorUnknown" }[color] || "colorUnknown");
 }
 
-/** Göç adayının "bize kesin mi belirsiz mi geleceği" durumunun hücre rengi sınıfını döndürür. */
+/** Göç adayının "bize kesin mi belirsiz mi geleceği, ya da yedek mi" durumunun hücre rengi sınıfını döndürür. */
 export function migrationStatusClass(status) {
-  return status === "certain" ? "pill-blue" : "pill-yellow";
+  if (status === "certain") return "pill-blue";
+  if (status === "waitlist") return "pill-gray";
+  return "pill-yellow";
 }
 
 /** Göç adayının durumunun çevrilmiş etiketini döndürür. */
 export function migrationStatusLabel(status) {
-  return t(status === "certain" ? "migrationStatusCertain" : "migrationStatusUncertain");
+  if (status === "certain") return t("migrationStatusCertain");
+  if (status === "waitlist") return t("migrationStatusWaitlist");
+  return t("migrationStatusUncertain");
 }
 
 /** GVG haftalık puanına göre hücre rengi sınıfını döndürür (config.js'teki eşiklere göre). */

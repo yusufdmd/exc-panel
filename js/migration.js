@@ -45,6 +45,9 @@ import {
 } from "./ui.js";
 import { openMemberModal } from "./members.js";
 
+/** "Durum" sütununu sıralarken kesinlik derecesine göre kullanılan sıra: Kesin > Yedek > Belirsiz. */
+const MIGRATION_STATUS_ORDER = { certain: 2, waitlist: 1, uncertain: 0 };
+
 /** Supabase'ten dönen ham göç dönemi satırını uygulamanın kullandığı şekle çevirir. */
 export function mapPeriod(row) {
   return { id: row.id, label: row.label, date: row.period_date || "" };
@@ -201,8 +204,9 @@ function sortedProspects() {
       valueA = Number(a.server) || 0;
       valueB = Number(b.server) || 0;
     } else if (state.migrationSortKey === "status") {
-      valueA = a.status === "certain" ? 1 : 0;
-      valueB = b.status === "certain" ? 1 : 0;
+      // Kesinlik derecesine göre: Kesin > Yedek > Belirsiz.
+      valueA = MIGRATION_STATUS_ORDER[a.status] || 0;
+      valueB = MIGRATION_STATUS_ORDER[b.status] || 0;
     } else {
       valueA = MIGRATION_COLOR_ORDER[a.color] || 0;
       valueB = MIGRATION_COLOR_ORDER[b.color] || 0;
