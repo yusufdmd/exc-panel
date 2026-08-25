@@ -175,6 +175,8 @@ const DICT = {
     subMigrationActive:'Adaylar', subMigrationFailed:'Başarısız', statMigrationFailedTotal:'Toplam Başarısız',
     markFailedTitle:'Başarısız İşaretle (Kontenjan Yok)', confirmMarkFailed:'Bu adayı, yeterli kontenjan olmadığı için göç edemedi diye işaretlemek istiyor musunuz? Aday "Başarısız" sekmesine taşınacak.',
     toastProspectFailed:'Aday başarısız olarak işaretlendi.', restoreProspectTitle:'Aday Listesine Geri Al',
+    copyFailedToNextBtn:'➡️ Sonraki Döneme Kopyala', confirmCopyFailedToNext:'Başarısız olan adayları yeni döneme kopyalamak istiyor musunuz? Kopyalanan adaylar yeniden değerlendirilmek üzere "Belirsiz" durumuyla eklenecek — bu dönemdeki "Başarısız" kayıtları silinmeyecek.',
+    noFailedToCopy:'Kopyalanacak başarısız aday yok.', needNewerPeriodForCopy:'Kopyalamak için önce daha yeni bir göç dönemi oluşturun.', toastCopiedToNextPeriod:'Adaylar yeni döneme kopyalandı.',
     emptyMigrationFailedTitle:'Henüz başarısız aday yok', emptyMigrationFailedDesc:'Kontenjan yetersizliği vb. nedenlerle göç edemeyen adaylar burada listelenir.',
     subMigrationConfirmed:'Onayda', statMigrationConfirmedTotal:'Toplam Onayda',
     markConfirmedTitle:'Onayda Olarak İşaretle', confirmMarkConfirmed:'Bu adayı doğrulandı ve göç edeceği kesinleşti olarak işaretlemek istediğinize emin misiniz? "Onayda" sekmesine taşınacak.',
@@ -274,6 +276,8 @@ const DICT = {
     subMigrationActive:'Candidates', subMigrationFailed:'Failed', statMigrationFailedTotal:'Total Failed',
     markFailedTitle:'Mark as Failed (No Slot Available)', confirmMarkFailed:'Mark this candidate as unable to migrate due to insufficient slots? They will move to the "Failed" tab.',
     toastProspectFailed:'Candidate marked as failed.', restoreProspectTitle:'Restore to Candidate List',
+    copyFailedToNextBtn:'➡️ Copy to Next Period', confirmCopyFailedToNext:'Copy the failed candidates into the newer period? Copied candidates will be added with "Uncertain" status for re-evaluation — the "Failed" records in this period will not be deleted.',
+    noFailedToCopy:'No failed candidates to copy.', needNewerPeriodForCopy:'Create a newer migration period first before copying.', toastCopiedToNextPeriod:'Candidates copied to the new period.',
     emptyMigrationFailedTitle:'No failed candidates yet', emptyMigrationFailedDesc:'Candidates who couldn\'t migrate (e.g. no available slot) are listed here.',
     subMigrationConfirmed:'Confirmed', statMigrationConfirmedTotal:'Total Confirmed',
     markConfirmedTitle:'Mark as Confirmed', confirmMarkConfirmed:'Are you sure you want to mark this candidate as verified and certain to migrate? They will move to the "Confirmed" tab.',
@@ -373,6 +377,8 @@ const DICT = {
     subMigrationActive:'Kandidaten', subMigrationFailed:'Gescheitert', statMigrationFailedTotal:'Gescheitert gesamt',
     markFailedTitle:'Als gescheitert markieren (kein Platz frei)', confirmMarkFailed:'Diesen Kandidaten als "konnte wegen Platzmangel nicht migrieren" markieren? Er wird in den Tab "Gescheitert" verschoben.',
     toastProspectFailed:'Kandidat als gescheitert markiert.', restoreProspectTitle:'Zurück zur Kandidatenliste',
+    copyFailedToNextBtn:'➡️ In nächsten Zeitraum kopieren', confirmCopyFailedToNext:'Die gescheiterten Kandidaten in den neueren Zeitraum kopieren? Kopierte Kandidaten werden mit Status "Unsicher" zur erneuten Bewertung hinzugefügt — die "Gescheitert"-Einträge in diesem Zeitraum werden nicht gelöscht.',
+    noFailedToCopy:'Keine gescheiterten Kandidaten zum Kopieren.', needNewerPeriodForCopy:'Erstellen Sie zuerst einen neueren Migrationszeitraum, um zu kopieren.', toastCopiedToNextPeriod:'Kandidaten in den neuen Zeitraum kopiert.',
     emptyMigrationFailedTitle:'Noch keine gescheiterten Kandidaten', emptyMigrationFailedDesc:'Kandidaten, die nicht migrieren konnten (z. B. kein freier Platz), werden hier aufgelistet.',
     subMigrationConfirmed:'Bestätigt', statMigrationConfirmedTotal:'Bestätigt gesamt',
     markConfirmedTitle:'Als Bestätigt Markieren', confirmMarkConfirmed:'Diesen Kandidaten wirklich als bestätigt und sicher migrierend markieren? Er wird in den Tab "Bestätigt" verschoben.',
@@ -472,6 +478,8 @@ const DICT = {
     subMigrationActive:'Candidatos', subMigrationFailed:'Fallidos', statMigrationFailedTotal:'Total Fallidos',
     markFailedTitle:'Marcar como Fallido (Sin Cupo)', confirmMarkFailed:'¿Marcar a este candidato como no pudo migrar por falta de cupo? Se moverá a la pestaña "Fallidos".',
     toastProspectFailed:'Candidato marcado como fallido.', restoreProspectTitle:'Restaurar a la Lista de Candidatos',
+    copyFailedToNextBtn:'➡️ Copiar al Siguiente Periodo', confirmCopyFailedToNext:'¿Copiar los candidatos fallidos al periodo más reciente? Los candidatos copiados se añadirán con estado "Incierto" para ser reevaluados — los registros "Fallidos" de este periodo no se eliminarán.',
+    noFailedToCopy:'No hay candidatos fallidos para copiar.', needNewerPeriodForCopy:'Crea primero un periodo de migración más reciente para poder copiar.', toastCopiedToNextPeriod:'Candidatos copiados al nuevo periodo.',
     emptyMigrationFailedTitle:'Aún no hay candidatos fallidos', emptyMigrationFailedDesc:'Los candidatos que no pudieron migrar (p. ej. sin cupo disponible) se listan aquí.',
     subMigrationConfirmed:'Confirmados', statMigrationConfirmedTotal:'Total Confirmados',
     markConfirmedTitle:'Marcar como Confirmado', confirmMarkConfirmed:'¿Seguro que quieres marcar este candidato como verificado y con migración segura? Se moverá a la pestaña "Confirmados".',
@@ -571,6 +579,8 @@ const DICT = {
     subMigrationActive:'Candidats', subMigrationFailed:'Échoués', statMigrationFailedTotal:'Total Échoués',
     markFailedTitle:"Marquer comme échoué (pas de place disponible)", confirmMarkFailed:"Marquer ce candidat comme n'ayant pas pu migrer faute de place ? Il sera déplacé vers l'onglet « Échoués ».",
     toastProspectFailed:'Candidat marqué comme échoué.', restoreProspectTitle:'Restaurer dans la liste des candidats',
+    copyFailedToNextBtn:'➡️ Copier vers la période suivante', confirmCopyFailedToNext:"Copier les candidats échoués vers la période la plus récente ? Les candidats copiés seront ajoutés avec le statut « Incertain » pour être réévalués — les enregistrements « Échoués » de cette période ne seront pas supprimés.",
+    noFailedToCopy:'Aucun candidat échoué à copier.', needNewerPeriodForCopy:"Créez d'abord une période de migration plus récente pour pouvoir copier.", toastCopiedToNextPeriod:'Candidats copiés vers la nouvelle période.',
     emptyMigrationFailedTitle:"Aucun candidat échoué pour l'instant", emptyMigrationFailedDesc:"Les candidats n'ayant pas pu migrer (ex. pas de place disponible) sont listés ici.",
     subMigrationConfirmed:'Confirmés', statMigrationConfirmedTotal:'Total Confirmés',
     markConfirmedTitle:'Marquer comme Confirmé', confirmMarkConfirmed:"Voulez-vous vraiment marquer ce candidat comme vérifié et certain de migrer ? Il sera déplacé vers l'onglet « Confirmés ».",
@@ -670,6 +680,8 @@ const DICT = {
     subMigrationActive:'Ứng viên', subMigrationFailed:'Thất bại', statMigrationFailedTotal:'Tổng Thất bại',
     markFailedTitle:'Đánh dấu Thất bại (Hết Chỗ)', confirmMarkFailed:'Đánh dấu ứng viên này là không thể di chuyển do hết chỗ? Họ sẽ được chuyển sang tab "Thất bại".',
     toastProspectFailed:'Đã đánh dấu ứng viên là thất bại.', restoreProspectTitle:'Khôi phục về Danh sách Ứng viên',
+    copyFailedToNextBtn:'➡️ Sao chép sang Đợt tiếp theo', confirmCopyFailedToNext:'Sao chép các ứng viên thất bại sang đợt mới hơn? Các ứng viên được sao chép sẽ được thêm với trạng thái "Chưa chắc chắn" để đánh giá lại — các bản ghi "Thất bại" trong đợt này sẽ không bị xóa.',
+    noFailedToCopy:'Không có ứng viên thất bại nào để sao chép.', needNewerPeriodForCopy:'Vui lòng tạo một đợt di chuyển mới hơn trước khi sao chép.', toastCopiedToNextPeriod:'Đã sao chép ứng viên sang đợt mới.',
     emptyMigrationFailedTitle:'Chưa có ứng viên thất bại nào', emptyMigrationFailedDesc:'Các ứng viên không thể di chuyển (vd. hết chỗ) được liệt kê ở đây.',
     subMigrationConfirmed:'Đã Xác nhận', statMigrationConfirmedTotal:'Tổng Đã Xác nhận',
     markConfirmedTitle:'Đánh dấu Đã Xác nhận', confirmMarkConfirmed:'Bạn có chắc muốn đánh dấu ứng viên này là đã xác minh và chắc chắn sẽ di chuyển không? Họ sẽ được chuyển sang tab "Đã Xác nhận".',
@@ -939,6 +951,7 @@ export function applyStaticText() {
   document.getElementById("t_thLeadDate").textContent = t("thLeadDate");
   document.getElementById("t_lblProspectNote").textContent = t("lblProspectNote");
   document.getElementById("t_lblProspectScore").textContent = t("lblProspectScore");
+  document.getElementById("t_copyFailedBtn").textContent = t("copyFailedToNextBtn");
   document.getElementById("t_statusCertainOpt").textContent = t("migrationStatusCertain");
   document.getElementById("t_statusWaitlistOpt").textContent = t("migrationStatusWaitlist");
   document.getElementById("t_statusUncertainOpt").textContent = t("migrationStatusUncertain");

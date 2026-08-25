@@ -319,6 +319,7 @@ export function renderMigration() {
   renderMigrationStats(list);
   const rowsEl = document.getElementById("migrationRows");
   const view = state.migrationView; // "active" | "confirmed" | "failed"
+  document.getElementById("t_copyFailedBtn").style.display = view === "failed" ? "" : "none";
   document.getElementById("migrationEmpty").style.display = list.length ? "none" : "block";
   document.getElementById("t_emptyMigrationTitle").textContent = t(
     view === "failed" ? "emptyMigrationFailedTitle" : view === "confirmed" ? "emptyMigrationConfirmedTitle" : "emptyMigrationTitle"
@@ -551,6 +552,44 @@ export async function restoreProspect(id) {
     if (index >= 0) state.migration[index] = mapProspect(row);
     renderAll();
     showToast(t("toastProspectSaved"));
+  } catch (error) {
+    console.error(error);
+    showToast("Error");
+  }
+}
+
+/**
+ * Seçili dönemdeki "Başarısız" adayların TAMAMINI, en yeni göç dönemine
+ * (state.migrationPeriods dizisinde EN YENİ ÖNCE sıralı olduğu için ilk
+ * eleman) kopyalar — kontenjan yetersizliği yüzünden bu dönem göç
+ * edemeyenler, bir sonraki dönemde tekrar değerlendirmeye alınabilsin
+ * diye. Kopyalar "Belirsiz" durumuyla (baştan değerlendirme) ve
+ * onaylanmamış/başarısız olmayan haliyle eklenir; bu dönemdeki
+ * "Başarısız" kayıtları SİLİNMEZ, sadece bir kopyası oluşturulur.
+ */
+export async function copyFailedToNextPeriod() {
+  const targetPeriod = state.migrationPeriods[0];
+  if (!targetPeriod || targetPeriod.id === state.migrationActivePeriodId) {
+    showToast(t("needNewerPeriodForCopy"));
+    return;
+  }
+  const failedList = state.migration.filter((p) => p.periodId === state.migrationActivePeriodId && p.failed);
+  if (!failedList.length) {
+    showToast(t("noFailedToCopy"));
+    return;
+  }
+  if (!confirm(t("confirmCopyFailedToNext") + ` (${failedList.length} → ${targetPeriod.label})`)) return;
+  try {
+    for (const p of failedList) {
+      const row = await createMigrationProspect({
+        period_id: targetPeriod.id, name: p.name || null, game_id: p.gameId || null, power: p.power,
+        server: p.server, color: p.color, score: p.score, status: "uncertain", note: p.note || null,
+        camp_level: p.campLevel || null, team_power: p.teamPower, team_element: p.teamElement
+      });
+      state.migration.push(mapProspect(row));
+    }
+    renderAll();
+    showToast(t("toastCopiedToNextPeriod"));
   } catch (error) {
     console.error(error);
     showToast("Error");

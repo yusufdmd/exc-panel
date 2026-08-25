@@ -28,7 +28,7 @@ import {
   openProspectModal, closeProspectModal, saveProspect, deleteProspect, approveProspect,
   markProspectFailed, restoreProspect, markProspectConfirmed, unconfirmProspect,
   setMigrationColorFilter, setMigrationStatusFilter, setProspectTeamElement,
-  processLead, dismissLead, exportMigration
+  processLead, dismissLead, exportMigration, copyFailedToNextPeriod
 } from "./migration.js";
 import { exportBackup, importBackup } from "./backup.js";
 import { closeExportModal, toggleExportAll, confirmExport } from "./exportCsv.js";
@@ -245,7 +245,7 @@ Object.assign(window, {
   markProspectFailed, restoreProspect, markProspectConfirmed, unconfirmProspect,
   setMigrationColorFilter, setMigrationStatusFilter, setProspectTeamElement,
   selectMigrationPeriod, openPeriodModal, closePeriodModal, savePeriod, deletePeriod,
-  processLead, dismissLead, exportMigration,
+  processLead, dismissLead, exportMigration, copyFailedToNextPeriod,
   closeExportModal, toggleExportAll, confirmExport,
   saveSiteLinks,
   openNewsModal, closeNewsModal, saveNews, deleteNews,
