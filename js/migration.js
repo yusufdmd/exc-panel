@@ -61,7 +61,7 @@ const MIGRATION_STATUS_VALUES = ["certain", "waitlist", "uncertain"];
 
 /** Supabase'ten dönen ham göç dönemi satırını uygulamanın kullandığı şekle çevirir. */
 export function mapPeriod(row) {
-  return { id: row.id, label: row.label, date: row.period_date || "" };
+  return { id: row.id, label: row.label, date: row.period_date || "", endDate: row.period_end_date || "" };
 }
 
 /** Supabase'ten dönen ham göç başvurusu (genel siteden gelen) satırını uygulamanın kullandığı şekle çevirir. */
@@ -101,12 +101,19 @@ function ensureActivePeriod() {
   }
 }
 
+/** Bir dönemin başlangıç/bitiş tarihini "başlangıç – bitiş" olarak gösterir; bitiş yoksa sadece başlangıcı, ikisi de yoksa boş döner. */
+function formatPeriodDateRange(period) {
+  if (!period.date) return "";
+  return period.endDate ? `${period.date} – ${period.endDate}` : period.date;
+}
+
 function renderMigrationPeriodTabs() {
   ensureActivePeriod();
   const tabsEl = document.getElementById("migrationPeriodTabs");
   tabsEl.innerHTML = state.migrationPeriods.map((period) => `
     <div class="subtab ${period.id === state.migrationActivePeriodId ? "active" : ""}" onclick="selectMigrationPeriod('${period.id}')">
       <span>${escapeHtml(period.label)}</span>
+      ${formatPeriodDateRange(period) ? `<div style="font-size:9px; color:var(--text-dim); font-weight:400; margin-top:2px;">${escapeHtml(formatPeriodDateRange(period))}</div>` : ""}
       <span class="admin-only period-actions">
         <button class="icon-btn" style="width:18px;height:18px;" onclick="event.stopPropagation(); openPeriodModal('${period.id}')" title="${t("weekEditTitle")}">🏷</button>
         <button class="icon-btn danger" style="width:18px;height:18px;" onclick="event.stopPropagation(); deletePeriod('${period.id}')">✕</button>
@@ -131,10 +138,12 @@ export function openPeriodModal(id) {
     document.getElementById("periodModalTitle").textContent = t("periodEditTitle");
     document.getElementById("prLabel").value = period ? period.label : "";
     document.getElementById("prDate").value = period ? period.date : "";
+    document.getElementById("prEndDate").value = period ? period.endDate : "";
   } else {
     document.getElementById("periodModalTitle").textContent = t("periodAddTitle");
     document.getElementById("prLabel").value = "Dönem " + (state.migrationPeriods.length + 1);
     document.getElementById("prDate").value = todayStr();
+    document.getElementById("prEndDate").value = "";
   }
   document.getElementById("periodOverlay").classList.add("active");
 }
@@ -151,14 +160,15 @@ export async function savePeriod() {
     return;
   }
   const periodDate = document.getElementById("prDate").value || null;
+  const periodEndDate = document.getElementById("prEndDate").value || null;
 
   try {
     if (editId) {
-      const row = await updateMigrationPeriod(editId, { label, period_date: periodDate });
+      const row = await updateMigrationPeriod(editId, { label, period_date: periodDate, period_end_date: periodEndDate });
       const index = state.migrationPeriods.findIndex((p) => p.id === editId);
       if (index >= 0) state.migrationPeriods[index] = mapPeriod(row);
     } else {
-      const row = await createMigrationPeriod({ label, period_date: periodDate });
+      const row = await createMigrationPeriod({ label, period_date: periodDate, period_end_date: periodEndDate });
       state.migrationPeriods.push(mapPeriod(row));
       state.migrationActivePeriodId = row.id;
     }

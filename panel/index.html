@@ -571,7 +571,10 @@
     <h2 id="periodModalTitle">Dönem Ekle</h2>
     <input type="hidden" id="periodEditId">
     <div class="field"><label id="t_lblPeriodLabel">Dönem Etiketi</label><input id="prLabel" placeholder="Dönem 1"></div>
-    <div class="field"><label id="t_lblPeriodDate">Tarih</label><input id="prDate" type="date"></div>
+    <div class="field-row">
+      <div class="field"><label id="t_lblPeriodDate">Başlangıç Tarihi</label><input id="prDate" type="date"></div>
+      <div class="field"><label id="t_lblPeriodEndDate">Bitiş Tarihi</label><input id="prEndDate" type="date"></div>
+    </div>
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closePeriodModal()" id="t_cancel6">Vazgeç</button>
       <button class="btn-primary" onclick="savePeriod()" id="t_save6">Kaydet</button>

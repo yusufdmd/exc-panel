@@ -226,7 +226,8 @@ create trigger trg_kod_records_updated_at
 create table if not exists migration_periods (
   id          uuid primary key default gen_random_uuid(),
   label       text not null,
-  period_date date,
+  period_date date, -- dönemin BAŞLANGIÇ tarihi; sıralama hâlâ buna göre yapılır
+  period_end_date date, -- dönemin BİTİŞ tarihi (bkz. add_migration_period_end_date.sql)
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );

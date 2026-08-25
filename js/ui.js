@@ -183,6 +183,7 @@ const DICT = {
     toastProspectConfirmed:'Aday onayda olarak işaretlendi.', unconfirmTitle:'Adaylar Listesine Geri Al',
     emptyMigrationConfirmedTitle:'Henüz onaylı aday yok', emptyMigrationConfirmedDesc:'Adaylar sekmesinden ➡️ ile bir adayı buraya taşıyabilirsiniz.',
     addPeriod:'+ Dönem Ekle', periodAddTitle:'Dönem Ekle', periodEditTitle:'Dönemi Düzenle', lblPeriodLabel:'Dönem Etiketi',
+    lblPeriodStartDate:'Başlangıç Tarihi', lblPeriodEndDate:'Bitiş Tarihi',
     periodNameRequired:'Dönem etiketi gerekli.', confirmDeletePeriod:'Bu dönemi silmek istediğinize emin misiniz? İçindeki tüm adaylar da silinecek.',
     toastPeriodSaved:'Dönem kaydedildi.', toastPeriodDeleted:'Dönem silindi.',
     emptyPeriodsTitle:'Henüz dönem yok', emptyPeriodsDesc:'"+ Dönem Ekle" ile ilk göç dönemini oluştur.',
@@ -284,6 +285,7 @@ const DICT = {
     toastProspectConfirmed:'Candidate marked as confirmed.', unconfirmTitle:'Send Back to Candidate List',
     emptyMigrationConfirmedTitle:'No confirmed candidates yet', emptyMigrationConfirmedDesc:'Use ➡️ on a candidate in the Candidates tab to move them here.',
     addPeriod:'+ Add Period', periodAddTitle:'Add Period', periodEditTitle:'Edit Period', lblPeriodLabel:'Period Label',
+    lblPeriodStartDate:'Start Date', lblPeriodEndDate:'End Date',
     periodNameRequired:'Period label is required.', confirmDeletePeriod:'Are you sure you want to delete this period? All candidates in it will also be deleted.',
     toastPeriodSaved:'Period saved.', toastPeriodDeleted:'Period deleted.',
     emptyPeriodsTitle:'No periods yet', emptyPeriodsDesc:'Use "+ Add Period" to create the first migration period.',
@@ -385,6 +387,7 @@ const DICT = {
     toastProspectConfirmed:'Kandidat als bestätigt markiert.', unconfirmTitle:'Zurück zur Kandidatenliste (Bestätigung aufheben)',
     emptyMigrationConfirmedTitle:'Noch keine bestätigten Kandidaten', emptyMigrationConfirmedDesc:'Verwende ➡️ bei einem Kandidaten im Tab "Kandidaten", um ihn hierher zu verschieben.',
     addPeriod:'+ Zeitraum hinzufügen', periodAddTitle:'Zeitraum hinzufügen', periodEditTitle:'Zeitraum bearbeiten', lblPeriodLabel:'Zeitraumbezeichnung',
+    lblPeriodStartDate:'Startdatum', lblPeriodEndDate:'Enddatum',
     periodNameRequired:'Zeitraumbezeichnung erforderlich.', confirmDeletePeriod:'Diesen Zeitraum wirklich löschen? Alle Kandidaten darin werden ebenfalls gelöscht.',
     toastPeriodSaved:'Zeitraum gespeichert.', toastPeriodDeleted:'Zeitraum gelöscht.',
     emptyPeriodsTitle:'Noch kein Zeitraum', emptyPeriodsDesc:'Mit "+ Zeitraum hinzufügen" den ersten Migrationszeitraum anlegen.',
@@ -486,6 +489,7 @@ const DICT = {
     toastProspectConfirmed:'Candidato marcado como confirmado.', unconfirmTitle:'Devolver a la Lista de Candidatos',
     emptyMigrationConfirmedTitle:'Aún no hay candidatos confirmados', emptyMigrationConfirmedDesc:'Usa ➡️ en un candidato de la pestaña Candidatos para moverlo aquí.',
     addPeriod:'+ Añadir periodo', periodAddTitle:'Añadir periodo', periodEditTitle:'Editar periodo', lblPeriodLabel:'Etiqueta del periodo',
+    lblPeriodStartDate:'Fecha de Inicio', lblPeriodEndDate:'Fecha de Fin',
     periodNameRequired:'La etiqueta del periodo es obligatoria.', confirmDeletePeriod:'¿Seguro que quieres eliminar este periodo? También se eliminarán todos los candidatos que contiene.',
     toastPeriodSaved:'Periodo guardado.', toastPeriodDeleted:'Periodo eliminado.',
     emptyPeriodsTitle:'Aún no hay periodos', emptyPeriodsDesc:'Usa "+ Añadir periodo" para crear el primer periodo de migración.',
@@ -587,6 +591,7 @@ const DICT = {
     toastProspectConfirmed:'Candidat marqué comme confirmé.', unconfirmTitle:'Renvoyer à la liste des candidats',
     emptyMigrationConfirmedTitle:"Aucun candidat confirmé pour l'instant", emptyMigrationConfirmedDesc:"Utilisez ➡️ sur un candidat dans l'onglet Candidats pour le déplacer ici.",
     addPeriod:'+ Ajouter une période', periodAddTitle:'Ajouter une période', periodEditTitle:'Modifier la période', lblPeriodLabel:'Libellé de la période',
+    lblPeriodStartDate:'Date de Début', lblPeriodEndDate:'Date de Fin',
     periodNameRequired:'Le libellé de la période est requis.', confirmDeletePeriod:'Voulez-vous vraiment supprimer cette période ? Tous les candidats qu\'elle contient seront également supprimés.',
     toastPeriodSaved:'Période enregistrée.', toastPeriodDeleted:'Période supprimée.',
     emptyPeriodsTitle:'Aucune période pour le moment', emptyPeriodsDesc:'Utilisez "+ Ajouter une période" pour créer la première période de migration.',
@@ -688,6 +693,7 @@ const DICT = {
     toastProspectConfirmed:'Đã đánh dấu ứng viên là đã xác nhận.', unconfirmTitle:'Trả về Danh sách Ứng viên',
     emptyMigrationConfirmedTitle:'Chưa có ứng viên nào được xác nhận', emptyMigrationConfirmedDesc:'Dùng ➡️ trên một ứng viên ở tab Ứng viên để chuyển họ vào đây.',
     addPeriod:'+ Thêm Đợt', periodAddTitle:'Thêm Đợt', periodEditTitle:'Sửa Đợt', lblPeriodLabel:'Tên Đợt',
+    lblPeriodStartDate:'Ngày Bắt đầu', lblPeriodEndDate:'Ngày Kết thúc',
     periodNameRequired:'Tên đợt là bắt buộc.', confirmDeletePeriod:'Bạn có chắc muốn xóa đợt này không? Tất cả ứng viên trong đó cũng sẽ bị xóa.',
     toastPeriodSaved:'Đã lưu đợt.', toastPeriodDeleted:'Đã xóa đợt.',
     emptyPeriodsTitle:'Chưa có đợt nào', emptyPeriodsDesc:'Dùng "+ Thêm Đợt" để tạo đợt di chuyển đầu tiên.',
@@ -878,7 +884,8 @@ export function applyStaticText() {
   document.getElementById("t_addProspect").textContent = t("addProspect");
   document.getElementById("t_addPeriod").textContent = t("addPeriod");
   document.getElementById("t_lblPeriodLabel").textContent = t("lblPeriodLabel");
-  document.getElementById("t_lblPeriodDate").textContent = t("lblWeekDate");
+  document.getElementById("t_lblPeriodDate").textContent = t("lblPeriodStartDate");
+  document.getElementById("t_lblPeriodEndDate").textContent = t("lblPeriodEndDate");
   document.getElementById("t_cancel6").textContent = t("cancel");
   document.getElementById("t_save6").textContent = t("save");
   document.getElementById("t_emptyPeriodsTitle").textContent = t("emptyPeriodsTitle");
