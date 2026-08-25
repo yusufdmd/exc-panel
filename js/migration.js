@@ -319,7 +319,6 @@ export function renderMigration() {
   renderMigrationStats(list);
   const rowsEl = document.getElementById("migrationRows");
   const view = state.migrationView; // "active" | "confirmed" | "failed"
-  document.getElementById("t_copyFailedBtn").style.display = view === "failed" ? "" : "none";
   document.getElementById("migrationEmpty").style.display = list.length ? "none" : "block";
   document.getElementById("t_emptyMigrationTitle").textContent = t(
     view === "failed" ? "emptyMigrationFailedTitle" : view === "confirmed" ? "emptyMigrationConfirmedTitle" : "emptyMigrationTitle"
@@ -340,6 +339,7 @@ export function renderMigration() {
       <td><div class="row-actions">
         ${view === "failed" ? `
           <button class="icon-btn admin-only" onclick="restoreProspect('${p.id}')" title="${t("restoreProspectTitle")}">↺</button>
+          <button class="icon-btn admin-only" onclick="copyProspectToNextPeriod('${p.id}')" title="${t("copyToNextPeriodTitle")}">➡️</button>
           <button class="icon-btn admin-only" onclick="openProspectModal('${p.id}')">✎</button>
         ` : view === "confirmed" ? `
           <button class="icon-btn admin-only" onclick="approveProspect('${p.id}')" title="${t("approveProspectTitle")}">✅</button>
@@ -559,37 +559,33 @@ export async function restoreProspect(id) {
 }
 
 /**
- * Seçili dönemdeki "Başarısız" adayların TAMAMINI, en yeni göç dönemine
- * (state.migrationPeriods dizisinde EN YENİ ÖNCE sıralı olduğu için ilk
- * eleman) kopyalar — kontenjan yetersizliği yüzünden bu dönem göç
- * edemeyenler, bir sonraki dönemde tekrar değerlendirmeye alınabilsin
- * diye. Kopyalar "Belirsiz" durumuyla (baştan değerlendirme) ve
- * onaylanmamış/başarısız olmayan haliyle eklenir; bu dönemdeki
- * "Başarısız" kayıtları SİLİNMEZ, sadece bir kopyası oluşturulur.
+ * Bir "Başarısız" adayı, en yeni göç dönemine (state.migrationPeriods
+ * dizisinde EN YENİ ÖNCE sıralı olduğu için ilk eleman) kopyalar —
+ * herkes otomatik olarak dahil edilmez, admin adayları TEK TEK seçer
+ * çünkü kontenjan yetersizliği yüzünden başarısız olan biri, bir
+ * sonraki dönemde göç etmek istemeyebilir. Kopya "Belirsiz" durumuyla
+ * (baştan değerlendirme) ve onaylanmamış/başarısız olmayan haliyle
+ * eklenir; bu dönemdeki "Başarısız" kaydı SİLİNMEZ, sadece bir kopyası
+ * oluşturulur.
  */
-export async function copyFailedToNextPeriod() {
+export async function copyProspectToNextPeriod(id) {
+  const prospect = state.migration.find((p) => p.id === id);
+  if (!prospect) return;
   const targetPeriod = state.migrationPeriods[0];
   if (!targetPeriod || targetPeriod.id === state.migrationActivePeriodId) {
     showToast(t("needNewerPeriodForCopy"));
     return;
   }
-  const failedList = state.migration.filter((p) => p.periodId === state.migrationActivePeriodId && p.failed);
-  if (!failedList.length) {
-    showToast(t("noFailedToCopy"));
-    return;
-  }
-  if (!confirm(t("confirmCopyFailedToNext") + ` (${failedList.length} → ${targetPeriod.label})`)) return;
+  if (!confirm(t("confirmCopyProspectToNext"))) return;
   try {
-    for (const p of failedList) {
-      const row = await createMigrationProspect({
-        period_id: targetPeriod.id, name: p.name || null, game_id: p.gameId || null, power: p.power,
-        server: p.server, color: p.color, score: p.score, status: "uncertain", note: p.note || null,
-        camp_level: p.campLevel || null, team_power: p.teamPower, team_element: p.teamElement
-      });
-      state.migration.push(mapProspect(row));
-    }
+    const row = await createMigrationProspect({
+      period_id: targetPeriod.id, name: prospect.name || null, game_id: prospect.gameId || null, power: prospect.power,
+      server: prospect.server, color: prospect.color, score: prospect.score, status: "uncertain", note: prospect.note || null,
+      camp_level: prospect.campLevel || null, team_power: prospect.teamPower, team_element: prospect.teamElement
+    });
+    state.migration.push(mapProspect(row));
     renderAll();
-    showToast(t("toastCopiedToNextPeriod"));
+    showToast(t("toastProspectCopiedToNext"));
   } catch (error) {
     console.error(error);
     showToast("Error");
