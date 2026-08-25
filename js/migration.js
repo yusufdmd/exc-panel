@@ -85,7 +85,8 @@ export function mapProspect(row) {
     note: row.note || "",
     campLevel: row.camp_level || "",
     teamPower: row.team_power || 0,
-    teamElement: row.team_element || null
+    teamElement: row.team_element || null,
+    score: row.score != null ? row.score : null
   };
 }
 
@@ -327,7 +328,7 @@ export function renderMigration() {
   );
   rowsEl.innerHTML = list.map((p) => `
     <tr class="migration-row-${p.color}">
-      <td><span class="rank-badge ${migrationColorClass(p.color)}">${migrationColorLabel(p.color)}</span></td>
+      <td><span class="rank-badge ${migrationColorClass(p.color)}">${migrationColorLabel(p.color)}</span>${p.score != null ? `<div style="font-size:11px; color:var(--text-dim); margin-top:2px;">${escapeHtml(String(p.score))}</div>` : ""}</td>
       <td><span class="member-name">${escapeHtml(p.name || "—")}</span>${p.note ? `<div style="font-size:11px; color:var(--text-dim); white-space:normal; max-width:220px;">${escapeHtml(p.note)}</div>` : ""}</td>
       <td class="member-id">${escapeHtml(String(p.gameId || "—"))}</td>
       <td class="num-cell" title="${Number(p.power) || 0}">${formatPower(p.power)}</td>
@@ -389,13 +390,13 @@ export function exportMigration() {
       return selectedIds.includes(view);
     });
     const rows = [[
-      t("lblPeriodLabel"), t("thColor"), t("thUsername"), t("thId"), t("thPower"), t("thCamp"),
+      t("lblPeriodLabel"), t("thColor"), t("lblProspectScore"), t("thUsername"), t("thId"), t("thPower"), t("thCamp"),
       t("lblTeamPower"), t("lblTeamElement"), t("thServer"), t("thStatus"), t("lblProspectNote"), t("thListView")
     ]];
     list.forEach((p) => {
       const view = p.failed ? "failed" : p.confirmed ? "confirmed" : "active";
       rows.push([
-        periodLabelById[p.periodId] || "", migrationColorLabel(p.color), p.name || "", p.gameId || "",
+        periodLabelById[p.periodId] || "", migrationColorLabel(p.color), p.score != null ? p.score : "", p.name || "", p.gameId || "",
         Number(p.power) || 0, p.campLevel || "", Number(p.teamPower) || 0,
         p.teamElement ? elementLabel(p.teamElement) : t("elementNone"),
         p.server != null ? p.server : "", migrationStatusLabel(p.status), p.note || "", viewLabel[view]
@@ -426,6 +427,7 @@ export function openProspectModal(id) {
     document.getElementById("pPower").value = prospect.power || "";
     document.getElementById("pServer").value = prospect.server != null ? prospect.server : "";
     document.getElementById("pColor").value = prospect.color;
+    document.getElementById("pScore").value = prospect.score != null ? prospect.score : "";
     document.getElementById("pStatus").value = prospect.status;
     document.getElementById("pNote").value = prospect.note || "";
     document.getElementById("pCamp").value = prospect.campLevel || "";
@@ -434,7 +436,7 @@ export function openProspectModal(id) {
     setProspectElementPickerActive(prospect.teamElement || "");
   } else {
     document.getElementById("prospectModalTitle").textContent = t("prospectAddTitle");
-    ["pName", "pGameId", "pPower", "pServer", "pNote", "pCamp", "pTeamPower", "pTeamElement"].forEach((fieldId) => { document.getElementById(fieldId).value = ""; });
+    ["pName", "pGameId", "pPower", "pServer", "pNote", "pCamp", "pTeamPower", "pTeamElement", "pScore"].forEach((fieldId) => { document.getElementById(fieldId).value = ""; });
     document.getElementById("pColor").value = "unknown";
     document.getElementById("pStatus").value = "uncertain";
     setProspectElementPickerActive("");
@@ -454,12 +456,13 @@ export async function saveProspect() {
   const powerRaw = document.getElementById("pPower").value.trim();
   const serverRaw = document.getElementById("pServer").value.trim();
   const teamPowerRaw = document.getElementById("pTeamPower").value.trim();
+  const scoreRaw = document.getElementById("pScore").value.trim();
 
   if (gameId && !isDigitsOnly(gameId, 15)) {
     showToast(t("invalidGameId"));
     return;
   }
-  if ((powerRaw && !isDigitsOnly(powerRaw)) || (serverRaw && !isDigitsOnly(serverRaw)) || (teamPowerRaw && !isDigitsOnly(teamPowerRaw))) {
+  if ((powerRaw && !isDigitsOnly(powerRaw)) || (serverRaw && !isDigitsOnly(serverRaw)) || (teamPowerRaw && !isDigitsOnly(teamPowerRaw)) || (scoreRaw && !isDigitsOnly(scoreRaw))) {
     showToast(t("invalidNumberField"));
     return;
   }
@@ -467,6 +470,7 @@ export async function saveProspect() {
   const power = Number(powerRaw) || 0;
   const server = serverRaw === "" ? null : (Number(serverRaw) || null);
   const color = document.getElementById("pColor").value;
+  const score = scoreRaw === "" ? null : (Number(scoreRaw) || null);
   const status = document.getElementById("pStatus").value;
   const note = document.getElementById("pNote").value.trim();
   const campLevel = document.getElementById("pCamp").value || null;
@@ -475,12 +479,12 @@ export async function saveProspect() {
 
   try {
     if (editId) {
-      const payload = { name: name || null, game_id: gameId || null, power, server, color, status, note: note || null, camp_level: campLevel, team_power: teamPower, team_element: teamElement };
+      const payload = { name: name || null, game_id: gameId || null, power, server, color, score, status, note: note || null, camp_level: campLevel, team_power: teamPower, team_element: teamElement };
       const row = await updateMigrationProspect(editId, payload);
       const index = state.migration.findIndex((p) => p.id === editId);
       if (index >= 0) state.migration[index] = mapProspect(row);
     } else {
-      const payload = { period_id: state.migrationActivePeriodId, name: name || null, game_id: gameId || null, power, server, color, status, note: note || null, camp_level: campLevel, team_power: teamPower, team_element: teamElement };
+      const payload = { period_id: state.migrationActivePeriodId, name: name || null, game_id: gameId || null, power, server, color, score, status, note: note || null, camp_level: campLevel, team_power: teamPower, team_element: teamElement };
       const row = await createMigrationProspect(payload);
       state.migration.push(mapProspect(row));
 
