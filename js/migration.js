@@ -558,11 +558,13 @@ export async function restoreProspect(id) {
  * olduğu ve göç edeceğinin kesinleştiği anlamına gelir. Aday "Adaylar"
  * listesinden kaybolup "Onayda" sekmesinde görünür hale gelir; oradan
  * "Üye Olarak Onayla" (approveProspect) ile gerçek üyeliğe dönüştürülür.
+ * Onaya alınan bir aday artık kesinleşmiş sayılır — formdaki "Durum"
+ * seçimi ne olursa olsun status da "certain" (Kesin) olarak zorlanır.
  */
 export async function markProspectConfirmed(id) {
   if (!confirm(t("confirmMarkConfirmed"))) return;
   try {
-    const row = await updateMigrationProspect(id, { confirmed: true });
+    const row = await updateMigrationProspect(id, { confirmed: true, status: "certain" });
     const index = state.migration.findIndex((p) => p.id === id);
     if (index >= 0) state.migration[index] = mapProspect(row);
     renderAll();
