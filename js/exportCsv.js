@@ -22,10 +22,17 @@ function csvEscapeCell(value) {
   return str;
 }
 
-/** 2 boyutlu bir satır dizisini (ilk satır başlık) CSV dosyası olarak indirir. UTF-8 BOM ile — Excel Türkçe karakterleri (ı,ş,ğ,ü,ö,ç) BOM olmadan bozuk gösterir. */
+/**
+ * 2 boyutlu bir satır dizisini (ilk satır başlık) CSV dosyası olarak indirir. UTF-8
+ * BOM ile — Excel Türkçe karakterleri (ı,ş,ğ,ü,ö,ç) BOM olmadan bozuk gösterir.
+ * Dosyanın en başındaki "sep=," satırı Excel'e özel bir işarettir: Türkçe/Avrupa
+ * Windows'ta bölge ayarındaki varsayılan liste ayracı virgül değil noktalı virgüldür
+ * (çünkü virgül ondalık ayracı olarak kullanılır) — bu satır olmadan Excel dosyayı
+ * çift tıklayınca virgülleri ayraç saymaz ve her satırı tek bir hücreye yazar.
+ */
 export function downloadCsv(filename, rows) {
   const csv = rows.map((row) => row.map(csvEscapeCell).join(",")).join("\r\n");
-  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+  const blob = new Blob(["﻿sep=,\r\n" + csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
