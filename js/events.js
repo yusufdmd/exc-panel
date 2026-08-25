@@ -18,9 +18,10 @@ import { createWeek as dbCreateWeek, updateWeek as dbUpdateWeek, deleteWeek as d
 import {
   state, t, showToast, escapeHtml, rankClass, statusOf, gvgColorClass, formatPower, formatRatio, renderAll,
   cellInfoHtml, svsOtherCellInfo, ssCellInfo, attendanceCellInfo, gvgCellInfo, isExempt, isDigitsOnly,
-  ratioStatus, ratioSs, sumGvgPoints, RANK_ORDER
+  ratioStatus, ratioSs, sumGvgPoints, RANK_ORDER, todayStr
 } from "./ui.js";
 import { filteredSortedMembers } from "./members.js";
+import { openExportModal } from "./exportCsv.js";
 
 /** Supabase hafta satırını uygulama şekline çevirir. */
 export function mapWeek(row) {
@@ -42,6 +43,34 @@ function storeFor(type) {
   if (type === "ss") return state.ss;
   if (type === "kod") return state.kod;
   return state.other;
+}
+
+/** Etkinlik türüne karşılık gelen hücre-bilgisi fonksiyonunu döndürür (tablolardakiyle BİREBİR aynı metin — bkz. gvg.js/svs.js/ss.js/kod.js render fonksiyonları). */
+function cellInfoFor(type) {
+  if (type === "svs" || type === "other") return svsOtherCellInfo;
+  if (type === "gvg") return gvgCellInfo;
+  if (type === "ss") return ssCellInfo;
+  return attendanceCellInfo; // kod
+}
+
+/**
+ * "Dışa Aktar" — admin, hangi haftaların/etkinliklerin dahil olacağını seçer; her
+ * seçili hafta kendi sütunu olarak, ekrandaki tabloyla birebir aynı hücre metinleriyle
+ * tek bir CSV'de birleşir. GVG/SVS/SS/KoD/Diğer'in hepsi için ortak (bkz. storeFor/cellInfoFor).
+ */
+export function exportEventTable(type) {
+  const store = storeFor(type);
+  const cellInfoFn = cellInfoFor(type);
+  const items = store.weeks.map((week) => ({ id: week.id, label: week.label }));
+  openExportModal(t("exportBtn"), items, (selectedIds) => {
+    const weeks = store.weeks.filter((week) => selectedIds.includes(week.id));
+    const members = filteredSortedMembers();
+    const rows = [[t("thRank"), t("thUsername"), ...weeks.map((week) => week.label)]];
+    members.forEach((member) => {
+      rows.push([member.rank, member.name || "", ...weeks.map((week) => cellInfoFn(store, member, week).text)]);
+    });
+    return { filename: "exc-paneli-" + type + "-" + todayStr() + ".csv", rows };
+  });
 }
 
 // =====================================================================

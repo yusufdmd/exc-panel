@@ -40,9 +40,11 @@ import {
   sumStatusPoints,
   ratioStatus,
   ratioSs,
+  elementLabel,
   registerRenderer,
   renderAll
 } from "./ui.js";
+import { openExportModal } from "./exportCsv.js";
 
 /** Supabase'ten dönen ham üye satırını uygulamanın kullandığı şekle çevirir. */
 export function mapMember(row) {
@@ -190,6 +192,31 @@ export function setSort(key) {
     state.sortDir = key === "rank" ? -1 : 1; // rütbe sütunu her zaman R5-önce ile başlar
   }
   renderMembers();
+}
+
+/** "Dışa Aktar" — admin, Aktif/Eski/Göç Edenler listelerinden hangilerinin dahil olacağını seçer, tek bir CSV'ye birleşir. */
+export function exportMembers() {
+  const items = [
+    { id: "active", label: t("subActiveMembers") },
+    { id: "old", label: t("subOldMembers") },
+    { id: "migrated", label: t("subMigratedMembers") }
+  ];
+  const listLabel = { active: t("subActiveMembers"), old: t("subOldMembers"), migrated: t("subMigratedMembers") };
+  openExportModal(t("exportBtn"), items, (selectedIds) => {
+    const list = state.members.filter((m) => selectedIds.includes(memberCategory(m)));
+    const rows = [[
+      t("thRank"), t("thUsername"), t("thId"), t("thPower"), t("thCamp"),
+      t("lblTeamPower"), t("lblTeamElement"), t("lblJoinedAt"), t("thListView")
+    ]];
+    list.forEach((m) => {
+      rows.push([
+        m.rank, m.name || "", m.gameId || "", Number(m.power) || 0, m.campLevel || "",
+        Number(m.teamPower) || 0, m.teamElement ? elementLabel(m.teamElement) : t("elementNone"),
+        (m.joinedAt || "").slice(0, 10), listLabel[memberCategory(m)]
+      ]);
+    });
+    return { filename: "exc-paneli-uyeler-" + todayStr() + ".csv", rows };
+  });
 }
 
 // =====================================================================

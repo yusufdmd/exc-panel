@@ -187,6 +187,10 @@ body{
 .btn-ghost:hover{ color:var(--text-primary); border-color:var(--text-dim); }
 .btn-ghost:active{ transform: scale(0.97); }
 
+.export-item{ display:flex; align-items:center; gap:10px; font-size:13px; padding:8px 10px; border-radius:6px; cursor:pointer; }
+.export-item:hover{ background: var(--bg-raised); }
+.export-item input[type="checkbox"]{ width:16px; height:16px; accent-color: var(--cyan-ink); cursor:pointer; flex-shrink:0; }
+
 /* max-height + overflow:auto, thead'i position:sticky ile sabitleyebilmek için
    gerekli — table-wrap gerçek bir scroll konteynerine dönüşmeden (yani sayfanın
    kendisi kaydırılırken) sticky en üstte kalıcı olarak çalışmaz. İçerik bu

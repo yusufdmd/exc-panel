@@ -234,6 +234,7 @@ const DICT = {
     weekEditTitle:'Haftayı Düzenle', eventEditTitle:'Etkinliği Düzenle',
     overallReportBtn:'📊 Genel Rapor', overallReport:'Genel Rapor', thWeeks:'Haftalar',
     thTeam:'1. Takım', lblTeamPower:'1. Takım Gücü', lblTeamElement:'1. Takım Elementi',
+    exportBtn:'⬇️ Dışa Aktar', exportSelectAll:'Tümünü Seç', exportSelectNone:'Tümünü Kaldır', exportNoSelection:'Lütfen en az bir seçenek işaretleyin.', thListView:'Liste',
     elementWater:'Su', elementFire:'Ateş', elementEarth:'Toprak', elementElectric:'Elektrik', elementNone:'Element Yok',
     tabActivity:'Aktivite', thWhen:'Tarih', thAdmin:'Admin', thAction:'İşlem', thEntity:'Üye',
     actionCreated:'Eklendi', actionUpdated:'Güncellendi', actionDeleted:'Silindi', actionRestored:'Geri Alındı',
@@ -332,6 +333,7 @@ const DICT = {
     weekEditTitle:'Edit Week', eventEditTitle:'Edit Event',
     overallReportBtn:'📊 Overall Report', overallReport:'Overall Report', thWeeks:'Weeks',
     thTeam:'1st Team', lblTeamPower:'1st Team Power', lblTeamElement:'1st Team Element',
+    exportBtn:'⬇️ Export', exportSelectAll:'Select All', exportSelectNone:'Deselect All', exportNoSelection:'Please check at least one option.', thListView:'List',
     elementWater:'Water', elementFire:'Fire', elementEarth:'Earth', elementElectric:'Electric', elementNone:'No Element',
     tabActivity:'Activity', thWhen:'Date', thAdmin:'Admin', thAction:'Action', thEntity:'Member',
     actionCreated:'Created', actionUpdated:'Updated', actionDeleted:'Deleted', actionRestored:'Restored',
@@ -430,6 +432,7 @@ const DICT = {
     weekEditTitle:'Woche bearbeiten', eventEditTitle:'Event bearbeiten',
     overallReportBtn:'📊 Gesamtbericht', overallReport:'Gesamtbericht', thWeeks:'Wochen',
     thTeam:'1. Team', lblTeamPower:'1. Team-Stärke', lblTeamElement:'1. Team-Element',
+    exportBtn:'⬇️ Exportieren', exportSelectAll:'Alle auswählen', exportSelectNone:'Alle abwählen', exportNoSelection:'Bitte mindestens eine Option auswählen.', thListView:'Liste',
     elementWater:'Wasser', elementFire:'Feuer', elementEarth:'Erde', elementElectric:'Elektro', elementNone:'Kein Element',
     tabActivity:'Aktivität', thWhen:'Datum', thAdmin:'Admin', thAction:'Aktion', thEntity:'Mitglied',
     actionCreated:'Erstellt', actionUpdated:'Aktualisiert', actionDeleted:'Gelöscht', actionRestored:'Wiederhergestellt',
@@ -528,6 +531,7 @@ const DICT = {
     weekEditTitle:'Editar semana', eventEditTitle:'Editar evento',
     overallReportBtn:'📊 Informe General', overallReport:'Informe General', thWeeks:'Semanas',
     thTeam:'1er Equipo', lblTeamPower:'Poder del 1er Equipo', lblTeamElement:'Elemento del 1er Equipo',
+    exportBtn:'⬇️ Exportar', exportSelectAll:'Seleccionar Todo', exportSelectNone:'Deseleccionar Todo', exportNoSelection:'Por favor selecciona al menos una opción.', thListView:'Lista',
     elementWater:'Agua', elementFire:'Fuego', elementEarth:'Tierra', elementElectric:'Eléctrico', elementNone:'Sin Elemento',
     tabActivity:'Actividad', thWhen:'Fecha', thAdmin:'Admin', thAction:'Acción', thEntity:'Miembro',
     actionCreated:'Creado', actionUpdated:'Actualizado', actionDeleted:'Eliminado', actionRestored:'Restaurado',
@@ -626,6 +630,7 @@ const DICT = {
     weekEditTitle:'Modifier la semaine', eventEditTitle:"Modifier l'événement",
     overallReportBtn:'📊 Rapport Global', overallReport:'Rapport Global', thWeeks:'Semaines',
     thTeam:'1ère Équipe', lblTeamPower:'Puissance de la 1ère Équipe', lblTeamElement:'Élément de la 1ère Équipe',
+    exportBtn:'⬇️ Exporter', exportSelectAll:'Tout Sélectionner', exportSelectNone:'Tout Désélectionner', exportNoSelection:'Veuillez cocher au moins une option.', thListView:'Liste',
     elementWater:'Eau', elementFire:'Feu', elementEarth:'Terre', elementElectric:'Électrique', elementNone:'Aucun Élément',
     tabActivity:'Activité', thWhen:'Date', thAdmin:'Admin', thAction:'Action', thEntity:'Membre',
     actionCreated:'Créé', actionUpdated:'Mis à jour', actionDeleted:'Supprimé', actionRestored:'Restauré',
@@ -724,6 +729,7 @@ const DICT = {
     weekEditTitle:'Sửa Tuần', eventEditTitle:'Sửa Sự kiện',
     overallReportBtn:'📊 Báo cáo Tổng quan', overallReport:'Báo cáo Tổng quan', thWeeks:'Các Tuần',
     thTeam:'Đội 1', lblTeamPower:'Sức mạnh Đội 1', lblTeamElement:'Nguyên tố Đội 1',
+    exportBtn:'⬇️ Xuất Excel', exportSelectAll:'Chọn Tất cả', exportSelectNone:'Bỏ chọn Tất cả', exportNoSelection:'Vui lòng chọn ít nhất một mục.', thListView:'Danh sách',
     elementWater:'Thủy', elementFire:'Hỏa', elementEarth:'Thổ', elementElectric:'Điện', elementNone:'Không Nguyên tố',
     tabActivity:'Hoạt động', thWhen:'Ngày', thAdmin:'Quản trị viên', thAction:'Hành động', thEntity:'Thành viên',
     actionCreated:'Đã tạo', actionUpdated:'Đã cập nhật', actionDeleted:'Đã xóa', actionRestored:'Đã khôi phục',
@@ -937,6 +943,17 @@ export function applyStaticText() {
   document.getElementById("t_statusUncertainOpt").textContent = t("migrationStatusUncertain");
   document.getElementById("t_cancel5").textContent = t("cancel");
   document.getElementById("t_save5").textContent = t("save");
+  document.getElementById("t_exportSelectAll").textContent = t("exportSelectAll");
+  document.getElementById("t_exportSelectNone").textContent = t("exportSelectNone");
+  document.getElementById("t_cancelExport").textContent = t("cancel");
+  document.getElementById("t_confirmExport").textContent = t("exportBtn");
+  document.getElementById("t_exportMembers").textContent = t("exportBtn");
+  document.getElementById("t_exportMigration").textContent = t("exportBtn");
+  document.getElementById("t_export_svs").textContent = t("exportBtn");
+  document.getElementById("t_export_gvg").textContent = t("exportBtn");
+  document.getElementById("t_export_ss").textContent = t("exportBtn");
+  document.getElementById("t_export_kod").textContent = t("exportBtn");
+  document.getElementById("t_export_other").textContent = t("exportBtn");
   updateAdminUI();
   buildCampOptions();
   buildMigrationColorOptions();
@@ -1287,7 +1304,7 @@ const ELEMENT_STYLE = {
 };
 
 /** Bir elementin çevrilmiş adını döndürür ("water" -> t("elementWater") gibi). */
-function elementLabel(element) {
+export function elementLabel(element) {
   return t("element" + element.charAt(0).toUpperCase() + element.slice(1));
 }
 

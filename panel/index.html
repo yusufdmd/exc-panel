@@ -137,6 +137,7 @@
       <div class="filter-chip" data-rank="R3" onclick="setRankFilter('R3')">R3</div>
       <div class="filter-chip" data-rank="R2" onclick="setRankFilter('R2')">R2</div>
       <div class="filter-chip" data-rank="R1" onclick="setRankFilter('R1')">R1</div>
+      <button class="btn-ghost admin-only" onclick="exportMembers()" id="t_exportMembers">⬇️ Dışa Aktar</button>
       <button class="btn-primary admin-only" onclick="openMemberModal()" id="t_addMember">+ Üye Ekle</button>
     </div>
     <div class="table-wrap">
@@ -183,6 +184,7 @@
           <span><i class="sw" style="background:var(--text-dim)"></i><span id="t_legendUnknown">Bilgi Yok</span></span>
         </div>
         <button class="btn-ghost" onclick="openOverallReportModal('svs')" id="t_overallReport_svs">📊 Genel Rapor</button>
+        <button class="btn-ghost admin-only" onclick="exportEventTable('svs')" id="t_export_svs">⬇️ Dışa Aktar</button>
         <button class="btn-primary admin-only" onclick="openWeekModal('svs')" id="t_addWeek_svs">+ Hafta Ekle</button>
       </div>
       <div class="table-wrap"><table id="tbl-svs"><thead></thead><tbody></tbody></table></div>
@@ -198,6 +200,7 @@
           <span><i class="sw" style="background:var(--danger-ink)"></i>≤ 13.199.999</span>
         </div>
         <button class="btn-ghost" onclick="openOverallReportModal('gvg')" id="t_overallReport_gvg">📊 Genel Rapor</button>
+        <button class="btn-ghost admin-only" onclick="exportEventTable('gvg')" id="t_export_gvg">⬇️ Dışa Aktar</button>
         <button class="btn-primary admin-only" onclick="openWeekModal('gvg')" id="t_addWeek_gvg">+ Hafta Ekle</button>
       </div>
       <div class="table-wrap"><table id="tbl-gvg"><thead></thead><tbody></tbody></table></div>
@@ -213,6 +216,7 @@
           <span><i class="sw" style="background:var(--text-dim)"></i><span id="t_legendNoReg">Kayıt Yok</span></span>
         </div>
         <button class="btn-ghost" onclick="openOverallReportModal('ss')" id="t_overallReport_ss">📊 Genel Rapor</button>
+        <button class="btn-ghost admin-only" onclick="exportEventTable('ss')" id="t_export_ss">⬇️ Dışa Aktar</button>
         <button class="btn-primary admin-only" onclick="openWeekModal('ss')" id="t_addWeek_ss">+ Hafta Ekle</button>
       </div>
       <div class="table-wrap"><table id="tbl-ss"><thead></thead><tbody></tbody></table></div>
@@ -228,6 +232,7 @@
           <span><i class="sw" style="background:var(--text-dim)"></i><span id="t_legendUnknownKod">Bilgi Yok</span></span>
         </div>
         <button class="btn-ghost" onclick="openOverallReportModal('kod')" id="t_overallReport_kod">📊 Genel Rapor</button>
+        <button class="btn-ghost admin-only" onclick="exportEventTable('kod')" id="t_export_kod">⬇️ Dışa Aktar</button>
         <button class="btn-primary admin-only" onclick="openWeekModal('kod')" id="t_addWeek_kod">+ Hafta Ekle</button>
       </div>
       <div class="table-wrap"><table id="tbl-kod"><thead></thead><tbody></tbody></table></div>
@@ -243,6 +248,7 @@
           <span><i class="sw" style="background:var(--text-dim)"></i><span id="t_legendUnknownOther">Bilgi Yok</span></span>
         </div>
         <button class="btn-ghost" onclick="openOverallReportModal('other')" id="t_overallReport_other">📊 Genel Rapor</button>
+        <button class="btn-ghost admin-only" onclick="exportEventTable('other')" id="t_export_other">⬇️ Dışa Aktar</button>
         <button class="btn-primary admin-only" onclick="openWeekModal('other')" id="t_addEvent_other">+ Etkinlik Ekle</button>
       </div>
       <div class="table-wrap"><table id="tbl-other"><thead></thead><tbody></tbody></table></div>
@@ -303,6 +309,7 @@
         <input class="search" id="migrationSearch" oninput="renderMigration()">
         <span id="migrationColorChips" style="display:contents"></span>
         <span id="migrationStatusChips" style="display:contents"></span>
+        <button class="btn-ghost admin-only" onclick="exportMigration()" id="t_exportMigration">⬇️ Dışa Aktar</button>
         <button class="btn-primary admin-only" onclick="openProspectModal()" id="t_addProspect">+ Aday Ekle</button>
       </div>
       <div class="table-wrap">
@@ -519,6 +526,22 @@
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closeProspectModal()" id="t_cancel5">Vazgeç</button>
       <button class="btn-primary" onclick="saveProspect()" id="t_save5">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- DIŞA AKTARMA (CSV) SEÇİM MODALI — tüm bölümler tarafından ortak kullanılır (bkz. exportCsv.js) -->
+<div class="overlay" id="exportOverlay">
+  <div class="modal">
+    <h2 id="exportModalTitle">Dışa Aktar</h2>
+    <div style="display:flex; gap:8px; margin-bottom:12px;">
+      <button type="button" class="btn-ghost" onclick="toggleExportAll(true)" id="t_exportSelectAll">Tümünü Seç</button>
+      <button type="button" class="btn-ghost" onclick="toggleExportAll(false)" id="t_exportSelectNone">Tümünü Kaldır</button>
+    </div>
+    <div id="exportItems" style="max-height:280px; overflow-y:auto; display:flex; flex-direction:column; gap:2px; margin-bottom:16px;"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeExportModal()" id="t_cancelExport">Vazgeç</button>
+      <button class="btn-primary" onclick="confirmExport()" id="t_confirmExport">⬇️ Dışa Aktar</button>
     </div>
   </div>
 </div>

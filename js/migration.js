@@ -44,12 +44,14 @@ import {
   setElementPickerActive,
   campLevelSortValue,
   elementBadge,
+  elementLabel,
   MIGRATION_COLORS,
   MIGRATION_COLOR_ORDER,
   registerRenderer,
   renderAll
 } from "./ui.js";
 import { openMemberModal } from "./members.js";
+import { openExportModal } from "./exportCsv.js";
 
 /** "Durum" sütununu sıralarken kesinlik derecesine göre kullanılan sıra: Kesin > Yedek > Belirsiz. */
 const MIGRATION_STATUS_ORDER = { certain: 2, waitlist: 1, uncertain: 0 };
@@ -369,6 +371,38 @@ export function setMigrationSort(key) {
     state.migrationSortDir = key === "color" ? -1 : 1; // unvan sütunu her zaman Altın-önce ile başlar
   }
   renderMigration();
+}
+
+/** "Dışa Aktar" — admin, Adaylar/Onayda/Başarısız listelerinden hangilerinin dahil olacağını seçer; TÜM dönemlerden, tek bir CSV'ye birleşir. */
+export function exportMigration() {
+  const items = [
+    { id: "active", label: t("subMigrationActive") },
+    { id: "confirmed", label: t("subMigrationConfirmed") },
+    { id: "failed", label: t("subMigrationFailed") }
+  ];
+  const viewLabel = { active: t("subMigrationActive"), confirmed: t("subMigrationConfirmed"), failed: t("subMigrationFailed") };
+  openExportModal(t("exportBtn"), items, (selectedIds) => {
+    const periodLabelById = {};
+    state.migrationPeriods.forEach((p) => { periodLabelById[p.id] = p.label; });
+    const list = state.migration.filter((p) => {
+      const view = p.failed ? "failed" : p.confirmed ? "confirmed" : "active";
+      return selectedIds.includes(view);
+    });
+    const rows = [[
+      t("lblPeriodLabel"), t("thColor"), t("thUsername"), t("thId"), t("thPower"), t("thCamp"),
+      t("lblTeamPower"), t("lblTeamElement"), t("thServer"), t("thStatus"), t("lblProspectNote"), t("thListView")
+    ]];
+    list.forEach((p) => {
+      const view = p.failed ? "failed" : p.confirmed ? "confirmed" : "active";
+      rows.push([
+        periodLabelById[p.periodId] || "", migrationColorLabel(p.color), p.name || "", p.gameId || "",
+        Number(p.power) || 0, p.campLevel || "", Number(p.teamPower) || 0,
+        p.teamElement ? elementLabel(p.teamElement) : t("elementNone"),
+        p.server != null ? p.server : "", migrationStatusLabel(p.status), p.note || "", viewLabel[view]
+      ]);
+    });
+    return { filename: "exc-paneli-goc-" + todayStr() + ".csv", rows };
+  });
 }
 
 // =====================================================================

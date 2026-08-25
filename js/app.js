@@ -19,8 +19,8 @@
 import { getMembers, getAllPowerHistory, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, getSiteLinks, getNews, getFeaturedVideos, getRecentActivity, subscribeToTables } from "./database.js";
 import { POLL_INTERVAL_MS } from "./config.js";
 import { state, t, showToast, buildLangSwitch, applyStaticText, initLangFromStorage, persistLanguage, initThemeFromStorage, toggleTheme, renderAll, registerDataLoader, registerRenderer } from "./ui.js";
-import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember, openHistoryModal, closeHistoryModal, setMemberView, setRankFilter, setElementFilter, setSort } from "./members.js";
-import { mapWeek, mapEntry, openWeekModal, closeWeekModal, saveWeek, deleteWeek, openEntryModal, closeEntryModal, renderEntryRows, saveEntry, openWeekReportModal, closeWeekReportModal, openOverallReportModal, closeOverallReportModal, setOverallReportSort } from "./events.js";
+import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember, openHistoryModal, closeHistoryModal, setMemberView, setRankFilter, setElementFilter, setSort, exportMembers } from "./members.js";
+import { mapWeek, mapEntry, openWeekModal, closeWeekModal, saveWeek, deleteWeek, openEntryModal, closeEntryModal, renderEntryRows, saveEntry, openWeekReportModal, closeWeekReportModal, openOverallReportModal, closeOverallReportModal, setOverallReportSort, exportEventTable } from "./events.js";
 import { setBoardSort, openParticipationReportModal, closeParticipationReportModal } from "./dashboard.js";
 import {
   mapPeriod, mapProspect, mapLead, renderMigration, setMigrationSort, setMigrationView,
@@ -28,9 +28,10 @@ import {
   openProspectModal, closeProspectModal, saveProspect, deleteProspect, approveProspect,
   markProspectFailed, restoreProspect, markProspectConfirmed, unconfirmProspect,
   setMigrationColorFilter, setMigrationStatusFilter, setProspectTeamElement,
-  processLead, dismissLead
+  processLead, dismissLead, exportMigration
 } from "./migration.js";
 import { exportBackup, importBackup } from "./backup.js";
+import { closeExportModal, toggleExportAll, confirmExport } from "./exportCsv.js";
 import { mapSiteLinks, populateSiteLinksForm, saveSiteLinks } from "./siteLinks.js";
 import { mapNewsItem, openNewsModal, closeNewsModal, saveNews, deleteNews } from "./news.js";
 import { mapVideoItem, openVideoModal, closeVideoModal, saveVideo, deleteVideo, moveVideo } from "./videos.js";
@@ -233,18 +234,19 @@ function setLang(lang) {
 Object.assign(window, {
   exportBackup, importBackup, manualRefresh,
   switchTab, switchSub, setMemberView, setRankFilter, setElementFilter, setSort, renderMembers,
-  openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember,
+  openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember, exportMembers,
   openWeekModal, closeWeekModal, saveWeek, deleteWeek,
   openEntryModal, closeEntryModal, saveEntry, renderEntryRows,
   openWeekReportModal, closeWeekReportModal,
-  openOverallReportModal, closeOverallReportModal, setOverallReportSort,
+  openOverallReportModal, closeOverallReportModal, setOverallReportSort, exportEventTable,
   openHistoryModal, closeHistoryModal,
   setBoardSort, openParticipationReportModal, closeParticipationReportModal, setLang,
   renderMigration, setMigrationSort, setMigrationView, openProspectModal, closeProspectModal, saveProspect, deleteProspect, approveProspect,
   markProspectFailed, restoreProspect, markProspectConfirmed, unconfirmProspect,
   setMigrationColorFilter, setMigrationStatusFilter, setProspectTeamElement,
   selectMigrationPeriod, openPeriodModal, closePeriodModal, savePeriod, deletePeriod,
-  processLead, dismissLead,
+  processLead, dismissLead, exportMigration,
+  closeExportModal, toggleExportAll, confirmExport,
   saveSiteLinks,
   openNewsModal, closeNewsModal, saveNews, deleteNews,
   openVideoModal, closeVideoModal, saveVideo, deleteVideo, moveVideo,
