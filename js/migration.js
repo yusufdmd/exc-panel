@@ -38,6 +38,12 @@ import {
   migrationStatusClass,
   migrationStatusLabel,
   buildMigrationColorOptions,
+  buildProspectCampOptions,
+  buildProspectElementPicker,
+  setProspectElementPickerActive,
+  setElementPickerActive,
+  campLevelSortValue,
+  elementBadge,
   MIGRATION_COLORS,
   MIGRATION_COLOR_ORDER,
   registerRenderer,
@@ -74,7 +80,10 @@ export function mapProspect(row) {
     status: row.status,
     failed: !!row.failed,
     confirmed: !!row.confirmed,
-    note: row.note || ""
+    note: row.note || "",
+    campLevel: row.camp_level || "",
+    teamPower: row.team_power || 0,
+    teamElement: row.team_element || null
   };
 }
 
@@ -209,6 +218,12 @@ function sortedProspects() {
     } else if (state.migrationSortKey === "power") {
       valueA = Number(a.power) || 0;
       valueB = Number(b.power) || 0;
+    } else if (state.migrationSortKey === "campSort") {
+      valueA = campLevelSortValue(a.campLevel);
+      valueB = campLevelSortValue(b.campLevel);
+    } else if (state.migrationSortKey === "teamPower") {
+      valueA = Number(a.teamPower) || 0;
+      valueB = Number(b.teamPower) || 0;
     } else if (state.migrationSortKey === "server") {
       valueA = Number(a.server) || 0;
       valueB = Number(b.server) || 0;
@@ -314,6 +329,8 @@ export function renderMigration() {
       <td><span class="member-name">${escapeHtml(p.name || "—")}</span>${p.note ? `<div style="font-size:11px; color:var(--text-dim); white-space:normal; max-width:220px;">${escapeHtml(p.note)}</div>` : ""}</td>
       <td class="member-id">${escapeHtml(String(p.gameId || "—"))}</td>
       <td class="num-cell" title="${Number(p.power) || 0}">${formatPower(p.power)}</td>
+      <td class="num-cell">${escapeHtml(p.campLevel || "—")}</td>
+      <td class="num-cell">${p.teamPower ? `${elementBadge(p.teamElement, 20)} <span style="vertical-align:middle;">${formatPower(p.teamPower)}</span>` : "—"}</td>
       <td class="num-cell">${escapeHtml(p.server != null ? String(p.server) : "—")}</td>
       <td><span class="cell-pill ${migrationStatusClass(p.status)}">${migrationStatusLabel(p.status)}</span></td>
       <td><div class="row-actions">
@@ -364,6 +381,8 @@ export function openProspectModal(id) {
   }
   state.pendingLeadProcessingId = null; // varsayılan: normal ekleme/düzenleme, "İşle" akışı değil (bkz. processLead)
   buildMigrationColorOptions();
+  buildProspectCampOptions();
+  buildProspectElementPicker();
   document.getElementById("prospectEditId").value = id || "";
   if (id) {
     const prospect = state.migration.find((p) => p.id === id);
@@ -375,11 +394,16 @@ export function openProspectModal(id) {
     document.getElementById("pColor").value = prospect.color;
     document.getElementById("pStatus").value = prospect.status;
     document.getElementById("pNote").value = prospect.note || "";
+    document.getElementById("pCamp").value = prospect.campLevel || "";
+    document.getElementById("pTeamPower").value = prospect.teamPower || "";
+    document.getElementById("pTeamElement").value = prospect.teamElement || "";
+    setProspectElementPickerActive(prospect.teamElement || "");
   } else {
     document.getElementById("prospectModalTitle").textContent = t("prospectAddTitle");
-    ["pName", "pGameId", "pPower", "pServer", "pNote"].forEach((fieldId) => { document.getElementById(fieldId).value = ""; });
+    ["pName", "pGameId", "pPower", "pServer", "pNote", "pCamp", "pTeamPower", "pTeamElement"].forEach((fieldId) => { document.getElementById(fieldId).value = ""; });
     document.getElementById("pColor").value = "unknown";
     document.getElementById("pStatus").value = "uncertain";
+    setProspectElementPickerActive("");
   }
   document.getElementById("prospectOverlay").classList.add("active");
 }
@@ -395,12 +419,13 @@ export async function saveProspect() {
   const gameId = document.getElementById("pGameId").value.trim();
   const powerRaw = document.getElementById("pPower").value.trim();
   const serverRaw = document.getElementById("pServer").value.trim();
+  const teamPowerRaw = document.getElementById("pTeamPower").value.trim();
 
   if (gameId && !isDigitsOnly(gameId, 15)) {
     showToast(t("invalidGameId"));
     return;
   }
-  if ((powerRaw && !isDigitsOnly(powerRaw)) || (serverRaw && !isDigitsOnly(serverRaw))) {
+  if ((powerRaw && !isDigitsOnly(powerRaw)) || (serverRaw && !isDigitsOnly(serverRaw)) || (teamPowerRaw && !isDigitsOnly(teamPowerRaw))) {
     showToast(t("invalidNumberField"));
     return;
   }
@@ -410,15 +435,18 @@ export async function saveProspect() {
   const color = document.getElementById("pColor").value;
   const status = document.getElementById("pStatus").value;
   const note = document.getElementById("pNote").value.trim();
+  const campLevel = document.getElementById("pCamp").value || null;
+  const teamPower = Number(teamPowerRaw) || 0;
+  const teamElement = document.getElementById("pTeamElement").value || null;
 
   try {
     if (editId) {
-      const payload = { name: name || null, game_id: gameId || null, power, server, color, status, note: note || null };
+      const payload = { name: name || null, game_id: gameId || null, power, server, color, status, note: note || null, camp_level: campLevel, team_power: teamPower, team_element: teamElement };
       const row = await updateMigrationProspect(editId, payload);
       const index = state.migration.findIndex((p) => p.id === editId);
       if (index >= 0) state.migration[index] = mapProspect(row);
     } else {
-      const payload = { period_id: state.migrationActivePeriodId, name: name || null, game_id: gameId || null, power, server, color, status, note: note || null };
+      const payload = { period_id: state.migrationActivePeriodId, name: name || null, game_id: gameId || null, power, server, color, status, note: note || null, camp_level: campLevel, team_power: teamPower, team_element: teamElement };
       const row = await createMigrationProspect(payload);
       state.migration.push(mapProspect(row));
 
@@ -528,9 +556,10 @@ export async function unconfirmProspect(id) {
 /**
  * Bir göç adayını üyeliğe dönüştürme akışını başlatır: onay istenir,
  * onaylanırsa Üyeler sekmesine geçilip üye ekleme modalı, adayın bilinen
- * bilgileriyle (isim/ID/güç) önceden doldurulmuş halde açılır. Rütbe/kamp
- * seviyesi gibi eksik alanları admin doldurup "Kaydet"e bastığında, aday
- * göç listesinden otomatik olarak silinir (bkz. members.js -> saveMember).
+ * bilgileriyle (isim/ID/güç/kamp seviyesi/1. takım) önceden doldurulmuş
+ * halde açılır. Rütbe gibi hâlâ eksik kalan alanları admin doldurup
+ * "Kaydet"e bastığında, aday göç listesinden otomatik olarak silinir
+ * (bkz. members.js -> saveMember).
  */
 export function approveProspect(id) {
   const prospect = state.migration.find((p) => p.id === id);
@@ -542,6 +571,18 @@ export function approveProspect(id) {
   document.getElementById("fName").value = prospect.name || "";
   document.getElementById("fGameId").value = prospect.gameId || "";
   document.getElementById("fPower").value = prospect.power || "";
+  if (prospect.campLevel) document.getElementById("fCamp").value = prospect.campLevel;
+  document.getElementById("fTeamPower").value = prospect.teamPower || "";
+  document.getElementById("fTeamElement").value = prospect.teamElement || "";
+  setElementPickerActive(prospect.teamElement || "");
+}
+
+/** Aday element seçicide bir elemente tıklanınca çağrılır; zaten seçiliyse tekrar tıklamak seçimi kaldırır. */
+export function setProspectTeamElement(element) {
+  const hidden = document.getElementById("pTeamElement");
+  const next = hidden.value === element ? "" : element;
+  hidden.value = next;
+  setProspectElementPickerActive(next);
 }
 
 /**

@@ -869,6 +869,8 @@ export function applyStaticText() {
   document.getElementById("t_thUsername2").textContent = t("thUsername");
   document.getElementById("t_thId2").textContent = t("thId");
   document.getElementById("t_thPower2").textContent = t("thPower");
+  document.getElementById("t_thCamp2").textContent = t("thCamp");
+  document.getElementById("t_thTeam2").textContent = t("thTeam");
   document.getElementById("t_thServer").textContent = t("thServer");
   document.getElementById("t_emptyMigrationTitle").textContent = t("emptyMigrationTitle");
   document.getElementById("t_emptyMigrationDesc").textContent = t("emptyMigrationDesc");
@@ -880,6 +882,9 @@ export function applyStaticText() {
   document.getElementById("t_lblProspectPower").textContent = t("lblPower");
   document.getElementById("t_lblServer").textContent = t("lblServer");
   document.getElementById("t_lblColor").textContent = t("lblColor");
+  document.getElementById("t_lblProspectCamp").textContent = t("lblCamp");
+  document.getElementById("t_lblProspectTeamPower").textContent = t("lblTeamPower");
+  document.getElementById("t_lblProspectTeamElement").textContent = t("lblTeamElement");
   document.getElementById("t_lblMigrationStatus").textContent = t("thStatus");
   document.getElementById("t_thMigrationStatus").textContent = t("thStatus");
   document.getElementById("t_leadsHeading").textContent = t("leadsHeading");
@@ -935,6 +940,8 @@ export function applyStaticText() {
   updateAdminUI();
   buildCampOptions();
   buildMigrationColorOptions();
+  buildProspectCampOptions();
+  buildProspectElementPicker();
   document.title = t("appName");
   updateThemeToggleUI();
 }
@@ -1255,6 +1262,14 @@ export function buildMigrationColorOptions() {
   if (currentValue) select.value = currentValue;
 }
 
+/** Göç adayı formundaki "Kamp Seviyesi" açılır listesini doldurur — üye formundakinden ayrı çünkü aday için bu bilgi henüz bilinmeyebilir (boş seçenek içerir). */
+export function buildProspectCampOptions() {
+  const select = document.getElementById("pCamp");
+  const currentValue = select.value;
+  select.innerHTML = `<option value="">—</option>` + CAMP_LEVELS.map((level) => `<option value="${level}">${level}</option>`).join("");
+  if (currentValue) select.value = currentValue;
+}
+
 export { campLevelSortValue };
 
 // =====================================================================
@@ -1298,6 +1313,22 @@ export function buildElementPicker() {
 /** Element seçicide hangi butonun aktif (seçili) göründüğünü günceller. */
 export function setElementPickerActive(element) {
   document.querySelectorAll("#elementPicker .element-opt").forEach((el) => {
+    el.classList.toggle("active", el.dataset.el === element);
+  });
+}
+
+/** Göç adayı formundaki element seçici butonlarını doldurur; tıklanınca setProspectTeamElement (migration.js) çağrılır. */
+export function buildProspectElementPicker() {
+  const container = document.getElementById("pElementPicker");
+  if (!container) return;
+  container.innerHTML = ELEMENTS.map((el) =>
+    `<div class="element-opt" data-el="${el}" onclick="setProspectTeamElement('${el}')" title="${elementLabel(el)}">${elementBadge(el, 32)}</div>`
+  ).join("");
+}
+
+/** Aday element seçicide hangi butonun aktif göründüğünü günceller. */
+export function setProspectElementPickerActive(element) {
+  document.querySelectorAll("#pElementPicker .element-opt").forEach((el) => {
     el.classList.toggle("active", el.dataset.el === element);
   });
 }

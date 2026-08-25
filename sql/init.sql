@@ -253,6 +253,9 @@ create table if not exists migration_prospects (
   note        text, -- serbest metin: tahmini gidecek lonca / genel not (bkz. add_migration_note.sql)
   failed      boolean not null default false, -- kontenjan yetersizliği vb. nedenlerle göç edemedi (bkz. add_migration_failed.sql)
   confirmed   boolean not null default false, -- doğrulandı, unvanı belli, göç edeceği kesinleşti (bkz. add_migration_confirmed.sql)
+  camp_level  text, -- üye kaydındaki ile aynı alan, biliniyorsa önceden doldurulur (bkz. add_migration_team_camp.sql)
+  team_power  bigint, -- 1. takımın toplam gücü, biliniyorsa (bkz. add_migration_team_camp.sql)
+  team_element text check (team_element in ('water','fire','earth','electric') or team_element is null), -- 1. takımın elementi, biliniyorsa (bkz. add_migration_team_camp.sql)
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );

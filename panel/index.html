@@ -313,6 +313,8 @@
               <th onclick="setMigrationSort('name')" id="t_thUsername2">Kullanıcı Adı</th>
               <th onclick="setMigrationSort('gameId')" id="t_thId2">ID</th>
               <th onclick="setMigrationSort('power')" id="t_thPower2">Güç Seviyesi</th>
+              <th onclick="setMigrationSort('campSort')" id="t_thCamp2">Kamp Seviyesi</th>
+              <th onclick="setMigrationSort('teamPower')" id="t_thTeam2">1. Takım</th>
               <th onclick="setMigrationSort('server')" id="t_thServer">Sunucu</th>
               <th onclick="setMigrationSort('status')" id="t_thMigrationStatus">Durum</th>
               <th></th>
@@ -490,6 +492,17 @@
       <div class="field"><label id="t_lblColor">Unvan</label>
         <select id="pColor"></select>
       </div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label id="t_lblProspectCamp">Kamp Seviyesi</label>
+        <select id="pCamp"></select>
+      </div>
+      <div class="field"><label id="t_lblProspectTeamPower">1. Takım Gücü</label><input id="pTeamPower" type="number"></div>
+    </div>
+    <div class="field">
+      <label id="t_lblProspectTeamElement">1. Takım Elementi</label>
+      <div class="element-picker" id="pElementPicker"></div>
+      <input type="hidden" id="pTeamElement">
     </div>
     <div class="field">
       <label id="t_lblMigrationStatus">Durum</label>
