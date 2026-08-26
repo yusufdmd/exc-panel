@@ -45,6 +45,7 @@ import {
   campLevelSortValue,
   elementBadge,
   elementLabel,
+  migrationPeriodDisplayLabel,
   MIGRATION_COLORS,
   MIGRATION_COLOR_ORDER,
   registerRenderer,
@@ -112,7 +113,7 @@ function renderMigrationPeriodTabs() {
   const tabsEl = document.getElementById("migrationPeriodTabs");
   tabsEl.innerHTML = state.migrationPeriods.map((period) => `
     <div class="subtab ${period.id === state.migrationActivePeriodId ? "active" : ""}" onclick="selectMigrationPeriod('${period.id}')">
-      <span>${escapeHtml(period.label)}</span>
+      <span>${escapeHtml(migrationPeriodDisplayLabel(period.label))}</span>
       ${formatPeriodDateRange(period) ? `<div style="font-size:9px; color:var(--text-dim); font-weight:400; margin-top:2px;">${escapeHtml(formatPeriodDateRange(period))}</div>` : ""}
       <span class="admin-only period-actions">
         <button class="icon-btn" style="width:18px;height:18px;" onclick="event.stopPropagation(); openPeriodModal('${period.id}')" title="${t("weekEditTitle")}">🏷</button>
@@ -141,7 +142,7 @@ export function openPeriodModal(id) {
     document.getElementById("prEndDate").value = period ? period.endDate : "";
   } else {
     document.getElementById("periodModalTitle").textContent = t("periodAddTitle");
-    document.getElementById("prLabel").value = "Dönem " + (state.migrationPeriods.length + 1);
+    document.getElementById("prLabel").value = t("periodWord") + " " + (state.migrationPeriods.length + 1);
     document.getElementById("prDate").value = todayStr();
     document.getElementById("prEndDate").value = "";
   }
@@ -395,7 +396,7 @@ export function exportMigration() {
   const viewLabel = { active: t("subMigrationActive"), confirmed: t("subMigrationConfirmed"), failed: t("subMigrationFailed") };
   openExportModal(t("exportBtn"), items, (selectedIds) => {
     const periodLabelById = {};
-    state.migrationPeriods.forEach((p) => { periodLabelById[p.id] = p.label; });
+    state.migrationPeriods.forEach((p) => { periodLabelById[p.id] = migrationPeriodDisplayLabel(p.label); });
     const list = state.migration.filter((p) => {
       const view = p.failed ? "failed" : p.confirmed ? "confirmed" : "active";
       return selectedIds.includes(view);
