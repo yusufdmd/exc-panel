@@ -460,6 +460,19 @@ export function closeProspectModal() {
   state.pendingLeadProcessingId = null;
 }
 
+/**
+ * Aynı ID numarasını SEÇİLİ DÖNEMDE kullanan başka bir aday varsa kullanıcıyı
+ * onaylatır (devam/vazgeç). Kasıtlı olarak sadece aktif dönemle sınırlıdır —
+ * aksi halde "Sonraki Döneme Kopyala" ile bilerek oluşturulan, farklı
+ * dönemlerdeki aynı kişiye ait kayıtlar da yanlışlıkla "yinelenen" sayılırdı.
+ */
+function confirmDuplicateProspectGameId(gameId, excludeId) {
+  if (!gameId) return true;
+  const duplicate = state.migration.find((p) => p.id !== excludeId && p.periodId === state.migrationActivePeriodId && String(p.gameId || "").trim() === gameId);
+  if (!duplicate) return true;
+  return confirm(`Bu ID numarası ("${gameId}") bu dönemde zaten "${duplicate.name || "isimsiz bir aday"}" adlı kayıtta kullanılıyor. Yine de devam etmek istiyor musunuz?`);
+}
+
 export async function saveProspect() {
   const editId = document.getElementById("prospectEditId").value;
   const name = document.getElementById("pName").value.trim();
@@ -477,6 +490,7 @@ export async function saveProspect() {
     showToast(t("invalidNumberField"));
     return;
   }
+  if (!confirmDuplicateProspectGameId(gameId, editId)) return;
 
   const power = Number(powerRaw) || 0;
   const server = serverRaw === "" ? null : (Number(serverRaw) || null);
