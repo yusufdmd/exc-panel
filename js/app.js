@@ -49,6 +49,13 @@ function settledList(result) {
   return result.status === "fulfilled" ? (result.value || []) : [];
 }
 
+// loadAll'ın en son state'e yazdığı verinin JSON anlık görüntüsü — 12 saniyelik
+// yoklama ve her realtime yankısında sunucudan gelen veri BİREBİR AYNIYSA state'e
+// dokunmadan/tabloları yeniden çizmeden çıkmak için (bkz. loadAll). Aksi halde hiçbir
+// şey değişmemiş olsa bile her döngüde tüm tablolar sıfırdan çizilir — bu da kaydırma
+// konumunu/fare vurgusunu sıfırlayıp ekranda "titreme" hissi yaratır.
+let lastDataSnapshot = null;
+
 /**
  * Supabase'ten tüm veriyi (üyeler + dört etkinlik türü) çeker ve state'i günceller.
  * Ne admin ne üye girişi doğrulanmadan (bkz. auth.js -> updateGateVisibility)
@@ -89,26 +96,35 @@ async function loadAll(silent) {
       if (!historyByMember[entry.member_id]) historyByMember[entry.member_id] = [];
       historyByMember[entry.member_id].push({ date: entry.history_date, power: entry.power });
     });
-    state.members = settledList(membersRes).map((row) => {
+    const nextMembers = settledList(membersRes).map((row) => {
       const member = mapMember(row);
       member.powerHistory = (historyByMember[row.id] || []).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
       return member;
     });
 
-    state.svs = { weeks: settledList(svsWeeksRes).map(mapWeek), entries: settledList(svsRecordsRes).map((r) => mapEntry("svs", r)) };
-    state.gvg = { weeks: settledList(gvgWeeksRes).map(mapWeek), entries: settledList(gvgRecordsRes).map((r) => mapEntry("gvg", r)) };
-    state.ss = { weeks: settledList(ssWeeksRes).map(mapWeek), entries: settledList(ssRecordsRes).map((r) => mapEntry("ss", r)) };
-    state.kod = { weeks: settledList(kodWeeksRes).map(mapWeek), entries: settledList(kodRecordsRes).map((r) => mapEntry("kod", r)) };
-    state.other = { weeks: settledList(otherWeeksRes).map(mapWeek), entries: settledList(otherRecordsRes).map((r) => mapEntry("other", r)) };
-    state.migrationPeriods = settledList(migrationPeriodsRes).map(mapPeriod);
-    state.migration = settledList(migrationRes).map(mapProspect);
-    state.migrationLeads = settledList(migrationLeadsRes).map(mapLead);
-    state.siteLinks = mapSiteLinks(siteLinksRes.status === "fulfilled" ? siteLinksRes.value : null);
-    state.news = settledList(newsRes).map(mapNewsItem);
-    state.featuredVideos = settledList(videosRes).map(mapVideoItem);
-    state.activityLog = settledList(activityRes).map(mapActivity);
+    const nextData = {
+      members: nextMembers,
+      svs: { weeks: settledList(svsWeeksRes).map(mapWeek), entries: settledList(svsRecordsRes).map((r) => mapEntry("svs", r)) },
+      gvg: { weeks: settledList(gvgWeeksRes).map(mapWeek), entries: settledList(gvgRecordsRes).map((r) => mapEntry("gvg", r)) },
+      ss: { weeks: settledList(ssWeeksRes).map(mapWeek), entries: settledList(ssRecordsRes).map((r) => mapEntry("ss", r)) },
+      kod: { weeks: settledList(kodWeeksRes).map(mapWeek), entries: settledList(kodRecordsRes).map((r) => mapEntry("kod", r)) },
+      other: { weeks: settledList(otherWeeksRes).map(mapWeek), entries: settledList(otherRecordsRes).map((r) => mapEntry("other", r)) },
+      migrationPeriods: settledList(migrationPeriodsRes).map(mapPeriod),
+      migration: settledList(migrationRes).map(mapProspect),
+      migrationLeads: settledList(migrationLeadsRes).map(mapLead),
+      siteLinks: mapSiteLinks(siteLinksRes.status === "fulfilled" ? siteLinksRes.value : null),
+      news: settledList(newsRes).map(mapNewsItem),
+      featuredVideos: settledList(videosRes).map(mapVideoItem),
+      activityLog: settledList(activityRes).map(mapActivity)
+    };
 
     document.getElementById("syncText").textContent = t("syncLive");
+
+    const snapshot = JSON.stringify(nextData);
+    if (snapshot === lastDataSnapshot) return; // sunucudan gelen veri öncekiyle birebir aynı — yeniden çizmeye gerek yok
+    lastDataSnapshot = snapshot;
+
+    Object.assign(state, nextData);
     renderAll();
   } catch (error) {
     console.error("load error", error);
