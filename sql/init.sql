@@ -255,6 +255,7 @@ create table if not exists migration_prospects (
   failed      boolean not null default false, -- kontenjan yetersizliği vb. nedenlerle göç edemedi (bkz. add_migration_failed.sql)
   confirmed   boolean not null default false, -- doğrulandı, unvanı belli, göç edeceği kesinleşti (hangi loncaya gideceği HENÜZ belli değil, bkz. add_migration_confirmed.sql)
   finalized   boolean not null default false, -- kesinlikle BİZE (EXC'ye) katılacak; sadece bu aşamadan üyeliğe dönüştürülür (bkz. add_migration_finalized.sql)
+  converted_to_member boolean not null default false, -- üye olarak eklendi; kayıt SİLİNMEZ, tarihçe olarak "Tamamlandı"da kalır (bkz. add_migration_converted.sql)
   camp_level  text, -- üye kaydındaki ile aynı alan, biliniyorsa önceden doldurulur (bkz. add_migration_team_camp.sql)
   team_power  bigint, -- 1. takımın toplam gücü, biliniyorsa (bkz. add_migration_team_camp.sql)
   team_element text check (team_element in ('water','fire','earth','electric') or team_element is null), -- 1. takımın elementi, biliniyorsa (bkz. add_migration_team_camp.sql)

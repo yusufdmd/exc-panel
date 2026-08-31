@@ -12,7 +12,7 @@
 // bağımlılık tek yönlüdür, döngü oluşmaz.
 // =====================================================================
 
-import { createMember, updateMember, deleteMember as dbDeleteMember, addPowerHistoryEntry, deleteMigrationProspect, logActivity } from "./database.js";
+import { createMember, updateMember, deleteMember as dbDeleteMember, addPowerHistoryEntry, updateMigrationProspect, logActivity } from "./database.js";
 import { RANK_LIMITS } from "./config.js";
 import {
   state,
@@ -421,14 +421,18 @@ export async function saveMember() {
       await logActivity("created", "member", row.id, { name: name || "İsimsiz" }, state.currentAdminUsername);
 
       // "Onayla" akışından geldiyse (bkz. migration.js -> approveProspect), üye başarıyla
-      // oluşturulduktan sonra göç adayını da temizler. Bu adım kendi try/catch'inde tutulur
-      // ki temizlik başarısız olsa bile üyenin oluşturulduğu doğru şekilde bildirilsin.
+      // oluşturulduktan sonra göç adayını "Tamamlandı" listesinden SİLMEZ — admin kimin göç
+      // ettiğini orada kalıcı olarak görebilsin diye sadece converted_to_member işaretlenir
+      // (bkz. migration.js -> renderMigration, ✅ butonunun tekrar tıklanıp bir daha üye
+      // oluşturulmasını engellemek için de kullanılır). Bu adım kendi try/catch'inde tutulur
+      // ki işaretleme başarısız olsa bile üyenin oluşturulduğu doğru şekilde bildirilsin.
       if (state.pendingProspectApprovalId) {
         const prospectId = state.pendingProspectApprovalId;
         state.pendingProspectApprovalId = null;
         try {
-          await deleteMigrationProspect(prospectId);
-          state.migration = state.migration.filter((p) => p.id !== prospectId);
+          await updateMigrationProspect(prospectId, { converted_to_member: true });
+          const prospect = state.migration.find((p) => p.id === prospectId);
+          if (prospect) prospect.convertedToMember = true;
         } catch (cleanupError) {
           console.error(cleanupError);
         }

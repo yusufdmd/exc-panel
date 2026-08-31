@@ -84,6 +84,7 @@ export function mapProspect(row) {
     failed: !!row.failed,
     confirmed: !!row.confirmed,
     finalized: !!row.finalized,
+    convertedToMember: !!row.converted_to_member,
     note: row.note || "",
     campLevel: row.camp_level || "",
     teamPower: row.team_power || 0,
@@ -350,7 +351,7 @@ export function renderMigration() {
   rowsEl.innerHTML = list.map((p) => `
     <tr class="migration-row-${p.color}">
       <td><span class="rank-badge ${migrationColorClass(p.color)}">${migrationColorLabel(p.color)}</span>${p.score != null ? `<div style="font-size:11px; color:var(--text-dim); margin-top:2px;">${escapeHtml(String(p.score))}</div>` : ""}</td>
-      <td><span class="member-name">${escapeHtml(p.name || "—")}</span>${p.note ? `<div style="font-size:11px; color:var(--text-dim); white-space:normal; max-width:220px;">${escapeHtml(p.note)}</div>` : ""}</td>
+      <td><span class="member-name">${escapeHtml(p.name || "—")}</span>${p.convertedToMember ? `<span class="old-tag">${t("convertedTag")}</span>` : ""}${p.note ? `<div style="font-size:11px; color:var(--text-dim); white-space:normal; max-width:220px;">${escapeHtml(p.note)}</div>` : ""}</td>
       <td class="member-id">${escapeHtml(String(p.gameId || "—"))}</td>
       <td class="num-cell" title="${Number(p.power) || 0}">${formatPower(p.power)}</td>
       <td class="num-cell">${escapeHtml(p.campLevel || "—")}</td>
@@ -362,12 +363,14 @@ export function renderMigration() {
           <button class="icon-btn admin-only" onclick="restoreProspect('${p.id}')" title="${t("restoreProspectTitle")}">↺</button>
           <button class="icon-btn admin-only" onclick="copyProspectToNextPeriod('${p.id}')" title="${t("copyToNextPeriodTitle")}">➡️</button>
           <button class="icon-btn admin-only" onclick="openProspectModal('${p.id}')">✎</button>
-        ` : view === "finalized" ? `
+        ` : view === "finalized" ? (p.convertedToMember ? `
+          <button class="icon-btn admin-only" onclick="openProspectModal('${p.id}')">✎</button>
+        ` : `
           <button class="icon-btn admin-only" onclick="approveProspect('${p.id}')" title="${t("approveProspectTitle")}">✅</button>
           <button class="icon-btn admin-only" onclick="unfinalizeProspect('${p.id}')" title="${t("unfinalizeTitle")}">↺</button>
           <button class="icon-btn admin-only" onclick="openProspectModal('${p.id}')">✎</button>
           <button class="icon-btn danger admin-only" onclick="markProspectFailed('${p.id}')" title="${t("markFailedTitle")}">🚫</button>
-        ` : view === "confirmed" ? `
+        `) : view === "confirmed" ? `
           <button class="icon-btn admin-only" onclick="markProspectFinalized('${p.id}')" title="${t("markFinalizedTitle")}">➡️</button>
           <button class="icon-btn admin-only" onclick="unconfirmProspect('${p.id}')" title="${t("unconfirmTitle")}">↺</button>
           <button class="icon-btn admin-only" onclick="openProspectModal('${p.id}')">✎</button>
