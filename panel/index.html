@@ -626,8 +626,8 @@
     <h2 id="entryTitle">Giriş</h2>
     <div style="display:flex; gap:8px; margin-bottom:12px;">
       <input class="search" style="flex:1; margin-bottom:0;" id="entrySearch" oninput="renderEntryRows()">
-      <input type="file" id="entryScreenshotInput" accept="image/*" style="display:none" onchange="handleEntryScreenshot(event)">
-      <button class="btn-ghost" id="t_aiFillBtn" onclick="document.getElementById('entryScreenshotInput').click()">🤖 AI ile Doldur</button>
+      <input type="file" id="entryScreenshotInput" accept="image/*" multiple style="display:none" onchange="handleEntryScreenshot(event)">
+      <button class="btn-ghost" id="t_aiFillBtn" title="Birden fazla ekran görüntüsü birden seçebilirsin" onclick="document.getElementById('entryScreenshotInput').click()">🤖 AI ile Doldur</button>
     </div>
     <div style="max-height:50vh; overflow-y:auto;">
       <table class="part-table" id="entryTable">

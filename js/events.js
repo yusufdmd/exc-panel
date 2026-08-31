@@ -310,11 +310,19 @@ function applyAiDraft(results) {
   return Object.keys(draft).length;
 }
 
-/** "🤖 AI ile Doldur" — seçilen ekran görüntüsünü sunucuya gönderir, dönen sonuçları taslak olarak tabloya işler. */
+// Tek istekte gönderilebilecek en fazla ekran görüntüsü sayısı — Vercel'in
+// istek gövdesi boyutu sınırının içinde kalmak için.
+const MAX_SCREENSHOTS = 6;
+
+/** "🤖 AI ile Doldur" — seçilen ekran görüntüsü/görüntülerini sunucuya gönderir, dönen sonuçları taslak olarak tabloya işler. */
 export async function handleEntryScreenshot(event) {
-  const file = event.target.files[0];
+  const files = Array.from(event.target.files || []);
   event.target.value = "";
-  if (!file || !state.entryContext) return;
+  if (!files.length || !state.entryContext) return;
+  if (files.length > MAX_SCREENSHOTS) {
+    showToast(t("aiFillTooMany").replace("{n}", String(MAX_SCREENSHOTS)));
+    return;
+  }
   const { type } = state.entryContext;
   const roster = entryVisibleMembers("").map((m) => ({ id: m.id, name: m.name || "", gameId: m.gameId || "" }));
   if (!roster.length) {
@@ -325,13 +333,13 @@ export async function handleEntryScreenshot(event) {
   const originalLabel = btn ? btn.textContent : "";
   if (btn) { btn.disabled = true; btn.textContent = t("aiFillWorking"); }
   try {
-    const imageDataUrl = await resizeImageToDataUrl(file);
+    const images = await Promise.all(files.map((file) => resizeImageToDataUrl(file)));
     const { data: sessionData } = await supabase.auth.getSession();
     const token = sessionData && sessionData.session ? sessionData.session.access_token : "";
     const res = await fetch("/api/read-screenshot", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-      body: JSON.stringify({ type, roster, imageDataUrl })
+      body: JSON.stringify({ type, roster, images })
     });
     const payload = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(payload.error || `HTTP ${res.status}`);

@@ -2,10 +2,13 @@
 // EXC PANELİ — api/read-screenshot.js
 // =====================================================================
 // Vercel serverless fonksiyonu. Toplu giriş modalındaki "🤖 AI ile
-// Doldur" butonu buraya bir ekran görüntüsü + üye listesi (roster)
-// gönderir; bu fonksiyon görüntüyü Google Gemini'nin (ücretsiz kotalı)
-// vision destekli modeline yollayıp roster'daki hangi üyenin hangi
-// puanı/durumu aldığını yapılandırılmış JSON olarak geri ister.
+// Doldur" butonu buraya bir veya birden fazla ekran görüntüsü + üye
+// listesi (roster) gönderir; bu fonksiyon görüntüleri Google Gemini'nin
+// (ücretsiz kotalı) vision destekli modeline yollayıp roster'daki hangi
+// üyenin hangi puanı/durumu aldığını yapılandırılmış JSON olarak geri
+// ister. Birden fazla görsel (ör. uzun bir listenin farklı kaydırılmış
+// bölümleri) tek istekte, aynı haftaya ait parçalar olarak birlikte
+// gönderilir.
 //
 // Görsel HİÇBİR YERDE saklanmaz — sadece bu istek boyunca bellekte
 // tutulur ve Gemini API'sine iletilir. Anahtar (GEMINI_API_KEY) sadece
@@ -38,6 +41,8 @@ async function verifyAdmin(token) {
   const role = await roleRes.json().catch(() => null);
   return role === "admin";
 }
+
+const MAX_IMAGES = 6;
 
 function parseDataUrl(imageDataUrl) {
   const match = /^data:([^;]+);base64,(.+)$/.exec(imageDataUrl || "");
@@ -89,19 +94,23 @@ function buildResponseSchema(type) {
   };
 }
 
-function buildPrompt(type, roster) {
+function buildPrompt(type, roster, imageCount) {
   const rosterJson = JSON.stringify(roster);
   return [
-    "You are extracting guild-event attendance/score data from a mobile game screenshot.",
+    "You are extracting guild-event attendance/score data from mobile game screenshots.",
     `Event type: ${type}.`,
+    imageCount > 1
+      ? `You are given ${imageCount} screenshots — they are different parts of the SAME leaderboard/list for the same week (e.g. scrolled sections), not separate weeks. Combine information across all of them.`
+      : "You are given 1 screenshot.",
     "Here is the roster of members currently relevant for this entry (JSON array of {id, name, gameId}):",
     rosterJson,
     "",
-    "Read the screenshot and match each player you can identify (by in-game name and/or numeric ID) to exactly one roster entry.",
+    "Read the screenshot(s) and match each player you can identify (by in-game name and/or numeric ID) to exactly one roster entry.",
     "Rules:",
     "- Only use \"id\" values copied verbatim from the roster above. Never invent an id.",
-    "- If a player in the screenshot does not clearly match any roster member, skip them — do not guess.",
-    "- If a roster member is not visible in the screenshot at all, omit them from results — do not fabricate a value.",
+    "- If a player in the screenshots does not clearly match any roster member, skip them — do not guess.",
+    "- If a roster member is not visible in any screenshot, omit them from results — do not fabricate a value.",
+    "- If the same player appears in more than one screenshot, include them only once in the results, using the clearest/most complete reading.",
     "- Numbers in these screenshots are often abbreviated (e.g. \"12.3M\", \"1.2k\") — convert to the full numeric value.",
     "- Respond with JSON matching the given schema only."
   ].join("\n");
@@ -127,7 +136,7 @@ module.exports = async (req, res) => {
       return;
     }
 
-    const { type, roster, imageDataUrl } = req.body || {};
+    const { type, roster, images } = req.body || {};
     const validTypes = ["gvg", "svs", "ss", "kod", "other"];
     if (!validTypes.includes(type)) {
       res.status(400).json({ error: "Geçersiz etkinlik türü." });
@@ -137,14 +146,22 @@ module.exports = async (req, res) => {
       res.status(400).json({ error: "Üye listesi boş." });
       return;
     }
-    const image = parseDataUrl(imageDataUrl);
-    if (!image) {
+    if (!Array.isArray(images) || !images.length) {
       res.status(400).json({ error: "Görsel okunamadı." });
+      return;
+    }
+    if (images.length > MAX_IMAGES) {
+      res.status(400).json({ error: `En fazla ${MAX_IMAGES} görsel gönderilebilir.` });
+      return;
+    }
+    const parsedImages = images.map(parseDataUrl);
+    if (parsedImages.some((img) => !img)) {
+      res.status(400).json({ error: "Görsel(ler) okunamadı." });
       return;
     }
 
     const responseSchema = buildResponseSchema(type);
-    const promptText = buildPrompt(type, roster);
+    const promptText = buildPrompt(type, roster, parsedImages.length);
 
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`;
     const geminiRes = await fetch(geminiUrl, {
@@ -154,7 +171,7 @@ module.exports = async (req, res) => {
         contents: [{
           parts: [
             { text: promptText },
-            { inline_data: { mime_type: image.mediaType, data: image.data } }
+            ...parsedImages.map((img) => ({ inline_data: { mime_type: img.mediaType, data: img.data } }))
           ]
         }],
         generationConfig: {
