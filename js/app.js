@@ -16,7 +16,7 @@
 // o dosyalar hiç çalıştırılmaz ve tabloları hiç çizilmez.
 // =====================================================================
 
-import { getMembers, getAllPowerHistory, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, getSiteLinks, getNews, getFeaturedVideos, getRecentActivity, subscribeToTables } from "./database.js";
+import { getMembers, getAllPowerHistory, getAllTeamPowerHistory, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, getSiteLinks, getNews, getFeaturedVideos, getRecentActivity, subscribeToTables } from "./database.js";
 import { POLL_INTERVAL_MS } from "./config.js";
 import { state, t, showToast, buildLangSwitch, applyStaticText, initLangFromStorage, persistLanguage, initThemeFromStorage, toggleTheme, renderAll, registerDataLoader, registerRenderer } from "./ui.js";
 import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember, openHistoryModal, closeHistoryModal, setMemberView, setRankFilter, setElementFilter, setSort, exportMembers } from "./members.js";
@@ -70,7 +70,7 @@ async function loadAll(silent) {
     document.getElementById("syncText").textContent = t("syncConnecting");
     const restricted = state.isMember;
     const [
-      membersRes, historyRes,
+      membersRes, historyRes, teamHistoryRes,
       svsWeeksRes, svsRecordsRes,
       gvgWeeksRes, gvgRecordsRes,
       ssWeeksRes, ssRecordsRes,
@@ -78,7 +78,7 @@ async function loadAll(silent) {
       otherWeeksRes, otherRecordsRes,
       migrationPeriodsRes, migrationRes, migrationLeadsRes, siteLinksRes, newsRes, videosRes, activityRes
     ] = await Promise.allSettled([
-      getMembers(), getAllPowerHistory(),
+      getMembers(), getAllPowerHistory(), getAllTeamPowerHistory(),
       getWeeks("svs"), getAllRecords("svs"),
       getWeeks("gvg"), getAllRecords("gvg"),
       getWeeks("ss"), getAllRecords("ss"),
@@ -96,9 +96,15 @@ async function loadAll(silent) {
       if (!historyByMember[entry.member_id]) historyByMember[entry.member_id] = [];
       historyByMember[entry.member_id].push({ date: entry.history_date, power: entry.power });
     });
+    const teamHistoryByMember = {};
+    settledList(teamHistoryRes).forEach((entry) => {
+      if (!teamHistoryByMember[entry.member_id]) teamHistoryByMember[entry.member_id] = [];
+      teamHistoryByMember[entry.member_id].push({ date: entry.history_date, teamPower: entry.team_power });
+    });
     const nextMembers = settledList(membersRes).map((row) => {
       const member = mapMember(row);
       member.powerHistory = (historyByMember[row.id] || []).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+      member.teamPowerHistory = (teamHistoryByMember[row.id] || []).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
       return member;
     });
 
@@ -142,7 +148,7 @@ setInterval(() => loadAll(true), POLL_INTERVAL_MS);
 
 let realtimeReloadTimer = null;
 subscribeToTables(
-  ["members", "power_history", "gvg_weeks", "gvg_records", "svs_weeks", "svs_records", "ss_weeks", "ss_records", "kod_weeks", "kod_records", "other_weeks", "other_records", "migration_periods", "migration_prospects", "migration_leads", "site_links", "news", "featured_videos", "activity_logs"],
+  ["members", "power_history", "team_power_history", "gvg_weeks", "gvg_records", "svs_weeks", "svs_records", "ss_weeks", "ss_records", "kod_weeks", "kod_records", "other_weeks", "other_records", "migration_periods", "migration_prospects", "migration_leads", "site_links", "news", "featured_videos", "activity_logs"],
   () => {
     clearTimeout(realtimeReloadTimer);
     realtimeReloadTimer = setTimeout(() => loadAll(true), REALTIME_RELOAD_DEBOUNCE_MS);

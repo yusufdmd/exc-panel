@@ -693,6 +693,16 @@
         <tbody id="historyRows"></tbody>
       </table>
     </div>
+    <div id="teamHistorySection" style="display:none; margin-top:20px; padding-top:16px; border-top:1px solid var(--line);">
+      <h3 id="t_teamHistoryTitle" style="margin:0 0 10px; font-size:15px;">1. Takım Gücü Geçmişi</h3>
+      <div id="teamHistoryChartWrap"></div>
+      <div style="max-height:30vh; overflow-y:auto;">
+        <table class="part-table" style="width:100%;">
+          <thead><tr><th id="t_thDate2">Tarih</th><th id="t_thTeamPowerVal">1. Takım Gücü</th><th id="t_thDelta2">Fark</th></tr></thead>
+          <tbody id="teamHistoryRows"></tbody>
+        </table>
+      </div>
+    </div>
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closeHistoryModal()" id="t_close2">Kapat</button>
     </div>

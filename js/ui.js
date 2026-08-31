@@ -221,7 +221,7 @@ const DICT = {
     lbParticipation:'Genel Katılım (Son 4 Hafta)', belowThresholdTitle:'Katılım %50\'nin altında',
     participationReportBtn:'📊 Katılım Raporu', participationReportTitle:'Katılım Raporu',
     groupAboveThreshold:'🟢 Eşik Üstü (≥ %50)', groupBelowThreshold:'🔴 Eşik Altı (< %50)', groupNoData:'⚪ Henüz Veri Yok',
-    exemptLabel:'Muaf', powerHistory:'Güç Geçmişi', restoreMember:'Aktif Üyeye Al',
+    exemptLabel:'Muaf', powerHistory:'Güç Geçmişi', teamPowerHistoryTitle:'1. Takım Gücü Geçmişi', restoreMember:'Aktif Üyeye Al',
     exportBackupLabel:'Yedekle', importBackupLabel:'İçe Aktar', backupSuccess:'Yedek indirildi.',
     importConfirm:'Bu dosyadaki veriler herkesin gördüğü ortak veriyle değiştirilecek. Devam edilsin mi?',
     importSuccess:'Veriler içe aktarıldı.', importFail:'Dosya okunamadı veya bozuk.',
@@ -328,7 +328,7 @@ const DICT = {
     lbParticipation:'Overall Participation (Last 4 Weeks)', belowThresholdTitle:'Participation below 50%',
     participationReportBtn:'📊 Participation Report', participationReportTitle:'Participation Report',
     groupAboveThreshold:'🟢 Above Threshold (≥ 50%)', groupBelowThreshold:'🔴 Below Threshold (< 50%)', groupNoData:'⚪ No Data Yet',
-    exemptLabel:'Exempt', powerHistory:'Power History', restoreMember:'Restore to Active',
+    exemptLabel:'Exempt', powerHistory:'Power History', teamPowerHistoryTitle:'1st Team Power History', restoreMember:'Restore to Active',
     exportBackupLabel:'Backup', importBackupLabel:'Import', backupSuccess:'Backup downloaded.',
     importConfirm:'This file will replace the shared data everyone sees. Continue?',
     importSuccess:'Data imported.', importFail:'Could not read the file, it may be corrupted.',
@@ -435,7 +435,7 @@ const DICT = {
     lbParticipation:'Gesamtteilnahme (Letzte 4 Wochen)', belowThresholdTitle:'Teilnahme unter 50%',
     participationReportBtn:'📊 Teilnahmebericht', participationReportTitle:'Teilnahmebericht',
     groupAboveThreshold:'🟢 Über dem Schwellenwert (≥ 50%)', groupBelowThreshold:'🔴 Unter dem Schwellenwert (< 50%)', groupNoData:'⚪ Noch keine Daten',
-    exemptLabel:'Befreit', powerHistory:'Machtverlauf', restoreMember:'Wieder aktivieren',
+    exemptLabel:'Befreit', powerHistory:'Machtverlauf', teamPowerHistoryTitle:'1. Team-Stärke-Verlauf', restoreMember:'Wieder aktivieren',
     exportBackupLabel:'Sichern', importBackupLabel:'Importieren', backupSuccess:'Backup heruntergeladen.',
     importConfirm:'Diese Datei ersetzt die von allen gesehenen gemeinsamen Daten. Fortfahren?',
     importSuccess:'Daten importiert.', importFail:'Datei konnte nicht gelesen werden oder ist beschädigt.',
@@ -542,7 +542,7 @@ const DICT = {
     lbParticipation:'Participación General (Últimas 4 Semanas)', belowThresholdTitle:'Participación por debajo del 50%',
     participationReportBtn:'📊 Informe de Participación', participationReportTitle:'Informe de Participación',
     groupAboveThreshold:'🟢 Por Encima del Umbral (≥ 50%)', groupBelowThreshold:'🔴 Por Debajo del Umbral (< 50%)', groupNoData:'⚪ Aún Sin Datos',
-    exemptLabel:'Exento', powerHistory:'Historial de poder', restoreMember:'Reactivar miembro',
+    exemptLabel:'Exento', powerHistory:'Historial de poder', teamPowerHistoryTitle:'Historial de poder del 1er equipo', restoreMember:'Reactivar miembro',
     exportBackupLabel:'Respaldar', importBackupLabel:'Importar', backupSuccess:'Copia de seguridad descargada.',
     importConfirm:'Este archivo reemplazará los datos compartidos que todos ven. ¿Continuar?',
     importSuccess:'Datos importados.', importFail:'No se pudo leer el archivo o está dañado.',
@@ -649,7 +649,7 @@ const DICT = {
     lbParticipation:'Participation Globale (4 Dernières Semaines)', belowThresholdTitle:'Participation inférieure à 50%',
     participationReportBtn:'📊 Rapport de Participation', participationReportTitle:'Rapport de Participation',
     groupAboveThreshold:'🟢 Au-dessus du Seuil (≥ 50%)', groupBelowThreshold:'🔴 En Dessous du Seuil (< 50%)', groupNoData:'⚪ Pas Encore de Données',
-    exemptLabel:'Exempté', powerHistory:'Historique de puissance', restoreMember:'Réactiver le membre',
+    exemptLabel:'Exempté', powerHistory:'Historique de puissance', teamPowerHistoryTitle:'Historique de puissance de la 1ère équipe', restoreMember:'Réactiver le membre',
     exportBackupLabel:'Sauvegarder', importBackupLabel:'Importer', backupSuccess:'Sauvegarde téléchargée.',
     importConfirm:'Ce fichier remplacera les données partagées visibles par tous. Continuer ?',
     importSuccess:'Données importées.', importFail:'Impossible de lire le fichier, il est peut-être corrompu.',
@@ -756,7 +756,7 @@ const DICT = {
     lbParticipation:'Tỷ lệ Tham gia Chung (4 Tuần gần nhất)', belowThresholdTitle:'Tỷ lệ tham gia dưới 50%',
     participationReportBtn:'📊 Báo cáo Tham gia', participationReportTitle:'Báo cáo Tham gia',
     groupAboveThreshold:'🟢 Trên Ngưỡng (≥ 50%)', groupBelowThreshold:'🔴 Dưới Ngưỡng (< 50%)', groupNoData:'⚪ Chưa có Dữ liệu',
-    exemptLabel:'Miễn trừ', powerHistory:'Lịch sử Sức mạnh', restoreMember:'Khôi phục về Hoạt động',
+    exemptLabel:'Miễn trừ', powerHistory:'Lịch sử Sức mạnh', teamPowerHistoryTitle:'Lịch sử Sức mạnh Đội 1', restoreMember:'Khôi phục về Hoạt động',
     exportBackupLabel:'Sao lưu', importBackupLabel:'Nhập', backupSuccess:'Đã tải bản sao lưu.',
     importConfirm:'Tệp này sẽ thay thế dữ liệu chung mà mọi người thấy. Tiếp tục?',
     importSuccess:'Đã nhập dữ liệu.', importFail:'Không thể đọc tệp, có thể tệp bị hỏng.',
@@ -916,6 +916,10 @@ export function applyStaticText() {
   document.getElementById("t_thDate").textContent = t("thDate");
   document.getElementById("t_thPowerVal").textContent = t("thPowerVal");
   document.getElementById("t_thDelta").textContent = t("thDelta");
+  document.getElementById("t_teamHistoryTitle").textContent = t("teamPowerHistoryTitle");
+  document.getElementById("t_thDate2").textContent = t("thDate");
+  document.getElementById("t_thTeamPowerVal").textContent = t("lblTeamPower");
+  document.getElementById("t_thDelta2").textContent = t("thDelta");
   document.getElementById("t_close2").textContent = t("close");
   document.getElementById("t_close3").textContent = t("close");
   document.getElementById("t_gateTitle").textContent = t("loginTitle");

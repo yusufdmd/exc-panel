@@ -12,7 +12,7 @@
 // bağımlılık tek yönlüdür, döngü oluşmaz.
 // =====================================================================
 
-import { createMember, updateMember, deleteMember as dbDeleteMember, addPowerHistoryEntry, updateMigrationProspect, logActivity } from "./database.js";
+import { createMember, updateMember, deleteMember as dbDeleteMember, addPowerHistoryEntry, addTeamPowerHistoryEntry, updateMigrationProspect, logActivity } from "./database.js";
 import { RANK_LIMITS } from "./config.js";
 import {
   state,
@@ -409,7 +409,15 @@ export async function saveMember() {
         else history.push({ date: today, power });
         await addPowerHistoryEntry(editId, history[history.length - 1].date, power);
       }
-      state.members[index] = { ...mapMember(row), powerHistory: history };
+      const teamHistory = Array.isArray(previous.teamPowerHistory) ? [...previous.teamPowerHistory] : [];
+      const lastTeamEntry = teamHistory[teamHistory.length - 1];
+      if (!lastTeamEntry || Number(lastTeamEntry.teamPower) !== teamPower) {
+        const today = todayStr();
+        if (lastTeamEntry && lastTeamEntry.date === today) lastTeamEntry.teamPower = teamPower;
+        else teamHistory.push({ date: today, teamPower });
+        await addTeamPowerHistoryEntry(editId, teamHistory[teamHistory.length - 1].date, teamPower);
+      }
+      state.members[index] = { ...mapMember(row), powerHistory: history, teamPowerHistory: teamHistory };
       await logActivity("updated", "member", editId, { name: name || previous.name || "İsimsiz" }, state.currentAdminUsername);
     } else {
       const today = todayStr();
@@ -421,7 +429,8 @@ export async function saveMember() {
         joined_at: joinedAt
       });
       await addPowerHistoryEntry(row.id, today, power);
-      state.members.push({ ...mapMember(row), powerHistory: [{ date: today, power }] });
+      await addTeamPowerHistoryEntry(row.id, today, teamPower);
+      state.members.push({ ...mapMember(row), powerHistory: [{ date: today, power }], teamPowerHistory: [{ date: today, teamPower }] });
       await logActivity("created", "member", row.id, { name: name || "İsimsiz" }, state.currentAdminUsername);
 
       // "Onayla" akışından geldiyse (bkz. migration.js -> approveProspect), üye başarıyla
@@ -493,7 +502,9 @@ export async function restoreMember(id) {
 // =====================================================================
 // GÜÇ GEÇMİŞİ + ETKİNLİK ÖZETİ MODALI
 // =====================================================================
-function buildHistoryChart(history) {
+// `valueKey` sayesinde hem ana güç (power) hem "1. Takım Gücü" (teamPower)
+// geçmişi için aynı grafik/tablo kodu kullanılır (bkz. buildHistoryRowsHtml).
+function buildHistoryChart(history, valueKey = "power") {
   if (!history || history.length < 2) return "";
   const width = 600;
   const height = 150;
@@ -501,22 +512,41 @@ function buildHistoryChart(history) {
   const padRight = 8;
   const padTop = 14;
   const padBottom = 16;
-  const powers = history.map((h) => Number(h.power) || 0);
+  const powers = history.map((h) => Number(h[valueKey]) || 0);
   const min = Math.min(...powers);
   const max = Math.max(...powers);
   const range = (max - min) || 1;
   const stepX = history.length > 1 ? (width - padLeft - padRight) / (history.length - 1) : 0;
   const points = history.map((h, i) => {
     const x = padLeft + i * stepX;
-    const y = padTop + (height - padTop - padBottom) * (1 - ((Number(h.power) - min) / range));
+    const y = padTop + (height - padTop - padBottom) * (1 - ((Number(h[valueKey]) - min) / range));
     return { x, y, h };
   });
   const polylinePoints = points.map((p) => p.x.toFixed(1) + "," + p.y.toFixed(1)).join(" ");
-  const circles = points.map((p) => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="var(--cyan-ink)" stroke="var(--bg-panel)" stroke-width="2"><title>${escapeHtml(p.h.date)}: ${formatPower(p.h.power)}</title></circle>`).join("");
+  const circles = points.map((p) => `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="var(--cyan-ink)" stroke="var(--bg-panel)" stroke-width="2"><title>${escapeHtml(p.h.date)}: ${formatPower(p.h[valueKey])}</title></circle>`).join("");
   return `<svg viewBox="0 0 ${width} ${height}" style="width:100%; height:150px; display:block; margin-bottom:16px;">
     <polyline points="${polylinePoints}" fill="none" stroke="var(--cyan-ink)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
     ${circles}
   </svg>`;
+}
+
+/** Güç/1. Takım Gücü geçmiş tablosunun satırlarını (tarih + değer + bir öncekine göre fark) üretir. */
+function buildHistoryRowsHtml(history, valueKey = "power") {
+  return history.map((entry, index) => {
+    const previousValue = index > 0 ? history[index - 1][valueKey] : null;
+    let deltaHtml = '<span style="color:var(--text-dim);">—</span>';
+    if (previousValue != null) {
+      const delta = Number(entry[valueKey]) - Number(previousValue);
+      const color = delta > 0 ? "var(--success-ink)" : delta < 0 ? "var(--danger-ink)" : "var(--text-dim)";
+      const sign = delta > 0 ? "+" : "";
+      deltaHtml = `<span style="color:${color}; font-family:var(--font-mono); font-weight:700;">${sign}${formatPower(delta)}</span>`;
+    }
+    return `<tr>
+      <td>${entry.date}</td>
+      <td class="num-cell">${formatPower(entry[valueKey])}</td>
+      <td>${deltaHtml}</td>
+    </tr>`;
+  }).reverse().join("");
 }
 
 /** Bir üyenin "Kullanıcı Değişti" eşik tarihini ("YYYY-MM-DD") döndürür; hiç işaretlenmemişse katılma tarihini kullanır. */
@@ -629,22 +659,24 @@ export function openHistoryModal(id) {
     : [{ date: threshold || todayStr(), power: member.power || 0 }];
   document.getElementById("historyChartWrap").innerHTML = buildHistoryChart(history);
   document.getElementById("historyEventsWrap").innerHTML = buildEventSummaryHtml(member);
-  const rowsEl = document.getElementById("historyRows");
-  rowsEl.innerHTML = history.map((entry, index) => {
-    const previousPower = index > 0 ? history[index - 1].power : null;
-    let deltaHtml = '<span style="color:var(--text-dim);">—</span>';
-    if (previousPower != null) {
-      const delta = Number(entry.power) - Number(previousPower);
-      const color = delta > 0 ? "var(--success-ink)" : delta < 0 ? "var(--danger-ink)" : "var(--text-dim)";
-      const sign = delta > 0 ? "+" : "";
-      deltaHtml = `<span style="color:${color}; font-family:var(--font-mono); font-weight:700;">${sign}${formatPower(delta)}</span>`;
-    }
-    return `<tr>
-      <td>${entry.date}</td>
-      <td class="num-cell">${formatPower(entry.power)}</td>
-      <td>${deltaHtml}</td>
-    </tr>`;
-  }).reverse().join("");
+  document.getElementById("historyRows").innerHTML = buildHistoryRowsHtml(history);
+
+  // "1. Takım Gücü" geçmişi — üyenin bu değeri hiç kaydedilmediyse (ör. bu
+  // özellik eklenmeden önce oluşturulmuş, bir daha hiç düzenlenmemiş üyeler)
+  // bölüm tamamen gizlenir; boş bir grafik/tablo göstermenin bir anlamı yok.
+  const visibleTeamPowerHistory = Array.isArray(member.teamPowerHistory)
+    ? member.teamPowerHistory.filter((entry) => !threshold || entry.date >= threshold)
+    : [];
+  const teamHistorySection = document.getElementById("teamHistorySection");
+  if (visibleTeamPowerHistory.length) {
+    const teamHistory = [...visibleTeamPowerHistory].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+    document.getElementById("teamHistoryChartWrap").innerHTML = buildHistoryChart(teamHistory, "teamPower");
+    document.getElementById("teamHistoryRows").innerHTML = buildHistoryRowsHtml(teamHistory, "teamPower");
+    teamHistorySection.style.display = "";
+  } else {
+    teamHistorySection.style.display = "none";
+  }
+
   document.getElementById("historyOverlay").classList.add("active");
 }
 

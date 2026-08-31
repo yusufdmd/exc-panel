@@ -255,6 +255,32 @@ export async function addPowerHistoryEntry(memberId, historyDate, power) {
 }
 
 // =====================================================================
+// TEAM_POWER_HISTORY — "1. Takım Gücü" geçmişi (power_history ile birebir aynı desen)
+// =====================================================================
+export async function getAllTeamPowerHistory() {
+  const { data, error } = await supabase
+    .from("team_power_history")
+    .select("*")
+    .order("history_date", { ascending: true });
+  if (error) dbError("Takım gücü geçmişi alınamadı", error);
+  return data;
+}
+
+// Aynı gün için ikinci kez kayıt edilirse günceller, farklı günse yeni satır ekler.
+export async function addTeamPowerHistoryEntry(memberId, historyDate, teamPower) {
+  const { data, error } = await supabase
+    .from("team_power_history")
+    .upsert(
+      { member_id: memberId, history_date: historyDate, team_power: teamPower },
+      { onConflict: "member_id,history_date" }
+    )
+    .select()
+    .single();
+  if (error) dbError("Takım gücü geçmişi kaydedilemedi", error);
+  return data;
+}
+
+// =====================================================================
 // ETKİNLİK HAFTALARI (gvg / svs / ss / other ortak)
 // =====================================================================
 // Haftalar TARİHE göre sıralanır (en eski solda) — eklenme sırasına göre değil.
