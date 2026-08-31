@@ -192,6 +192,8 @@ module.exports = async (req, res) => {
     res.status(200).json({ results });
   } catch (error) {
     console.error("[read-screenshot] Beklenmeyen hata:", error);
-    res.status(500).json({ error: "Beklenmeyen bir hata oluştu." });
+    // Teşhis kolaylığı için gerçek hata mesajı da dönülür — bu uç nokta zaten
+    // sadece doğrulanmış admin'lere açık, hassas bir bilgi sızdırmıyor.
+    res.status(500).json({ error: "Beklenmeyen bir hata oluştu: " + (error && error.message ? error.message : String(error)) });
   }
 };
