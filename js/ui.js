@@ -853,6 +853,7 @@ export function applyStaticText() {
   document.getElementById("t_lblTeamPower").textContent = t("lblTeamPower");
   document.getElementById("t_lblTeamElement").textContent = t("lblTeamElement");
   document.getElementById("t_lblJoinedAt").textContent = t("lblJoinedAt");
+  document.getElementById("t_thJoinedAt").textContent = t("lblJoinedAt");
   document.getElementById("t_lblOld").textContent = t("lblOld");
   document.getElementById("t_cancel1").textContent = t("cancel");
   document.getElementById("t_save1").textContent = t("save");

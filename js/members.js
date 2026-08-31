@@ -133,6 +133,9 @@ export function renderMembers() {
     } else if (state.sortKey === "campSort") {
       valueA = campLevelSortValue(a.campLevel);
       valueB = campLevelSortValue(b.campLevel);
+    } else if (state.sortKey === "joinedAt") {
+      valueA = a.joinedAt || "";
+      valueB = b.joinedAt || "";
     } else {
       valueA = Number(a[state.sortKey]) || 0;
       valueB = Number(b[state.sortKey]) || 0;
@@ -152,6 +155,7 @@ export function renderMembers() {
       <td class="num-cell" title="${Number(member.power) || 0}">${formatPower(member.power)}</td>
       <td class="num-cell">${escapeHtml(String(member.campLevel || "-"))}</td>
       <td class="num-cell">${member.teamPower ? `${elementBadge(member.teamElement, 20)} <span style="vertical-align:middle;">${formatPower(member.teamPower)}</span>` : "—"}</td>
+      <td class="num-cell">${escapeHtml((member.joinedAt || "").slice(0, 10)) || "—"}</td>
       <td><div class="row-actions">
         <button class="icon-btn" onclick="openHistoryModal('${member.id}')" title="${t("powerHistory")}">📈</button>
         ${state.memberView === "old" ? `<button class="icon-btn admin-only" onclick="restoreMember('${member.id}')" title="${t("restoreMember")}">↺</button>` : ""}
