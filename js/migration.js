@@ -83,6 +83,7 @@ export function mapProspect(row) {
     status: row.status,
     failed: !!row.failed,
     confirmed: !!row.confirmed,
+    finalized: !!row.finalized,
     note: row.note || "",
     campLevel: row.camp_level || "",
     teamPower: row.team_power || 0,
@@ -202,17 +203,25 @@ export async function deletePeriod(id) {
 // =====================================================================
 // ADAY LİSTESİ (seçili döneme ait)
 // =====================================================================
+/**
+ * Bir adayın hangi sekmede göründüğünü hesaplar — sıra önemli: failed >
+ * finalized > confirmed > varsayılan (Adaylar). "Onayda" (confirmed) sadece
+ * göç edeceğinin kesinleştiği, "Tamamlandı" (finalized) ise kesinlikle BİZE
+ * (EXC'ye) katılacağı anlamına gelir (bkz. markProspectFinalized).
+ */
+function prospectView(p) {
+  if (p.failed) return "failed";
+  if (p.finalized) return "finalized";
+  if (p.confirmed) return "confirmed";
+  return "active";
+}
+
 /** Arama filtresi + geçerli sıralama anahtarına göre, SEÇİLİ DÖNEME ait sıralanmış aday listesini döndürür. */
 function sortedProspects() {
   const query = (document.getElementById("migrationSearch").value || "").toLowerCase().trim();
   const list = state.migration.filter((p) => {
     if (p.periodId !== state.migrationActivePeriodId) return false;
-    // Üç sekme birbirini dışlar: Adaylar (henüz onaylanmamış/başarısız değil),
-    // Onayda (doğrulandı, göç edeceği kesinleşti), Başarısız.
-    const matchesView = state.migrationView === "failed" ? !!p.failed
-      : state.migrationView === "confirmed" ? (!p.failed && !!p.confirmed)
-      : (!p.failed && !p.confirmed);
-    if (!matchesView) return false;
+    if (prospectView(p) !== state.migrationView) return false;
     if (state.migrationColorFilter !== "ALL" && p.color !== state.migrationColorFilter) return false;
     if (state.migrationStatusFilter !== "ALL" && p.status !== state.migrationStatusFilter) return false;
     return !query
@@ -262,6 +271,7 @@ function renderMigrationStats(list) {
   const counts = { gold: 0, purple: 0, blue: 0, gray: 0, unknown: 0 };
   list.forEach((p) => { counts[p.color] = (counts[p.color] || 0) + 1; });
   const totalLabel = state.migrationView === "failed" ? t("statMigrationFailedTotal")
+    : state.migrationView === "finalized" ? t("statMigrationFinalizedTotal")
     : state.migrationView === "confirmed" ? t("statMigrationConfirmedTotal")
     : t("statMigrationTotal");
   document.getElementById("migrationStatsRow").innerHTML = `
@@ -329,13 +339,13 @@ export function renderMigration() {
   const list = sortedProspects();
   renderMigrationStats(list);
   const rowsEl = document.getElementById("migrationRows");
-  const view = state.migrationView; // "active" | "confirmed" | "failed"
+  const view = state.migrationView; // "active" | "confirmed" | "finalized" | "failed"
   document.getElementById("migrationEmpty").style.display = list.length ? "none" : "block";
   document.getElementById("t_emptyMigrationTitle").textContent = t(
-    view === "failed" ? "emptyMigrationFailedTitle" : view === "confirmed" ? "emptyMigrationConfirmedTitle" : "emptyMigrationTitle"
+    view === "failed" ? "emptyMigrationFailedTitle" : view === "finalized" ? "emptyMigrationFinalizedTitle" : view === "confirmed" ? "emptyMigrationConfirmedTitle" : "emptyMigrationTitle"
   );
   document.getElementById("t_emptyMigrationDesc").textContent = t(
-    view === "failed" ? "emptyMigrationFailedDesc" : view === "confirmed" ? "emptyMigrationConfirmedDesc" : "emptyMigrationDesc"
+    view === "failed" ? "emptyMigrationFailedDesc" : view === "finalized" ? "emptyMigrationFinalizedDesc" : view === "confirmed" ? "emptyMigrationConfirmedDesc" : "emptyMigrationDesc"
   );
   rowsEl.innerHTML = list.map((p) => `
     <tr class="migration-row-${p.color}">
@@ -352,8 +362,13 @@ export function renderMigration() {
           <button class="icon-btn admin-only" onclick="restoreProspect('${p.id}')" title="${t("restoreProspectTitle")}">↺</button>
           <button class="icon-btn admin-only" onclick="copyProspectToNextPeriod('${p.id}')" title="${t("copyToNextPeriodTitle")}">➡️</button>
           <button class="icon-btn admin-only" onclick="openProspectModal('${p.id}')">✎</button>
-        ` : view === "confirmed" ? `
+        ` : view === "finalized" ? `
           <button class="icon-btn admin-only" onclick="approveProspect('${p.id}')" title="${t("approveProspectTitle")}">✅</button>
+          <button class="icon-btn admin-only" onclick="unfinalizeProspect('${p.id}')" title="${t("unfinalizeTitle")}">↺</button>
+          <button class="icon-btn admin-only" onclick="openProspectModal('${p.id}')">✎</button>
+          <button class="icon-btn danger admin-only" onclick="markProspectFailed('${p.id}')" title="${t("markFailedTitle")}">🚫</button>
+        ` : view === "confirmed" ? `
+          <button class="icon-btn admin-only" onclick="markProspectFinalized('${p.id}')" title="${t("markFinalizedTitle")}">➡️</button>
           <button class="icon-btn admin-only" onclick="unconfirmProspect('${p.id}')" title="${t("unconfirmTitle")}">↺</button>
           <button class="icon-btn admin-only" onclick="openProspectModal('${p.id}')">✎</button>
           <button class="icon-btn danger admin-only" onclick="markProspectFailed('${p.id}')" title="${t("markFailedTitle")}">🚫</button>
@@ -391,27 +406,24 @@ export function exportMigration() {
   const items = [
     { id: "active", label: t("subMigrationActive") },
     { id: "confirmed", label: t("subMigrationConfirmed") },
+    { id: "finalized", label: t("subMigrationFinalized") },
     { id: "failed", label: t("subMigrationFailed") }
   ];
-  const viewLabel = { active: t("subMigrationActive"), confirmed: t("subMigrationConfirmed"), failed: t("subMigrationFailed") };
+  const viewLabel = { active: t("subMigrationActive"), confirmed: t("subMigrationConfirmed"), finalized: t("subMigrationFinalized"), failed: t("subMigrationFailed") };
   openExportModal(t("exportBtn"), items, (selectedIds) => {
     const periodLabelById = {};
     state.migrationPeriods.forEach((p) => { periodLabelById[p.id] = migrationPeriodDisplayLabel(p.label); });
-    const list = state.migration.filter((p) => {
-      const view = p.failed ? "failed" : p.confirmed ? "confirmed" : "active";
-      return selectedIds.includes(view);
-    });
+    const list = state.migration.filter((p) => selectedIds.includes(prospectView(p)));
     const rows = [[
       t("lblPeriodLabel"), t("thColor"), t("lblProspectScore"), t("thUsername"), t("thId"), t("thPower"), t("thCamp"),
       t("lblTeamPower"), t("lblTeamElement"), t("thServer"), t("thStatus"), t("lblProspectNote"), t("thListView")
     ]];
     list.forEach((p) => {
-      const view = p.failed ? "failed" : p.confirmed ? "confirmed" : "active";
       rows.push([
         periodLabelById[p.periodId] || "", migrationColorLabel(p.color), p.score != null ? p.score : "", p.name || "", p.gameId || "",
         Number(p.power) || 0, p.campLevel || "", Number(p.teamPower) || 0,
         p.teamElement ? elementLabel(p.teamElement) : t("elementNone"),
-        p.server != null ? p.server : "", migrationStatusLabel(p.status), p.note || "", viewLabel[view]
+        p.server != null ? p.server : "", migrationStatusLabel(p.status), p.note || "", viewLabel[prospectView(p)]
       ]);
     });
     return { filename: "exc-paneli-goc-" + todayStr() + ".csv", rows };
@@ -643,6 +655,42 @@ export async function markProspectConfirmed(id) {
 export async function unconfirmProspect(id) {
   try {
     const row = await updateMigrationProspect(id, { confirmed: false });
+    const index = state.migration.findIndex((p) => p.id === id);
+    if (index >= 0) state.migration[index] = mapProspect(row);
+    renderAll();
+    showToast(t("toastProspectSaved"));
+  } catch (error) {
+    console.error(error);
+    showToast("Error");
+  }
+}
+
+/**
+ * Bir adayı "Tamamlandı" olarak işaretler — "Onayda"dan farklı olarak
+ * artık kesinlikle BİZE (EXC'ye) katılacağı anlamına gelir; sadece bu
+ * aşamadan "Üye Olarak Onayla" (approveProspect) ile gerçek üyeliğe
+ * dönüştürülebilir. Bu ayrım gerekli çünkü "Onayda" olmak sadece göç
+ * edeceğinin kesinleştiğini gösterir — birden fazla lonca aday
+ * olabileceğinden HANGİ loncaya gideceği o aşamada henüz belli değildir.
+ */
+export async function markProspectFinalized(id) {
+  if (!confirm(t("confirmMarkFinalized"))) return;
+  try {
+    const row = await updateMigrationProspect(id, { finalized: true, status: "certain" });
+    const index = state.migration.findIndex((p) => p.id === id);
+    if (index >= 0) state.migration[index] = mapProspect(row);
+    renderAll();
+    showToast(t("toastProspectFinalized"));
+  } catch (error) {
+    console.error(error);
+    showToast("Error");
+  }
+}
+
+/** "Tamamlandı" işaretini kaldırıp adayı tekrar "Onayda" listesine döndürür. */
+export async function unfinalizeProspect(id) {
+  try {
+    const row = await updateMigrationProspect(id, { finalized: false });
     const index = state.migration.findIndex((p) => p.id === id);
     if (index >= 0) state.migration[index] = mapProspect(row);
     renderAll();

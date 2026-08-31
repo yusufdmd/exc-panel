@@ -182,6 +182,10 @@ const DICT = {
     markConfirmedTitle:'Onayda Olarak İşaretle', confirmMarkConfirmed:'Bu adayı doğrulandı ve göç edeceği kesinleşti olarak işaretlemek istediğinize emin misiniz? "Onayda" sekmesine taşınacak.',
     toastProspectConfirmed:'Aday onayda olarak işaretlendi.', unconfirmTitle:'Adaylar Listesine Geri Al',
     emptyMigrationConfirmedTitle:'Henüz onaylı aday yok', emptyMigrationConfirmedDesc:'Adaylar sekmesinden ➡️ ile bir adayı buraya taşıyabilirsiniz.',
+    subMigrationFinalized:'Tamamlandı', statMigrationFinalizedTotal:'Toplam Tamamlandı',
+    markFinalizedTitle:'Tamamlandı Olarak İşaretle', confirmMarkFinalized:'Bu adayın EXC\'ye katılacağı kesinleşti mi? "Tamamlandı" sekmesine taşınacak, oradan üye olarak eklenebilir.',
+    toastProspectFinalized:'Aday tamamlandı olarak işaretlendi.', unfinalizeTitle:'Onayda Listesine Geri Al',
+    emptyMigrationFinalizedTitle:'Henüz tamamlanan aday yok', emptyMigrationFinalizedDesc:'Onayda sekmesinden ➡️ ile bir adayı buraya taşıyabilirsiniz.',
     addPeriod:'+ Dönem Ekle', periodAddTitle:'Dönem Ekle', periodEditTitle:'Dönemi Düzenle', lblPeriodLabel:'Dönem Etiketi',
     lblPeriodStartDate:'Başlangıç Tarihi', lblPeriodEndDate:'Bitiş Tarihi', periodWord:'Dönem',
     periodNameRequired:'Dönem etiketi gerekli.', confirmDeletePeriod:'Bu dönemi silmek istediğinize emin misiniz? İçindeki tüm adaylar da silinecek.',
@@ -284,6 +288,10 @@ const DICT = {
     markConfirmedTitle:'Mark as Confirmed', confirmMarkConfirmed:'Are you sure you want to mark this candidate as verified and certain to migrate? They will move to the "Confirmed" tab.',
     toastProspectConfirmed:'Candidate marked as confirmed.', unconfirmTitle:'Send Back to Candidate List',
     emptyMigrationConfirmedTitle:'No confirmed candidates yet', emptyMigrationConfirmedDesc:'Use ➡️ on a candidate in the Candidates tab to move them here.',
+    subMigrationFinalized:'Completed', statMigrationFinalizedTotal:'Total Completed',
+    markFinalizedTitle:'Mark as Completed', confirmMarkFinalized:'Is it certain this candidate is joining EXC specifically? They will move to the "Completed" tab, from which they can be added as a member.',
+    toastProspectFinalized:'Candidate marked as completed.', unfinalizeTitle:'Send Back to Confirmed List',
+    emptyMigrationFinalizedTitle:'No completed candidates yet', emptyMigrationFinalizedDesc:'Use ➡️ on a candidate in the Confirmed tab to move them here.',
     addPeriod:'+ Add Period', periodAddTitle:'Add Period', periodEditTitle:'Edit Period', lblPeriodLabel:'Period Label',
     lblPeriodStartDate:'Start Date', lblPeriodEndDate:'End Date', periodWord:'Period',
     periodNameRequired:'Period label is required.', confirmDeletePeriod:'Are you sure you want to delete this period? All candidates in it will also be deleted.',
@@ -386,6 +394,10 @@ const DICT = {
     markConfirmedTitle:'Als Bestätigt Markieren', confirmMarkConfirmed:'Diesen Kandidaten wirklich als bestätigt und sicher migrierend markieren? Er wird in den Tab "Bestätigt" verschoben.',
     toastProspectConfirmed:'Kandidat als bestätigt markiert.', unconfirmTitle:'Zurück zur Kandidatenliste (Bestätigung aufheben)',
     emptyMigrationConfirmedTitle:'Noch keine bestätigten Kandidaten', emptyMigrationConfirmedDesc:'Verwende ➡️ bei einem Kandidaten im Tab "Kandidaten", um ihn hierher zu verschieben.',
+    subMigrationFinalized:'Abgeschlossen', statMigrationFinalizedTotal:'Abgeschlossen gesamt',
+    markFinalizedTitle:'Als Abgeschlossen Markieren', confirmMarkFinalized:'Steht sicher fest, dass dieser Kandidat speziell EXC beitritt? Er wird in den Tab "Abgeschlossen" verschoben, von wo aus er als Mitglied hinzugefügt werden kann.',
+    toastProspectFinalized:'Kandidat als abgeschlossen markiert.', unfinalizeTitle:'Zurück zur Bestätigt-Liste',
+    emptyMigrationFinalizedTitle:'Noch keine abgeschlossenen Kandidaten', emptyMigrationFinalizedDesc:'Verwende ➡️ bei einem Kandidaten im Tab "Bestätigt", um ihn hierher zu verschieben.',
     addPeriod:'+ Zeitraum hinzufügen', periodAddTitle:'Zeitraum hinzufügen', periodEditTitle:'Zeitraum bearbeiten', lblPeriodLabel:'Zeitraumbezeichnung',
     lblPeriodStartDate:'Startdatum', lblPeriodEndDate:'Enddatum', periodWord:'Zeitraum',
     periodNameRequired:'Zeitraumbezeichnung erforderlich.', confirmDeletePeriod:'Diesen Zeitraum wirklich löschen? Alle Kandidaten darin werden ebenfalls gelöscht.',
@@ -488,6 +500,10 @@ const DICT = {
     markConfirmedTitle:'Marcar como Confirmado', confirmMarkConfirmed:'¿Seguro que quieres marcar este candidato como verificado y con migración segura? Se moverá a la pestaña "Confirmados".',
     toastProspectConfirmed:'Candidato marcado como confirmado.', unconfirmTitle:'Devolver a la Lista de Candidatos',
     emptyMigrationConfirmedTitle:'Aún no hay candidatos confirmados', emptyMigrationConfirmedDesc:'Usa ➡️ en un candidato de la pestaña Candidatos para moverlo aquí.',
+    subMigrationFinalized:'Completados', statMigrationFinalizedTotal:'Total Completados',
+    markFinalizedTitle:'Marcar como Completado', confirmMarkFinalized:'¿Es seguro que este candidato se unirá específicamente a EXC? Se moverá a la pestaña "Completados", desde donde se puede añadir como miembro.',
+    toastProspectFinalized:'Candidato marcado como completado.', unfinalizeTitle:'Devolver a la Lista de Confirmados',
+    emptyMigrationFinalizedTitle:'Aún no hay candidatos completados', emptyMigrationFinalizedDesc:'Usa ➡️ en un candidato de la pestaña Confirmados para moverlo aquí.',
     addPeriod:'+ Añadir periodo', periodAddTitle:'Añadir periodo', periodEditTitle:'Editar periodo', lblPeriodLabel:'Etiqueta del periodo',
     lblPeriodStartDate:'Fecha de Inicio', lblPeriodEndDate:'Fecha de Fin', periodWord:'Periodo',
     periodNameRequired:'La etiqueta del periodo es obligatoria.', confirmDeletePeriod:'¿Seguro que quieres eliminar este periodo? También se eliminarán todos los candidatos que contiene.',
@@ -590,6 +606,10 @@ const DICT = {
     markConfirmedTitle:'Marquer comme Confirmé', confirmMarkConfirmed:"Voulez-vous vraiment marquer ce candidat comme vérifié et certain de migrer ? Il sera déplacé vers l'onglet « Confirmés ».",
     toastProspectConfirmed:'Candidat marqué comme confirmé.', unconfirmTitle:'Renvoyer à la liste des candidats',
     emptyMigrationConfirmedTitle:"Aucun candidat confirmé pour l'instant", emptyMigrationConfirmedDesc:"Utilisez ➡️ sur un candidat dans l'onglet Candidats pour le déplacer ici.",
+    subMigrationFinalized:'Terminé', statMigrationFinalizedTotal:'Total Terminé',
+    markFinalizedTitle:'Marquer comme Terminé', confirmMarkFinalized:"Est-il certain que ce candidat rejoint spécifiquement EXC ? Il sera déplacé vers l'onglet « Terminé », d'où il pourra être ajouté comme membre.",
+    toastProspectFinalized:'Candidat marqué comme terminé.', unfinalizeTitle:'Renvoyer à la liste des confirmés',
+    emptyMigrationFinalizedTitle:"Aucun candidat terminé pour l'instant", emptyMigrationFinalizedDesc:"Utilisez ➡️ sur un candidat dans l'onglet Confirmés pour le déplacer ici.",
     addPeriod:'+ Ajouter une période', periodAddTitle:'Ajouter une période', periodEditTitle:'Modifier la période', lblPeriodLabel:'Libellé de la période',
     lblPeriodStartDate:'Date de Début', lblPeriodEndDate:'Date de Fin', periodWord:'Période',
     periodNameRequired:'Le libellé de la période est requis.', confirmDeletePeriod:'Voulez-vous vraiment supprimer cette période ? Tous les candidats qu\'elle contient seront également supprimés.',
@@ -692,6 +712,10 @@ const DICT = {
     markConfirmedTitle:'Đánh dấu Đã Xác nhận', confirmMarkConfirmed:'Bạn có chắc muốn đánh dấu ứng viên này là đã xác minh và chắc chắn sẽ di chuyển không? Họ sẽ được chuyển sang tab "Đã Xác nhận".',
     toastProspectConfirmed:'Đã đánh dấu ứng viên là đã xác nhận.', unconfirmTitle:'Trả về Danh sách Ứng viên',
     emptyMigrationConfirmedTitle:'Chưa có ứng viên nào được xác nhận', emptyMigrationConfirmedDesc:'Dùng ➡️ trên một ứng viên ở tab Ứng viên để chuyển họ vào đây.',
+    subMigrationFinalized:'Hoàn thành', statMigrationFinalizedTotal:'Tổng Hoàn thành',
+    markFinalizedTitle:'Đánh dấu Hoàn thành', confirmMarkFinalized:'Bạn có chắc chắn ứng viên này sẽ gia nhập EXC không? Họ sẽ được chuyển sang tab "Hoàn thành", từ đó có thể được thêm làm thành viên.',
+    toastProspectFinalized:'Đã đánh dấu ứng viên là hoàn thành.', unfinalizeTitle:'Trả về Danh sách Đã Xác nhận',
+    emptyMigrationFinalizedTitle:'Chưa có ứng viên hoàn thành nào', emptyMigrationFinalizedDesc:'Dùng ➡️ trên một ứng viên ở tab Đã Xác nhận để chuyển họ vào đây.',
     addPeriod:'+ Thêm Đợt', periodAddTitle:'Thêm Đợt', periodEditTitle:'Sửa Đợt', lblPeriodLabel:'Tên Đợt',
     lblPeriodStartDate:'Ngày Bắt đầu', lblPeriodEndDate:'Ngày Kết thúc', periodWord:'Đợt',
     periodNameRequired:'Tên đợt là bắt buộc.', confirmDeletePeriod:'Bạn có chắc muốn xóa đợt này không? Tất cả ứng viên trong đó cũng sẽ bị xóa.',
@@ -921,6 +945,7 @@ export function applyStaticText() {
   document.getElementById("t_emptyMigrationDesc").textContent = t("emptyMigrationDesc");
   document.getElementById("t_subMigrationActive").textContent = t("subMigrationActive");
   document.getElementById("t_subMigrationConfirmed").textContent = t("subMigrationConfirmed");
+  document.getElementById("t_subMigrationFinalized").textContent = t("subMigrationFinalized");
   document.getElementById("t_subMigrationFailed").textContent = t("subMigrationFailed");
   document.getElementById("t_lblProspectName").textContent = t("lblUsername");
   document.getElementById("t_lblProspectId").textContent = t("lblGameId");

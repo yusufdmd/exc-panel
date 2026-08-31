@@ -26,7 +26,7 @@ import {
   mapPeriod, mapProspect, mapLead, renderMigration, setMigrationSort, setMigrationView,
   selectMigrationPeriod, openPeriodModal, closePeriodModal, savePeriod, deletePeriod,
   openProspectModal, closeProspectModal, saveProspect, deleteProspect, approveProspect,
-  markProspectFailed, restoreProspect, markProspectConfirmed, unconfirmProspect,
+  markProspectFailed, restoreProspect, markProspectConfirmed, unconfirmProspect, markProspectFinalized, unfinalizeProspect,
   setMigrationColorFilter, setMigrationStatusFilter, setProspectTeamElement,
   processLead, dismissLead, exportMigration, copyProspectToNextPeriod
 } from "./migration.js";
@@ -258,7 +258,7 @@ Object.assign(window, {
   openHistoryModal, closeHistoryModal,
   setBoardSort, openParticipationReportModal, closeParticipationReportModal, setLang,
   renderMigration, setMigrationSort, setMigrationView, openProspectModal, closeProspectModal, saveProspect, deleteProspect, approveProspect,
-  markProspectFailed, restoreProspect, markProspectConfirmed, unconfirmProspect,
+  markProspectFailed, restoreProspect, markProspectConfirmed, unconfirmProspect, markProspectFinalized, unfinalizeProspect,
   setMigrationColorFilter, setMigrationStatusFilter, setProspectTeamElement,
   selectMigrationPeriod, openPeriodModal, closePeriodModal, savePeriod, deletePeriod,
   processLead, dismissLead, exportMigration, copyProspectToNextPeriod,
