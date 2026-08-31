@@ -19,6 +19,7 @@
 | `js/dashboard.js` | Puan Sıralaması (leaderboard) |
 | `js/backup.js` | Yedekle (JSON indir) / İçe Aktar |
 | `js/app.js` | Giriş noktası — ilk yükleme, sekme/dil geçişleri, realtime abonelik, `window`'a bağlama |
+| `api/read-screenshot.js` | Vercel serverless fonksiyonu — "AI ile Doldur" butonunun gönderdiği ekran görüntüsünü Gemini API'sine iletir, admin yetkisini sunucu tarafında doğrular |
 | `sql/init.sql` | Supabase şeması — sadece kurulum için, **canlı siteye dahil edilmez** |
 | `sql/auth_policies.sql` | Yazma işlemlerini admin oturumuyla sınırlayan RLS politikaları — sadece kurulum için |
 | `backup/` | Eski `window.storage` sürümünün yedeği — **canlı siteye dahil edilmez** |
@@ -91,7 +92,26 @@ vercel                # ilk deploy — sorulan sorularda varsayılanları kabul 
 vercel --prod         # sonraki her güncellemede canlıya almak için
 ```
 
-## 4) Deploy sonrası kontrol listesi
+## 4) "🤖 AI ile Doldur" için Gemini API anahtarı (ücretsiz)
+
+Etkinlikler sekmesindeki toplu giriş modalında, bir oyun ekran görüntüsü yükleyip
+üyelerin puan/katılım bilgisini otomatik doldurtabilirsin (bkz. `api/read-screenshot.js`).
+Bu özellik Google Gemini'nin (ücretsiz kotalı) API'sini kullanır:
+
+1. [aistudio.google.com/apikey](https://aistudio.google.com/apikey) adresine git, Google hesabınla giriş yap ve **Create API key**'e bas (kredi kartı gerekmez).
+2. Vercel Dashboard → proje → **Settings → Environment Variables**'a git.
+3. `GEMINI_API_KEY` adında bir değişken ekle, değerine anahtarını yapıştır, **Production** (ve varsa **Preview**) ortamlarını işaretle.
+4. Kaydettikten sonra projeyi yeniden deploy et (env değişikliği mevcut deploy'a otomatik yansımaz).
+
+Ücretsiz kota günlük/dakikalık istek sınırlarıyla gelir (loncanın haftalık birkaç ekran
+görüntüsü ihtiyacı için fazlasıyla yeterlidir) — kota dolarsa Google bunu ücretli bir
+plana geçmeden otomatik ücretlendirmez, istek sadece geçici olarak reddedilir.
+
+Bu adım atlanırsa panel normal çalışmaya devam eder, sadece "AI ile Doldur" butonu hata
+toast'ı gösterir — manuel giriş her zaman mevcut yedek yöntemdir. Görsel hiçbir yerde
+saklanmaz, sadece bu isteğin süresince işlenip atılır.
+
+## 5) Deploy sonrası kontrol listesi
 
 - [ ] `sql/init.sql` Supabase projesinde çalıştırıldı mı?
 - [ ] `sql/auth_policies.sql` çalıştırıldı mı, en az bir yönetici kullanıcı oluşturuldu mu?
@@ -99,6 +119,7 @@ vercel --prod         # sonraki her güncellemede canlıya almak için
 - [ ] Canlı URL'de üye ekleme/düzenleme/silme çalışıyor mu?
 - [ ] Aynı URL'i farklı bir tarayıcı/cihazdan açtığında aynı (paylaşımlı) veriler görünüyor mu?
 - [ ] Tarayıcı konsolunda `[EXC Paneli]` ile başlayan bir uyarı **yok** (varsa `config.js` hâlâ placeholder değerde demektir)?
+- [ ] (opsiyonel) `GEMINI_API_KEY` Vercel ortam değişkenlerine eklendi mi — "AI ile Doldur" butonu test edildi mi?
 
 ## Notlar
 

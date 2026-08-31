@@ -15,6 +15,7 @@
 // =====================================================================
 
 import { createWeek as dbCreateWeek, updateWeek as dbUpdateWeek, deleteWeek as dbDeleteWeek, upsertRecordsBulk } from "./database.js";
+import { supabase } from "./supabase.js";
 import {
   state, t, showToast, escapeHtml, rankClass, statusOf, gvgColorClass, formatPower, formatRatio, renderAll,
   cellInfoHtml, svsOtherCellInfo, ssCellInfo, attendanceCellInfo, gvgCellInfo, isExempt, isDigitsOnly,
@@ -147,7 +148,7 @@ export async function deleteWeek(type, weekId) {
 // TOPLU GİRİŞ MODALI (bir haftanın tüm üyeleri, tek seferde)
 // =====================================================================
 export function openEntryModal(type, weekId) {
-  state.entryContext = { type, weekId };
+  state.entryContext = { type, weekId, aiDraft: null };
   const store = storeFor(type);
   const week = store.weeks.find((w) => w.id === weekId);
   const titleKey = type === "svs" ? "entryTitleSVS" : type === "gvg" ? "entryTitleGVG" : type === "ss" ? "entryTitleSS" : type === "kod" ? "entryTitleKoD" : "entryTitleOther";
@@ -172,25 +173,39 @@ export function closeEntryModal() {
   state.entryContext = null;
 }
 
-export function renderEntryRows() {
-  if (!state.entryContext) return;
+/**
+ * Toplu giriş modalında görünecek üye listesi. `query` verilmezse (AI'a
+ * gönderilecek roster için) arama kutusu dikkate alınmaz, sadece muafiyet
+ * kuralı uygulanır — ekran görüntüsündeki bir üye arama kutusundan
+ * bağımsız olarak eşleşebilmeli.
+ */
+function entryVisibleMembers(query) {
   const { type, weekId } = state.entryContext;
   const store = storeFor(type);
   const week = store.weeks.find((w) => w.id === weekId);
-  const query = (document.getElementById("entrySearch").value || "").toLowerCase().trim();
-  let list = filteredSortedMembers().filter((m) => !query || m.name.toLowerCase().includes(query) || String(m.gameId).toLowerCase().includes(query));
+  let list = filteredSortedMembers();
+  if (query) list = list.filter((m) => m.name.toLowerCase().includes(query) || String(m.gameId).toLowerCase().includes(query));
   // Henüz kaydı olmayan muaf üyeler (yeni katılan/kullanıcısı değişen) toplu giriş
   // listesinde HİÇ gösterilmez — aksi halde "Kaydet" ile hepsine varsayılan
   // (unknown/0) gerçek bir kayıt yazılır ve muafiyet bir daha geri gelmez.
-  list = list.filter((member) => !isExempt(member, week) || store.entries.some((e) => e.memberId === member.id && e.weekId === weekId));
+  return list.filter((member) => !isExempt(member, week) || store.entries.some((e) => e.memberId === member.id && e.weekId === weekId));
+}
+
+export function renderEntryRows() {
+  if (!state.entryContext) return;
+  const { type, weekId, aiDraft } = state.entryContext;
+  const store = storeFor(type);
+  const query = (document.getElementById("entrySearch").value || "").toLowerCase().trim();
+  const list = entryVisibleMembers(query);
   const rowsEl = document.getElementById("entryRows");
 
   if (type === "svs" || type === "other") {
     rowsEl.innerHTML = list.map((member) => {
       const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === weekId);
-      const status = statusOf(entry);
-      const points = entry ? entry.points : 0;
-      const excused = entry ? !!entry.excused : false;
+      const draft = aiDraft && aiDraft[member.id];
+      const status = draft ? (draft.status || "unknown") : statusOf(entry);
+      const points = draft && draft.points != null ? draft.points : (entry ? entry.points : 0);
+      const excused = draft && draft.excused != null ? !!draft.excused : (entry ? !!entry.excused : false);
       return `<tr>
         <td><select class="status-select" data-mid="${member.id}">
           <option value="joined" ${status === "joined" ? "selected" : ""}>${t("statusYes")}</option>
@@ -206,7 +221,8 @@ export function renderEntryRows() {
   } else if (type === "gvg") {
     rowsEl.innerHTML = list.map((member) => {
       const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === weekId);
-      const points = entry ? entry.points : 0;
+      const draft = aiDraft && aiDraft[member.id];
+      const points = draft && draft.points != null ? draft.points : (entry ? entry.points : 0);
       return `<tr>
         <td>${escapeHtml(member.name)}</td>
         <td><span class="rank-badge ${rankClass(member.rank)}" style="font-size:11px;padding:2px 8px;">${member.rank}</span></td>
@@ -216,8 +232,9 @@ export function renderEntryRows() {
   } else if (type === "kod") {
     rowsEl.innerHTML = list.map((member) => {
       const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === weekId);
-      const status = statusOf(entry);
-      const excused = entry ? !!entry.excused : false;
+      const draft = aiDraft && aiDraft[member.id];
+      const status = draft ? (draft.status || "unknown") : statusOf(entry);
+      const excused = draft && draft.excused != null ? !!draft.excused : (entry ? !!entry.excused : false);
       return `<tr>
         <td><select class="status-select" data-mid="${member.id}">
           <option value="joined" ${status === "joined" ? "selected" : ""}>${t("statusYes")}</option>
@@ -232,9 +249,10 @@ export function renderEntryRows() {
   } else {
     rowsEl.innerHTML = list.map((member) => {
       const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === weekId);
-      const group = entry ? (entry.group || "") : "";
-      const attended = entry ? !!entry.attended : false;
-      const excused = entry ? !!entry.excused : false;
+      const draft = aiDraft && aiDraft[member.id];
+      const group = draft && draft.group != null ? draft.group : (entry ? (entry.group || "") : "");
+      const attended = draft && draft.attended != null ? !!draft.attended : (entry ? !!entry.attended : false);
+      const excused = draft && draft.excused != null ? !!draft.excused : (entry ? !!entry.excused : false);
       return `<tr>
         <td>${escapeHtml(member.name)}</td>
         <td><span class="rank-badge ${rankClass(member.rank)}" style="font-size:11px;padding:2px 8px;">${member.rank}</span></td>
@@ -247,6 +265,84 @@ export function renderEntryRows() {
         <td><input type="checkbox" class="excused-check" data-mid="${member.id}" ${excused ? "checked" : ""}></td>
       </tr>`;
     }).join("");
+  }
+}
+
+// =====================================================================
+// EKRAN GÖRÜNTÜSÜNDEN AI İLE DOLDURMA
+// =====================================================================
+// Görsel hiçbir yerde saklanmaz — sadece bu istek için sunucudaki
+// api/read-screenshot.js fonksiyonuna, oradan da görüntü okuyabilen
+// yapay zeka modeline gönderilir. Dönen sonuçlar, kaydedilmeden önce
+// admin gözden geçirsin diye doğrudan tabloya değil `aiDraft`'a yazılır
+// (bkz. renderEntryRows) — "Kaydet"e basılana kadar hiçbir şey Supabase'e
+// yazılmaz.
+
+/** Seçilen görseli, API'ye göndermeden önce makul bir boyuta küçültüp JPEG data URL'ine çevirir. */
+function resizeImageToDataUrl(file, maxDim = 1568, quality = 0.85) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error);
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+        const width = Math.max(1, Math.round(img.width * scale));
+        const height = Math.max(1, Math.round(img.height * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/** AI'dan dönen sonuçları (memberId -> alanlar) entryContext.aiDraft'a yazar. */
+function applyAiDraft(results) {
+  const draft = {};
+  (results || []).forEach((r) => { if (r && r.memberId) draft[r.memberId] = r; });
+  state.entryContext.aiDraft = draft;
+  return Object.keys(draft).length;
+}
+
+/** "🤖 AI ile Doldur" — seçilen ekran görüntüsünü sunucuya gönderir, dönen sonuçları taslak olarak tabloya işler. */
+export async function handleEntryScreenshot(event) {
+  const file = event.target.files[0];
+  event.target.value = "";
+  if (!file || !state.entryContext) return;
+  const { type } = state.entryContext;
+  const roster = entryVisibleMembers("").map((m) => ({ id: m.id, name: m.name || "", gameId: m.gameId || "" }));
+  if (!roster.length) {
+    showToast(t("aiFillNoMembers"));
+    return;
+  }
+  const btn = document.getElementById("t_aiFillBtn");
+  const originalLabel = btn ? btn.textContent : "";
+  if (btn) { btn.disabled = true; btn.textContent = t("aiFillWorking"); }
+  try {
+    const imageDataUrl = await resizeImageToDataUrl(file);
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData && sessionData.session ? sessionData.session.access_token : "";
+    const res = await fetch("/api/read-screenshot", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+      body: JSON.stringify({ type, roster, imageDataUrl })
+    });
+    const payload = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(payload.error || `HTTP ${res.status}`);
+    const count = applyAiDraft(payload.results);
+    renderEntryRows();
+    showToast(t("aiFillDone").replace("{n}", String(count)));
+  } catch (error) {
+    console.error(error);
+    showToast(t("aiFillError"));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
   }
 }
 

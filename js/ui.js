@@ -209,6 +209,7 @@ const DICT = {
     thJoined:'Katıldı', thPointsCol:'Puan', thGroup:'Grup', thAttended:'Katıldı mı', groupNone:'Kayıt Yok', groupA:'A Grubu', groupB:'B Grubu',
     entryTitleSVS:'SVS Girişi', entryTitleGVG:'GVG Girişi', entryTitleSS:'SS Girişi', entryTitleKoD:'King of Desert Girişi',
     toastEntrySaved:'Kayıt tamamlandı.', notRegistered:'—',
+    aiFillBtn:'🤖 AI ile Doldur', aiFillWorking:'AI okuyor…', aiFillDone:'{n} üye için dolduruldu, kontrol edip kaydedin.', aiFillError:'AI okuma başarısız oldu.', aiFillNoMembers:'Listede üye yok.',
     boardEmptyTitle:'Henüz veri yok', boardEmptyDesc:'Üye ve etkinlik ekledikçe sıralama burada oluşur.',
     searchMember:'Üye ara…',
     statusYes:'Katıldı', statusNo:'Katılmadı', statusUnknown:'Bilgi Yok', legendUnknown:'Bilgi Yok',
@@ -315,6 +316,7 @@ const DICT = {
     thJoined:'Joined', thPointsCol:'Points', thGroup:'Group', thAttended:'Attended', groupNone:'Not registered', groupA:'Group A', groupB:'Group B',
     entryTitleSVS:'SVS Entry', entryTitleGVG:'GVG Entry', entryTitleSS:'SS Entry', entryTitleKoD:'King of Desert Entry',
     toastEntrySaved:'Saved.', notRegistered:'—',
+    aiFillBtn:'🤖 Fill with AI', aiFillWorking:'Reading…', aiFillDone:'Filled {n} members — review and save.', aiFillError:'AI reading failed.', aiFillNoMembers:'No members in the list.',
     boardEmptyTitle:'No data yet', boardEmptyDesc:'The leaderboard fills in as you add members and events.',
     searchMember:'Search member…',
     statusYes:'Joined', statusNo:'Not joined', statusUnknown:'No info', legendUnknown:'No info',
@@ -421,6 +423,7 @@ const DICT = {
     thJoined:'Teilgenommen', thPointsCol:'Punkte', thGroup:'Gruppe', thAttended:'Teilgenommen', groupNone:'Nicht angemeldet', groupA:'Gruppe A', groupB:'Gruppe B',
     entryTitleSVS:'SVS-Eintrag', entryTitleGVG:'GVG-Eintrag', entryTitleSS:'SS-Eintrag', entryTitleKoD:'King of Desert-Eintrag',
     toastEntrySaved:'Gespeichert.', notRegistered:'—',
+    aiFillBtn:'🤖 Mit KI ausfüllen', aiFillWorking:'Wird gelesen…', aiFillDone:'{n} Mitglieder ausgefüllt — bitte prüfen und speichern.', aiFillError:'KI-Auslesen fehlgeschlagen.', aiFillNoMembers:'Keine Mitglieder in der Liste.',
     boardEmptyTitle:'Noch keine Daten', boardEmptyDesc:'Die Bestenliste füllt sich mit Mitgliedern und Events.',
     searchMember:'Mitglied suchen…',
     statusYes:'Teilgenommen', statusNo:'Nicht teilgenommen', statusUnknown:'Keine Info', legendUnknown:'Keine Info',
@@ -527,6 +530,7 @@ const DICT = {
     thJoined:'Participó', thPointsCol:'Puntos', thGroup:'Grupo', thAttended:'Participó', groupNone:'No inscrito', groupA:'Grupo A', groupB:'Grupo B',
     entryTitleSVS:'Registro SVS', entryTitleGVG:'Registro GVG', entryTitleSS:'Registro SS', entryTitleKoD:'Registro King of Desert',
     toastEntrySaved:'Guardado.', notRegistered:'—',
+    aiFillBtn:'🤖 Rellenar con IA', aiFillWorking:'Leyendo…', aiFillDone:'Se completaron {n} miembros — revisa y guarda.', aiFillError:'Error al leer con IA.', aiFillNoMembers:'No hay miembros en la lista.',
     boardEmptyTitle:'Aún no hay datos', boardEmptyDesc:'La clasificación se completa a medida que agregas miembros y eventos.',
     searchMember:'Buscar miembro…',
     statusYes:'Participó', statusNo:'No participó', statusUnknown:'Sin información', legendUnknown:'Sin información',
@@ -633,6 +637,7 @@ const DICT = {
     thJoined:'A participé', thPointsCol:'Points', thGroup:'Groupe', thAttended:'Présent', groupNone:'Non inscrit', groupA:'Groupe A', groupB:'Groupe B',
     entryTitleSVS:'Saisie SVS', entryTitleGVG:'Saisie GVG', entryTitleSS:'Saisie SS', entryTitleKoD:'Saisie King of Desert',
     toastEntrySaved:'Enregistré.', notRegistered:'—',
+    aiFillBtn:'🤖 Remplir avec l\'IA', aiFillWorking:'Lecture en cours…', aiFillDone:'{n} membres remplis — vérifiez et enregistrez.', aiFillError:'Échec de la lecture par l\'IA.', aiFillNoMembers:'Aucun membre dans la liste.',
     boardEmptyTitle:'Aucune donnée pour le moment', boardEmptyDesc:'Le classement se remplit au fur et à mesure que vous ajoutez membres et événements.',
     searchMember:'Rechercher un membre…',
     statusYes:'A participé', statusNo:"N'a pas participé", statusUnknown:'Pas d\'info', legendUnknown:'Pas d\'info',
@@ -739,6 +744,7 @@ const DICT = {
     thJoined:'Đã tham gia', thPointsCol:'Điểm', thGroup:'Nhóm', thAttended:'Tham dự', groupNone:'Chưa đăng ký', groupA:'Nhóm A', groupB:'Nhóm B',
     entryTitleSVS:'Nhập liệu SVS', entryTitleGVG:'Nhập liệu GVG', entryTitleSS:'Nhập liệu SS', entryTitleKoD:'Nhập liệu King of Desert',
     toastEntrySaved:'Đã lưu.', notRegistered:'—',
+    aiFillBtn:'🤖 Điền bằng AI', aiFillWorking:'Đang đọc…', aiFillDone:'Đã điền {n} thành viên — kiểm tra rồi lưu.', aiFillError:'AI đọc thất bại.', aiFillNoMembers:'Không có thành viên trong danh sách.',
     boardEmptyTitle:'Chưa có dữ liệu', boardEmptyDesc:'Bảng xếp hạng sẽ được điền khi bạn thêm thành viên và sự kiện.',
     searchMember:'Tìm thành viên…',
     statusYes:'Đã tham gia', statusNo:'Chưa tham gia', statusUnknown:'Không có thông tin', legendUnknown:'Không có thông tin',
@@ -861,6 +867,7 @@ export function applyStaticText() {
   document.getElementById("t_save2").textContent = t("save");
   document.getElementById("t_close1").textContent = t("close");
   document.getElementById("t_save3").textContent = t("save");
+  document.getElementById("t_aiFillBtn").textContent = t("aiFillBtn");
   document.getElementById("t_lblWeekLabel").textContent = t("lblWeekLabel");
   document.getElementById("t_lblWeekDate").textContent = t("lblWeekDate");
   document.getElementById("t_addWeek_svs").textContent = t("addWeek");
