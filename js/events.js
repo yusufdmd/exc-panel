@@ -149,6 +149,7 @@ export async function deleteWeek(type, weekId) {
 // =====================================================================
 export function openEntryModal(type, weekId) {
   state.entryContext = { type, weekId, aiDraft: null };
+  renderUnmatchedBox(null);
   const store = storeFor(type);
   const week = store.weeks.find((w) => w.id === weekId);
   const titleKey = type === "svs" ? "entryTitleSVS" : type === "gvg" ? "entryTitleGVG" : type === "ss" ? "entryTitleSS" : type === "kod" ? "entryTitleKoD" : "entryTitleOther";
@@ -310,6 +311,24 @@ function applyAiDraft(results) {
   return Object.keys(draft).length;
 }
 
+/**
+ * Ekran görüntüsünde görülen ama roster'daki hiçbir üyeyle eşleştirilemeyen
+ * satırları (ör. isim değiştirmiş bir oyuncu) modalda görünür bir uyarı
+ * kutusunda listeler — admin bunlara bakıp doğru üyeye elle işleyebilir.
+ */
+function renderUnmatchedBox(unmatched) {
+  const box = document.getElementById("entryUnmatchedBox");
+  if (!unmatched || !unmatched.length) {
+    box.style.display = "none";
+    return;
+  }
+  document.getElementById("entryUnmatchedTitle").textContent = t("aiUnmatchedTitle").replace("{n}", String(unmatched.length));
+  document.getElementById("entryUnmatchedList").innerHTML = unmatched
+    .map((u) => `<li><strong>${escapeHtml(u.rawName)}</strong> — ${escapeHtml(u.details)}</li>`)
+    .join("");
+  box.style.display = "";
+}
+
 // Tek istekte gönderilebilecek en fazla ekran görüntüsü sayısı — Vercel'in
 // istek gövdesi boyutu sınırının içinde kalmak için.
 const MAX_SCREENSHOTS = 6;
@@ -344,8 +363,10 @@ export async function handleEntryScreenshot(event) {
     const payload = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(payload.error || `HTTP ${res.status}`);
     const count = applyAiDraft(payload.results);
+    renderUnmatchedBox(payload.unmatched);
     renderEntryRows();
-    showToast(t("aiFillDone").replace("{n}", String(count)));
+    const unmatchedCount = (payload.unmatched || []).length;
+    showToast(t("aiFillDone").replace("{n}", String(count)) + (unmatchedCount ? " " + t("aiFillUnmatchedToast").replace("{n}", String(unmatchedCount)) : ""));
   } catch (error) {
     console.error(error);
     showToast(t("aiFillError"));

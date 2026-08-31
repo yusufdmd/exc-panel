@@ -88,9 +88,21 @@ function buildResponseSchema(type) {
         type: "ARRAY",
         description: "Ekran görüntüsünde net biçimde tanınan, roster'daki bir üyeyle eşleşen her kayıt için bir öğe.",
         items: { type: "OBJECT", properties: itemProps, required: Object.keys(itemProps) }
+      },
+      unmatched: {
+        type: "ARRAY",
+        description: "Ekran görüntüsünde görünen ama roster'daki HİÇBİR üyeyle net biçimde eşleştirilemeyen (ör. oyuncu adını değiştirmiş olabilir) her satır için bir öğe — tahmin YÜRÜTME, sadece bildir.",
+        items: {
+          type: "OBJECT",
+          properties: {
+            rawName: { type: "STRING", description: "Ekran görüntüsünde göründüğü haliyle oyuncu adı/ID'si (birebir)." },
+            details: { type: "STRING", description: "Görülen değerin kısa açıklaması, ör. '12.3M puan' veya 'katıldı, A grubu'." }
+          },
+          required: ["rawName", "details"]
+        }
       }
     },
-    required: ["results"]
+    required: ["results", "unmatched"]
   };
 }
 
@@ -108,9 +120,9 @@ function buildPrompt(type, roster, imageCount) {
     "Read the screenshot(s) and match each player you can identify (by in-game name and/or numeric ID) to exactly one roster entry.",
     "Rules:",
     "- Only use \"id\" values copied verbatim from the roster above. Never invent an id.",
-    "- If a player in the screenshots does not clearly match any roster member, skip them — do not guess.",
-    "- If a roster member is not visible in any screenshot, omit them from results — do not fabricate a value.",
-    "- If the same player appears in more than one screenshot, include them only once in the results, using the clearest/most complete reading.",
+    "- If a player in the screenshots does not clearly match any roster member (e.g. their in-game display name changed and it no longer resembles the roster name/ID), do NOT guess or force a match — instead add them to \"unmatched\" with the exact name/ID as shown and a short description of the value seen (points/status/group).",
+    "- If a roster member is not visible in any screenshot, omit them from both results and unmatched — do not fabricate a value.",
+    "- If the same player appears in more than one screenshot, include them only once (in results or unmatched, not both), using the clearest/most complete reading.",
     "- Numbers in these screenshots are often abbreviated (e.g. \"12.3M\", \"1.2k\") — convert to the full numeric value.",
     "- Respond with JSON matching the given schema only."
   ].join("\n");
@@ -205,8 +217,14 @@ module.exports = async (req, res) => {
     // Roster dışı / uydurulmuş id'lere karşı son bir güvenlik filtresi.
     const validIds = new Set(roster.map((m) => m.id));
     const results = parsed.results.filter((r) => r && validIds.has(r.memberId));
+    const unmatched = Array.isArray(parsed.unmatched)
+      ? parsed.unmatched
+          .filter((u) => u && u.rawName)
+          .slice(0, 100)
+          .map((u) => ({ rawName: String(u.rawName).slice(0, 100), details: String(u.details || "").slice(0, 200) }))
+      : [];
 
-    res.status(200).json({ results });
+    res.status(200).json({ results, unmatched });
   } catch (error) {
     console.error("[read-screenshot] Beklenmeyen hata:", error);
     // Teşhis kolaylığı için gerçek hata mesajı da dönülür — bu uç nokta zaten
