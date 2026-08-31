@@ -167,7 +167,7 @@ module.exports = async (req, res) => {
     if (!geminiRes.ok) {
       const errBody = await geminiRes.text().catch(() => "");
       console.error("[read-screenshot] Gemini error:", geminiRes.status, errBody);
-      res.status(502).json({ error: "AI servisinden yanıt alınamadı." });
+      res.status(502).json({ error: `AI servisinden yanıt alınamadı (HTTP ${geminiRes.status}): ${errBody.slice(0, 500)}` });
       return;
     }
 
