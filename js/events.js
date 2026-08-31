@@ -313,20 +313,35 @@ function applyAiDraft(results) {
 
 /**
  * Ekran görüntüsünde görülen ama roster'daki hiçbir üyeyle eşleştirilemeyen
- * satırları (ör. isim değiştirmiş bir oyuncu) modalda görünür bir uyarı
- * kutusunda listeler — admin bunlara bakıp doğru üyeye elle işleyebilir.
+ * satırları (ör. isim değiştirmiş bir oyuncu) modalda görünür, kaydırma
+ * sırasında sabit kalan bir uyarı kutusunda yan yana etiketler (chip) hâlinde
+ * listeler. Admin, tablodan doğru üyeyi bulup elle işledikçe her etiketin
+ * yanındaki ✕ ile o etiketi listeden kaldırabilir (sadece görünümden —
+ * ekran görüntüsünü tekrar okutmaz).
  */
 function renderUnmatchedBox(unmatched) {
+  if (state.entryContext) state.entryContext.aiUnmatched = unmatched && unmatched.length ? unmatched : null;
   const box = document.getElementById("entryUnmatchedBox");
-  if (!unmatched || !unmatched.length) {
+  const list = state.entryContext && state.entryContext.aiUnmatched;
+  if (!list || !list.length) {
     box.style.display = "none";
     return;
   }
-  document.getElementById("entryUnmatchedTitle").textContent = t("aiUnmatchedTitle").replace("{n}", String(unmatched.length));
-  document.getElementById("entryUnmatchedList").innerHTML = unmatched
-    .map((u) => `<li><strong>${escapeHtml(u.rawName)}</strong> — ${escapeHtml(u.details)}</li>`)
+  document.getElementById("entryUnmatchedTitle").textContent = t("aiUnmatchedTitle").replace("{n}", String(list.length));
+  document.getElementById("entryUnmatchedList").innerHTML = list
+    .map((u, i) => `<span style="display:inline-flex; align-items:center; gap:6px; background:rgba(0,0,0,0.06); border:1px solid rgba(232,195,74,0.5); border-radius:999px; padding:4px 4px 4px 10px; font-size:12px; color:var(--text-primary);">
+      <span><strong>${escapeHtml(u.rawName)}</strong> — ${escapeHtml(u.details)}</span>
+      <button onclick="removeUnmatchedItem(${i})" title="${t("aiUnmatchedRemove")}" style="border:none; background:transparent; cursor:pointer; font-weight:700; color:var(--warn-ink); line-height:1; padding:3px 5px; border-radius:50%;">✕</button>
+    </span>`)
     .join("");
   box.style.display = "";
+}
+
+/** Bir "eşleşmeyen" etiketinin ✕'ine basılınca sadece o etiketi görünümden kaldırır. */
+export function removeUnmatchedItem(index) {
+  if (!state.entryContext || !state.entryContext.aiUnmatched) return;
+  state.entryContext.aiUnmatched.splice(index, 1);
+  renderUnmatchedBox(state.entryContext.aiUnmatched);
 }
 
 // Tek istekte gönderilebilecek en fazla ekran görüntüsü sayısı — Vercel'in

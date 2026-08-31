@@ -20,7 +20,7 @@ import { getMembers, getAllPowerHistory, getWeeks, getAllRecords, getMigrationPe
 import { POLL_INTERVAL_MS } from "./config.js";
 import { state, t, showToast, buildLangSwitch, applyStaticText, initLangFromStorage, persistLanguage, initThemeFromStorage, toggleTheme, renderAll, registerDataLoader, registerRenderer } from "./ui.js";
 import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember, openHistoryModal, closeHistoryModal, setMemberView, setRankFilter, setElementFilter, setSort, exportMembers } from "./members.js";
-import { mapWeek, mapEntry, openWeekModal, closeWeekModal, saveWeek, deleteWeek, openEntryModal, closeEntryModal, renderEntryRows, saveEntry, handleEntryScreenshot, openWeekReportModal, closeWeekReportModal, openOverallReportModal, closeOverallReportModal, setOverallReportSort, exportEventTable } from "./events.js";
+import { mapWeek, mapEntry, openWeekModal, closeWeekModal, saveWeek, deleteWeek, openEntryModal, closeEntryModal, renderEntryRows, saveEntry, handleEntryScreenshot, removeUnmatchedItem, openWeekReportModal, closeWeekReportModal, openOverallReportModal, closeOverallReportModal, setOverallReportSort, exportEventTable } from "./events.js";
 import { setBoardSort, openParticipationReportModal, closeParticipationReportModal } from "./dashboard.js";
 import {
   mapPeriod, mapProspect, mapLead, renderMigration, setMigrationSort, setMigrationView,
@@ -252,7 +252,7 @@ Object.assign(window, {
   switchTab, switchSub, setMemberView, setRankFilter, setElementFilter, setSort, renderMembers,
   openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember, exportMembers,
   openWeekModal, closeWeekModal, saveWeek, deleteWeek,
-  openEntryModal, closeEntryModal, saveEntry, renderEntryRows, handleEntryScreenshot,
+  openEntryModal, closeEntryModal, saveEntry, renderEntryRows, handleEntryScreenshot, removeUnmatchedItem,
   openWeekReportModal, closeWeekReportModal,
   openOverallReportModal, closeOverallReportModal, setOverallReportSort, exportEventTable,
   openHistoryModal, closeHistoryModal,
