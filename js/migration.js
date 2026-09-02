@@ -86,6 +86,7 @@ export function mapProspect(row) {
     finalized: !!row.finalized,
     convertedToMember: !!row.converted_to_member,
     note: row.note || "",
+    invitedBy: row.invited_by || "",
     campLevel: row.camp_level || "",
     teamPower: row.team_power || 0,
     teamElement: row.team_element || null,
@@ -351,7 +352,7 @@ export function renderMigration() {
   rowsEl.innerHTML = list.map((p) => `
     <tr class="migration-row-${p.color}">
       <td><span class="rank-badge ${migrationColorClass(p.color)}">${migrationColorLabel(p.color)}</span>${p.score != null ? `<div style="font-size:11px; color:var(--text-dim); margin-top:2px;">${escapeHtml(String(p.score))}</div>` : ""}</td>
-      <td><span class="member-name">${escapeHtml(p.name || "—")}</span>${p.convertedToMember ? `<span class="old-tag">${t("convertedTag")}</span>` : ""}${p.note ? `<div style="font-size:11px; color:var(--text-dim); white-space:normal; max-width:220px;">${escapeHtml(p.note)}</div>` : ""}</td>
+      <td><span class="member-name">${escapeHtml(p.name || "—")}</span>${p.convertedToMember ? `<span class="old-tag">${t("convertedTag")}</span>` : ""}${p.note ? `<div style="font-size:11px; color:var(--text-dim); white-space:normal; max-width:220px;">${escapeHtml(p.note)}</div>` : ""}${p.invitedBy ? `<div style="font-size:11px; color:var(--text-dim); white-space:normal; max-width:220px;">${escapeHtml(t("lblInvitedBy"))}: ${escapeHtml(p.invitedBy)}</div>` : ""}</td>
       <td class="member-id">${escapeHtml(String(p.gameId || "—"))}</td>
       <td class="num-cell" title="${Number(p.power) || 0}">${formatPower(p.power)}</td>
       <td class="num-cell">${escapeHtml(p.campLevel || "—")}</td>
@@ -419,14 +420,14 @@ export function exportMigration() {
     const list = state.migration.filter((p) => selectedIds.includes(prospectView(p)));
     const rows = [[
       t("lblPeriodLabel"), t("thColor"), t("lblProspectScore"), t("thUsername"), t("thId"), t("thPower"), t("thCamp"),
-      t("lblTeamPower"), t("lblTeamElement"), t("thServer"), t("thStatus"), t("lblProspectNote"), t("thListView")
+      t("lblTeamPower"), t("lblTeamElement"), t("thServer"), t("thStatus"), t("lblProspectNote"), t("lblInvitedBy"), t("thListView")
     ]];
     list.forEach((p) => {
       rows.push([
         periodLabelById[p.periodId] || "", migrationColorLabel(p.color), p.score != null ? p.score : "", p.name || "", p.gameId || "",
         Number(p.power) || 0, p.campLevel || "", Number(p.teamPower) || 0,
         p.teamElement ? elementLabel(p.teamElement) : t("elementNone"),
-        p.server != null ? p.server : "", migrationStatusLabel(p.status), p.note || "", viewLabel[prospectView(p)]
+        p.server != null ? p.server : "", migrationStatusLabel(p.status), p.note || "", p.invitedBy || "", viewLabel[prospectView(p)]
       ]);
     });
     return { filename: "exc-paneli-goc-" + todayStr() + ".csv", rows };
@@ -457,13 +458,14 @@ export function openProspectModal(id) {
     document.getElementById("pScore").value = prospect.score != null ? prospect.score : "";
     document.getElementById("pStatus").value = prospect.status;
     document.getElementById("pNote").value = prospect.note || "";
+    document.getElementById("pInvitedBy").value = prospect.invitedBy || "";
     document.getElementById("pCamp").value = prospect.campLevel || "";
     document.getElementById("pTeamPower").value = prospect.teamPower || "";
     document.getElementById("pTeamElement").value = prospect.teamElement || "";
     setProspectElementPickerActive(prospect.teamElement || "");
   } else {
     document.getElementById("prospectModalTitle").textContent = t("prospectAddTitle");
-    ["pName", "pGameId", "pPower", "pServer", "pNote", "pCamp", "pTeamPower", "pTeamElement", "pScore"].forEach((fieldId) => { document.getElementById(fieldId).value = ""; });
+    ["pName", "pGameId", "pPower", "pServer", "pNote", "pInvitedBy", "pCamp", "pTeamPower", "pTeamElement", "pScore"].forEach((fieldId) => { document.getElementById(fieldId).value = ""; });
     document.getElementById("pColor").value = "unknown";
     document.getElementById("pStatus").value = "uncertain";
     setProspectElementPickerActive("");
@@ -514,18 +516,19 @@ export async function saveProspect() {
   const score = scoreRaw === "" ? null : (Number(scoreRaw) || null);
   const status = document.getElementById("pStatus").value;
   const note = document.getElementById("pNote").value.trim();
+  const invitedBy = document.getElementById("pInvitedBy").value.trim();
   const campLevel = document.getElementById("pCamp").value || null;
   const teamPower = Number(teamPowerRaw) || 0;
   const teamElement = document.getElementById("pTeamElement").value || null;
 
   try {
     if (editId) {
-      const payload = { name: name || null, game_id: gameId || null, power, server, color, score, status, note: note || null, camp_level: campLevel, team_power: teamPower, team_element: teamElement };
+      const payload = { name: name || null, game_id: gameId || null, power, server, color, score, status, note: note || null, invited_by: invitedBy || null, camp_level: campLevel, team_power: teamPower, team_element: teamElement };
       const row = await updateMigrationProspect(editId, payload);
       const index = state.migration.findIndex((p) => p.id === editId);
       if (index >= 0) state.migration[index] = mapProspect(row);
     } else {
-      const payload = { period_id: state.migrationActivePeriodId, name: name || null, game_id: gameId || null, power, server, color, score, status, note: note || null, camp_level: campLevel, team_power: teamPower, team_element: teamElement };
+      const payload = { period_id: state.migrationActivePeriodId, name: name || null, game_id: gameId || null, power, server, color, score, status, note: note || null, invited_by: invitedBy || null, camp_level: campLevel, team_power: teamPower, team_element: teamElement };
       const row = await createMigrationProspect(payload);
       state.migration.push(mapProspect(row));
 
@@ -621,7 +624,7 @@ export async function copyProspectToNextPeriod(id) {
     const row = await createMigrationProspect({
       period_id: targetPeriod.id, name: prospect.name || null, game_id: prospect.gameId || null, power: prospect.power,
       server: prospect.server, color: prospect.color, score: prospect.score, status: "uncertain", note: prospect.note || null,
-      camp_level: prospect.campLevel || null, team_power: prospect.teamPower, team_element: prospect.teamElement
+      invited_by: prospect.invitedBy || null, camp_level: prospect.campLevel || null, team_power: prospect.teamPower, team_element: prospect.teamElement
     });
     state.migration.push(mapProspect(row));
     renderAll();
