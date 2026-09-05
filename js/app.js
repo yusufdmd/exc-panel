@@ -16,10 +16,10 @@
 // o dosyalar hiç çalıştırılmaz ve tabloları hiç çizilmez.
 // =====================================================================
 
-import { getMembers, getAllPowerHistory, getAllTeamPowerHistory, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, getSiteLinks, getNews, getFeaturedVideos, getRecentActivity, subscribeToTables } from "./database.js";
+import { getMembers, getAllPowerHistory, getAllTeamPowerHistory, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, getNameSuggestions, getSiteLinks, getNews, getFeaturedVideos, getRecentActivity, subscribeToTables } from "./database.js";
 import { POLL_INTERVAL_MS } from "./config.js";
 import { state, t, showToast, buildLangSwitch, applyStaticText, initLangFromStorage, persistLanguage, initThemeFromStorage, toggleTheme, renderAll, registerDataLoader, registerRenderer } from "./ui.js";
-import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember, openHistoryModal, closeHistoryModal, setMemberView, setRankFilter, setElementFilter, setSort, exportMembers } from "./members.js";
+import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember, openHistoryModal, closeHistoryModal, setMemberView, setRankFilter, setElementFilter, setSort, exportMembers, mapNameSuggestion, openNameSuggestModal, closeNameSuggestModal, submitNameSuggestion, approveNameSuggestion, dismissNameSuggestion } from "./members.js";
 import { mapWeek, mapEntry, openWeekModal, closeWeekModal, saveWeek, deleteWeek, openEntryModal, closeEntryModal, renderEntryRows, saveEntry, handleEntryScreenshot, removeUnmatchedItem, openWeekReportModal, closeWeekReportModal, openOverallReportModal, closeOverallReportModal, setOverallReportSort, exportEventTable } from "./events.js";
 import { setBoardSort, openParticipationReportModal, closeParticipationReportModal } from "./dashboard.js";
 import {
@@ -76,7 +76,7 @@ async function loadAll(silent) {
       ssWeeksRes, ssRecordsRes,
       kodWeeksRes, kodRecordsRes,
       otherWeeksRes, otherRecordsRes,
-      migrationPeriodsRes, migrationRes, migrationLeadsRes, siteLinksRes, newsRes, videosRes, activityRes
+      migrationPeriodsRes, migrationRes, migrationLeadsRes, nameSuggestionsRes, siteLinksRes, newsRes, videosRes, activityRes
     ] = await Promise.allSettled([
       getMembers(), getAllPowerHistory(), getAllTeamPowerHistory(),
       getWeeks("svs"), getAllRecords("svs"),
@@ -87,6 +87,7 @@ async function loadAll(silent) {
       restricted ? Promise.resolve([]) : getMigrationPeriods(),
       restricted ? Promise.resolve([]) : getMigrationProspects(),
       restricted ? Promise.resolve([]) : getMigrationLeads(),
+      restricted ? Promise.resolve([]) : getNameSuggestions(),
       getSiteLinks(), getNews(), getFeaturedVideos(),
       restricted ? Promise.resolve([]) : getRecentActivity()
     ]);
@@ -118,6 +119,7 @@ async function loadAll(silent) {
       migrationPeriods: settledList(migrationPeriodsRes).map(mapPeriod),
       migration: settledList(migrationRes).map(mapProspect),
       migrationLeads: settledList(migrationLeadsRes).map(mapLead),
+      nameSuggestions: settledList(nameSuggestionsRes).map(mapNameSuggestion),
       siteLinks: mapSiteLinks(siteLinksRes.status === "fulfilled" ? siteLinksRes.value : null),
       news: settledList(newsRes).map(mapNewsItem),
       featuredVideos: settledList(videosRes).map(mapVideoItem),
@@ -148,7 +150,7 @@ setInterval(() => loadAll(true), POLL_INTERVAL_MS);
 
 let realtimeReloadTimer = null;
 subscribeToTables(
-  ["members", "power_history", "team_power_history", "gvg_weeks", "gvg_records", "svs_weeks", "svs_records", "ss_weeks", "ss_records", "kod_weeks", "kod_records", "other_weeks", "other_records", "migration_periods", "migration_prospects", "migration_leads", "site_links", "news", "featured_videos", "activity_logs"],
+  ["members", "power_history", "team_power_history", "gvg_weeks", "gvg_records", "svs_weeks", "svs_records", "ss_weeks", "ss_records", "kod_weeks", "kod_records", "other_weeks", "other_records", "migration_periods", "migration_prospects", "migration_leads", "name_suggestions", "site_links", "news", "featured_videos", "activity_logs"],
   () => {
     clearTimeout(realtimeReloadTimer);
     realtimeReloadTimer = setTimeout(() => loadAll(true), REALTIME_RELOAD_DEBOUNCE_MS);
@@ -257,6 +259,7 @@ Object.assign(window, {
   exportBackup, importBackup, manualRefresh,
   switchTab, switchSub, setMemberView, setRankFilter, setElementFilter, setSort, renderMembers,
   openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember, exportMembers,
+  openNameSuggestModal, closeNameSuggestModal, submitNameSuggestion, approveNameSuggestion, dismissNameSuggestion,
   openWeekModal, closeWeekModal, saveWeek, deleteWeek,
   openEntryModal, closeEntryModal, saveEntry, renderEntryRows, handleEntryScreenshot, removeUnmatchedItem,
   openWeekReportModal, closeWeekReportModal,

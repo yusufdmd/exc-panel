@@ -54,6 +54,7 @@ export const state = {
   migrationActivePeriodId: null,
   pendingProspectApprovalId: null, // "Onayla" ile üye ekleme ekranına gidilirken hangi göç adayının dönüştürüldüğünü hatırlar (bkz. members.js -> saveMember)
   migrationLeads: [], // genel tanıtım sitesindeki formdan gelen, henüz işlenmemiş ham başvurular
+  nameSuggestions: [], // üyelerden gelen, henüz onaylanmamış isim değişikliği önerileri (bkz. members.js -> renderNameSuggestions)
   pendingLeadProcessingId: null, // "İşle" ile aday ekleme formuna gidilirken hangi başvurunun dönüştürüldüğünü hatırlar (bkz. migration.js -> saveProspect)
   siteLinks: { discordUrl: "", youtubeUrl: "", instagramUrl: "" }, // genel tanıtım sitesindeki Discord/YouTube/Instagram linkleri (bkz. siteLinks.js)
   news: [], // ana sayfadaki "Haberler" bölümünün içeriği (bkz. news.js)
@@ -238,6 +239,14 @@ const DICT = {
     userChangedStagedLabel:'Kullanıcı değişikliği',
     subMigratedMembers:'Göç Edenler', lblMigratedTo:'Göç Ettiği Sunucu',
     lblMigrated:'Başka sunucuya göç etti', migratedTag:'Göç Etti', convertedTag:'✓ Üye Oldu',
+    suggestNameChangeTitle:'İsim Değişikliği Öner', lblSuggestedName:'Yeni Kullanıcı Adı Önerisi',
+    nameSuggestionRequired:'Lütfen yeni bir kullanıcı adı önerisi yazın.', nameSuggestionSameAsCurrent:'Önerilen ad, mevcut adla aynı.',
+    submitSuggestionBtn:'Gönder', toastNameSuggestionSent:'İsim değişikliği öneriniz gönderildi, yöneticiler inceleyecek.',
+    nameSuggestionsHeading:'📝 İsim Önerileri', emptyNameSuggestionsDesc:'Üyelerden gelen isim değişikliği önerileri burada görünecek.',
+    thSuggestedName:'Önerilen Ad', approveNameSuggestionTitle:'Öneriyi Onayla',
+    confirmApproveNameSuggestion:'Bu ismi onaylayıp üyenin kayıtlı adını değiştirmek istiyor musunuz?', confirmDismissNameSuggestion:'Bu öneriyi reddetmek istediğinize emin misiniz?',
+    toastNameSuggestionApproved:'İsim değişikliği onaylandı.', toastNameSuggestionDismissed:'Öneri reddedildi.',
+    nameSuggestionMemberGone:'Bu öneriyi yapan üye artık listede yok.',
     weekReport:'Hafta Raporu', zoneGreen:'Yeşil Bölge', zoneYellow:'Sarı Bölge', zoneRed:'Kırmızı Bölge',
     weekEditTitle:'Haftayı Düzenle', eventEditTitle:'Etkinliği Düzenle',
     overallReportBtn:'📊 Genel Rapor', overallReport:'Genel Rapor', thWeeks:'Haftalar',
@@ -345,6 +354,14 @@ const DICT = {
     userChangedStagedLabel:'User changed',
     subMigratedMembers:'Migrated Members', lblMigratedTo:'Migrated To Server',
     lblMigrated:'Migrated to another server', migratedTag:'Migrated', convertedTag:'✓ Became a Member',
+    suggestNameChangeTitle:'Suggest Name Change', lblSuggestedName:'New Username Suggestion',
+    nameSuggestionRequired:'Please enter a new username suggestion.', nameSuggestionSameAsCurrent:'The suggested name is the same as the current one.',
+    submitSuggestionBtn:'Submit', toastNameSuggestionSent:'Your name change suggestion was sent, admins will review it.',
+    nameSuggestionsHeading:'📝 Name Suggestions', emptyNameSuggestionsDesc:'Name change suggestions from members will appear here.',
+    thSuggestedName:'Suggested Name', approveNameSuggestionTitle:'Approve Suggestion',
+    confirmApproveNameSuggestion:"Approve this name and change the member's recorded name?", confirmDismissNameSuggestion:'Are you sure you want to reject this suggestion?',
+    toastNameSuggestionApproved:'Name change approved.', toastNameSuggestionDismissed:'Suggestion rejected.',
+    nameSuggestionMemberGone:'The member who made this suggestion is no longer in the list.',
     weekReport:'Week Report', zoneGreen:'Green Zone', zoneYellow:'Yellow Zone', zoneRed:'Red Zone',
     weekEditTitle:'Edit Week', eventEditTitle:'Edit Event',
     overallReportBtn:'📊 Overall Report', overallReport:'Overall Report', thWeeks:'Weeks',
@@ -452,6 +469,14 @@ const DICT = {
     userChangedStagedLabel:'Nutzerwechsel',
     subMigratedMembers:'Abgewanderte Mitglieder', lblMigratedTo:'Migriert zu Server',
     lblMigrated:'Zu einem anderen Server abgewandert', migratedTag:'Abgewandert', convertedTag:'✓ Mitglied geworden',
+    suggestNameChangeTitle:'Namensänderung Vorschlagen', lblSuggestedName:'Neuer Benutzername-Vorschlag',
+    nameSuggestionRequired:'Bitte einen neuen Benutzernamen-Vorschlag eingeben.', nameSuggestionSameAsCurrent:'Der vorgeschlagene Name ist identisch mit dem aktuellen.',
+    submitSuggestionBtn:'Absenden', toastNameSuggestionSent:'Ihr Namensänderungsvorschlag wurde gesendet, Admins werden ihn prüfen.',
+    nameSuggestionsHeading:'📝 Namensvorschläge', emptyNameSuggestionsDesc:'Namensänderungsvorschläge von Mitgliedern erscheinen hier.',
+    thSuggestedName:'Vorgeschlagener Name', approveNameSuggestionTitle:'Vorschlag Genehmigen',
+    confirmApproveNameSuggestion:'Diesen Namen genehmigen und den gespeicherten Namen des Mitglieds ändern?', confirmDismissNameSuggestion:'Diesen Vorschlag wirklich ablehnen?',
+    toastNameSuggestionApproved:'Namensänderung genehmigt.', toastNameSuggestionDismissed:'Vorschlag abgelehnt.',
+    nameSuggestionMemberGone:'Das Mitglied, das diesen Vorschlag gemacht hat, ist nicht mehr in der Liste.',
     weekReport:'Wochenbericht', zoneGreen:'Grüne Zone', zoneYellow:'Gelbe Zone', zoneRed:'Rote Zone',
     weekEditTitle:'Woche bearbeiten', eventEditTitle:'Event bearbeiten',
     overallReportBtn:'📊 Gesamtbericht', overallReport:'Gesamtbericht', thWeeks:'Wochen',
@@ -559,6 +584,14 @@ const DICT = {
     userChangedStagedLabel:'Cambio de usuario',
     subMigratedMembers:'Miembros Migrados', lblMigratedTo:'Migró al Servidor',
     lblMigrated:'Migró a otro servidor', migratedTag:'Migró', convertedTag:'✓ Se hizo Miembro',
+    suggestNameChangeTitle:'Sugerir Cambio de Nombre', lblSuggestedName:'Sugerencia de Nuevo Nombre de Usuario',
+    nameSuggestionRequired:'Por favor ingresa una sugerencia de nuevo nombre de usuario.', nameSuggestionSameAsCurrent:'El nombre sugerido es igual al actual.',
+    submitSuggestionBtn:'Enviar', toastNameSuggestionSent:'Tu sugerencia de cambio de nombre fue enviada, los administradores la revisarán.',
+    nameSuggestionsHeading:'📝 Sugerencias de Nombre', emptyNameSuggestionsDesc:'Las sugerencias de cambio de nombre de los miembros aparecerán aquí.',
+    thSuggestedName:'Nombre Sugerido', approveNameSuggestionTitle:'Aprobar Sugerencia',
+    confirmApproveNameSuggestion:'¿Aprobar este nombre y cambiar el nombre registrado del miembro?', confirmDismissNameSuggestion:'¿Seguro que quieres rechazar esta sugerencia?',
+    toastNameSuggestionApproved:'Cambio de nombre aprobado.', toastNameSuggestionDismissed:'Sugerencia rechazada.',
+    nameSuggestionMemberGone:'El miembro que hizo esta sugerencia ya no está en la lista.',
     weekReport:'Informe Semanal', zoneGreen:'Zona Verde', zoneYellow:'Zona Amarilla', zoneRed:'Zona Roja',
     weekEditTitle:'Editar semana', eventEditTitle:'Editar evento',
     overallReportBtn:'📊 Informe General', overallReport:'Informe General', thWeeks:'Semanas',
@@ -666,6 +699,14 @@ const DICT = {
     userChangedStagedLabel:"Changement d'utilisateur",
     subMigratedMembers:'Membres Migrés', lblMigratedTo:'Migré vers le Serveur',
     lblMigrated:'A migré vers un autre serveur', migratedTag:'A migré', convertedTag:'✓ Devenu Membre',
+    suggestNameChangeTitle:'Suggérer un Changement de Nom', lblSuggestedName:"Suggestion de Nouveau Nom d'utilisateur",
+    nameSuggestionRequired:"Veuillez saisir une suggestion de nouveau nom d'utilisateur.", nameSuggestionSameAsCurrent:'Le nom suggéré est identique au nom actuel.',
+    submitSuggestionBtn:'Envoyer', toastNameSuggestionSent:"Votre suggestion de changement de nom a été envoyée, les admins l'examineront.",
+    nameSuggestionsHeading:'📝 Suggestions de Noms', emptyNameSuggestionsDesc:'Les suggestions de changement de nom des membres apparaîtront ici.',
+    thSuggestedName:'Nom Suggéré', approveNameSuggestionTitle:'Approuver la Suggestion',
+    confirmApproveNameSuggestion:"Approuver ce nom et changer le nom enregistré du membre ?", confirmDismissNameSuggestion:'Voulez-vous vraiment rejeter cette suggestion ?',
+    toastNameSuggestionApproved:'Changement de nom approuvé.', toastNameSuggestionDismissed:'Suggestion rejetée.',
+    nameSuggestionMemberGone:"Le membre qui a fait cette suggestion n'est plus dans la liste.",
     weekReport:'Rapport Hebdomadaire', zoneGreen:'Zone Verte', zoneYellow:'Zone Jaune', zoneRed:'Zone Rouge',
     weekEditTitle:'Modifier la semaine', eventEditTitle:"Modifier l'événement",
     overallReportBtn:'📊 Rapport Global', overallReport:'Rapport Global', thWeeks:'Semaines',
@@ -773,6 +814,14 @@ const DICT = {
     userChangedStagedLabel:'Đã đổi người dùng',
     subMigratedMembers:'Thành viên Đã Di chuyển', lblMigratedTo:'Di chuyển Đến Máy chủ',
     lblMigrated:'Đã di chuyển sang máy chủ khác', migratedTag:'Đã di chuyển', convertedTag:'✓ Đã trở thành Thành viên',
+    suggestNameChangeTitle:'Đề xuất Đổi Tên', lblSuggestedName:'Đề xuất Tên người dùng Mới',
+    nameSuggestionRequired:'Vui lòng nhập đề xuất tên người dùng mới.', nameSuggestionSameAsCurrent:'Tên đề xuất giống với tên hiện tại.',
+    submitSuggestionBtn:'Gửi', toastNameSuggestionSent:'Đề xuất đổi tên của bạn đã được gửi, quản trị viên sẽ xem xét.',
+    nameSuggestionsHeading:'📝 Đề xuất Tên', emptyNameSuggestionsDesc:'Các đề xuất đổi tên từ thành viên sẽ hiển thị ở đây.',
+    thSuggestedName:'Tên Đề xuất', approveNameSuggestionTitle:'Duyệt Đề xuất',
+    confirmApproveNameSuggestion:'Duyệt tên này và thay đổi tên đã lưu của thành viên?', confirmDismissNameSuggestion:'Bạn có chắc muốn từ chối đề xuất này không?',
+    toastNameSuggestionApproved:'Đã duyệt đổi tên.', toastNameSuggestionDismissed:'Đã từ chối đề xuất.',
+    nameSuggestionMemberGone:'Thành viên đã gửi đề xuất này không còn trong danh sách.',
     weekReport:'Báo cáo Tuần', zoneGreen:'Vùng Xanh', zoneYellow:'Vùng Vàng', zoneRed:'Vùng Đỏ',
     weekEditTitle:'Sửa Tuần', eventEditTitle:'Sửa Sự kiện',
     overallReportBtn:'📊 Báo cáo Tổng quan', overallReport:'Báo cáo Tổng quan', thWeeks:'Các Tuần',
@@ -974,6 +1023,16 @@ export function applyStaticText() {
   document.getElementById("t_thLeadContact").textContent = t("thLeadContact");
   document.getElementById("t_thLeadId2").textContent = t("thId");
   document.getElementById("t_emptyLeadsDesc").textContent = t("emptyLeadsDesc");
+  document.getElementById("t_nameSuggestTitle").textContent = t("suggestNameChangeTitle");
+  document.getElementById("t_lblCurrentName").textContent = t("lblUsername");
+  document.getElementById("t_lblSuggestedName").textContent = t("lblSuggestedName");
+  document.getElementById("t_cancelNs").textContent = t("cancel");
+  document.getElementById("t_submitNs").textContent = t("submitSuggestionBtn");
+  document.getElementById("t_nameSuggestionsHeading").textContent = t("nameSuggestionsHeading");
+  document.getElementById("t_emptyNameSuggestionsDesc").textContent = t("emptyNameSuggestionsDesc");
+  document.getElementById("t_thCurrentName2").textContent = t("lblUsername");
+  document.getElementById("t_thSuggestedName").textContent = t("thSuggestedName");
+  document.getElementById("t_thNsDate").textContent = t("thWhen");
   document.getElementById("t_siteLinksDesc").textContent = t("siteLinksDesc");
   document.getElementById("t_lblDiscordUrl").textContent = t("lblDiscordUrl");
   document.getElementById("t_lblYoutubeUrl").textContent = t("lblYoutubeUrl");

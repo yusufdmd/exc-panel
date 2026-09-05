@@ -219,6 +219,34 @@ export async function deleteMigrationLead(id) {
 }
 
 // =====================================================================
+// NAME_SUGGESTIONS — Üyelerden gelen isim değişikliği önerileri
+// =====================================================================
+export async function createNameSuggestion(payload) {
+  const { data, error } = await supabase
+    .from("name_suggestions")
+    .insert(payload)
+    .select()
+    .single();
+  if (error) dbError("İsim önerisi gönderilemedi", error);
+  return data;
+}
+
+export async function getNameSuggestions() {
+  const { data, error } = await supabase
+    .from("name_suggestions")
+    .select("*")
+    .order("created_at", { ascending: true });
+  if (error) dbError("İsim önerileri alınamadı", error);
+  return data;
+}
+
+export async function deleteNameSuggestion(id) {
+  const { error } = await supabase.from("name_suggestions").delete().eq("id", id);
+  if (error) dbError("İsim önerisi silinemedi", error);
+  return true;
+}
+
+// =====================================================================
 // POWER_HISTORY — Güç seviyesi geçmişi
 // =====================================================================
 export async function getPowerHistory(memberId) {

@@ -12,7 +12,7 @@
 // bağımlılık tek yönlüdür, döngü oluşmaz.
 // =====================================================================
 
-import { createMember, updateMember, deleteMember as dbDeleteMember, addPowerHistoryEntry, addTeamPowerHistoryEntry, updateMigrationProspect, logActivity } from "./database.js";
+import { createMember, updateMember, deleteMember as dbDeleteMember, addPowerHistoryEntry, addTeamPowerHistoryEntry, updateMigrationProspect, createNameSuggestion, deleteNameSuggestion, logActivity } from "./database.js";
 import { RANK_LIMITS } from "./config.js";
 import {
   state,
@@ -68,6 +68,11 @@ export function mapMember(row) {
   };
 }
 
+/** Supabase'ten dönen ham isim değişikliği önerisi satırını uygulamanın kullandığı şekle çevirir. */
+export function mapNameSuggestion(row) {
+  return { id: row.id, memberId: row.member_id, oldName: row.old_name || "", suggestedName: row.suggested_name, createdAt: row.created_at };
+}
+
 /** Bir üyenin hangi listede (aktif/eski/göç eden) görüneceğini belirler. */
 function memberCategory(member) {
   if (member.isMigrated) return "migrated";
@@ -110,6 +115,7 @@ function renderStats() {
 // =====================================================================
 export function renderMembers() {
   renderStats();
+  renderNameSuggestions();
   renderElementFilter();
   const query = (document.getElementById("memberSearch").value || "").toLowerCase().trim();
   const list = state.members.filter((member) => {
@@ -158,6 +164,7 @@ export function renderMembers() {
       <td class="num-cell">${escapeHtml((member.joinedAt || "").slice(0, 10)) || "—"}</td>
       <td><div class="row-actions">
         <button class="icon-btn" onclick="openHistoryModal('${member.id}')" title="${t("powerHistory")}">📈</button>
+        <button class="icon-btn" onclick="openNameSuggestModal('${member.id}')" title="${t("suggestNameChangeTitle")}">✏️</button>
         ${state.memberView === "old" ? `<button class="icon-btn admin-only" onclick="restoreMember('${member.id}')" title="${t("restoreMember")}">↺</button>` : ""}
         <button class="icon-btn admin-only" onclick="openMemberModal('${member.id}')">✎</button>
         <button class="icon-btn danger admin-only" onclick="deleteMember('${member.id}')">✕</button>
@@ -221,6 +228,115 @@ export function exportMembers() {
     });
     return { filename: "exc-paneli-uyeler-" + todayStr() + ".csv", rows };
   });
+}
+
+// =====================================================================
+// İSİM DEĞİŞİKLİĞİ ÖNERİLERİ — üye (viewer) rolü gönderir, admin onaylar
+// =====================================================================
+/**
+ * Bekleyen isim değişikliği önerilerini (sadece admin görür — bkz.
+ * sql/add_name_suggestions.sql RLS) "Üyeler" panelinin üstünde,
+ * "Göç Başvuruları" ile aynı desende çizer.
+ */
+function renderNameSuggestions() {
+  const hasSuggestions = state.nameSuggestions.length > 0;
+  document.getElementById("nameSuggestionsEmpty").style.display = hasSuggestions ? "none" : "block";
+  document.getElementById("nameSuggestionsTableWrap").style.display = hasSuggestions ? "" : "none";
+  document.getElementById("nameSuggestionsRows").innerHTML = state.nameSuggestions.map((suggestion) => `
+    <tr>
+      <td><span class="member-name">${escapeHtml(suggestion.oldName || "—")}</span></td>
+      <td><span class="member-name">${escapeHtml(suggestion.suggestedName || "—")}</span></td>
+      <td>${escapeHtml((suggestion.createdAt || "").slice(0, 10))}</td>
+      <td><div class="row-actions">
+        <button class="icon-btn" onclick="approveNameSuggestion('${suggestion.id}')" title="${t("approveNameSuggestionTitle")}">✅</button>
+        <button class="icon-btn danger" onclick="dismissNameSuggestion('${suggestion.id}')">✕</button>
+      </div></td>
+    </tr>
+  `).join("");
+}
+
+/** Üye listesindeki "✏️" ile bir isim değişikliği önerisi formu açar — üye (viewer) rolü de dahil herkes kullanabilir. */
+export function openNameSuggestModal(id) {
+  const member = state.members.find((m) => m.id === id);
+  if (!member) return;
+  document.getElementById("nsMemberId").value = id;
+  document.getElementById("nsOldName").value = member.name || "";
+  document.getElementById("nsSuggestedName").value = "";
+  document.getElementById("nameSuggestOverlay").classList.add("active");
+}
+
+export function closeNameSuggestModal() {
+  document.getElementById("nameSuggestOverlay").classList.remove("active");
+}
+
+export async function submitNameSuggestion() {
+  const memberId = document.getElementById("nsMemberId").value;
+  const member = state.members.find((m) => m.id === memberId);
+  const suggestedName = document.getElementById("nsSuggestedName").value.trim();
+  if (!suggestedName) {
+    showToast(t("nameSuggestionRequired"));
+    return;
+  }
+  if (member && suggestedName === member.name) {
+    showToast(t("nameSuggestionSameAsCurrent"));
+    return;
+  }
+  try {
+    await createNameSuggestion({ member_id: memberId, old_name: member ? member.name : "", suggested_name: suggestedName });
+    closeNameSuggestModal();
+    showToast(t("toastNameSuggestionSent"));
+  } catch (error) {
+    console.error(error);
+    showToast("Error");
+  }
+}
+
+/**
+ * Bir isim önerisini onaylar: üyenin kayıtlı adını gerçekten değiştirir
+ * (eski adı, mevcut "önceki isimler" geçmişine eklenir — bkz. saveMember'daki
+ * aynı nameHistory mantığı) ve öneriyi kuyruktan siler.
+ */
+export async function approveNameSuggestion(id) {
+  const suggestion = state.nameSuggestions.find((s) => s.id === id);
+  if (!suggestion) return;
+  const member = state.members.find((m) => m.id === suggestion.memberId);
+  if (!member) {
+    showToast(t("nameSuggestionMemberGone"));
+    return;
+  }
+  if (!confirm(t("confirmApproveNameSuggestion"))) return;
+  try {
+    const previousName = member.name;
+    const nameHistory = Array.isArray(member.nameHistory) ? [...member.nameHistory] : [];
+    if (previousName && previousName !== suggestion.suggestedName) {
+      nameHistory.push({ name: previousName, changedAt: todayStr(), type: "renamed" });
+    }
+    const row = await updateMember(member.id, { name: suggestion.suggestedName, name_history: nameHistory });
+    const index = state.members.findIndex((m) => m.id === member.id);
+    if (index >= 0) state.members[index] = { ...mapMember(row), powerHistory: state.members[index].powerHistory };
+    await deleteNameSuggestion(id);
+    state.nameSuggestions = state.nameSuggestions.filter((s) => s.id !== id);
+    await logActivity("updated", "member", member.id, { name: suggestion.suggestedName }, state.currentAdminUsername);
+    renderAll();
+    showToast(t("toastNameSuggestionApproved"));
+  } catch (error) {
+    console.error(error);
+    showToast("Error");
+  }
+}
+
+/** Bir isim önerisini reddeder — üyenin adı değişmez, öneri sadece kuyruktan silinir. */
+export async function dismissNameSuggestion(id) {
+  if (!confirm(t("confirmDismissNameSuggestion"))) return;
+  try {
+    await deleteNameSuggestion(id);
+    state.nameSuggestions = state.nameSuggestions.filter((s) => s.id !== id);
+    renderAll();
+    showToast(t("toastNameSuggestionDismissed"));
+  } catch (error) {
+    console.error(error);
+    showToast("Error");
+  }
 }
 
 // =====================================================================

@@ -124,6 +124,25 @@
 
   <!-- MEMBERS -->
   <div class="panel" id="panel-members">
+    <div class="admin-only" id="nameSuggestionsSection">
+      <h3 style="font-size:13px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); margin-bottom:10px;" id="t_nameSuggestionsHeading">📝 İsim Önerileri</h3>
+      <div class="empty-state" id="nameSuggestionsEmpty" style="display:none; padding:24px;">
+        <p id="t_emptyNameSuggestionsDesc">Üyelerden gelen isim değişikliği önerileri burada görünecek.</p>
+      </div>
+      <div class="table-wrap" id="nameSuggestionsTableWrap" style="margin-bottom:20px;">
+        <table>
+          <thead>
+            <tr>
+              <th id="t_thCurrentName2">Kullanıcı Adı</th>
+              <th id="t_thSuggestedName">Önerilen Ad</th>
+              <th id="t_thNsDate">Tarih</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="nameSuggestionsRows"></tbody>
+        </table>
+      </div>
+    </div>
     <div class="subtabs">
       <div class="subtab active" data-mv="active" onclick="setMemberView('active')" id="t_subActiveMembers">Aktif Üyeler</div>
       <div class="subtab" data-mv="old" onclick="setMemberView('old')" id="t_subOldMembers">Eski Üyeler (OLD)</div>
@@ -479,6 +498,26 @@
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closeMemberModal()" id="t_cancel1">Vazgeç</button>
       <button class="btn-primary" onclick="saveMember()" id="t_save1">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- İsim Değişikliği Öner Modalı — üye (viewer) rolü de dahil herkes kullanabilir -->
+<div class="overlay" id="nameSuggestOverlay">
+  <div class="modal">
+    <h2 id="t_nameSuggestTitle">İsim Değişikliği Öner</h2>
+    <input type="hidden" id="nsMemberId">
+    <div class="field">
+      <label id="t_lblCurrentName">Kullanıcı Adı</label>
+      <input id="nsOldName" disabled>
+    </div>
+    <div class="field">
+      <label id="t_lblSuggestedName">Yeni Kullanıcı Adı Önerisi</label>
+      <input id="nsSuggestedName">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeNameSuggestModal()" id="t_cancelNs">Vazgeç</button>
+      <button class="btn-primary" onclick="submitNameSuggestion()" id="t_submitNs">Gönder</button>
     </div>
   </div>
 </div>

@@ -308,6 +308,39 @@ drop policy if exists migration_leads_delete_auth on migration_leads;
 create policy migration_leads_delete_auth on migration_leads for delete using (auth.role() = 'authenticated');
 
 -- =====================================================================
+-- 6.5) NAME_SUGGESTIONS — üye (viewer) rolünün üye listesinden gönderdiği
+--      isim değişikliği önerileri. Herkes paylaşılan tek bir "viewer"
+--      girişini kullandığı için öneriyi GERÇEKTEN o kişinin yazıp
+--      yazmadığı doğrulanamaz — admin onayı zorunlu (bkz. members.js ->
+--      approveNameSuggestion). MIGRATION_LEADS ile aynı sebeple genel RLS
+--      döngüsüne dahil edilmez. NOT: buradaki select/delete politikaları
+--      henüz current_user_role() KULLANMAZ çünkü o fonksiyon bu dosyada
+--      değil add_member_role.sql'de tanımlanır (init.sql tek başına
+--      çalıştırılabilir kalsın diye) — mevcut kurulumlarda gerçek kısıtlama
+--      sql/add_name_suggestions.sql'in admin-only politikalarıyla gelir.
+-- =====================================================================
+create table if not exists name_suggestions (
+  id              uuid primary key default gen_random_uuid(),
+  member_id       uuid references members(id) on delete cascade,
+  old_name        text,
+  suggested_name  text not null,
+  created_at      timestamptz not null default now()
+);
+
+create index if not exists idx_name_suggestions_created on name_suggestions (created_at desc);
+
+alter table name_suggestions enable row level security;
+
+drop policy if exists name_suggestions_insert_auth on name_suggestions;
+create policy name_suggestions_insert_auth on name_suggestions for insert with check (auth.role() = 'authenticated');
+
+drop policy if exists name_suggestions_select_auth on name_suggestions;
+create policy name_suggestions_select_auth on name_suggestions for select using (auth.role() = 'authenticated');
+
+drop policy if exists name_suggestions_delete_auth on name_suggestions;
+create policy name_suggestions_delete_auth on name_suggestions for delete using (auth.role() = 'authenticated');
+
+-- =====================================================================
 -- 7) SETTINGS — Uygulama geneli ayarlar (anahtar/değer)
 -- =====================================================================
 create table if not exists settings (
@@ -533,7 +566,7 @@ alter publication supabase_realtime add table
   ss_weeks, ss_records,
   other_weeks, other_records,
   kod_weeks, kod_records,
-  migration_periods, migration_prospects, migration_leads,
+  migration_periods, migration_prospects, migration_leads, name_suggestions,
   settings, site_links, news, featured_videos, activity_logs;
 
 -- =====================================================================
