@@ -211,6 +211,7 @@ const DICT = {
     toastWeekSaved:'Hafta eklendi.', toastWeekDeleted:'Hafta silindi.', confirmDeleteWeek:'Bu haftayı ve tüm verilerini silmek istiyor musunuz?',
     emptyWeeksTitle:'Henüz hafta yok', emptyWeeksDesc:'"+ Hafta Ekle" ile ilk haftayı oluştur.',
     legendJoined:'Katıldı', legendNotJoined:'Katılmadı', legendAttended:'Kayıtlı ve Katıldı', legendRegNotAttend:'Kayıtlı, Katılmadı', legendNoReg:'Kayıt Yok',
+    dataVisibilityNote:'Not: İlk 200\'ün dışındaki oyuncular oyun içinde görünmez, bu yüzden buradaki "Katılmadı"/"Bilgi Yok" işareti yanlış olabilir — yanlış görünüyorsa bir yöneticiye bildirin.',
     thJoined:'Katıldı', thPointsCol:'Puan', thGroup:'Grup', thAttended:'Katıldı mı', groupNone:'Kayıt Yok', groupA:'A Grubu', groupB:'B Grubu',
     entryTitleSVS:'SVS Girişi', entryTitleGVG:'GVG Girişi', entryTitleSS:'SS Girişi', entryTitleKoD:'King of Desert Girişi',
     toastEntrySaved:'Kayıt tamamlandı.', notRegistered:'—',
@@ -327,6 +328,7 @@ const DICT = {
     toastWeekSaved:'Week added.', toastWeekDeleted:'Week deleted.', confirmDeleteWeek:'Delete this week and all its data?',
     emptyWeeksTitle:'No weeks yet', emptyWeeksDesc:'Use "+ Add Week" to create the first one.',
     legendJoined:'Joined', legendNotJoined:'Not joined', legendAttended:'Registered & Attended', legendRegNotAttend:'Registered, Absent', legendNoReg:'Not Registered',
+    dataVisibilityNote:'Note: Players outside the top 200 aren\'t visible in-game, so a "Not Joined"/"No Data" mark here may be inaccurate — flag it to an admin if it looks wrong.',
     thJoined:'Joined', thPointsCol:'Points', thGroup:'Group', thAttended:'Attended', groupNone:'Not registered', groupA:'Group A', groupB:'Group B',
     entryTitleSVS:'SVS Entry', entryTitleGVG:'GVG Entry', entryTitleSS:'SS Entry', entryTitleKoD:'King of Desert Entry',
     toastEntrySaved:'Saved.', notRegistered:'—',
@@ -443,6 +445,7 @@ const DICT = {
     toastWeekSaved:'Woche hinzugefügt.', toastWeekDeleted:'Woche gelöscht.', confirmDeleteWeek:'Diese Woche und alle Daten löschen?',
     emptyWeeksTitle:'Noch keine Woche', emptyWeeksDesc:'Mit "+ Woche hinzufügen" die erste anlegen.',
     legendJoined:'Teilgenommen', legendNotJoined:'Nicht teilgenommen', legendAttended:'Angemeldet & teilgenommen', legendRegNotAttend:'Angemeldet, gefehlt', legendNoReg:'Nicht angemeldet',
+    dataVisibilityNote:'Hinweis: Spieler außerhalb der Top 200 sind im Spiel nicht sichtbar, daher kann eine Markierung als "Nicht teilgenommen"/"Keine Daten" hier ungenau sein — melde es einem Admin, falls es falsch aussieht.',
     thJoined:'Teilgenommen', thPointsCol:'Punkte', thGroup:'Gruppe', thAttended:'Teilgenommen', groupNone:'Nicht angemeldet', groupA:'Gruppe A', groupB:'Gruppe B',
     entryTitleSVS:'SVS-Eintrag', entryTitleGVG:'GVG-Eintrag', entryTitleSS:'SS-Eintrag', entryTitleKoD:'King of Desert-Eintrag',
     toastEntrySaved:'Gespeichert.', notRegistered:'—',
@@ -559,6 +562,7 @@ const DICT = {
     toastWeekSaved:'Semana añadida.', toastWeekDeleted:'Semana eliminada.', confirmDeleteWeek:'¿Eliminar esta semana y todos sus datos?',
     emptyWeeksTitle:'Aún no hay semanas', emptyWeeksDesc:'Usa "+ Añadir semana" para crear la primera.',
     legendJoined:'Participó', legendNotJoined:'No participó', legendAttended:'Inscrito y participó', legendRegNotAttend:'Inscrito, ausente', legendNoReg:'No inscrito',
+    dataVisibilityNote:'Nota: Los jugadores fuera del top 200 no son visibles en el juego, por lo que una marca de "No participó"/"Sin datos" aquí puede ser inexacta — avisa a un administrador si parece incorrecto.',
     thJoined:'Participó', thPointsCol:'Puntos', thGroup:'Grupo', thAttended:'Participó', groupNone:'No inscrito', groupA:'Grupo A', groupB:'Grupo B',
     entryTitleSVS:'Registro SVS', entryTitleGVG:'Registro GVG', entryTitleSS:'Registro SS', entryTitleKoD:'Registro King of Desert',
     toastEntrySaved:'Guardado.', notRegistered:'—',
@@ -675,6 +679,7 @@ const DICT = {
     toastWeekSaved:'Semaine ajoutée.', toastWeekDeleted:'Semaine supprimée.', confirmDeleteWeek:'Supprimer cette semaine et toutes ses données ?',
     emptyWeeksTitle:'Aucune semaine pour le moment', emptyWeeksDesc:'Utilisez "+ Ajouter une semaine" pour créer la première.',
     legendJoined:'A participé', legendNotJoined:"N'a pas participé", legendAttended:'Inscrit et présent', legendRegNotAttend:'Inscrit, absent', legendNoReg:'Non inscrit',
+    dataVisibilityNote:"Remarque : Les joueurs hors du top 200 ne sont pas visibles en jeu, donc une mention « Non participé »/« Aucune donnée » ici peut être inexacte — signalez-le à un administrateur si cela semble incorrect.",
     thJoined:'A participé', thPointsCol:'Points', thGroup:'Groupe', thAttended:'Présent', groupNone:'Non inscrit', groupA:'Groupe A', groupB:'Groupe B',
     entryTitleSVS:'Saisie SVS', entryTitleGVG:'Saisie GVG', entryTitleSS:'Saisie SS', entryTitleKoD:'Saisie King of Desert',
     toastEntrySaved:'Enregistré.', notRegistered:'—',
@@ -791,6 +796,7 @@ const DICT = {
     toastWeekSaved:'Đã thêm tuần.', toastWeekDeleted:'Đã xóa tuần.', confirmDeleteWeek:'Xóa tuần này và toàn bộ dữ liệu của nó?',
     emptyWeeksTitle:'Chưa có tuần nào', emptyWeeksDesc:'Dùng "+ Thêm Tuần" để tạo tuần đầu tiên.',
     legendJoined:'Đã tham gia', legendNotJoined:'Chưa tham gia', legendAttended:'Đã đăng ký & Tham dự', legendRegNotAttend:'Đã đăng ký, Vắng mặt', legendNoReg:'Chưa đăng ký',
+    dataVisibilityNote:'Lưu ý: Người chơi ngoài top 200 sẽ không hiển thị trong game, vì vậy dấu "Không tham gia"/"Không có dữ liệu" ở đây có thể không chính xác — hãy báo cho quản trị viên nếu thấy sai.',
     thJoined:'Đã tham gia', thPointsCol:'Điểm', thGroup:'Nhóm', thAttended:'Tham dự', groupNone:'Chưa đăng ký', groupA:'Nhóm A', groupB:'Nhóm B',
     entryTitleSVS:'Nhập liệu SVS', entryTitleGVG:'Nhập liệu GVG', entryTitleSS:'Nhập liệu SS', entryTitleKoD:'Nhập liệu King of Desert',
     toastEntrySaved:'Đã lưu.', notRegistered:'—',
@@ -951,6 +957,9 @@ export function applyStaticText() {
   document.getElementById("t_legendJoinedKod").textContent = t("legendJoined");
   document.getElementById("t_legendNotJoinedKod").textContent = t("legendNotJoined");
   document.getElementById("t_legendUnknownKod").textContent = t("legendUnknown");
+  document.getElementById("t_dataVisibilityNote1").textContent = t("dataVisibilityNote");
+  document.getElementById("t_dataVisibilityNote2").textContent = t("dataVisibilityNote");
+  document.getElementById("t_dataVisibilityNote3").textContent = t("dataVisibilityNote");
   document.getElementById("t_subOther").textContent = t("subOther");
   document.getElementById("t_legendJoinedOther").textContent = t("legendJoined");
   document.getElementById("t_legendNotJoinedOther").textContent = t("legendNotJoined");

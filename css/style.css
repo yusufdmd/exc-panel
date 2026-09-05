@@ -280,6 +280,8 @@ tr.threshold-cut td{ border-top: 2px solid var(--gold-ink); }
 .legend span{ display:inline-flex; align-items:center; gap:5px; }
 .legend .sw{ width:9px; height:9px; border-radius:3px; display:inline-block; }
 
+.footnote-note{ font-size:11px; color:var(--text-dim); margin:-6px 0 14px; }
+
 .overlay{ display:none; position:fixed; inset:0; background:rgba(6,8,12,0.75); backdrop-filter: blur(3px); align-items:center; justify-content:center; z-index:100; padding:20px; overscroll-behavior:contain; }
 .overlay.active{ display:flex; animation: overlayIn .15s ease; }
 .modal{ background:var(--bg-panel); border:1px solid var(--line); border-radius:16px; padding:26px; width:100%; max-width:480px; max-height:88vh; overflow-y:auto; overscroll-behavior:contain; box-shadow: 0 8px 32px rgba(0,0,0,0.35); animation: modalIn .18s ease; }
