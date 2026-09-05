@@ -419,6 +419,30 @@ export async function deleteAllRecordsForMember(memberId) {
 }
 
 // =====================================================================
+// ENGAGEMENT_PERIOD — "Katılım Yarışması" dönem başlangıcı (tek satır)
+// =====================================================================
+export async function getEngagementPeriod() {
+  const { data, error } = await supabase
+    .from("engagement_period")
+    .select("*")
+    .eq("id", 1)
+    .maybeSingle();
+  if (error) dbError("Katılım yarışması dönemi alınamadı", error);
+  return data || {};
+}
+
+export async function startNewEngagementPeriod(startDate) {
+  const { data, error } = await supabase
+    .from("engagement_period")
+    .update({ start_date: startDate })
+    .eq("id", 1)
+    .select()
+    .single();
+  if (error) dbError("Yeni dönem başlatılamadı", error);
+  return data;
+}
+
+// =====================================================================
 // SETTINGS — Uygulama geneli ayarlar (anahtar/değer)
 // =====================================================================
 export async function getSetting(key, fallback = null) {

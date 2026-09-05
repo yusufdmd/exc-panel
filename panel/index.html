@@ -193,6 +193,7 @@
       <div class="subtab" data-sub="ss" onclick="switchSub('ss')">SS</div>
       <div class="subtab" data-sub="kod" onclick="switchSub('kod')">King of Desert</div>
       <div class="subtab" data-sub="other" onclick="switchSub('other')" id="t_subOther">Diğer</div>
+      <div class="subtab" data-sub="engagement" onclick="switchSub('engagement')" id="t_subEngagement">🏆 Katılım Yarışması</div>
     </div>
 
     <!-- SVS -->
@@ -273,6 +274,18 @@
       </div>
       <div class="table-wrap"><table id="tbl-other"><thead></thead><tbody></tbody></table></div>
       <div class="empty-state" id="empty-other" style="display:none;"><h3 id="t_emptyWeeksTitle4">Henüz etkinlik yok</h3><p id="t_emptyWeeksDesc4">"+ Etkinlik Ekle" ile ilk etkinliği oluştur.</p></div>
+    </div>
+
+    <!-- ENGAGEMENT CHALLENGE -->
+    <div class="subpanel" id="sub-engagement">
+      <div class="event-toolbar">
+        <input class="search" id="engagementSearch" oninput="renderEngagement()">
+        <div class="legend">
+          <span id="engagementPeriodLabel">Dönem: —</span>
+        </div>
+        <button class="btn-primary admin-only" onclick="startNewEngagementPeriod()" id="t_startEngagementPeriod">🔄 Yeni Dönem Başlat</button>
+      </div>
+      <div class="table-wrap" id="engagementWrap"></div>
     </div>
   </div>
 

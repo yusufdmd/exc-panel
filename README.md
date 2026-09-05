@@ -17,6 +17,7 @@
 | `js/gvg.js`, `js/svs.js`, `js/ss.js` | Etkinlik türü tablo render'ları (`svs.js` hem SVS hem Diğer sekmesini kapsar) |
 | `js/events.js` | Dört etkinlik türü için ortak hafta/kayıt ekleme-silme mantığı |
 | `js/dashboard.js` | Puan Sıralaması (leaderboard) |
+| `js/engagement.js` | "🏆 Katılım Yarışması" — SVS/SS/KoD/GVG katılımını, admin'in başlattığı bir dönem başlangıcından itibaren tek bir puana çeviren ayrı sıralama |
 | `js/backup.js` | Yedekle (JSON indir) / İçe Aktar |
 | `js/app.js` | Giriş noktası — ilk yükleme, sekme/dil geçişleri, realtime abonelik, `window`'a bağlama |
 | `api/read-screenshot.js` | Vercel serverless fonksiyonu — "AI ile Doldur" butonunun gönderdiği ekran görüntüsünü Gemini API'sine iletir, admin yetkisini sunucu tarafında doğrular |
