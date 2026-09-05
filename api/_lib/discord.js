@@ -17,18 +17,7 @@
 async function postToDiscord(content) {
   const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
   if (!webhookUrl) {
-    // Geçici, cerrahi teşhis: değer neden falsy — hiç yok mu, boş string mi,
-    // yoksa beklenmeyen bir tür mü? Değerin kendisi asla loglanmaz/dönülmez.
-    const keyExists = Object.prototype.hasOwnProperty.call(process.env, "DISCORD_WEBHOOK_URL");
-    const relatedKeys = Object.keys(process.env).filter((k) => k.toUpperCase().includes("DISCORD"));
-    // Kontrol grubu: kullanıcının aynı yöntemle eklediği TEST_VAR123 de görünmüyorsa,
-    // sorun bu değişkene özgü değil — "yeni değişken ekleme" adımının kendisinde demektir.
-    const testVarExists = Object.prototype.hasOwnProperty.call(process.env, "TEST_VAR123");
-    const testVarValue = process.env.TEST_VAR123;
-    return {
-      ok: false,
-      detail: `DISCORD_WEBHOOK_URL is not set on the server. keyExists=${keyExists}, typeof=${typeof webhookUrl}, length=${webhookUrl ? webhookUrl.length : "n/a"}, relatedEnvKeys=${JSON.stringify(relatedKeys)}, TEST_VAR123_exists=${testVarExists}, TEST_VAR123_value=${JSON.stringify(testVarValue)}, totalEnvVarCount=${Object.keys(process.env).length}`
-    };
+    return { ok: false, detail: "DISCORD_WEBHOOK_URL is not set on the server." };
   }
   try {
     const res = await fetch(webhookUrl, {
