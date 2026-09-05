@@ -221,14 +221,17 @@ export async function deleteMigrationLead(id) {
 // =====================================================================
 // NAME_SUGGESTIONS — Üyelerden gelen isim değişikliği önerileri
 // =====================================================================
+/**
+ * Bilerek `.select()` ZİNCİRLEMEZ: name_suggestions'ı sadece admin
+ * okuyabilir (bkz. add_name_suggestions.sql RLS), bu yüzden viewer
+ * rolünden gelen bir INSERT'e Supabase'in eklenen satırı geri döndürmeye
+ * çalışması (RETURNING) RLS'e takılıp hataya neden olurdu — eklenen
+ * satırın kendisine zaten ihtiyaç yok (bkz. members.js -> submitNameSuggestion).
+ */
 export async function createNameSuggestion(payload) {
-  const { data, error } = await supabase
-    .from("name_suggestions")
-    .insert(payload)
-    .select()
-    .single();
+  const { error } = await supabase.from("name_suggestions").insert(payload);
   if (error) dbError("İsim önerisi gönderilemedi", error);
-  return data;
+  return true;
 }
 
 export async function getNameSuggestions() {
