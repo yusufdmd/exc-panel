@@ -303,11 +303,15 @@ function resizeImageToDataUrl(file, maxDim = 1568, quality = 0.85) {
   });
 }
 
-/** AI'dan dönen sonuçları (memberId -> alanlar) entryContext.aiDraft'a yazar. */
+/**
+ * AI'dan dönen sonuçları entryContext.aiDraft'a EKLER (üzerine yazmaz) —
+ * birden fazla grup (batch) hâlinde gönderilen ekran görüntülerinin
+ * sonuçları böylece birikir. Toplam (o ana kadar dolan) üye sayısını döndürür.
+ */
 function applyAiDraft(results) {
-  const draft = {};
+  if (!state.entryContext.aiDraft) state.entryContext.aiDraft = {};
+  const draft = state.entryContext.aiDraft;
   (results || []).forEach((r) => { if (r && r.memberId) draft[r.memberId] = r; });
-  state.entryContext.aiDraft = draft;
   return Object.keys(draft).length;
 }
 
@@ -344,11 +348,16 @@ export function removeUnmatchedItem(index) {
   renderUnmatchedBox(state.entryContext.aiUnmatched);
 }
 
-// Tek istekte gönderilebilecek en fazla ekran görüntüsü sayısı — Vercel'in
-// istek gövdesi boyutu sınırının içinde kalmak için.
-const MAX_SCREENSHOTS = 6;
+// Tek İSTEKTE gönderilebilecek en fazla ekran görüntüsü sayısı — Vercel'in
+// istek gövdesi boyutu sınırının (4.5MB) içinde kalmak için (api/read-screenshot.js
+// içindeki MAX_IMAGES ile aynı değer). Bundan fazlası varsa aşağıda otomatik
+// gruplara bölünüp arka arkaya gönderilir — kullanıcı için tek bir işlem gibi görünür.
+const BATCH_SIZE = 6;
+// Toplam seçim için makul bir üst sınır — teknik bir zorunluluk değil, kazara
+// yüzlerce dosya seçilip onlarca AI isteği atılmasına karşı bir güvenlik supabı.
+const MAX_SCREENSHOTS = 30;
 
-/** "🤖 AI ile Doldur" — seçilen ekran görüntüsü/görüntülerini sunucuya gönderir, dönen sonuçları taslak olarak tabloya işler. */
+/** "🤖 AI ile Doldur" — seçilen ekran görüntülerini (gerekirse gruplar hâlinde, arka arkaya) sunucuya gönderir, dönen sonuçları taslak olarak tabloya işler. */
 export async function handleEntryScreenshot(event) {
   const files = Array.from(event.target.files || []);
   event.target.value = "";
@@ -363,28 +372,52 @@ export async function handleEntryScreenshot(event) {
     showToast(t("aiFillNoMembers"));
     return;
   }
+
+  const batches = [];
+  for (let i = 0; i < files.length; i += BATCH_SIZE) batches.push(files.slice(i, i + BATCH_SIZE));
+
   const btn = document.getElementById("t_aiFillBtn");
   const originalLabel = btn ? btn.textContent : "";
-  if (btn) { btn.disabled = true; btn.textContent = t("aiFillWorking"); }
+  if (btn) btn.disabled = true;
+
+  // Yeni bir okuma turu — önceki taslak/eşleşmeyenler listesinin üstüne değil, sıfırdan birikir.
+  state.entryContext.aiDraft = null;
+  renderUnmatchedBox(null);
+
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData && sessionData.session ? sessionData.session.access_token : "";
+
+  let matchedCount = 0;
+  let failedBatches = 0;
   try {
-    const images = await Promise.all(files.map((file) => resizeImageToDataUrl(file)));
-    const { data: sessionData } = await supabase.auth.getSession();
-    const token = sessionData && sessionData.session ? sessionData.session.access_token : "";
-    const res = await fetch("/api/read-screenshot", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-      body: JSON.stringify({ type, roster, images })
-    });
-    const payload = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(payload.error || `HTTP ${res.status}`);
-    const count = applyAiDraft(payload.results);
-    renderUnmatchedBox(payload.unmatched);
-    renderEntryRows();
-    const unmatchedCount = (payload.unmatched || []).length;
-    showToast(t("aiFillDone").replace("{n}", String(count)) + (unmatchedCount ? " " + t("aiFillUnmatchedToast").replace("{n}", String(unmatchedCount)) : ""));
-  } catch (error) {
-    console.error(error);
-    showToast(t("aiFillError"));
+    for (let i = 0; i < batches.length; i++) {
+      if (btn) {
+        btn.textContent = batches.length > 1
+          ? t("aiFillWorkingBatch").replace("{i}", String(i + 1)).replace("{n}", String(batches.length))
+          : t("aiFillWorking");
+      }
+      try {
+        const images = await Promise.all(batches[i].map((file) => resizeImageToDataUrl(file)));
+        const res = await fetch("/api/read-screenshot", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+          body: JSON.stringify({ type, roster, images })
+        });
+        const payload = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(payload.error || `HTTP ${res.status}`);
+        matchedCount = applyAiDraft(payload.results);
+        renderUnmatchedBox((state.entryContext.aiUnmatched || []).concat(payload.unmatched || []));
+        renderEntryRows();
+      } catch (batchError) {
+        console.error(batchError);
+        failedBatches++;
+      }
+    }
+    const unmatchedCount = (state.entryContext.aiUnmatched || []).length;
+    let message = t("aiFillDone").replace("{n}", String(matchedCount));
+    if (unmatchedCount) message += " " + t("aiFillUnmatchedToast").replace("{n}", String(unmatchedCount));
+    if (failedBatches) message += " " + t("aiFillBatchFailed").replace("{n}", String(failedBatches));
+    showToast(message);
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
   }
