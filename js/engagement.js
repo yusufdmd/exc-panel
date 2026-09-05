@@ -244,6 +244,39 @@ export async function startNewEngagementPeriod() {
   }
 }
 
+/**
+ * Admin — "🏁 Dönemi Bitir": sadece mevcut aktif dönemi bugünün tarihiyle
+ * kapatıp o anki sıralamayı KALICI olarak dondurur — yeni bir dönem AÇMAZ.
+ * "Yeni Dönem Başlat"tan bağımsız, ayrı bir adımdır: admin dönemi bitirip
+ * kazananı ilan ettikten sonra, yeni dönemi istediği an ayrıca başlatabilir
+ * (bu arada aktif dönem olmaz, ki bu tamamen normaldir).
+ */
+export async function endEngagementPeriod() {
+  const current = activePeriod();
+  if (!current) {
+    showToast(t("engagementNoActivePeriod"));
+    return;
+  }
+  const endDate = todayStr();
+  if (endDate < current.startDate) {
+    showToast(t("engagementNewPeriodMustBeAfterStart"));
+    return;
+  }
+  if (!confirm(t("confirmEndEngagementPeriod").replace("{date}", endDate))) return;
+  try {
+    const frozenRows = activeMembers().map((member) => computeEngagementRow(member, current));
+    await dbCloseEngagementPeriod(current.id, endDate, frozenRows);
+    current.endDate = endDate;
+    current.results = frozenRows;
+    state.engagementSelectedPeriodId = current.id;
+    renderEngagement();
+    showToast(t("toastEngagementPeriodEnded"));
+  } catch (error) {
+    console.error(error);
+    showToast("Error");
+  }
+}
+
 /** Bir kategori için, dönemdeki her haftayı ayrı bir renkli işaret (chip) olarak üretir — hafta bazında kim kaçırmış görmek için. */
 function periodWeekChips(store, member, weeks, isPoint) {
   if (!weeks.length) return `<span style="color:var(--text-dim); font-size:12px;">—</span>`;
