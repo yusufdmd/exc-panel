@@ -61,7 +61,8 @@ function computeEngagementRow(member) {
     ssPoints: ss.attended, ssApplicable: ss.applicable,
     kodPoints: kod.attended, kodApplicable: kod.applicable,
     gvgPoints: gvg.attended, gvgApplicable: gvg.applicable,
-    total: svs.attended + ss.attended + kod.attended + gvg.attended
+    total: svs.attended + ss.attended + kod.attended + gvg.attended,
+    totalApplicable: svs.applicable + ss.applicable + kod.applicable + gvg.applicable
   };
 }
 
@@ -145,7 +146,7 @@ export function renderEngagement() {
             <td class="num-cell">${formatRatio(row.ssPoints, row.ssApplicable)}</td>
             <td class="num-cell">${formatRatio(row.kodPoints, row.kodApplicable)}</td>
             <td class="num-cell">${formatRatio(row.gvgPoints, row.gvgApplicable)}</td>
-            <td class="num-cell" style="color:var(--cyan-ink); font-weight:700;">${row.total}</td>
+            <td class="num-cell" style="color:var(--cyan-ink); font-weight:700;">${formatRatio(row.total, row.totalApplicable)}</td>
           </tr>
         `).join("")}
       </tbody>
