@@ -21,7 +21,7 @@
 //     (bkz. config.js -> GVG_THRESHOLDS.green) ulaşmışsa 1 puan.
 // =====================================================================
 
-import { createEngagementPeriod as dbCreateEngagementPeriod, closeEngagementPeriod as dbCloseEngagementPeriod } from "./database.js";
+import { createEngagementPeriod as dbCreateEngagementPeriod, closeEngagementPeriod as dbCloseEngagementPeriod, deleteEngagementPeriod as dbDeleteEngagementPeriod } from "./database.js";
 import { state, t, escapeHtml, rankClass, isExempt, showToast, todayStr, formatRatio, RANK_ORDER, registerRenderer } from "./ui.js";
 import { activeMembers } from "./members.js";
 import { GVG_THRESHOLDS } from "./config.js";
@@ -271,6 +271,28 @@ export async function endEngagementPeriod() {
     state.engagementSelectedPeriodId = current.id;
     renderEngagement();
     showToast(t("toastEngagementPeriodEnded"));
+  } catch (error) {
+    console.error(error);
+    showToast("Error");
+  }
+}
+
+/**
+ * Admin — "🗑 Dönemi Sil": o an seçili dönemi (aktif ya da geçmiş/donmuş
+ * fark etmez) kalıcı olarak siler. Ham GVG/SVS/SS/KoD verisine dokunmaz —
+ * sadece bu dönemin kaydını kaldırır; donmuş bir dönemse o dönemin
+ * kazananı/sıralaması bir daha geri getirilemez.
+ */
+export async function deleteEngagementPeriod() {
+  const period = selectedPeriod();
+  if (!period) return;
+  if (!confirm(t("confirmDeleteEngagementPeriod").replace("{date}", periodOptionLabel(period)))) return;
+  try {
+    await dbDeleteEngagementPeriod(period.id);
+    state.engagementPeriods = state.engagementPeriods.filter((p) => p.id !== period.id);
+    if (state.engagementSelectedPeriodId === period.id) state.engagementSelectedPeriodId = null;
+    renderEngagement();
+    showToast(t("toastEngagementPeriodDeleted"));
   } catch (error) {
     console.error(error);
     showToast("Error");

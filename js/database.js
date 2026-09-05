@@ -454,6 +454,12 @@ export async function closeEngagementPeriod(id, endDate, results) {
   return data;
 }
 
+export async function deleteEngagementPeriod(id) {
+  const { error } = await supabase.from("engagement_periods").delete().eq("id", id);
+  if (error) dbError("Dönem silinemedi", error);
+  return true;
+}
+
 // =====================================================================
 // SETTINGS — Uygulama geneli ayarlar (anahtar/değer)
 // =====================================================================
