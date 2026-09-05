@@ -8,11 +8,16 @@
 // tutulur, tarayıcıya asla gitmez.
 // =====================================================================
 
+/**
+ * `{ ok, detail }` döndürür (sadece true/false değil) — Vercel dashboard'una
+ * erişimi olmayan biri (bkz. mevcut geliştirme oturumu) bir hata durumunda
+ * NEDENİNİ (env var eksik mi, Discord ne döndürdü) API yanıtından
+ * görebilsin diye. `detail` asla webhook URL'sinin kendisini içermez.
+ */
 async function postToDiscord(content) {
   const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
   if (!webhookUrl) {
-    console.error("[discord] DISCORD_WEBHOOK_URL sunucuda tanımlı değil.");
-    return false;
+    return { ok: false, detail: "DISCORD_WEBHOOK_URL is not set on the server." };
   }
   try {
     const res = await fetch(webhookUrl, {
@@ -21,12 +26,12 @@ async function postToDiscord(content) {
       body: JSON.stringify({ content })
     });
     if (!res.ok) {
-      console.error("[discord] Webhook isteği başarısız:", res.status, await res.text().catch(() => ""));
+      const body = await res.text().catch(() => "");
+      return { ok: false, detail: `Discord responded ${res.status}: ${body.slice(0, 300)}` };
     }
-    return res.ok;
+    return { ok: true, detail: null };
   } catch (error) {
-    console.error("[discord] Webhook isteği hata verdi:", error);
-    return false;
+    return { ok: false, detail: "Request to Discord threw: " + (error && error.message ? error.message : String(error)) };
   }
 }
 

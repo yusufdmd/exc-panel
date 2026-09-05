@@ -44,6 +44,6 @@ module.exports = async (req, res) => {
     return;
   }
 
-  const ok = await postToDiscord(message);
-  res.status(ok ? 200 : 502).json({ ok });
+  const { ok, detail } = await postToDiscord(message);
+  res.status(ok ? 200 : 502).json({ ok, detail });
 };
