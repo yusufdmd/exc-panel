@@ -14,7 +14,7 @@
 // çünkü bu dosyadaki CRUD fonksiyonları da aynı dönüşümü kullanır.
 // =====================================================================
 
-import { createWeek as dbCreateWeek, updateWeek as dbUpdateWeek, deleteWeek as dbDeleteWeek, upsertRecordsBulk } from "./database.js";
+import { createWeek as dbCreateWeek, updateWeek as dbUpdateWeek, deleteWeek as dbDeleteWeek, upsertRecordsBulk, logActivity } from "./database.js";
 import { supabase } from "./supabase.js";
 import {
   state, t, showToast, escapeHtml, rankClass, statusOf, gvgColorClass, formatPower, formatRatio, renderAll,
@@ -38,12 +38,29 @@ export function mapEntry(type, row) {
 }
 
 /** Etkinlik türüne (gvg/svs/ss/kod/other) karşılık gelen state deposunu döndürür. */
-function storeFor(type) {
+export function storeFor(type) {
   if (type === "svs") return state.svs;
   if (type === "gvg") return state.gvg;
   if (type === "ss") return state.ss;
   if (type === "kod") return state.kod;
   return state.other;
+}
+
+/** Aktivite logunda/rapor isimlerinde etkinlik türü için kısa, tanınabilir bir etiket — kasıtlı olarak dile göre çevrilmez (GVG/SVS/SS/King of Desert zaten her dilde aynı kısaltmalarla kullanılıyor). */
+export function eventTypeLabel(type) {
+  if (type === "gvg") return "GVG";
+  if (type === "svs") return "SVS";
+  if (type === "ss") return "SS";
+  if (type === "kod") return "King of Desert";
+  return t("subOther");
+}
+
+/** Uygulama şeklindeki bir kaydı (mapEntry'nin tersi), belirli bir üye id'sine bağlı olarak veritabanı şekline çevirir — aktivite logundan geri yükleme (restore) için. */
+export function entryToDbPayload(type, entry, memberId) {
+  if (type === "gvg") return { week_id: entry.weekId, member_id: memberId, points: entry.points };
+  if (type === "ss") return { week_id: entry.weekId, member_id: memberId, group_name: entry.group || null, attended: !!entry.attended, excused: !!entry.excused };
+  if (type === "kod") return { week_id: entry.weekId, member_id: memberId, status: entry.status, excused: !!entry.excused };
+  return { week_id: entry.weekId, member_id: memberId, status: entry.status, points: entry.points, excused: !!entry.excused };
 }
 
 /** Etkinlik türüne karşılık gelen hücre-bilgisi fonksiyonunu döndürür (tablolardakiyle BİREBİR aynı metin — bkz. gvg.js/svs.js/ss.js/kod.js render fonksiyonları). */
@@ -112,14 +129,16 @@ export async function saveWeek() {
   const weekDate = document.getElementById("wkDate").value || null;
   try {
     const store = storeFor(type);
+    let savedRow;
     if (editId) {
-      const row = await dbUpdateWeek(type, editId, { label, week_date: weekDate });
+      savedRow = await dbUpdateWeek(type, editId, { label, week_date: weekDate });
       const index = store.weeks.findIndex((w) => w.id === editId);
-      if (index >= 0) store.weeks[index] = mapWeek(row);
+      if (index >= 0) store.weeks[index] = mapWeek(savedRow);
     } else {
-      const row = await dbCreateWeek(type, { label, week_date: weekDate });
-      store.weeks.push(mapWeek(row));
+      savedRow = await dbCreateWeek(type, { label, week_date: weekDate });
+      store.weeks.push(mapWeek(savedRow));
     }
+    await logActivity(editId ? "updated" : "created", `${type}_week`, savedRow.id, { name: `${eventTypeLabel(type)}: ${label}` }, state.currentAdminUsername);
     closeWeekModal();
     renderAll();
     showToast(type === "other" ? t("toastEventSaved") : t("toastWeekSaved"));
@@ -131,11 +150,19 @@ export async function saveWeek() {
 
 export async function deleteWeek(type, weekId) {
   if (!confirm(type === "other" ? t("confirmDeleteEvent") : t("confirmDeleteWeek"))) return;
+  const store = storeFor(type);
+  const week = store.weeks.find((w) => w.id === weekId);
+  // Geri yükleme (bkz. activity.js -> restoreDeletedWeek) için, silinmeden önce
+  // haftanın ve o haftaya ait TÜM üyelerin kayıtlarının bir anlık görüntüsü alınır.
+  const entriesSnapshot = store.entries.filter((e) => e.weekId === weekId);
   try {
     await dbDeleteWeek(type, weekId);
-    const store = storeFor(type);
     store.weeks = store.weeks.filter((w) => w.id !== weekId);
     store.entries = store.entries.filter((e) => e.weekId !== weekId);
+    await logActivity("deleted", `${type}_week`, weekId, {
+      name: `${eventTypeLabel(type)}: ${week ? week.label : ""}`,
+      snapshot: { week, entries: entriesSnapshot }
+    }, state.currentAdminUsername);
     renderAll();
     showToast(type === "other" ? t("toastEventDeleted") : t("toastWeekDeleted"));
   } catch (error) {
@@ -477,6 +504,8 @@ export async function saveEntry() {
       if (index >= 0) store.entries[index] = mapped;
       else store.entries.push(mapped);
     });
+    const week = store.weeks.find((w) => w.id === weekId);
+    await logActivity("updated", `${type}_entries`, weekId, { name: `${eventTypeLabel(type)}: ${week ? week.label : ""} (${payloads.length} kayıt)` }, state.currentAdminUsername);
     closeEntryModal();
     renderAll();
     showToast(t("toastEntrySaved"));

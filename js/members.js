@@ -24,6 +24,7 @@ import {
   formatRatio,
   rankClass,
   rankChevrons,
+  rowNumHtml,
   todayStr,
   RANK_ORDER,
   buildCampOptions,
@@ -154,10 +155,10 @@ export function renderMembers() {
 
   const rowsEl = document.getElementById("memberRows");
   document.getElementById("memberEmpty").style.display = list.length ? "none" : "block";
-  rowsEl.innerHTML = list.map((member) => `
+  rowsEl.innerHTML = list.map((member, index) => `
     <tr>
-      <td class="sticky-col"><span class="rank-badge ${rankClass(member.rank)}">${member.rank}<span class="chev">${rankChevrons(member.rank)}</span></span></td>
-      <td class="sticky-col" style="left:90px;"><span class="member-name">${escapeHtml(member.name || "—")}</span>${member.isOld ? `<span class="old-tag">OLD${state.memberView === "old" && member.oldSince ? " · " + member.oldSince : ""}</span>` : ""}${member.isMigrated ? `<span class="old-tag">${t("migratedTag")}${member.migratedTo != null ? " · " + member.migratedTo : ""}</span>` : ""}</td>
+      <td class="sticky-col">${rowNumHtml(index)}<span class="rank-badge ${rankClass(member.rank)}">${member.rank}<span class="chev">${rankChevrons(member.rank)}</span></span></td>
+      <td class="sticky-col" style="left:145px;"><span class="member-name">${escapeHtml(member.name || "—")}</span>${member.isOld ? `<span class="old-tag">OLD${state.memberView === "old" && member.oldSince ? " · " + member.oldSince : ""}</span>` : ""}${member.isMigrated ? `<span class="old-tag">${t("migratedTag")}${member.migratedTo != null ? " · " + member.migratedTo : ""}</span>` : ""}</td>
       <td class="member-id">${escapeHtml(String(member.gameId || "—"))}</td>
       <td class="num-cell" title="${Number(member.power) || 0}">${formatPower(member.power)}</td>
       <td class="num-cell">${escapeHtml(String(member.campLevel || "-"))}</td>
@@ -599,17 +600,42 @@ export async function saveMember() {
   }
 }
 
+/** Bir üyeyi (app-shape), `createMember`'a doğrudan geri verilebilecek veritabanı satırı şekline çevirir — silme anlık görüntüsü (bkz. deleteMember) ve activity.js -> restoreDeletedMember için. */
+function memberToDbSnapshot(member) {
+  return {
+    id: member.id, name: member.name, game_id: member.gameId, rank: member.rank, camp_level: member.campLevel,
+    power: member.power, team_power: member.teamPower, team_element: member.teamElement,
+    is_old: member.isOld, old_since: member.oldSince, joined_at: member.joinedAt, user_changed_at: member.userChangedAt,
+    name_history: member.nameHistory, is_migrated: member.isMigrated, migrated_to_server: member.migratedTo
+  };
+}
+
 export async function deleteMember(id) {
   if (!confirm(t("confirmDeleteMember"))) return;
   const target = state.members.find((m) => m.id === id);
+  // Geri yükleme (bkz. activity.js -> restoreDeletedMember) için, silinmeden önce
+  // üyenin ve tüm etkinlik türlerindeki kayıtlarının bir anlık görüntüsü alınır.
+  const snapshot = target ? {
+    member: memberToDbSnapshot(target),
+    powerHistory: target.powerHistory || [],
+    teamPowerHistory: target.teamPowerHistory || [],
+    entries: {
+      gvg: state.gvg.entries.filter((e) => e.memberId === id),
+      svs: state.svs.entries.filter((e) => e.memberId === id),
+      ss: state.ss.entries.filter((e) => e.memberId === id),
+      kod: state.kod.entries.filter((e) => e.memberId === id),
+      other: state.other.entries.filter((e) => e.memberId === id)
+    }
+  } : null;
   try {
     await dbDeleteMember(id);
     state.members = state.members.filter((m) => m.id !== id);
     state.svs.entries = state.svs.entries.filter((e) => e.memberId !== id);
     state.gvg.entries = state.gvg.entries.filter((e) => e.memberId !== id);
     state.ss.entries = state.ss.entries.filter((e) => e.memberId !== id);
+    state.kod.entries = state.kod.entries.filter((e) => e.memberId !== id);
     state.other.entries = state.other.entries.filter((e) => e.memberId !== id);
-    await logActivity("deleted", "member", id, { name: (target && target.name) || "İsimsiz" }, state.currentAdminUsername);
+    await logActivity("deleted", "member", id, { name: (target && target.name) || "İsimsiz", snapshot }, state.currentAdminUsername);
     renderAll();
     showToast(t("toastMemberDeleted"));
   } catch (error) {

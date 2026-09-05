@@ -7,7 +7,7 @@
 // (tüm etkinlik türleri için ortak) events.js'dedir.
 // =====================================================================
 
-import { state, t, escapeHtml, rankClass, cellInfoHtml, attendanceCellInfo, registerRenderer } from "./ui.js";
+import { state, t, escapeHtml, rankClass, rowNumHtml, cellInfoHtml, attendanceCellInfo, registerRenderer } from "./ui.js";
 import { filteredSortedMembers } from "./members.js";
 
 export function renderKod() {
@@ -19,7 +19,7 @@ export function renderKod() {
 
   thead.innerHTML = `<tr>
       <th class="sticky-col">${t("thRank")}</th>
-      <th class="sticky-col" style="left:90px;">${t("thUsername")}</th>
+      <th class="sticky-col" style="left:105px;">${t("thUsername")}</th>
       ${state.kod.weeks.map((week) => `<th class="week-col"><div class="week-head"><span class="wname">${escapeHtml(week.label)}</span>
         <span class="week-actions">
           <button class="icon-btn" style="width:20px;height:20px;" onclick="openWeekReportModal('kod','${week.id}')" title="${t("weekReport")}">📋</button>
@@ -29,10 +29,10 @@ export function renderKod() {
         </span></div></th>`).join("")}
     </tr>`;
 
-  tbody.innerHTML = list.map((member) => `
+  tbody.innerHTML = list.map((member, index) => `
     <tr>
-      <td class="sticky-col"><span class="rank-badge ${rankClass(member.rank)}" style="font-size:11px;padding:2px 8px;">${member.rank}</span></td>
-      <td class="sticky-col" style="left:90px;">${escapeHtml(member.name)}</td>
+      <td class="sticky-col">${rowNumHtml(index)}<span class="rank-badge ${rankClass(member.rank)}" style="font-size:11px;padding:2px 8px;">${member.rank}</span></td>
+      <td class="sticky-col" style="left:105px;">${escapeHtml(member.name)}</td>
       ${state.kod.weeks.map((week) => cellInfoHtml(attendanceCellInfo(state.kod, member, week))).join("")}
     </tr>
   `).join("");

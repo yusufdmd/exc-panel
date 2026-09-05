@@ -230,6 +230,7 @@ tbody tr.old-row{ opacity:0.55; }
 tbody tr:hover .sticky-col{ background: var(--bg-raised); }
 
 .rank-badge{ display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:6px; font-family: var(--font-display); font-weight:700; font-size:12px; letter-spacing:0.5px; border:1px solid currentColor; }
+.row-num{ display:inline-block; min-width:20px; margin-right:6px; color:var(--text-dim); font-size:11px; font-family:var(--font-mono); text-align:right; }
 .rank-badge .chev{ font-size:8px; letter-spacing:-1px; opacity:0.8; }
 .r5-c{ color: var(--gold-ink); background: rgba(224,166,58,0.08); }
 .r4-c{ color: var(--violet-ink); background: rgba(169,135,232,0.08); }

@@ -258,7 +258,7 @@ const DICT = {
     thTeam:'1. Takım', lblTeamPower:'1. Takım Gücü', lblTeamElement:'1. Takım Elementi',
     exportBtn:'⬇️ Dışa Aktar', exportSelectAll:'Tümünü Seç', exportSelectNone:'Tümünü Kaldır', exportNoSelection:'Lütfen en az bir seçenek işaretleyin.', thListView:'Liste',
     elementWater:'Su', elementFire:'Ateş', elementEarth:'Toprak', elementElectric:'Elektrik', elementNone:'Element Yok',
-    tabActivity:'Aktivite', thWhen:'Tarih', thAdmin:'Admin', thAction:'İşlem', thEntity:'Üye',
+    tabActivity:'Aktivite', thWhen:'Tarih', thAdmin:'Admin', thAction:'İşlem', thType:'Tür', thEntity:'Üye', entryKindLabel:'Girişi', restoreActionTitle:'Geri Yükle', confirmRestoreMember:'Bu üyeyi (ve varsa etkinlik kayıtlarını) geri yüklemek istediğine emin misin?', confirmRestoreWeek:'Bu haftayı (ve tüm üyelerin o haftaya ait kayıtlarını) geri yüklemek istediğine emin misin?', toastMemberRestored:'Üye geri yüklendi.', toastWeekRestored:'Hafta geri yüklendi.',
     actionCreated:'Eklendi', actionUpdated:'Güncellendi', actionDeleted:'Silindi', actionRestored:'Geri Alındı',
     emptyActivityTitle:'Henüz aktivite yok', emptyActivityDesc:'Üye ekleme/düzenleme/silme işlemleri burada listelenecek.',
     switchToDark:'Koyu temaya geç', switchToLight:'Açık temaya geç' },
@@ -374,7 +374,7 @@ const DICT = {
     thTeam:'1st Team', lblTeamPower:'1st Team Power', lblTeamElement:'1st Team Element',
     exportBtn:'⬇️ Export', exportSelectAll:'Select All', exportSelectNone:'Deselect All', exportNoSelection:'Please check at least one option.', thListView:'List',
     elementWater:'Water', elementFire:'Fire', elementEarth:'Earth', elementElectric:'Electric', elementNone:'No Element',
-    tabActivity:'Activity', thWhen:'Date', thAdmin:'Admin', thAction:'Action', thEntity:'Member',
+    tabActivity:'Activity', thWhen:'Date', thAdmin:'Admin', thAction:'Action', thType:'Type', thEntity:'Member', entryKindLabel:'Entries', restoreActionTitle:'Restore', confirmRestoreMember:'Restore this member (and their event records, if any)?', confirmRestoreWeek:'Restore this week (and every member\'s records for it)?', toastMemberRestored:'Member restored.', toastWeekRestored:'Week restored.',
     actionCreated:'Created', actionUpdated:'Updated', actionDeleted:'Deleted', actionRestored:'Restored',
     emptyActivityTitle:'No activity yet', emptyActivityDesc:'Member add/edit/delete actions will be listed here.',
     switchToDark:'Switch to dark theme', switchToLight:'Switch to light theme' },
@@ -490,7 +490,7 @@ const DICT = {
     thTeam:'1. Team', lblTeamPower:'1. Team-Stärke', lblTeamElement:'1. Team-Element',
     exportBtn:'⬇️ Exportieren', exportSelectAll:'Alle auswählen', exportSelectNone:'Alle abwählen', exportNoSelection:'Bitte mindestens eine Option auswählen.', thListView:'Liste',
     elementWater:'Wasser', elementFire:'Feuer', elementEarth:'Erde', elementElectric:'Elektro', elementNone:'Kein Element',
-    tabActivity:'Aktivität', thWhen:'Datum', thAdmin:'Admin', thAction:'Aktion', thEntity:'Mitglied',
+    tabActivity:'Aktivität', thWhen:'Datum', thAdmin:'Admin', thAction:'Aktion', thType:'Typ', thEntity:'Mitglied', entryKindLabel:'Einträge', restoreActionTitle:'Wiederherstellen', confirmRestoreMember:'Dieses Mitglied (und ggf. seine Event-Einträge) wiederherstellen?', confirmRestoreWeek:'Diese Woche (und die Einträge aller Mitglieder dafür) wiederherstellen?', toastMemberRestored:'Mitglied wiederhergestellt.', toastWeekRestored:'Woche wiederhergestellt.',
     actionCreated:'Erstellt', actionUpdated:'Aktualisiert', actionDeleted:'Gelöscht', actionRestored:'Wiederhergestellt',
     emptyActivityTitle:'Noch keine Aktivität', emptyActivityDesc:'Mitglied hinzufügen/bearbeiten/löschen wird hier aufgelistet.',
     switchToDark:'Zum dunklen Thema wechseln', switchToLight:'Zum hellen Thema wechseln' },
@@ -606,7 +606,7 @@ const DICT = {
     thTeam:'1er Equipo', lblTeamPower:'Poder del 1er Equipo', lblTeamElement:'Elemento del 1er Equipo',
     exportBtn:'⬇️ Exportar', exportSelectAll:'Seleccionar Todo', exportSelectNone:'Deseleccionar Todo', exportNoSelection:'Por favor selecciona al menos una opción.', thListView:'Lista',
     elementWater:'Agua', elementFire:'Fuego', elementEarth:'Tierra', elementElectric:'Eléctrico', elementNone:'Sin Elemento',
-    tabActivity:'Actividad', thWhen:'Fecha', thAdmin:'Admin', thAction:'Acción', thEntity:'Miembro',
+    tabActivity:'Actividad', thWhen:'Fecha', thAdmin:'Admin', thAction:'Acción', thType:'Tipo', thEntity:'Miembro', entryKindLabel:'Registros', restoreActionTitle:'Restaurar', confirmRestoreMember:'¿Restaurar este miembro (y sus registros de eventos, si los hay)?', confirmRestoreWeek:'¿Restaurar esta semana (y los registros de todos los miembros para ella)?', toastMemberRestored:'Miembro restaurado.', toastWeekRestored:'Semana restaurada.',
     actionCreated:'Creado', actionUpdated:'Actualizado', actionDeleted:'Eliminado', actionRestored:'Restaurado',
     emptyActivityTitle:'Aún no hay actividad', emptyActivityDesc:'Las acciones de agregar/editar/eliminar miembros se listarán aquí.',
     switchToDark:'Cambiar a tema oscuro', switchToLight:'Cambiar a tema claro' },
@@ -722,7 +722,7 @@ const DICT = {
     thTeam:'1ère Équipe', lblTeamPower:'Puissance de la 1ère Équipe', lblTeamElement:'Élément de la 1ère Équipe',
     exportBtn:'⬇️ Exporter', exportSelectAll:'Tout Sélectionner', exportSelectNone:'Tout Désélectionner', exportNoSelection:'Veuillez cocher au moins une option.', thListView:'Liste',
     elementWater:'Eau', elementFire:'Feu', elementEarth:'Terre', elementElectric:'Électrique', elementNone:'Aucun Élément',
-    tabActivity:'Activité', thWhen:'Date', thAdmin:'Admin', thAction:'Action', thEntity:'Membre',
+    tabActivity:'Activité', thWhen:'Date', thAdmin:'Admin', thAction:'Action', thType:'Type', thEntity:'Membre', entryKindLabel:'Saisies', restoreActionTitle:'Restaurer', confirmRestoreMember:"Restaurer ce membre (et ses enregistrements d'événements, le cas échéant) ?", confirmRestoreWeek:"Restaurer cette semaine (et les enregistrements de tous les membres pour celle-ci) ?", toastMemberRestored:'Membre restauré.', toastWeekRestored:'Semaine restaurée.',
     actionCreated:'Créé', actionUpdated:'Mis à jour', actionDeleted:'Supprimé', actionRestored:'Restauré',
     emptyActivityTitle:'Aucune activité pour le moment', emptyActivityDesc:'Les ajouts/modifications/suppressions de membres seront listés ici.',
     switchToDark:'Passer au thème sombre', switchToLight:'Passer au thème clair' },
@@ -838,7 +838,7 @@ const DICT = {
     thTeam:'Đội 1', lblTeamPower:'Sức mạnh Đội 1', lblTeamElement:'Nguyên tố Đội 1',
     exportBtn:'⬇️ Xuất Excel', exportSelectAll:'Chọn Tất cả', exportSelectNone:'Bỏ chọn Tất cả', exportNoSelection:'Vui lòng chọn ít nhất một mục.', thListView:'Danh sách',
     elementWater:'Thủy', elementFire:'Hỏa', elementEarth:'Thổ', elementElectric:'Điện', elementNone:'Không Nguyên tố',
-    tabActivity:'Hoạt động', thWhen:'Ngày', thAdmin:'Quản trị viên', thAction:'Hành động', thEntity:'Thành viên',
+    tabActivity:'Hoạt động', thWhen:'Ngày', thAdmin:'Quản trị viên', thAction:'Hành động', thType:'Loại', thEntity:'Thành viên', entryKindLabel:'Mục nhập', restoreActionTitle:'Khôi phục', confirmRestoreMember:'Khôi phục thành viên này (và dữ liệu sự kiện của họ, nếu có)?', confirmRestoreWeek:'Khôi phục tuần này (và dữ liệu của tất cả thành viên cho tuần đó)?', toastMemberRestored:'Đã khôi phục thành viên.', toastWeekRestored:'Đã khôi phục tuần.',
     actionCreated:'Đã tạo', actionUpdated:'Đã cập nhật', actionDeleted:'Đã xóa', actionRestored:'Đã khôi phục',
     emptyActivityTitle:'Chưa có hoạt động nào', emptyActivityDesc:'Các hành động thêm/sửa/xóa thành viên sẽ được liệt kê ở đây.',
     switchToDark:'Chuyển sang giao diện tối', switchToLight:'Chuyển sang giao diện sáng' }
@@ -999,6 +999,7 @@ export function applyStaticText() {
   document.getElementById("t_thAdmin").textContent = t("thAdmin");
   document.getElementById("t_thAction").textContent = t("thAction");
   document.getElementById("t_thEntity").textContent = t("thEntity");
+  document.getElementById("t_thType").textContent = t("thType");
   document.getElementById("t_emptyActivityTitle").textContent = t("emptyActivityTitle");
   document.getElementById("t_emptyActivityDesc").textContent = t("emptyActivityDesc");
   document.getElementById("t_addProspect").textContent = t("addProspect");
@@ -1220,6 +1221,11 @@ export function formatRatio(numerator, denominator) {
   if (!denominator) return t("notRegistered");
   const percentage = Math.round((numerator / denominator) * 100);
   return percentage + "% (" + numerator + "/" + denominator + ")";
+}
+
+/** Üye/etkinlik tablolarında rütbe rozetinin soluna konan sıra numarası (1, 2, 3...) — mevcut sıralama/filtreye göre satırın konumu. */
+export function rowNumHtml(index) {
+  return `<span class="row-num">${index + 1}.</span>`;
 }
 
 /** Rütbe rozetinin renk sınıfını döndürür. */

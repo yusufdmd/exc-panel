@@ -36,7 +36,7 @@ import { closeExportModal, toggleExportAll, confirmExport } from "./exportCsv.js
 import { mapSiteLinks, populateSiteLinksForm, saveSiteLinks } from "./siteLinks.js";
 import { mapNewsItem, openNewsModal, closeNewsModal, saveNews, deleteNews } from "./news.js";
 import { mapVideoItem, openVideoModal, closeVideoModal, saveVideo, deleteVideo, moveVideo } from "./videos.js";
-import { mapActivity } from "./activity.js";
+import { mapActivity, restoreDeletedMember, restoreDeletedWeek } from "./activity.js";
 import { doLogin, doLogout } from "./auth.js";
 import "./gvg.js";
 import "./svs.js";
@@ -90,7 +90,7 @@ async function loadAll(silent) {
       restricted ? Promise.resolve([]) : getMigrationLeads(),
       restricted ? Promise.resolve([]) : getNameSuggestions(),
       getSiteLinks(), getNews(), getFeaturedVideos(),
-      restricted ? Promise.resolve([]) : getRecentActivity()
+      restricted ? Promise.resolve([]) : getRecentActivity(200)
     ]);
 
     const historyByMember = {};
@@ -279,7 +279,8 @@ Object.assign(window, {
   openNewsModal, closeNewsModal, saveNews, deleteNews,
   openVideoModal, closeVideoModal, saveVideo, deleteVideo, moveVideo,
   selectPanelMode, backToChooser,
-  doLogin, doLogout, toggleTheme
+  doLogin, doLogout, toggleTheme,
+  restoreDeletedMember, restoreDeletedWeek
 });
 
 // =====================================================================
