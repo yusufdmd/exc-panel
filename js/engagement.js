@@ -69,6 +69,12 @@ export function renderEngagement() {
   const periodLabel = document.getElementById("engagementPeriodLabel");
   if (periodLabel) periodLabel.textContent = t("engagementPeriodLabel").replace("{date}", state.engagementPeriodStart || "—");
 
+  // Tarih seçiciyi sadece admin henüz dokunmadıysa bugüne ayarla — realtime/
+  // yoklama tetiklediği her yeniden çizimde admin'in seçtiği tarihin üzerine
+  // YAZILMAZ (bkz. startNewEngagementPeriod).
+  const dateInput = document.getElementById("engagementNewPeriodDate");
+  if (dateInput && !dateInput.value) dateInput.value = todayStr();
+
   if (!hasAnyPeriodWeek()) {
     wrap.innerHTML = `<div class="empty-state"><h3>${t("emptyEngagementTitle")}</h3><p>${t("emptyEngagementDesc")}</p></div>`;
     return;
@@ -130,13 +136,14 @@ export function renderEngagement() {
   `;
 }
 
-/** Admin — "🔄 Yeni Dönem Başlat": dönem başlangıcını bugüne çeker (ham etkinlik verisine dokunmaz, sadece bu hesaplamanın başlangıç noktasını değiştirir). */
+/** Admin — "🔄 Yeni Dönem Başlat": dönem başlangıcını seçilen tarihe çeker (ham etkinlik verisine dokunmaz, sadece bu hesaplamanın başlangıç noktasını değiştirir). */
 export async function startNewEngagementPeriod() {
-  if (!confirm(t("confirmStartNewEngagementPeriod"))) return;
+  const dateInput = document.getElementById("engagementNewPeriodDate");
+  const selectedDate = (dateInput && dateInput.value) || todayStr();
+  if (!confirm(t("confirmStartNewEngagementPeriod").replace("{date}", selectedDate))) return;
   try {
-    const today = todayStr();
-    await dbStartNewEngagementPeriod(today);
-    state.engagementPeriodStart = today;
+    await dbStartNewEngagementPeriod(selectedDate);
+    state.engagementPeriodStart = selectedDate;
     renderEngagement();
     showToast(t("toastEngagementPeriodStarted"));
   } catch (error) {
