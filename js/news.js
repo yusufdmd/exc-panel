@@ -8,7 +8,7 @@
 // açık URL veritabanı satırına yazılır.
 // =====================================================================
 
-import { createNews, updateNews, deleteNews as dbDeleteNews, uploadNewsImage } from "./database.js";
+import { createNews, updateNews, deleteNews as dbDeleteNews, uploadNewsImage, logActivity } from "./database.js";
 import { state, t, showToast, escapeHtml, todayStr, registerRenderer, renderAll } from "./ui.js";
 
 /** Supabase'ten dönen ham haber satırını uygulamanın kullandığı şekle çevirir. */
@@ -112,11 +112,18 @@ export async function saveNews() {
   }
 }
 
+/** Bir haberi (app-shape), `createNews`'e doğrudan geri verilebilecek veritabanı satırı şekline çevirir. */
+function newsToDbSnapshot(item) {
+  return { id: item.id, title: item.title, body: item.body || null, image_url: item.imageUrl || null, published_at: item.publishedAt || null };
+}
+
 export async function deleteNews(id) {
   if (!confirm(t("confirmDeleteNews"))) return;
+  const target = state.news.find((n) => n.id === id);
   try {
     await dbDeleteNews(id);
     state.news = state.news.filter((n) => n.id !== id);
+    await logActivity("deleted", "news", id, { name: (target && target.title) || "İsimsiz", snapshot: target ? newsToDbSnapshot(target) : null }, state.currentAdminUsername);
     renderAll();
     showToast(t("toastNewsDeleted"));
   } catch (error) {

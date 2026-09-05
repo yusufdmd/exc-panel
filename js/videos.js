@@ -8,7 +8,7 @@
 // için ayrı bir yükleme yok — YouTube'un kendi thumbnail URL'i kullanılır.
 // =====================================================================
 
-import { createFeaturedVideo, updateFeaturedVideo, deleteFeaturedVideo as dbDeleteVideo } from "./database.js";
+import { createFeaturedVideo, updateFeaturedVideo, deleteFeaturedVideo as dbDeleteVideo, logActivity } from "./database.js";
 import { state, t, showToast, escapeHtml, registerRenderer, renderAll } from "./ui.js";
 
 /** "https://youtu.be/ID", "...watch?v=ID", "...embed/ID", "...shorts/ID" gibi yaygın biçimlerden 11 karakterlik video ID'sini çıkarır. */
@@ -97,11 +97,18 @@ export async function saveVideo() {
   }
 }
 
+/** Bir videoyu (app-shape), `createFeaturedVideo`'ya doğrudan geri verilebilecek veritabanı satırı şekline çevirir. */
+function videoToDbSnapshot(item) {
+  return { id: item.id, url: item.url, title: item.title || null, sort_order: item.sortOrder };
+}
+
 export async function deleteVideo(id) {
   if (!confirm(t("confirmDeleteVideo"))) return;
+  const target = state.featuredVideos.find((v) => v.id === id);
   try {
     await dbDeleteVideo(id);
     state.featuredVideos = state.featuredVideos.filter((v) => v.id !== id);
+    await logActivity("deleted", "featured_video", id, { name: (target && (target.title || target.url)) || "İsimsiz", snapshot: target ? videoToDbSnapshot(target) : null }, state.currentAdminUsername);
     renderAll();
     showToast(t("toastVideoDeleted"));
   } catch (error) {

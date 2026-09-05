@@ -22,7 +22,7 @@
 // =====================================================================
 
 import { createEngagementPeriod as dbCreateEngagementPeriod, closeEngagementPeriod as dbCloseEngagementPeriod, deleteEngagementPeriod as dbDeleteEngagementPeriod } from "./database.js";
-import { state, t, escapeHtml, rankClass, isExempt, showToast, todayStr, formatRatio, RANK_ORDER, registerRenderer } from "./ui.js";
+import { state, t, escapeHtml, rankClass, rowNumHtml, isExempt, showToast, todayStr, formatRatio, RANK_ORDER, registerRenderer } from "./ui.js";
 import { activeMembers } from "./members.js";
 import { GVG_THRESHOLDS } from "./config.js";
 
@@ -183,7 +183,7 @@ export function renderEngagement() {
       <thead>
         <tr>
           <th class="sticky-col" onclick="setEngagementSort('rank')">${t("thRank")}</th>
-          <th class="sticky-col" style="left:70px;" onclick="setEngagementSort('name')">${t("lbMember")}</th>
+          <th class="sticky-col" style="left:105px;" onclick="setEngagementSort('name')">${t("lbMember")}</th>
           <th onclick="setEngagementSort('svsPoints')">SVS</th>
           <th onclick="setEngagementSort('ssPoints')">SS</th>
           <th onclick="setEngagementSort('kodPoints')">King of Desert</th>
@@ -192,10 +192,10 @@ export function renderEngagement() {
         </tr>
       </thead>
       <tbody>
-        ${rows.map((row) => `
+        ${rows.map((row, index) => `
           <tr>
-            <td class="sticky-col"><span class="rank-badge ${rankClass(row.member.rank)}" style="font-size:11px;padding:2px 8px;">${row.member.rank}</span></td>
-            <td class="sticky-col member-name" style="left:70px;">${escapeHtml(row.member.name)}</td>
+            <td class="sticky-col">${rowNumHtml(index)}<span class="rank-badge ${rankClass(row.member.rank)}" style="font-size:11px;padding:2px 8px;">${row.member.rank}</span></td>
+            <td class="sticky-col member-name" style="left:105px;">${escapeHtml(row.member.name)}</td>
             <td class="num-cell">${formatRatio(row.svsPoints, row.svsApplicable)}</td>
             <td class="num-cell">${formatRatio(row.ssPoints, row.ssApplicable)}</td>
             <td class="num-cell">${formatRatio(row.kodPoints, row.kodApplicable)}</td>
@@ -344,9 +344,9 @@ export function openEngagementReportModal() {
         </tr>
       </thead>
       <tbody>
-        ${rows.map((row) => `
+        ${rows.map((row, index) => `
           <tr>
-            <td><span class="rank-badge ${rankClass(row.member.rank)}" style="font-size:11px;padding:2px 8px;">${row.member.rank}</span></td>
+            <td>${rowNumHtml(index)}<span class="rank-badge ${rankClass(row.member.rank)}" style="font-size:11px;padding:2px 8px;">${row.member.rank}</span></td>
             <td class="member-name">${escapeHtml(row.member.name)}</td>
             <td class="num-cell" style="font-weight:700; color:var(--cyan-ink);">${row.total}</td>
             <td>${periodWeekChips(state.svs, row.member, svsWeeks, isSvsPoint)}</td>

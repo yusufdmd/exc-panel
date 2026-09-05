@@ -23,7 +23,7 @@
 import {
   createMigrationPeriod, updateMigrationPeriod, deleteMigrationPeriod as dbDeletePeriod,
   createMigrationProspect, updateMigrationProspect, deleteMigrationProspect as dbDeleteProspect,
-  deleteMigrationLead as dbDeleteLead
+  deleteMigrationLead as dbDeleteLead, logActivity
 } from "./database.js";
 import {
   state,
@@ -555,11 +555,23 @@ export async function saveProspect() {
   }
 }
 
+/** Bir göç adayını (app-shape), `createMigrationProspect`'e doğrudan geri verilebilecek veritabanı satırı şekline çevirir — silme anlık görüntüsü (bkz. deleteProspect) ve activity.js -> restoreDeletedProspect için. */
+function prospectToDbSnapshot(p) {
+  return {
+    id: p.id, period_id: p.periodId, name: p.name, game_id: p.gameId, power: p.power, server: p.server,
+    color: p.color, status: p.status, failed: p.failed, confirmed: p.confirmed, finalized: p.finalized,
+    converted_to_member: p.convertedToMember, note: p.note || null, invited_by: p.invitedBy || null,
+    camp_level: p.campLevel || null, team_power: p.teamPower, team_element: p.teamElement, score: p.score
+  };
+}
+
 export async function deleteProspect(id) {
   if (!confirm(t("confirmDeleteProspect"))) return;
+  const target = state.migration.find((p) => p.id === id);
   try {
     await dbDeleteProspect(id);
     state.migration = state.migration.filter((p) => p.id !== id);
+    await logActivity("deleted", "migration_prospect", id, { name: (target && target.name) || "İsimsiz", snapshot: target ? prospectToDbSnapshot(target) : null }, state.currentAdminUsername);
     renderAll();
     showToast(t("toastProspectDeleted"));
   } catch (error) {

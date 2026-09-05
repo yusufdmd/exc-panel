@@ -20,10 +20,13 @@
 //     yükleme" aksiyonu yoktur — sadece kim/ne zaman girdi bilgisi tutulur.
 // =====================================================================
 
-import { createMember, createWeek, upsertRecordsBulk, addPowerHistoryEntry, addTeamPowerHistoryEntry, logActivity } from "./database.js";
+import { createMember, createWeek, upsertRecordsBulk, addPowerHistoryEntry, addTeamPowerHistoryEntry, createMigrationProspect, createNews, createFeaturedVideo, logActivity } from "./database.js";
 import { state, t, showToast, escapeHtml, renderAll, registerRenderer } from "./ui.js";
 import { mapMember } from "./members.js";
 import { mapWeek, mapEntry, storeFor, entryToDbPayload, eventTypeLabel } from "./events.js";
+import { mapProspect } from "./migration.js";
+import { mapNewsItem } from "./news.js";
+import { mapVideoItem } from "./videos.js";
 
 /** Supabase'ten dönen ham aktivite satırını uygulamanın kullandığı şekle çevirir. */
 export function mapActivity(row) {
@@ -41,15 +44,24 @@ export function mapActivity(row) {
 const ACTION_LABEL_KEY = { created: "actionCreated", updated: "actionUpdated", deleted: "actionDeleted", restored: "actionRestored" };
 const ACTION_CLASS = { created: "pill-green", updated: "pill-blue", deleted: "pill-red", restored: "pill-yellow" };
 
+const SIMPLE_ENTITY_LABEL_KEY = { member: "lbMember", migration_prospect: "tabMigration", news: "tabNews", featured_video: "tabVideos" };
+
 /** Aktivite tablosundaki "Tür" sütunu için, entity_type değerini kısa okunur bir etikete çevirir. */
 function entityTypeLabel(entityType) {
   if (!entityType) return "—";
-  if (entityType === "member") return t("lbMember");
+  if (SIMPLE_ENTITY_LABEL_KEY[entityType]) return t(SIMPLE_ENTITY_LABEL_KEY[entityType]);
   const match = /^(gvg|svs|ss|kod|other)_(week|entries)$/.exec(entityType);
   if (!match) return entityType;
   const [, type, kind] = match;
   return kind === "week" ? `${eventTypeLabel(type)} ${t("thWeeks")}` : `${eventTypeLabel(type)} ${t("entryKindLabel")}`;
 }
+
+/** Basit (ilişkili alt-veri taşımayan) silinebilir kayıt türleri için ORTAK geri yükleme — göç adayı/haber/video. */
+const SIMPLE_RESTORE = {
+  migration_prospect: { create: createMigrationProspect, map: mapProspect, list: "migration" },
+  news: { create: createNews, map: mapNewsItem, list: "news" },
+  featured_video: { create: createFeaturedVideo, map: mapVideoItem, list: "featuredVideos" }
+};
 
 export function renderActivity() {
   const rowsEl = document.getElementById("activityRows");
@@ -60,9 +72,12 @@ export function renderActivity() {
     const hasSnapshot = entry.action === "deleted" && entry.details && entry.details.snapshot;
     const isMember = entry.entityType === "member";
     const isWeek = /_week$/.test(entry.entityType || "");
-    const canRestore = hasSnapshot && (isMember || isWeek);
+    const isSimple = !!SIMPLE_RESTORE[entry.entityType];
+    const canRestore = hasSnapshot && (isMember || isWeek || isSimple);
+    const restoreFn = isMember ? "restoreDeletedMember" : isWeek ? "restoreDeletedWeek" : "restoreDeletedSimple";
+    const restoreArgs = isSimple ? `('${entry.id}','${entry.entityType}')` : `('${entry.id}')`;
     const restoreBtn = canRestore
-      ? `<button class="icon-btn admin-only" onclick="${isMember ? "restoreDeletedMember" : "restoreDeletedWeek"}('${entry.id}')" title="${t("restoreActionTitle")}">↺</button>`
+      ? `<button class="icon-btn admin-only" onclick="${restoreFn}${restoreArgs}" title="${t("restoreActionTitle")}">↺</button>`
       : "";
     return `<tr>
       <td>${escapeHtml((entry.createdAt || "").replace("T", " ").slice(0, 16))}</td>
@@ -145,6 +160,29 @@ export async function restoreDeletedWeek(activityId) {
     await logActivity("restored", `${type}_week`, restoredWeek.id, { name: `${eventTypeLabel(type)}: ${restoredWeek.label}` }, state.currentAdminUsername);
     renderAll();
     showToast(t("toastWeekRestored"));
+  } catch (error) {
+    console.error(error);
+    showToast("Error");
+  }
+}
+
+/**
+ * Admin — silinmiş bir göç adayını / haberi / videoyu, alt-veri taşımayan
+ * (ilişkili başka kayıt kaskad silinmeyen) basit türler için ORTAK geri
+ * yükleme. Anlık görüntü doğrudan orijinal id'siyle yeniden eklenir.
+ */
+export async function restoreDeletedSimple(activityId, entityType) {
+  const entry = state.activityLog.find((e) => e.id === activityId);
+  const snapshot = entry && entry.details && entry.details.snapshot;
+  const handler = SIMPLE_RESTORE[entityType];
+  if (!snapshot || !handler) return;
+  if (!confirm(t("confirmRestoreGeneric"))) return;
+  try {
+    const row = await handler.create(snapshot);
+    state[handler.list].push(handler.map(row));
+    await logActivity("restored", entityType, row.id, { name: row.name || row.title || row.url || "İsimsiz" }, state.currentAdminUsername);
+    renderAll();
+    showToast(t("toastGenericRestored"));
   } catch (error) {
     console.error(error);
     showToast("Error");
