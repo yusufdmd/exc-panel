@@ -280,9 +280,7 @@
     <div class="subpanel" id="sub-engagement">
       <div class="event-toolbar">
         <input class="search" id="engagementSearch" oninput="renderEngagement()">
-        <div class="legend">
-          <span id="engagementPeriodLabel">Dönem: —</span>
-        </div>
+        <select id="engagementPeriodSelect" onchange="selectEngagementPeriod(this.value)" style="padding:9px 10px; border-radius:8px; border:1px solid var(--line); background:var(--bg-panel); color:var(--text-primary); font-size:13px;"></select>
         <button class="btn-ghost admin-only" onclick="openEngagementReportModal()" id="t_overallReport_engagement">📊 Genel Rapor</button>
         <input type="date" class="admin-only" id="engagementNewPeriodDate" style="padding:9px 10px; border-radius:8px; border:1px solid var(--line); background:var(--bg-panel); color:var(--text-primary); font-size:13px;">
         <button class="btn-primary admin-only" onclick="startNewEngagementPeriod()" id="t_startEngagementPeriod">🔄 Yeni Dönem Başlat</button>

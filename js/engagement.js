@@ -2,12 +2,16 @@
 // EXC PANELİ — engagement.js
 // =====================================================================
 // "EXC Engagement Challenge" — GVG/SVS/SS/King of Desert'te katılım
-// başına 1 puan veren, admin'in elle başlattığı/sıfırladığı ayrı bir
-// DÖNEMSEL yarışma sıralaması. Ham haftalık veriye (GVG puanı, SVS/KoD
-// durumu, SS grup+katıldı) hiç dokunmaz — sadece dönem başlangıç
-// tarihinden itibaren olan haftaları filtreleyip katılım puanına çevirir.
-// Aynı üyenin/haftanın tüm geçmişi ilgili etkinlik sekmesinde olduğu gibi
-// görünmeye devam eder; bu sadece ayrı bir "görünüm/hesaplama"dır.
+// başına 1 puan veren, admin'in başlatıp kapattığı ayrı, DÖNEMSEL bir
+// yarışma sıralaması (migration_periods ile aynı desen: geçmiş dönemler
+// kalıcı olarak saklanır, en fazla birinin bitiş tarihi boştur — aktif
+// dönem). Ham haftalık veriye (GVG puanı, SVS/KoD durumu, SS grup+katıldı)
+// hiç dokunmaz — sadece dönemin [başlangıç, bitiş] aralığındaki haftaları
+// filtreleyip katılım puanına çevirir.
+//
+// "Yeni Dönem Başlat" hem eskiyi kapatır (o anki sıralamayı `results`
+// alanına DONDURUP kalıcı hâle getirir) hem yeniyi açar — böylece geçmiş
+// dönemlerin kazananı ileride her zaman geri dönüp bakılabilir kalır.
 //
 // Katılım kuralları (bkz. "EXC Engagement Challenge" duyurusu):
 //   - SVS / King of Desert: durum "Katıldı" ise 1 puan.
@@ -17,7 +21,7 @@
 //     (bkz. config.js -> GVG_THRESHOLDS.green) ulaşmışsa 1 puan.
 // =====================================================================
 
-import { startNewEngagementPeriod as dbStartNewEngagementPeriod } from "./database.js";
+import { createEngagementPeriod as dbCreateEngagementPeriod, closeEngagementPeriod as dbCloseEngagementPeriod } from "./database.js";
 import { state, t, escapeHtml, rankClass, isExempt, showToast, todayStr, formatRatio, RANK_ORDER, registerRenderer } from "./ui.js";
 import { activeMembers } from "./members.js";
 import { GVG_THRESHOLDS } from "./config.js";
@@ -30,11 +34,30 @@ const isSsPoint = (e) => !!e && !!e.group && !!e.attended;
 const isKodPoint = (e) => !!e && e.status === "joined";
 const isGvgPoint = (e) => !!e && (Number(e.points) || 0) >= GVG_THRESHOLDS.green;
 
-/** Bir etkinlik türü deposundaki, dönem başlangıcından itibaren (dahil) olan haftalar. */
-function periodWeeks(store) {
-  const start = state.engagementPeriodStart;
-  if (!start) return [];
-  return store.weeks.filter((w) => w.date && w.date >= start);
+/** Supabase dönem satırını uygulama şekline çevirir. */
+export function mapEngagementPeriod(row) {
+  return { id: row.id, startDate: row.start_date, endDate: row.end_date || null, results: row.results || null };
+}
+
+function addDaysIso(iso, delta) {
+  const d = new Date(iso + "T00:00:00Z");
+  d.setUTCDate(d.getUTCDate() + delta);
+  return d.toISOString().slice(0, 10);
+}
+
+function activePeriod() {
+  return state.engagementPeriods.find((p) => !p.endDate) || null;
+}
+
+/** Şu an görüntülenen dönem — seçili değilse aktif döneme, o da yoksa en yenisine düşer. */
+function selectedPeriod() {
+  return state.engagementPeriods.find((p) => p.id === state.engagementSelectedPeriodId) || activePeriod() || state.engagementPeriods[0] || null;
+}
+
+/** Bir etkinlik türü deposundaki, dönemin [başlangıç, bitiş] aralığına (bitiş yoksa açık uçlu) düşen haftalar. */
+function periodWeeks(store, period) {
+  if (!period) return [];
+  return store.weeks.filter((w) => w.date && w.date >= period.startDate && (!period.endDate || w.date <= period.endDate));
 }
 
 /** Verilen haftalar içinde, üyenin muaf olmadığı hafta sayısı (payda) ve `isPoint` şartını sağladığı hafta sayısı (pay). */
@@ -50,13 +73,16 @@ function categoryStat(store, member, weeks, isPoint) {
   return { attended, applicable };
 }
 
-function computeEngagementRow(member) {
-  const svs = categoryStat(state.svs, member, periodWeeks(state.svs), isSvsPoint);
-  const ss = categoryStat(state.ss, member, periodWeeks(state.ss), isSsPoint);
-  const kod = categoryStat(state.kod, member, periodWeeks(state.kod), isKodPoint);
-  const gvg = categoryStat(state.gvg, member, periodWeeks(state.gvg), isGvgPoint);
+function computeEngagementRow(member, period) {
+  const svs = categoryStat(state.svs, member, periodWeeks(state.svs, period), isSvsPoint);
+  const ss = categoryStat(state.ss, member, periodWeeks(state.ss, period), isSsPoint);
+  const kod = categoryStat(state.kod, member, periodWeeks(state.kod, period), isKodPoint);
+  const gvg = categoryStat(state.gvg, member, periodWeeks(state.gvg, period), isGvgPoint);
   return {
-    member,
+    // Sadece görüntüleme/eşleştirme için gereken küçük bir anlık görüntü —
+    // dönem kapanıp dondurulduğunda bu haliyle kalıcı olarak saklanır,
+    // üye sonradan yeniden adlandırılsa/silinse bile o anki hâli korunur.
+    member: { id: member.id, name: member.name, rank: member.rank, gameId: member.gameId },
     svsPoints: svs.attended, svsApplicable: svs.applicable,
     ssPoints: ss.attended, ssApplicable: ss.applicable,
     kodPoints: kod.attended, kodApplicable: kod.applicable,
@@ -66,8 +92,33 @@ function computeEngagementRow(member) {
   };
 }
 
-function hasAnyPeriodWeek() {
-  return [state.svs, state.ss, state.kod, state.gvg].some((store) => periodWeeks(store).length > 0);
+/** Bir dönemin satırlarını döndürür — kapanmış (dondurulmuş) bir dönemse saklanan `results`'ı olduğu gibi, aktifse canlı hesaplar. */
+function getRowsForPeriod(period) {
+  if (!period) return [];
+  if (period.results) return period.results;
+  return activeMembers().map((member) => computeEngagementRow(member, period));
+}
+
+function hasAnyPeriodWeek(period) {
+  return [state.svs, state.ss, state.kod, state.gvg].some((store) => periodWeeks(store, period).length > 0);
+}
+
+function periodOptionLabel(period) {
+  return period.endDate ? `${period.startDate} – ${period.endDate}` : `${period.startDate} – ${t("engagementOngoing")}`;
+}
+
+function populatePeriodSelect(period) {
+  const select = document.getElementById("engagementPeriodSelect");
+  if (!select) return;
+  select.innerHTML = state.engagementPeriods
+    .map((p) => `<option value="${p.id}" ${period && p.id === period.id ? "selected" : ""}>${escapeHtml(periodOptionLabel(p))}</option>`)
+    .join("");
+}
+
+/** Dönem seçicisinden — görüntülenen dönemi değiştirir (veri değişmez, sadece hangi dönemin gösterildiği). */
+export function selectEngagementPeriod(id) {
+  state.engagementSelectedPeriodId = id;
+  renderEngagement();
 }
 
 export function setEngagementSort(key) {
@@ -84,29 +135,32 @@ export function renderEngagement() {
   const wrap = document.getElementById("engagementWrap");
   if (!wrap) return;
 
-  const periodLabel = document.getElementById("engagementPeriodLabel");
-  if (periodLabel) periodLabel.textContent = t("engagementPeriodLabel").replace("{date}", state.engagementPeriodStart || "—");
+  const period = selectedPeriod();
+  populatePeriodSelect(period);
 
-  // Tarih seçiciyi sadece admin henüz dokunmadıysa bugüne ayarla — realtime/
-  // yoklama tetiklediği her yeniden çizimde admin'in seçtiği tarihin üzerine
-  // YAZILMAZ (bkz. startNewEngagementPeriod).
   const dateInput = document.getElementById("engagementNewPeriodDate");
   if (dateInput && !dateInput.value) dateInput.value = todayStr();
 
-  if (!hasAnyPeriodWeek()) {
+  if (!period) {
+    wrap.innerHTML = `<div class="empty-state"><h3>${t("emptyEngagementTitle")}</h3><p>${t("emptyEngagementDesc")}</p></div>`;
+    return;
+  }
+  if (!period.results && !hasAnyPeriodWeek(period)) {
     wrap.innerHTML = `<div class="empty-state"><h3>${t("emptyEngagementTitle")}</h3><p>${t("emptyEngagementDesc")}</p></div>`;
     return;
   }
 
+  let rows = getRowsForPeriod(period);
+
   const searchEl = document.getElementById("engagementSearch");
   const query = (searchEl ? searchEl.value : "").toLowerCase().trim();
-  const rows = activeMembers()
-    .filter((m) => !query || m.name.toLowerCase().includes(query) || String(m.gameId || "").toLowerCase().includes(query))
-    .map(computeEngagementRow);
+  if (query) {
+    rows = rows.filter((r) => r.member.name.toLowerCase().includes(query) || String(r.member.gameId || "").toLowerCase().includes(query));
+  }
 
   const key = state.engagementSortKey;
   const dir = state.engagementSortDir;
-  rows.sort((a, b) => {
+  rows = [...rows].sort((a, b) => {
     let valueA;
     let valueB;
     if (key === "name") {
@@ -154,14 +208,34 @@ export function renderEngagement() {
   `;
 }
 
-/** Admin — "🔄 Yeni Dönem Başlat": dönem başlangıcını seçilen tarihe çeker (ham etkinlik verisine dokunmaz, sadece bu hesaplamanın başlangıç noktasını değiştirir). */
+/**
+ * Admin — "🔄 Yeni Dönem Başlat": varsa aktif dönemi seçilen tarihten bir
+ * gün öncesiyle kapatıp o anki sıralamayı KALICI olarak dondurur, sonra
+ * seçilen tarihten başlayan yeni bir aktif dönem açar. Ham etkinlik
+ * verisine hiç dokunmaz — sadece bu hesaplamanın dönem sınırları değişir.
+ */
 export async function startNewEngagementPeriod() {
   const dateInput = document.getElementById("engagementNewPeriodDate");
   const selectedDate = (dateInput && dateInput.value) || todayStr();
+  const current = activePeriod();
+  if (current && selectedDate <= current.startDate) {
+    showToast(t("engagementNewPeriodMustBeAfterStart"));
+    return;
+  }
   if (!confirm(t("confirmStartNewEngagementPeriod").replace("{date}", selectedDate))) return;
   try {
-    await dbStartNewEngagementPeriod(selectedDate);
-    state.engagementPeriodStart = selectedDate;
+    if (current) {
+      const endDate = addDaysIso(selectedDate, -1);
+      const frozenRows = activeMembers().map((member) => computeEngagementRow(member, current));
+      await dbCloseEngagementPeriod(current.id, endDate, frozenRows);
+      current.endDate = endDate;
+      current.results = frozenRows;
+    }
+    const row = await dbCreateEngagementPeriod(selectedDate);
+    const newPeriod = mapEngagementPeriod(row);
+    state.engagementPeriods.unshift(newPeriod);
+    state.engagementSelectedPeriodId = newPeriod.id;
+    if (dateInput) dateInput.value = "";
     renderEngagement();
     showToast(t("toastEngagementPeriodStarted"));
   } catch (error) {
@@ -185,17 +259,21 @@ function periodWeekChips(store, member, weeks, isPoint) {
 
 /**
  * Admin-only "📊 Genel Rapor" — sadece admin oturumuna (paylaşılan "üye"
- * hesabına DEĞİL) görünen, dönemdeki her hafta için kimin puan alıp
- * almadığını tek tek gösteren detaylı döküm. Mevcut ortak "Genel Rapor"
- * modalını (bkz. events.js -> openOverallReportModal) paylaşır — sadece
- * içeriğini kendi tablosuyla doldurur.
+ * hesabına DEĞİL) görünen, o an seçili dönemdeki her hafta için kimin
+ * puan alıp almadığını tek tek gösteren detaylı döküm. Mevcut ortak
+ * "Genel Rapor" modalını (bkz. events.js -> openOverallReportModal)
+ * paylaşır — sadece içeriğini kendi tablosuyla doldurur. Hafta bazlı
+ * detay her zaman canlı hesaplanır (ham veri hiç silinmediği için kapanmış
+ * dönemlerde de doğru sonucu verir).
  */
 export function openEngagementReportModal() {
-  const rows = activeMembers().map(computeEngagementRow).sort((a, b) => b.total - a.total);
-  const svsWeeks = periodWeeks(state.svs);
-  const ssWeeks = periodWeeks(state.ss);
-  const kodWeeks = periodWeeks(state.kod);
-  const gvgWeeks = periodWeeks(state.gvg);
+  const period = selectedPeriod();
+  if (!period) return;
+  const rows = getRowsForPeriod(period).slice().sort((a, b) => b.total - a.total);
+  const svsWeeks = periodWeeks(state.svs, period);
+  const ssWeeks = periodWeeks(state.ss, period);
+  const kodWeeks = periodWeeks(state.kod, period);
+  const gvgWeeks = periodWeeks(state.gvg, period);
 
   document.getElementById("overallReportBody").innerHTML = `
     <table>

@@ -16,13 +16,13 @@
 // o dosyalar hiç çalıştırılmaz ve tabloları hiç çizilmez.
 // =====================================================================
 
-import { getMembers, getAllPowerHistory, getAllTeamPowerHistory, getEngagementPeriod, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, getNameSuggestions, getSiteLinks, getNews, getFeaturedVideos, getRecentActivity, subscribeToTables } from "./database.js";
+import { getMembers, getAllPowerHistory, getAllTeamPowerHistory, getEngagementPeriods, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, getNameSuggestions, getSiteLinks, getNews, getFeaturedVideos, getRecentActivity, subscribeToTables } from "./database.js";
 import { POLL_INTERVAL_MS } from "./config.js";
 import { state, t, showToast, buildLangSwitch, applyStaticText, initLangFromStorage, persistLanguage, initThemeFromStorage, toggleTheme, renderAll, registerDataLoader, registerRenderer } from "./ui.js";
 import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember, openHistoryModal, closeHistoryModal, setMemberView, setRankFilter, setElementFilter, setSort, exportMembers, mapNameSuggestion, openNameSuggestModal, closeNameSuggestModal, submitNameSuggestion, approveNameSuggestion, dismissNameSuggestion } from "./members.js";
 import { mapWeek, mapEntry, openWeekModal, closeWeekModal, saveWeek, deleteWeek, openEntryModal, closeEntryModal, renderEntryRows, saveEntry, handleEntryScreenshot, removeUnmatchedItem, openWeekReportModal, closeWeekReportModal, openOverallReportModal, closeOverallReportModal, setOverallReportSort, exportEventTable } from "./events.js";
 import { setBoardSort, openParticipationReportModal, closeParticipationReportModal } from "./dashboard.js";
-import { setEngagementSort, startNewEngagementPeriod, renderEngagement, openEngagementReportModal } from "./engagement.js";
+import { mapEngagementPeriod, setEngagementSort, startNewEngagementPeriod, selectEngagementPeriod, renderEngagement, openEngagementReportModal } from "./engagement.js";
 import {
   mapPeriod, mapProspect, mapLead, renderMigration, setMigrationSort, setMigrationView,
   selectMigrationPeriod, openPeriodModal, closePeriodModal, savePeriod, deletePeriod,
@@ -71,7 +71,7 @@ async function loadAll(silent) {
     document.getElementById("syncText").textContent = t("syncConnecting");
     const restricted = state.isMember;
     const [
-      membersRes, historyRes, teamHistoryRes, engagementPeriodRes,
+      membersRes, historyRes, teamHistoryRes, engagementPeriodsRes,
       svsWeeksRes, svsRecordsRes,
       gvgWeeksRes, gvgRecordsRes,
       ssWeeksRes, ssRecordsRes,
@@ -79,7 +79,7 @@ async function loadAll(silent) {
       otherWeeksRes, otherRecordsRes,
       migrationPeriodsRes, migrationRes, migrationLeadsRes, nameSuggestionsRes, siteLinksRes, newsRes, videosRes, activityRes
     ] = await Promise.allSettled([
-      getMembers(), getAllPowerHistory(), getAllTeamPowerHistory(), getEngagementPeriod(),
+      getMembers(), getAllPowerHistory(), getAllTeamPowerHistory(), getEngagementPeriods(),
       getWeeks("svs"), getAllRecords("svs"),
       getWeeks("gvg"), getAllRecords("gvg"),
       getWeeks("ss"), getAllRecords("ss"),
@@ -112,7 +112,7 @@ async function loadAll(silent) {
 
     const nextData = {
       members: nextMembers,
-      engagementPeriodStart: (engagementPeriodRes.status === "fulfilled" && engagementPeriodRes.value && engagementPeriodRes.value.start_date) || null,
+      engagementPeriods: settledList(engagementPeriodsRes).map(mapEngagementPeriod),
       svs: { weeks: settledList(svsWeeksRes).map(mapWeek), entries: settledList(svsRecordsRes).map((r) => mapEntry("svs", r)) },
       gvg: { weeks: settledList(gvgWeeksRes).map(mapWeek), entries: settledList(gvgRecordsRes).map((r) => mapEntry("gvg", r)) },
       ss: { weeks: settledList(ssWeeksRes).map(mapWeek), entries: settledList(ssRecordsRes).map((r) => mapEntry("ss", r)) },
@@ -152,7 +152,7 @@ setInterval(() => loadAll(true), POLL_INTERVAL_MS);
 
 let realtimeReloadTimer = null;
 subscribeToTables(
-  ["members", "power_history", "team_power_history", "engagement_period", "gvg_weeks", "gvg_records", "svs_weeks", "svs_records", "ss_weeks", "ss_records", "kod_weeks", "kod_records", "other_weeks", "other_records", "migration_periods", "migration_prospects", "migration_leads", "name_suggestions", "site_links", "news", "featured_videos", "activity_logs"],
+  ["members", "power_history", "team_power_history", "engagement_periods", "gvg_weeks", "gvg_records", "svs_weeks", "svs_records", "ss_weeks", "ss_records", "kod_weeks", "kod_records", "other_weeks", "other_records", "migration_periods", "migration_prospects", "migration_leads", "name_suggestions", "site_links", "news", "featured_videos", "activity_logs"],
   () => {
     clearTimeout(realtimeReloadTimer);
     realtimeReloadTimer = setTimeout(() => loadAll(true), REALTIME_RELOAD_DEBOUNCE_MS);
@@ -268,7 +268,7 @@ Object.assign(window, {
   openOverallReportModal, closeOverallReportModal, setOverallReportSort, exportEventTable,
   openHistoryModal, closeHistoryModal,
   setBoardSort, openParticipationReportModal, closeParticipationReportModal, setLang,
-  setEngagementSort, startNewEngagementPeriod, renderEngagement, openEngagementReportModal,
+  setEngagementSort, startNewEngagementPeriod, selectEngagementPeriod, renderEngagement, openEngagementReportModal,
   renderMigration, setMigrationSort, setMigrationView, openProspectModal, closeProspectModal, saveProspect, deleteProspect, approveProspect,
   markProspectFailed, restoreProspect, markProspectConfirmed, unconfirmProspect, markProspectFinalized, unfinalizeProspect,
   setMigrationColorFilter, setMigrationStatusFilter, setProspectTeamElement,

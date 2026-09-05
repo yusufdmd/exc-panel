@@ -419,26 +419,38 @@ export async function deleteAllRecordsForMember(memberId) {
 }
 
 // =====================================================================
-// ENGAGEMENT_PERIOD — "Katılım Yarışması" dönem başlangıcı (tek satır)
+// ENGAGEMENT_PERIODS — "Katılım Yarışması" dönem geçmişi (migration_periods
+// ile aynı desen). En fazla bir satırın end_date'i null olur (aktif dönem);
+// kapanan dönemler o anki donmuş sıralamayı `results` alanında taşır.
 // =====================================================================
-export async function getEngagementPeriod() {
+export async function getEngagementPeriods() {
   const { data, error } = await supabase
-    .from("engagement_period")
+    .from("engagement_periods")
     .select("*")
-    .eq("id", 1)
-    .maybeSingle();
-  if (error) dbError("Katılım yarışması dönemi alınamadı", error);
-  return data || {};
+    .order("start_date", { ascending: false });
+  if (error) dbError("Katılım yarışması dönemleri alınamadı", error);
+  return data;
 }
 
-export async function startNewEngagementPeriod(startDate) {
+export async function createEngagementPeriod(startDate) {
   const { data, error } = await supabase
-    .from("engagement_period")
-    .update({ start_date: startDate })
-    .eq("id", 1)
+    .from("engagement_periods")
+    .insert({ start_date: startDate })
     .select()
     .single();
   if (error) dbError("Yeni dönem başlatılamadı", error);
+  return data;
+}
+
+/** Bir dönemi kapatır: bitiş tarihini ve o andaki donmuş sıralamayı kalıcı olarak yazar. */
+export async function closeEngagementPeriod(id, endDate, results) {
+  const { data, error } = await supabase
+    .from("engagement_periods")
+    .update({ end_date: endDate, results })
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) dbError("Dönem kapatılamadı", error);
   return data;
 }
 
