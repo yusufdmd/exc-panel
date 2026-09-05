@@ -13,6 +13,7 @@
 // =====================================================================
 
 import { createMember, updateMember, deleteMember as dbDeleteMember, addPowerHistoryEntry, addTeamPowerHistoryEntry, updateMigrationProspect, createNameSuggestion, deleteNameSuggestion, logActivity } from "./database.js";
+import { supabase } from "./supabase.js";
 import { RANK_LIMITS } from "./config.js";
 import {
   state,
@@ -285,9 +286,31 @@ export async function submitNameSuggestion() {
     await createNameSuggestion({ member_id: memberId, old_name: member ? member.name : "", suggested_name: suggestedName });
     closeNameSuggestModal();
     showToast(t("toastNameSuggestionSent"));
+    notifyDiscordNameSuggestion(member ? member.name : "", suggestedName);
   } catch (error) {
     console.error(error);
     showToast("Error");
+  }
+}
+
+/**
+ * Öneri kaydedildikten SONRA Discord kanalına bildirim düşürür (bkz.
+ * api/notify-name-suggestion.js). Bilerek "fire-and-forget" — bildirim
+ * başarısız olursa sessizce yutulur, çünkü önerinin kendisi zaten
+ * kaydedildi ve kullanıcıya bunun için ayrı bir hata gösterilmesine
+ * gerek yok.
+ */
+async function notifyDiscordNameSuggestion(oldName, suggestedName) {
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData && sessionData.session ? sessionData.session.access_token : "";
+    await fetch("/api/notify-name-suggestion", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+      body: JSON.stringify({ oldName, suggestedName })
+    });
+  } catch (error) {
+    console.error(error);
   }
 }
 
