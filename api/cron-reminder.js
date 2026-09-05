@@ -18,13 +18,14 @@
 
 const { postToDiscord } = require("./_lib/discord");
 
+// İngilizce — lonca içi ortak iletişim dili Türkçe değil İngilizce (bkz. kullanıcı talebi).
 const MESSAGES = {
-  ss1: "⏰ SS etkinliği 1. oturumu (oyun saati 09:00–09:40) sona erdi. Verileri panele işlemeyi unutmayın!",
-  ss2: "⏰ SS etkinliği 2. oturumu (oyun saati 18:00–18:40) sona erdi. Verileri panele işlemeyi unutmayın!",
-  svs: "⏰ SVS etkinliği devam ediyor (oyun saati ~15:00). Verileri toplayıp panele işlemeye başlayabilirsiniz.",
-  kod: "⏰ King of Desert etkinliği devam ediyor (oyun saati ~15:00). Verileri toplayıp panele işlemeye başlayabilirsiniz.",
-  gvg1: "⏰ GVG yakında sona eriyor (oyun saati 20:00). Sıfırlanmadan önce verileri toplamaya başlayın!",
-  gvg2: "⏰ GVG sona ermek üzere (oyun saati 23:00). Son bir kez verileri kontrol edip panele işleyin!"
+  ss1: "⏰ SS event 1st session (game time 09:00–09:40) has ended. Don't forget to enter the data into the panel!",
+  ss2: "⏰ SS event 2nd session (game time 18:00–18:40) has ended. Don't forget to enter the data into the panel!",
+  svs: "⏰ SVS event is underway (game time ~15:00). You can start collecting the data and entering it into the panel.",
+  kod: "⏰ King of Desert event is underway (game time ~15:00). You can start collecting the data and entering it into the panel.",
+  gvg1: "⏰ GVG is about to end (game time 20:00). Start collecting the data before it resets!",
+  gvg2: "⏰ GVG is about to end (game time 23:00). Do one last check and enter the data into the panel!"
 };
 
 module.exports = async (req, res) => {

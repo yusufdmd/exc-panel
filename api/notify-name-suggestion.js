@@ -49,7 +49,7 @@ module.exports = async (req, res) => {
 
     const safeOld = String(oldName || "?").slice(0, 60);
     const safeNew = suggestedName.slice(0, 60);
-    await postToDiscord(`📝 Yeni bir isim değişikliği önerisi geldi: **${safeOld}** → **${safeNew}**. Panelden inceleyip onaylayabilirsiniz.`);
+    await postToDiscord(`📝 A new name change suggestion came in: **${safeOld}** → **${safeNew}**. Please review and approve it in the panel.`);
 
     res.status(200).json({ ok: true });
   } catch (error) {
