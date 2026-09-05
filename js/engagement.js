@@ -18,9 +18,17 @@
 // =====================================================================
 
 import { startNewEngagementPeriod as dbStartNewEngagementPeriod } from "./database.js";
-import { state, t, escapeHtml, rankClass, isExempt, showToast, todayStr, RANK_ORDER, registerRenderer } from "./ui.js";
+import { state, t, escapeHtml, rankClass, isExempt, showToast, todayStr, formatRatio, RANK_ORDER, registerRenderer } from "./ui.js";
 import { activeMembers } from "./members.js";
 import { GVG_THRESHOLDS } from "./config.js";
+
+// Kategori başına "puan sayılır mı" kuralları — hem özet tablo hem de
+// admin-only haftalık rapor AYNI bu fonksiyonları kullanır, birbirinden
+// sapma riski olmasın diye.
+const isSvsPoint = (e) => !!e && e.status === "joined";
+const isSsPoint = (e) => !!e && !!e.group && !!e.attended;
+const isKodPoint = (e) => !!e && e.status === "joined";
+const isGvgPoint = (e) => !!e && (Number(e.points) || 0) >= GVG_THRESHOLDS.green;
 
 /** Bir etkinlik türü deposundaki, dönem başlangıcından itibaren (dahil) olan haftalar. */
 function periodWeeks(store) {
@@ -29,23 +37,32 @@ function periodWeeks(store) {
   return store.weeks.filter((w) => w.date && w.date >= start);
 }
 
-/** Verilen haftalar içinde, üyenin muaf olmadığı ve `isPoint` şartını sağladığı hafta sayısını döndürür. */
-function countPoints(store, member, weeks, isPoint) {
-  let count = 0;
+/** Verilen haftalar içinde, üyenin muaf olmadığı hafta sayısı (payda) ve `isPoint` şartını sağladığı hafta sayısı (pay). */
+function categoryStat(store, member, weeks, isPoint) {
+  let attended = 0;
+  let applicable = 0;
   weeks.forEach((week) => {
     if (isExempt(member, week)) return;
+    applicable++;
     const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === week.id);
-    if (isPoint(entry)) count++;
+    if (isPoint(entry)) attended++;
   });
-  return count;
+  return { attended, applicable };
 }
 
 function computeEngagementRow(member) {
-  const svsPoints = countPoints(state.svs, member, periodWeeks(state.svs), (e) => !!e && e.status === "joined");
-  const ssPoints = countPoints(state.ss, member, periodWeeks(state.ss), (e) => !!e && !!e.group && !!e.attended);
-  const kodPoints = countPoints(state.kod, member, periodWeeks(state.kod), (e) => !!e && e.status === "joined");
-  const gvgPoints = countPoints(state.gvg, member, periodWeeks(state.gvg), (e) => !!e && (Number(e.points) || 0) >= GVG_THRESHOLDS.green);
-  return { member, svsPoints, ssPoints, kodPoints, gvgPoints, total: svsPoints + ssPoints + kodPoints + gvgPoints };
+  const svs = categoryStat(state.svs, member, periodWeeks(state.svs), isSvsPoint);
+  const ss = categoryStat(state.ss, member, periodWeeks(state.ss), isSsPoint);
+  const kod = categoryStat(state.kod, member, periodWeeks(state.kod), isKodPoint);
+  const gvg = categoryStat(state.gvg, member, periodWeeks(state.gvg), isGvgPoint);
+  return {
+    member,
+    svsPoints: svs.attended, svsApplicable: svs.applicable,
+    ssPoints: ss.attended, ssApplicable: ss.applicable,
+    kodPoints: kod.attended, kodApplicable: kod.applicable,
+    gvgPoints: gvg.attended, gvgApplicable: gvg.applicable,
+    total: svs.attended + ss.attended + kod.attended + gvg.attended
+  };
 }
 
 function hasAnyPeriodWeek() {
@@ -124,10 +141,10 @@ export function renderEngagement() {
           <tr>
             <td class="sticky-col"><span class="rank-badge ${rankClass(row.member.rank)}" style="font-size:11px;padding:2px 8px;">${row.member.rank}</span></td>
             <td class="sticky-col member-name" style="left:70px;">${escapeHtml(row.member.name)}</td>
-            <td class="num-cell">${row.svsPoints}</td>
-            <td class="num-cell">${row.ssPoints}</td>
-            <td class="num-cell">${row.kodPoints}</td>
-            <td class="num-cell">${row.gvgPoints}</td>
+            <td class="num-cell">${formatRatio(row.svsPoints, row.svsApplicable)}</td>
+            <td class="num-cell">${formatRatio(row.ssPoints, row.ssApplicable)}</td>
+            <td class="num-cell">${formatRatio(row.kodPoints, row.kodApplicable)}</td>
+            <td class="num-cell">${formatRatio(row.gvgPoints, row.gvgApplicable)}</td>
             <td class="num-cell" style="color:var(--cyan-ink); font-weight:700;">${row.total}</td>
           </tr>
         `).join("")}
@@ -150,6 +167,64 @@ export async function startNewEngagementPeriod() {
     console.error(error);
     showToast("Error");
   }
+}
+
+/** Bir kategori için, dönemdeki her haftayı ayrı bir renkli işaret (chip) olarak üretir — hafta bazında kim kaçırmış görmek için. */
+function periodWeekChips(store, member, weeks, isPoint) {
+  if (!weeks.length) return `<span style="color:var(--text-dim); font-size:12px;">—</span>`;
+  return weeks.map((week) => {
+    const exempt = isExempt(member, week);
+    const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === week.id);
+    const earned = !exempt && isPoint(entry);
+    const cls = exempt ? "pill-gray" : earned ? "pill-green" : "pill-red";
+    const mark = exempt ? "—" : earned ? "✓" : "✕";
+    return `<span class="cell-pill ${cls}" style="margin:2px; display:inline-block;" title="${escapeHtml(week.label)}">${escapeHtml(week.label)}: ${mark}</span>`;
+  }).join("");
+}
+
+/**
+ * Admin-only "📊 Genel Rapor" — sadece admin oturumuna (paylaşılan "üye"
+ * hesabına DEĞİL) görünen, dönemdeki her hafta için kimin puan alıp
+ * almadığını tek tek gösteren detaylı döküm. Mevcut ortak "Genel Rapor"
+ * modalını (bkz. events.js -> openOverallReportModal) paylaşır — sadece
+ * içeriğini kendi tablosuyla doldurur.
+ */
+export function openEngagementReportModal() {
+  const rows = activeMembers().map(computeEngagementRow).sort((a, b) => b.total - a.total);
+  const svsWeeks = periodWeeks(state.svs);
+  const ssWeeks = periodWeeks(state.ss);
+  const kodWeeks = periodWeeks(state.kod);
+  const gvgWeeks = periodWeeks(state.gvg);
+
+  document.getElementById("overallReportBody").innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>${t("thRank")}</th>
+          <th>${t("lbMember")}</th>
+          <th>${t("thEngagementTotal")}</th>
+          <th>SVS</th>
+          <th>SS</th>
+          <th>King of Desert</th>
+          <th>GVG</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map((row) => `
+          <tr>
+            <td><span class="rank-badge ${rankClass(row.member.rank)}" style="font-size:11px;padding:2px 8px;">${row.member.rank}</span></td>
+            <td class="member-name">${escapeHtml(row.member.name)}</td>
+            <td class="num-cell" style="font-weight:700; color:var(--cyan-ink);">${row.total}</td>
+            <td>${periodWeekChips(state.svs, row.member, svsWeeks, isSvsPoint)}</td>
+            <td>${periodWeekChips(state.ss, row.member, ssWeeks, isSsPoint)}</td>
+            <td>${periodWeekChips(state.kod, row.member, kodWeeks, isKodPoint)}</td>
+            <td>${periodWeekChips(state.gvg, row.member, gvgWeeks, isGvgPoint)}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+  document.getElementById("overallReportOverlay").classList.add("active");
 }
 
 registerRenderer(renderEngagement);

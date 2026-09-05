@@ -931,7 +931,7 @@ export function applyStaticText() {
   document.getElementById("t_addWeek_svs").textContent = t("addWeek");
   document.getElementById("t_addWeek_gvg").textContent = t("addWeek");
   document.getElementById("t_addWeek_ss").textContent = t("addWeek");
-  ["svs", "gvg", "ss", "kod", "other"].forEach((type) => {
+  ["svs", "gvg", "ss", "kod", "other", "engagement"].forEach((type) => {
     document.getElementById("t_overallReport_" + type).textContent = t("overallReportBtn");
   });
   document.getElementById("t_overallReportTitle").textContent = t("overallReport");

@@ -22,7 +22,7 @@ import { state, t, showToast, buildLangSwitch, applyStaticText, initLangFromStor
 import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember, openHistoryModal, closeHistoryModal, setMemberView, setRankFilter, setElementFilter, setSort, exportMembers, mapNameSuggestion, openNameSuggestModal, closeNameSuggestModal, submitNameSuggestion, approveNameSuggestion, dismissNameSuggestion } from "./members.js";
 import { mapWeek, mapEntry, openWeekModal, closeWeekModal, saveWeek, deleteWeek, openEntryModal, closeEntryModal, renderEntryRows, saveEntry, handleEntryScreenshot, removeUnmatchedItem, openWeekReportModal, closeWeekReportModal, openOverallReportModal, closeOverallReportModal, setOverallReportSort, exportEventTable } from "./events.js";
 import { setBoardSort, openParticipationReportModal, closeParticipationReportModal } from "./dashboard.js";
-import { setEngagementSort, startNewEngagementPeriod, renderEngagement } from "./engagement.js";
+import { setEngagementSort, startNewEngagementPeriod, renderEngagement, openEngagementReportModal } from "./engagement.js";
 import {
   mapPeriod, mapProspect, mapLead, renderMigration, setMigrationSort, setMigrationView,
   selectMigrationPeriod, openPeriodModal, closePeriodModal, savePeriod, deletePeriod,
@@ -268,7 +268,7 @@ Object.assign(window, {
   openOverallReportModal, closeOverallReportModal, setOverallReportSort, exportEventTable,
   openHistoryModal, closeHistoryModal,
   setBoardSort, openParticipationReportModal, closeParticipationReportModal, setLang,
-  setEngagementSort, startNewEngagementPeriod, renderEngagement,
+  setEngagementSort, startNewEngagementPeriod, renderEngagement, openEngagementReportModal,
   renderMigration, setMigrationSort, setMigrationView, openProspectModal, closeProspectModal, saveProspect, deleteProspect, approveProspect,
   markProspectFailed, restoreProspect, markProspectConfirmed, unconfirmProspect, markProspectFinalized, unfinalizeProspect,
   setMigrationColorFilter, setMigrationStatusFilter, setProspectTeamElement,
