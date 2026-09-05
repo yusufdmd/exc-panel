@@ -17,7 +17,14 @@
 async function postToDiscord(content) {
   const webhookUrl = process.env.DISCORD_WEBHOOK_URL;
   if (!webhookUrl) {
-    return { ok: false, detail: "DISCORD_WEBHOOK_URL is not set on the server." };
+    // Geçici, cerrahi teşhis: değer neden falsy — hiç yok mu, boş string mi,
+    // yoksa beklenmeyen bir tür mü? Değerin kendisi asla loglanmaz/dönülmez.
+    const keyExists = Object.prototype.hasOwnProperty.call(process.env, "DISCORD_WEBHOOK_URL");
+    const relatedKeys = Object.keys(process.env).filter((k) => k.toUpperCase().includes("DISCORD"));
+    return {
+      ok: false,
+      detail: `DISCORD_WEBHOOK_URL is not set on the server. keyExists=${keyExists}, typeof=${typeof webhookUrl}, length=${webhookUrl ? webhookUrl.length : "n/a"}, relatedEnvKeys=${JSON.stringify(relatedKeys)}`
+    };
   }
   try {
     const res = await fetch(webhookUrl, {
