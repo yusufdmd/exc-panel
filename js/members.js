@@ -157,9 +157,17 @@ export function renderMembers() {
   document.getElementById("memberEmpty").style.display = list.length ? "none" : "block";
   rowsEl.innerHTML = list.map((member, index) => {
     const draftPower = state.powerAiDraft && state.powerAiDraft[member.id];
-    const powerCell = draftPower != null
-      ? `<span style="text-decoration:line-through; color:var(--text-dim);">${formatPower(member.power)}</span> → <strong style="color:var(--cyan-ink);">${formatPower(draftPower)}</strong>`
-      : formatPower(member.power);
+    const suspiciousPower = state.powerAiSuspicious && state.powerAiSuspicious[member.id];
+    let powerCell;
+    if (draftPower != null) {
+      powerCell = `<span style="text-decoration:line-through; color:var(--text-dim);">${formatPower(member.power)}</span> → <strong style="color:var(--cyan-ink);">${formatPower(draftPower)}</strong>`;
+    } else if (suspiciousPower != null) {
+      powerCell = `<span style="color:var(--warn-ink); font-weight:700;" title="${t("powerSuspiciousTitle")}">⚠️ ${formatPower(member.power)} → ${formatPower(suspiciousPower)}</span>
+        <button class="icon-btn admin-only" style="width:20px;height:20px;" onclick="acceptSuspiciousPower('${member.id}')" title="${t("powerSuspiciousAccept")}">✓</button>
+        <button class="icon-btn danger admin-only" style="width:20px;height:20px;" onclick="rejectSuspiciousPower('${member.id}')" title="${t("powerSuspiciousReject")}">✕</button>`;
+    } else {
+      powerCell = formatPower(member.power);
+    }
     return `
     <tr>
       <td class="sticky-col">${rowNumHtml(index)}<span class="rank-badge ${rankClass(member.rank)}">${member.rank}<span class="chev">${rankChevrons(member.rank)}</span></span></td>
@@ -870,6 +878,11 @@ export function closeHistoryModal() {
 
 const POWER_BATCH_SIZE = 6;
 const POWER_MAX_SCREENSHOTS = 30;
+// Yeni okunan güç, eskisinin bu kaç katından fazlaysa "şüpheli" sayılır (ör.
+// OCR bir haneyi/basamağı yanlış okumuş olabilir) — otomatik uygulanmaz,
+// satırda ⚠️ ile gösterilip tek tek onay/red istenir. Düşüşler eski değer
+// ne olursa olsun HER ZAMAN şüpheli sayılır (bkz. classifyPowerReading).
+const SUSPICIOUS_JUMP_MULTIPLIER = 2;
 
 /** Seçilen görseli, API'ye göndermeden önce makul bir boyuta küçültüp JPEG data URL'ine çevirir (bkz. events.js'teki eşdeğeri — burada da aynı mantık, döngüsel import olmasın diye ayrıca tanımlı). */
 function resizeImageToDataUrl(file, maxDim = 1568, quality = 0.85) {
@@ -920,16 +933,44 @@ export function removePowerUnmatchedItem(index) {
   renderPowerUnmatchedBox();
 }
 
+/** Yeni okunan bir güç değerinin otomatik uygulanacak (artış) mı, yoksa tek tek onay isteyen "şüpheli" mi (düşüş veya aşırı sıçrama) olduğuna karar verir. */
+function isSuspiciousPowerReading(currentPower, newPower) {
+  if (currentPower <= 0) return false; // hiç güç girilmemiş üyede her değer normal bir ilk kayıttır
+  if (newPower < currentPower) return true; // her düşüş şüpheli
+  return newPower > currentPower * SUSPICIOUS_JUMP_MULTIPLIER; // aşırı büyük sıçrama da şüpheli
+}
+
 function renderPowerDraftBar() {
   const bar = document.getElementById("powerDraftBar");
   if (!bar) return;
   const count = state.powerAiDraft ? Object.keys(state.powerAiDraft).length : 0;
-  if (!count) {
+  const suspiciousCount = state.powerAiSuspicious ? Object.keys(state.powerAiSuspicious).length : 0;
+  if (!count && !suspiciousCount) {
     bar.style.display = "none";
     return;
   }
-  document.getElementById("powerDraftLabel").textContent = t("powerDraftLabel").replace("{n}", String(count));
+  let label = count ? t("powerDraftLabel").replace("{n}", String(count)) : "";
+  if (suspiciousCount) label += (label ? " " : "") + t("powerSuspiciousLabel").replace("{n}", String(suspiciousCount));
+  document.getElementById("powerDraftLabel").textContent = label;
   bar.style.display = "flex";
+}
+
+/** Admin — tablodaki ⚠️ satırında "✓"ye basınca, o şüpheli değeri normal (otomatik uygulanacak) taslağa taşır. */
+export function acceptSuspiciousPower(memberId) {
+  if (!state.powerAiSuspicious || state.powerAiSuspicious[memberId] == null) return;
+  if (!state.powerAiDraft) state.powerAiDraft = {};
+  state.powerAiDraft[memberId] = state.powerAiSuspicious[memberId];
+  delete state.powerAiSuspicious[memberId];
+  renderMembers();
+  renderPowerDraftBar();
+}
+
+/** Admin — tablodaki ⚠️ satırında "✕"e basınca, o şüpheli değeri tamamen atar (hiçbir şey uygulanmaz). */
+export function rejectSuspiciousPower(memberId) {
+  if (!state.powerAiSuspicious) return;
+  delete state.powerAiSuspicious[memberId];
+  renderMembers();
+  renderPowerDraftBar();
 }
 
 /** "🤖 AI ile Güç Güncelle" — seçilen ekran görüntüsü/görüntülerini (gerekirse gruplar hâlinde) sunucuya gönderir, dönen güç değerlerini taslak olarak tabloya işler. */
@@ -954,8 +995,9 @@ export async function handlePowerScreenshot(event) {
   const originalLabel = btn ? btn.textContent : "";
   if (btn) btn.disabled = true;
 
-  // Yeni bir okuma turu — önceki taslak/eşleşmeyenler listesinin üstüne değil, sıfırdan birikir.
+  // Yeni bir okuma turu — önceki taslak/şüpheli/eşleşmeyenler listelerinin üstüne değil, sıfırdan birikir.
   state.powerAiDraft = null;
+  state.powerAiSuspicious = null;
   state.powerAiUnmatched = null;
   renderPowerUnmatchedBox();
   renderPowerDraftBar();
@@ -980,9 +1022,19 @@ export async function handlePowerScreenshot(event) {
         });
         const payload = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(payload.error || `HTTP ${res.status}`);
-        if (!state.powerAiDraft) state.powerAiDraft = {};
+        const membersById = new Map(state.members.map((m) => [m.id, m]));
         (payload.results || []).forEach((r) => {
-          if (r && r.memberId && r.power != null) state.powerAiDraft[r.memberId] = Number(r.power) || 0;
+          if (!r || !r.memberId || r.power == null) return;
+          const newPower = Number(r.power) || 0;
+          const member = membersById.get(r.memberId);
+          const currentPower = member ? Number(member.power) || 0 : 0;
+          if (isSuspiciousPowerReading(currentPower, newPower)) {
+            if (!state.powerAiSuspicious) state.powerAiSuspicious = {};
+            state.powerAiSuspicious[r.memberId] = newPower;
+          } else {
+            if (!state.powerAiDraft) state.powerAiDraft = {};
+            state.powerAiDraft[r.memberId] = newPower;
+          }
         });
         state.powerAiUnmatched = (state.powerAiUnmatched || []).concat(payload.unmatched || []);
         renderMembers();
@@ -994,8 +1046,10 @@ export async function handlePowerScreenshot(event) {
       }
     }
     const matchedCount = state.powerAiDraft ? Object.keys(state.powerAiDraft).length : 0;
+    const suspiciousCount = state.powerAiSuspicious ? Object.keys(state.powerAiSuspicious).length : 0;
     const unmatchedCount = state.powerAiUnmatched ? state.powerAiUnmatched.length : 0;
     let message = t("aiFillDone").replace("{n}", String(matchedCount));
+    if (suspiciousCount) message += " " + t("powerSuspiciousToast").replace("{n}", String(suspiciousCount));
     if (unmatchedCount) message += " " + t("aiFillUnmatchedToast").replace("{n}", String(unmatchedCount));
     if (failedBatches) message += " " + t("aiFillBatchFailed").replace("{n}", String(failedBatches));
     showToast(message);
@@ -1004,18 +1058,21 @@ export async function handlePowerScreenshot(event) {
   }
 }
 
-/** Admin — taslaktaki tüm önerilen güç değerlerini vazgeçip görünümden temizler (hiçbir şey zaten kaydedilmemişti). */
+/** Admin — taslaktaki (ve onay bekleyen şüpheli) tüm önerilen güç değerlerinden vazgeçip görünümden temizler (hiçbir şey zaten kaydedilmemişti). */
 export function discardPowerDraft() {
   state.powerAiDraft = null;
+  state.powerAiSuspicious = null;
   renderPowerDraftBar();
   renderMembers();
 }
 
 /** Admin — "✅ Değişiklikleri Uygula": taslaktaki her üyenin gücünü tek tek kaydeder (mevcut güç geçmişi mantığıyla aynı şekilde), başarısız olan tek tek atlanır. */
 export async function applyPowerDraft() {
-  if (!state.powerAiDraft) return;
-  const entries = Object.entries(state.powerAiDraft);
-  if (!entries.length) return;
+  const entries = state.powerAiDraft ? Object.entries(state.powerAiDraft) : [];
+  if (!entries.length) {
+    if (state.powerAiSuspicious && Object.keys(state.powerAiSuspicious).length) showToast(t("powerOnlySuspiciousLeft"));
+    return;
+  }
   if (!confirm(t("confirmApplyPowerDraft").replace("{n}", String(entries.length)))) return;
 
   let successCount = 0;
