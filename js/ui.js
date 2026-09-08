@@ -77,6 +77,8 @@ export const state = {
   oldFlag: false,
   migratedFlag: false,
   entryContext: null, // { type: 'svs'|'gvg'|'ss'|'other', weekId }
+  powerAiDraft: null, // { memberId: yeni güç } — "AI ile Güç Güncelle" sonucu, "Uygula"ya basılana kadar hiçbir şey kaydedilmez (bkz. members.js)
+  powerAiUnmatched: null, // [{ rawName, details }] — ekran görüntüsünde görülen ama roster'da eşleşmeyen satırlar
   boardSortKey: "gvgPts",
   boardSortDir: -1,
   boardSearch: "",
@@ -215,7 +217,7 @@ const DICT = {
     thJoined:'Katıldı', thPointsCol:'Puan', thGroup:'Grup', thAttended:'Katıldı mı', groupNone:'Kayıt Yok', groupA:'A Grubu', groupB:'B Grubu',
     entryTitleSVS:'SVS Girişi', entryTitleGVG:'GVG Girişi', entryTitleSS:'SS Girişi', entryTitleKoD:'King of Desert Girişi',
     toastEntrySaved:'Kayıt tamamlandı.', notRegistered:'—',
-    aiFillBtn:'🤖 AI ile Doldur', aiFillWorking:'AI okuyor…', aiFillWorkingBatch:'AI okuyor ({i}/{n})…', aiFillBatchFailed:'({n} grup okunamadı)', aiFillDone:'{n} üye için dolduruldu, kontrol edip kaydedin.', aiFillError:'AI okuma başarısız oldu.', aiFillNoMembers:'Listede üye yok.', aiFillTooMany:'En fazla {n} fotoğraf birden seçebilirsin.', aiUnmatchedTitle:'⚠️ {n} eşleşmeyen kayıt — elle kontrol et:', aiFillUnmatchedToast:'({n} eşleşmeyen kayıt var, aşağıda listelendi)', aiUnmatchedRemove:'Listeden kaldır',
+    aiFillBtn:'🤖 AI ile Doldur', aiFillWorking:'AI okuyor…', aiFillWorkingBatch:'AI okuyor ({i}/{n})…', aiFillBatchFailed:'({n} grup okunamadı)', aiFillDone:'{n} üye için dolduruldu, kontrol edip kaydedin.', aiFillError:'AI okuma başarısız oldu.', aiFillNoMembers:'Listede üye yok.', aiFillTooMany:'En fazla {n} fotoğraf birden seçebilirsin.', aiUnmatchedTitle:'⚠️ {n} eşleşmeyen kayıt — elle kontrol et:', aiFillUnmatchedToast:'({n} eşleşmeyen kayıt var, aşağıda listelendi)', aiUnmatchedRemove:'Listeden kaldır', powerAiFillBtn:'🤖 AI ile Güç Güncelle', powerDraftLabel:'{n} üye için yeni güç değeri önerildi — kontrol edip uygula.', applyPowerDraftBtn:'✅ Değişiklikleri Uygula', confirmApplyPowerDraft:'{n} üyenin güç değeri güncellensin mi?', toastPowerDraftApplied:'{n} üyenin gücü güncellendi.',
     boardEmptyTitle:'Henüz veri yok', boardEmptyDesc:'Üye ve etkinlik ekledikçe sıralama burada oluşur.',
     searchMember:'Üye ara…',
     statusYes:'Katıldı', statusNo:'Katılmadı', statusUnknown:'Bilgi Yok', legendUnknown:'Bilgi Yok',
@@ -332,7 +334,7 @@ const DICT = {
     thJoined:'Joined', thPointsCol:'Points', thGroup:'Group', thAttended:'Attended', groupNone:'Not registered', groupA:'Group A', groupB:'Group B',
     entryTitleSVS:'SVS Entry', entryTitleGVG:'GVG Entry', entryTitleSS:'SS Entry', entryTitleKoD:'King of Desert Entry',
     toastEntrySaved:'Saved.', notRegistered:'—',
-    aiFillBtn:'🤖 Fill with AI', aiFillWorking:'Reading…', aiFillWorkingBatch:'Reading ({i}/{n})…', aiFillBatchFailed:'({n} batches failed)', aiFillDone:'Filled {n} members — review and save.', aiFillError:'AI reading failed.', aiFillNoMembers:'No members in the list.', aiFillTooMany:'You can select at most {n} photos at once.', aiUnmatchedTitle:'⚠️ {n} unmatched entries — check manually:', aiFillUnmatchedToast:'({n} unmatched entries, listed below)', aiUnmatchedRemove:'Remove from list',
+    aiFillBtn:'🤖 Fill with AI', aiFillWorking:'Reading…', aiFillWorkingBatch:'Reading ({i}/{n})…', aiFillBatchFailed:'({n} batches failed)', aiFillDone:'Filled {n} members — review and save.', aiFillError:'AI reading failed.', aiFillNoMembers:'No members in the list.', aiFillTooMany:'You can select at most {n} photos at once.', aiUnmatchedTitle:'⚠️ {n} unmatched entries — check manually:', aiFillUnmatchedToast:'({n} unmatched entries, listed below)', aiUnmatchedRemove:'Remove from list', powerAiFillBtn:'🤖 Update Power with AI', powerDraftLabel:'Proposed new power for {n} members — review and apply.', applyPowerDraftBtn:'✅ Apply Changes', confirmApplyPowerDraft:'Update power for {n} members?', toastPowerDraftApplied:'Updated power for {n} members.',
     boardEmptyTitle:'No data yet', boardEmptyDesc:'The leaderboard fills in as you add members and events.',
     searchMember:'Search member…',
     statusYes:'Joined', statusNo:'Not joined', statusUnknown:'No info', legendUnknown:'No info',
@@ -449,7 +451,7 @@ const DICT = {
     thJoined:'Teilgenommen', thPointsCol:'Punkte', thGroup:'Gruppe', thAttended:'Teilgenommen', groupNone:'Nicht angemeldet', groupA:'Gruppe A', groupB:'Gruppe B',
     entryTitleSVS:'SVS-Eintrag', entryTitleGVG:'GVG-Eintrag', entryTitleSS:'SS-Eintrag', entryTitleKoD:'King of Desert-Eintrag',
     toastEntrySaved:'Gespeichert.', notRegistered:'—',
-    aiFillBtn:'🤖 Mit KI ausfüllen', aiFillWorking:'Wird gelesen…', aiFillWorkingBatch:'Wird gelesen ({i}/{n})…', aiFillBatchFailed:'({n} Gruppen fehlgeschlagen)', aiFillDone:'{n} Mitglieder ausgefüllt — bitte prüfen und speichern.', aiFillError:'KI-Auslesen fehlgeschlagen.', aiFillNoMembers:'Keine Mitglieder in der Liste.', aiFillTooMany:'Du kannst höchstens {n} Fotos gleichzeitig auswählen.', aiUnmatchedTitle:'⚠️ {n} nicht zugeordnete Einträge — bitte manuell prüfen:', aiFillUnmatchedToast:'({n} nicht zugeordnete Einträge, unten aufgelistet)', aiUnmatchedRemove:'Aus der Liste entfernen',
+    aiFillBtn:'🤖 Mit KI ausfüllen', aiFillWorking:'Wird gelesen…', aiFillWorkingBatch:'Wird gelesen ({i}/{n})…', aiFillBatchFailed:'({n} Gruppen fehlgeschlagen)', aiFillDone:'{n} Mitglieder ausgefüllt — bitte prüfen und speichern.', aiFillError:'KI-Auslesen fehlgeschlagen.', aiFillNoMembers:'Keine Mitglieder in der Liste.', aiFillTooMany:'Du kannst höchstens {n} Fotos gleichzeitig auswählen.', aiUnmatchedTitle:'⚠️ {n} nicht zugeordnete Einträge — bitte manuell prüfen:', aiFillUnmatchedToast:'({n} nicht zugeordnete Einträge, unten aufgelistet)', aiUnmatchedRemove:'Aus der Liste entfernen', powerAiFillBtn:'🤖 Stärke per KI aktualisieren', powerDraftLabel:'Neue Stärke für {n} Mitglieder vorgeschlagen — prüfen und übernehmen.', applyPowerDraftBtn:'✅ Änderungen übernehmen', confirmApplyPowerDraft:'Stärke für {n} Mitglieder aktualisieren?', toastPowerDraftApplied:'Stärke für {n} Mitglieder aktualisiert.',
     boardEmptyTitle:'Noch keine Daten', boardEmptyDesc:'Die Bestenliste füllt sich mit Mitgliedern und Events.',
     searchMember:'Mitglied suchen…',
     statusYes:'Teilgenommen', statusNo:'Nicht teilgenommen', statusUnknown:'Keine Info', legendUnknown:'Keine Info',
@@ -566,7 +568,7 @@ const DICT = {
     thJoined:'Participó', thPointsCol:'Puntos', thGroup:'Grupo', thAttended:'Participó', groupNone:'No inscrito', groupA:'Grupo A', groupB:'Grupo B',
     entryTitleSVS:'Registro SVS', entryTitleGVG:'Registro GVG', entryTitleSS:'Registro SS', entryTitleKoD:'Registro King of Desert',
     toastEntrySaved:'Guardado.', notRegistered:'—',
-    aiFillBtn:'🤖 Rellenar con IA', aiFillWorking:'Leyendo…', aiFillWorkingBatch:'Leyendo ({i}/{n})…', aiFillBatchFailed:'({n} grupos fallaron)', aiFillDone:'Se completaron {n} miembros — revisa y guarda.', aiFillError:'Error al leer con IA.', aiFillNoMembers:'No hay miembros en la lista.', aiFillTooMany:'Puedes seleccionar como máximo {n} fotos a la vez.', aiUnmatchedTitle:'⚠️ {n} registros sin coincidencia — revisa manualmente:', aiFillUnmatchedToast:'({n} registros sin coincidencia, listados abajo)', aiUnmatchedRemove:'Quitar de la lista',
+    aiFillBtn:'🤖 Rellenar con IA', aiFillWorking:'Leyendo…', aiFillWorkingBatch:'Leyendo ({i}/{n})…', aiFillBatchFailed:'({n} grupos fallaron)', aiFillDone:'Se completaron {n} miembros — revisa y guarda.', aiFillError:'Error al leer con IA.', aiFillNoMembers:'No hay miembros en la lista.', aiFillTooMany:'Puedes seleccionar como máximo {n} fotos a la vez.', aiUnmatchedTitle:'⚠️ {n} registros sin coincidencia — revisa manualmente:', aiFillUnmatchedToast:'({n} registros sin coincidencia, listados abajo)', aiUnmatchedRemove:'Quitar de la lista', powerAiFillBtn:'🤖 Actualizar Poder con IA', powerDraftLabel:'Nuevo poder propuesto para {n} miembros — revisa y aplica.', applyPowerDraftBtn:'✅ Aplicar Cambios', confirmApplyPowerDraft:'¿Actualizar el poder de {n} miembros?', toastPowerDraftApplied:'Poder actualizado para {n} miembros.',
     boardEmptyTitle:'Aún no hay datos', boardEmptyDesc:'La clasificación se completa a medida que agregas miembros y eventos.',
     searchMember:'Buscar miembro…',
     statusYes:'Participó', statusNo:'No participó', statusUnknown:'Sin información', legendUnknown:'Sin información',
@@ -683,7 +685,7 @@ const DICT = {
     thJoined:'A participé', thPointsCol:'Points', thGroup:'Groupe', thAttended:'Présent', groupNone:'Non inscrit', groupA:'Groupe A', groupB:'Groupe B',
     entryTitleSVS:'Saisie SVS', entryTitleGVG:'Saisie GVG', entryTitleSS:'Saisie SS', entryTitleKoD:'Saisie King of Desert',
     toastEntrySaved:'Enregistré.', notRegistered:'—',
-    aiFillBtn:'🤖 Remplir avec l\'IA', aiFillWorking:'Lecture en cours…', aiFillWorkingBatch:'Lecture en cours ({i}/{n})…', aiFillBatchFailed:'({n} groupes en échec)', aiFillDone:'{n} membres remplis — vérifiez et enregistrez.', aiFillError:'Échec de la lecture par l\'IA.', aiFillNoMembers:'Aucun membre dans la liste.', aiFillTooMany:'Tu peux sélectionner au maximum {n} photos à la fois.', aiUnmatchedTitle:'⚠️ {n} entrées non appariées — à vérifier manuellement :', aiFillUnmatchedToast:'({n} entrées non appariées, listées ci-dessous)', aiUnmatchedRemove:'Retirer de la liste',
+    aiFillBtn:'🤖 Remplir avec l\'IA', aiFillWorking:'Lecture en cours…', aiFillWorkingBatch:'Lecture en cours ({i}/{n})…', aiFillBatchFailed:'({n} groupes en échec)', aiFillDone:'{n} membres remplis — vérifiez et enregistrez.', aiFillError:'Échec de la lecture par l\'IA.', aiFillNoMembers:'Aucun membre dans la liste.', aiFillTooMany:'Tu peux sélectionner au maximum {n} photos à la fois.', aiUnmatchedTitle:'⚠️ {n} entrées non appariées — à vérifier manuellement :', aiFillUnmatchedToast:'({n} entrées non appariées, listées ci-dessous)', aiUnmatchedRemove:'Retirer de la liste', powerAiFillBtn:'🤖 Mettre à jour la Puissance par IA', powerDraftLabel:'Nouvelle puissance proposée pour {n} membres — vérifiez et appliquez.', applyPowerDraftBtn:'✅ Appliquer les Changements', confirmApplyPowerDraft:'Mettre à jour la puissance de {n} membres ?', toastPowerDraftApplied:'Puissance mise à jour pour {n} membres.',
     boardEmptyTitle:'Aucune donnée pour le moment', boardEmptyDesc:'Le classement se remplit au fur et à mesure que vous ajoutez membres et événements.',
     searchMember:'Rechercher un membre…',
     statusYes:'A participé', statusNo:"N'a pas participé", statusUnknown:'Pas d\'info', legendUnknown:'Pas d\'info',
@@ -800,7 +802,7 @@ const DICT = {
     thJoined:'Đã tham gia', thPointsCol:'Điểm', thGroup:'Nhóm', thAttended:'Tham dự', groupNone:'Chưa đăng ký', groupA:'Nhóm A', groupB:'Nhóm B',
     entryTitleSVS:'Nhập liệu SVS', entryTitleGVG:'Nhập liệu GVG', entryTitleSS:'Nhập liệu SS', entryTitleKoD:'Nhập liệu King of Desert',
     toastEntrySaved:'Đã lưu.', notRegistered:'—',
-    aiFillBtn:'🤖 Điền bằng AI', aiFillWorking:'Đang đọc…', aiFillWorkingBatch:'Đang đọc ({i}/{n})…', aiFillBatchFailed:'({n} nhóm thất bại)', aiFillDone:'Đã điền {n} thành viên — kiểm tra rồi lưu.', aiFillError:'AI đọc thất bại.', aiFillNoMembers:'Không có thành viên trong danh sách.', aiFillTooMany:'Bạn chỉ có thể chọn tối đa {n} ảnh cùng lúc.', aiUnmatchedTitle:'⚠️ {n} mục không khớp — kiểm tra thủ công:', aiFillUnmatchedToast:'({n} mục không khớp, liệt kê bên dưới)', aiUnmatchedRemove:'Xóa khỏi danh sách',
+    aiFillBtn:'🤖 Điền bằng AI', aiFillWorking:'Đang đọc…', aiFillWorkingBatch:'Đang đọc ({i}/{n})…', aiFillBatchFailed:'({n} nhóm thất bại)', aiFillDone:'Đã điền {n} thành viên — kiểm tra rồi lưu.', aiFillError:'AI đọc thất bại.', aiFillNoMembers:'Không có thành viên trong danh sách.', aiFillTooMany:'Bạn chỉ có thể chọn tối đa {n} ảnh cùng lúc.', aiUnmatchedTitle:'⚠️ {n} mục không khớp — kiểm tra thủ công:', aiFillUnmatchedToast:'({n} mục không khớp, liệt kê bên dưới)', aiUnmatchedRemove:'Xóa khỏi danh sách', powerAiFillBtn:'🤖 Cập nhật Sức mạnh bằng AI', powerDraftLabel:'Đã đề xuất sức mạnh mới cho {n} thành viên — kiểm tra rồi áp dụng.', applyPowerDraftBtn:'✅ Áp dụng Thay đổi', confirmApplyPowerDraft:'Cập nhật sức mạnh cho {n} thành viên?', toastPowerDraftApplied:'Đã cập nhật sức mạnh cho {n} thành viên.',
     boardEmptyTitle:'Chưa có dữ liệu', boardEmptyDesc:'Bảng xếp hạng sẽ được điền khi bạn thêm thành viên và sự kiện.',
     searchMember:'Tìm thành viên…',
     statusYes:'Đã tham gia', statusNo:'Chưa tham gia', statusUnknown:'Không có thông tin', legendUnknown:'Không có thông tin',
@@ -933,6 +935,9 @@ export function applyStaticText() {
   document.getElementById("t_close1").textContent = t("close");
   document.getElementById("t_save3").textContent = t("save");
   document.getElementById("t_aiFillBtn").textContent = t("aiFillBtn");
+  document.getElementById("t_powerAiFillBtn").textContent = t("powerAiFillBtn");
+  document.getElementById("t_applyPowerDraft").textContent = t("applyPowerDraftBtn");
+  document.getElementById("t_discardPowerDraft").textContent = t("cancel");
   document.getElementById("t_lblWeekLabel").textContent = t("lblWeekLabel");
   document.getElementById("t_lblWeekDate").textContent = t("lblWeekDate");
   document.getElementById("t_addWeek_svs").textContent = t("addWeek");

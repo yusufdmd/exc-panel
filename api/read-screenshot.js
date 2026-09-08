@@ -72,6 +72,11 @@ function buildResponseSchema(type) {
       attended: { type: "BOOLEAN", description: "Üye katıldı mı." },
       excused: { type: "BOOLEAN", description: "Mazeretli/izinli işaretliyse true." }
     };
+  } else if (type === "power") {
+    itemProps = {
+      memberId: memberIdField,
+      power: { type: "NUMBER", description: "Ekran görüntüsünde bu üye için görünen güç (power) değeri, tam sayıya çevrilmiş." }
+    };
   } else {
     // svs / other
     itemProps = {
@@ -108,24 +113,27 @@ function buildResponseSchema(type) {
 
 function buildPrompt(type, roster, imageCount) {
   const rosterJson = JSON.stringify(roster);
+  const subject = type === "power"
+    ? "You are extracting each player's current power/strength level from mobile game roster screenshots."
+    : "You are extracting guild-event attendance/score data from mobile game screenshots.";
   return [
-    "You are extracting guild-event attendance/score data from mobile game screenshots.",
-    `Event type: ${type}.`,
+    subject,
+    type === "power" ? "" : `Event type: ${type}.`,
     imageCount > 1
-      ? `You are given ${imageCount} screenshots — they are different parts of the SAME leaderboard/list for the same week (e.g. scrolled sections), not separate weeks. Combine information across all of them.`
+      ? `You are given ${imageCount} screenshots — they are different parts of the SAME list (e.g. scrolled sections), not separate snapshots in time. Combine information across all of them.`
       : "You are given 1 screenshot.",
-    "Here is the roster of members currently relevant for this entry (JSON array of {id, name, gameId}):",
+    "Here is the roster of members currently relevant (JSON array of {id, name, gameId}):",
     rosterJson,
     "",
     "Read the screenshot(s) and match each player you can identify (by in-game name and/or numeric ID) to exactly one roster entry.",
     "Rules:",
     "- Only use \"id\" values copied verbatim from the roster above. Never invent an id.",
-    "- If a player in the screenshots does not clearly match any roster member (e.g. their in-game display name changed and it no longer resembles the roster name/ID), do NOT guess or force a match — instead add them to \"unmatched\" with the exact name/ID as shown and a short description of the value seen (points/status/group).",
+    "- If a player in the screenshots does not clearly match any roster member (e.g. their in-game display name changed and it no longer resembles the roster name/ID), do NOT guess or force a match — instead add them to \"unmatched\" with the exact name/ID as shown and a short description of the value seen (points/status/group/power).",
     "- If a roster member is not visible in any screenshot, omit them from both results and unmatched — do not fabricate a value.",
     "- If the same player appears in more than one screenshot, include them only once (in results or unmatched, not both), using the clearest/most complete reading.",
     "- Numbers in these screenshots are often abbreviated (e.g. \"12.3M\", \"1.2k\") — convert to the full numeric value.",
     "- Respond with JSON matching the given schema only."
-  ].join("\n");
+  ].filter(Boolean).join("\n");
 }
 
 module.exports = async (req, res) => {
@@ -149,7 +157,7 @@ module.exports = async (req, res) => {
     }
 
     const { type, roster, images } = req.body || {};
-    const validTypes = ["gvg", "svs", "ss", "kod", "other"];
+    const validTypes = ["gvg", "svs", "ss", "kod", "other", "power"];
     if (!validTypes.includes(type)) {
       res.status(400).json({ error: "Geçersiz etkinlik türü." });
       return;

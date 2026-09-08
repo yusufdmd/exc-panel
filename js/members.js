@@ -155,12 +155,17 @@ export function renderMembers() {
 
   const rowsEl = document.getElementById("memberRows");
   document.getElementById("memberEmpty").style.display = list.length ? "none" : "block";
-  rowsEl.innerHTML = list.map((member, index) => `
+  rowsEl.innerHTML = list.map((member, index) => {
+    const draftPower = state.powerAiDraft && state.powerAiDraft[member.id];
+    const powerCell = draftPower != null
+      ? `<span style="text-decoration:line-through; color:var(--text-dim);">${formatPower(member.power)}</span> → <strong style="color:var(--cyan-ink);">${formatPower(draftPower)}</strong>`
+      : formatPower(member.power);
+    return `
     <tr>
       <td class="sticky-col">${rowNumHtml(index)}<span class="rank-badge ${rankClass(member.rank)}">${member.rank}<span class="chev">${rankChevrons(member.rank)}</span></span></td>
       <td class="sticky-col" style="left:145px;"><span class="member-name">${escapeHtml(member.name || "—")}</span>${member.isOld ? `<span class="old-tag">OLD${state.memberView === "old" && member.oldSince ? " · " + member.oldSince : ""}</span>` : ""}${member.isMigrated ? `<span class="old-tag">${t("migratedTag")}${member.migratedTo != null ? " · " + member.migratedTo : ""}</span>` : ""}</td>
       <td class="member-id">${escapeHtml(String(member.gameId || "—"))}</td>
-      <td class="num-cell" title="${Number(member.power) || 0}">${formatPower(member.power)}</td>
+      <td class="num-cell" title="${Number(member.power) || 0}">${powerCell}</td>
       <td class="num-cell">${escapeHtml(String(member.campLevel || "-"))}</td>
       <td class="num-cell">${member.teamPower ? `${elementBadge(member.teamElement, 20)} <span style="vertical-align:middle;">${formatPower(member.teamPower)}</span>` : "—"}</td>
       <td class="num-cell">${escapeHtml((member.joinedAt || "").slice(0, 10)) || "—"}</td>
@@ -172,7 +177,8 @@ export function renderMembers() {
         <button class="icon-btn danger admin-only" onclick="deleteMember('${member.id}')">✕</button>
       </div></td>
     </tr>
-  `).join("");
+  `;
+  }).join("");
 }
 registerRenderer(renderMembers);
 
@@ -848,4 +854,195 @@ export function openHistoryModal(id) {
 export function closeHistoryModal() {
   document.getElementById("historyOverlay").classList.remove("active");
   state.historyMemberId = null;
+}
+
+// =====================================================================
+// EKRAN GÖRÜNTÜSÜNDEN AI İLE GÜÇ GÜNCELLEME
+// =====================================================================
+// Toplu giriş modalındaki "AI ile Doldur" (bkz. events.js) ile AYNI
+// sunucu ucunu (api/read-screenshot.js, type:"power") ve aynı ilkeleri
+// kullanır: görsel hiçbir yerde saklanmaz, sonuçlar doğrudan kaydedilmez
+// — `state.powerAiDraft`'a yazılıp üye tablosunda "eski → yeni" olarak
+// gösterilir, admin "✅ Değişiklikleri Uygula"ya basana kadar hiçbir şey
+// veritabanına yazılmaz. events.js'i import ETMEDEN (members.js'in tek
+// yönlü bağımlılık kuralı, bkz. dosya başı) aynı küçük yardımcı burada
+// ayrıca tanımlanır.
+
+const POWER_BATCH_SIZE = 6;
+const POWER_MAX_SCREENSHOTS = 30;
+
+/** Seçilen görseli, API'ye göndermeden önce makul bir boyuta küçültüp JPEG data URL'ine çevirir (bkz. events.js'teki eşdeğeri — burada da aynı mantık, döngüsel import olmasın diye ayrıca tanımlı). */
+function resizeImageToDataUrl(file, maxDim = 1568, quality = 0.85) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error);
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+        const width = Math.max(1, Math.round(img.width * scale));
+        const height = Math.max(1, Math.round(img.height * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderPowerUnmatchedBox() {
+  const box = document.getElementById("powerUnmatchedBox");
+  if (!box) return;
+  const list = state.powerAiUnmatched;
+  if (!list || !list.length) {
+    box.style.display = "none";
+    return;
+  }
+  document.getElementById("powerUnmatchedTitle").textContent = t("aiUnmatchedTitle").replace("{n}", String(list.length));
+  document.getElementById("powerUnmatchedList").innerHTML = list
+    .map((u, i) => `<span style="display:inline-flex; align-items:center; gap:6px; background:rgba(0,0,0,0.06); border:1px solid rgba(232,195,74,0.5); border-radius:999px; padding:4px 4px 4px 10px; font-size:12px; color:var(--text-primary);">
+      <span><strong>${escapeHtml(u.rawName)}</strong> — ${escapeHtml(u.details)}</span>
+      <button onclick="removePowerUnmatchedItem(${i})" title="${t("aiUnmatchedRemove")}" style="border:none; background:transparent; cursor:pointer; font-weight:700; color:var(--warn-ink); line-height:1; padding:3px 5px; border-radius:50%;">✕</button>
+    </span>`)
+    .join("");
+  box.style.display = "";
+}
+
+/** Bir "eşleşmeyen" etiketinin ✕'ine basılınca sadece o etiketi görünümden kaldırır. */
+export function removePowerUnmatchedItem(index) {
+  if (!state.powerAiUnmatched) return;
+  state.powerAiUnmatched.splice(index, 1);
+  renderPowerUnmatchedBox();
+}
+
+function renderPowerDraftBar() {
+  const bar = document.getElementById("powerDraftBar");
+  if (!bar) return;
+  const count = state.powerAiDraft ? Object.keys(state.powerAiDraft).length : 0;
+  if (!count) {
+    bar.style.display = "none";
+    return;
+  }
+  document.getElementById("powerDraftLabel").textContent = t("powerDraftLabel").replace("{n}", String(count));
+  bar.style.display = "flex";
+}
+
+/** "🤖 AI ile Güç Güncelle" — seçilen ekran görüntüsü/görüntülerini (gerekirse gruplar hâlinde) sunucuya gönderir, dönen güç değerlerini taslak olarak tabloya işler. */
+export async function handlePowerScreenshot(event) {
+  const files = Array.from(event.target.files || []);
+  event.target.value = "";
+  if (!files.length) return;
+  if (files.length > POWER_MAX_SCREENSHOTS) {
+    showToast(t("aiFillTooMany").replace("{n}", String(POWER_MAX_SCREENSHOTS)));
+    return;
+  }
+  const roster = activeMembers().map((m) => ({ id: m.id, name: m.name || "", gameId: m.gameId || "" }));
+  if (!roster.length) {
+    showToast(t("aiFillNoMembers"));
+    return;
+  }
+
+  const batches = [];
+  for (let i = 0; i < files.length; i += POWER_BATCH_SIZE) batches.push(files.slice(i, i + POWER_BATCH_SIZE));
+
+  const btn = document.getElementById("t_powerAiFillBtn");
+  const originalLabel = btn ? btn.textContent : "";
+  if (btn) btn.disabled = true;
+
+  // Yeni bir okuma turu — önceki taslak/eşleşmeyenler listesinin üstüne değil, sıfırdan birikir.
+  state.powerAiDraft = null;
+  state.powerAiUnmatched = null;
+  renderPowerUnmatchedBox();
+  renderPowerDraftBar();
+
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData && sessionData.session ? sessionData.session.access_token : "";
+
+  let failedBatches = 0;
+  try {
+    for (let i = 0; i < batches.length; i++) {
+      if (btn) {
+        btn.textContent = batches.length > 1
+          ? t("aiFillWorkingBatch").replace("{i}", String(i + 1)).replace("{n}", String(batches.length))
+          : t("aiFillWorking");
+      }
+      try {
+        const images = await Promise.all(batches[i].map((file) => resizeImageToDataUrl(file)));
+        const res = await fetch("/api/read-screenshot", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+          body: JSON.stringify({ type: "power", roster, images })
+        });
+        const payload = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(payload.error || `HTTP ${res.status}`);
+        if (!state.powerAiDraft) state.powerAiDraft = {};
+        (payload.results || []).forEach((r) => {
+          if (r && r.memberId && r.power != null) state.powerAiDraft[r.memberId] = Number(r.power) || 0;
+        });
+        state.powerAiUnmatched = (state.powerAiUnmatched || []).concat(payload.unmatched || []);
+        renderMembers();
+        renderPowerUnmatchedBox();
+        renderPowerDraftBar();
+      } catch (batchError) {
+        console.error(batchError);
+        failedBatches++;
+      }
+    }
+    const matchedCount = state.powerAiDraft ? Object.keys(state.powerAiDraft).length : 0;
+    const unmatchedCount = state.powerAiUnmatched ? state.powerAiUnmatched.length : 0;
+    let message = t("aiFillDone").replace("{n}", String(matchedCount));
+    if (unmatchedCount) message += " " + t("aiFillUnmatchedToast").replace("{n}", String(unmatchedCount));
+    if (failedBatches) message += " " + t("aiFillBatchFailed").replace("{n}", String(failedBatches));
+    showToast(message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
+  }
+}
+
+/** Admin — taslaktaki tüm önerilen güç değerlerini vazgeçip görünümden temizler (hiçbir şey zaten kaydedilmemişti). */
+export function discardPowerDraft() {
+  state.powerAiDraft = null;
+  renderPowerDraftBar();
+  renderMembers();
+}
+
+/** Admin — "✅ Değişiklikleri Uygula": taslaktaki her üyenin gücünü tek tek kaydeder (mevcut güç geçmişi mantığıyla aynı şekilde), başarısız olan tek tek atlanır. */
+export async function applyPowerDraft() {
+  if (!state.powerAiDraft) return;
+  const entries = Object.entries(state.powerAiDraft);
+  if (!entries.length) return;
+  if (!confirm(t("confirmApplyPowerDraft").replace("{n}", String(entries.length)))) return;
+
+  let successCount = 0;
+  for (const [memberId, newPower] of entries) {
+    try {
+      const row = await updateMember(memberId, { power: newPower });
+      const index = state.members.findIndex((m) => m.id === memberId);
+      if (index < 0) continue;
+      const previous = state.members[index];
+      const history = Array.isArray(previous.powerHistory) ? [...previous.powerHistory] : [];
+      const lastEntry = history[history.length - 1];
+      const today = todayStr();
+      if (!lastEntry || Number(lastEntry.power) !== newPower) {
+        if (lastEntry && lastEntry.date === today) lastEntry.power = newPower;
+        else history.push({ date: today, power: newPower });
+        await addPowerHistoryEntry(memberId, history[history.length - 1].date, newPower);
+      }
+      state.members[index] = { ...mapMember(row), powerHistory: history, teamPowerHistory: previous.teamPowerHistory };
+      await logActivity("updated", "member", memberId, { name: row.name || "İsimsiz" }, state.currentAdminUsername);
+      successCount++;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  state.powerAiDraft = null;
+  renderPowerDraftBar();
+  renderAll();
+  showToast(t("toastPowerDraftApplied").replace("{n}", String(successCount)));
 }
