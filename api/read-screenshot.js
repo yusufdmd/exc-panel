@@ -77,6 +77,11 @@ function buildResponseSchema(type) {
       memberId: memberIdField,
       power: { type: "NUMBER", description: "Ekran görüntüsünde bu üye için görünen güç (power) değeri, tam sayıya çevrilmiş." }
     };
+  } else if (type === "ss_applied") {
+    // Bu tür puan/durum içermez — sadece "bu ekran görüntüsündeki listede
+    // görünen roster üyeleri" demektir (hangi saat dilimine ait olduğunu
+    // istemci zaten biliyor, tek istekte hep aynı saat).
+    itemProps = { memberId: memberIdField };
   } else {
     // svs / other
     itemProps = {
@@ -111,14 +116,16 @@ function buildResponseSchema(type) {
   };
 }
 
-function buildPrompt(type, roster, imageCount) {
+function buildPrompt(type, roster, imageCount, slot) {
   const rosterJson = JSON.stringify(roster);
   const subject = type === "power"
     ? "You are extracting each player's current power/strength level from mobile game roster screenshots."
+    : type === "ss_applied"
+    ? `You are looking at a list of players who applied/voted for time slot ${slot} of a guild event (SandStorm). Identify every player visible in this list — you don't need to read any score/status, just who is present.`
     : "You are extracting guild-event attendance/score data from mobile game screenshots.";
   return [
     subject,
-    type === "power" ? "" : `Event type: ${type}.`,
+    type === "power" || type === "ss_applied" ? "" : `Event type: ${type}.`,
     imageCount > 1
       ? `You are given ${imageCount} screenshots — they are different parts of the SAME list (e.g. scrolled sections), not separate snapshots in time. Combine information across all of them.`
       : "You are given 1 screenshot.",
@@ -156,10 +163,14 @@ module.exports = async (req, res) => {
       return;
     }
 
-    const { type, roster, images } = req.body || {};
-    const validTypes = ["gvg", "svs", "ss", "kod", "other", "power"];
+    const { type, roster, images, slot } = req.body || {};
+    const validTypes = ["gvg", "svs", "ss", "kod", "other", "power", "ss_applied"];
     if (!validTypes.includes(type)) {
       res.status(400).json({ error: "Geçersiz etkinlik türü." });
+      return;
+    }
+    if (type === "ss_applied" && ![1, 2, 3].includes(Number(slot))) {
+      res.status(400).json({ error: "Geçersiz saat dilimi." });
       return;
     }
     if (!Array.isArray(roster) || !roster.length) {
@@ -181,7 +192,7 @@ module.exports = async (req, res) => {
     }
 
     const responseSchema = buildResponseSchema(type);
-    const promptText = buildPrompt(type, roster, parsedImages.length);
+    const promptText = buildPrompt(type, roster, parsedImages.length, slot);
 
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`;
     const geminiRes = await fetch(geminiUrl, {

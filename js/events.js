@@ -175,13 +175,16 @@ export async function deleteWeek(type, weekId) {
 // TOPLU GİRİŞ MODALI (bir haftanın tüm üyeleri, tek seferde)
 // =====================================================================
 export function openEntryModal(type, weekId) {
-  state.entryContext = { type, weekId, aiDraft: null };
+  state.entryContext = { type, weekId, aiDraft: null, ssAppliedDraft: null };
   renderUnmatchedBox(null);
   const store = storeFor(type);
   const week = store.weeks.find((w) => w.id === weekId);
   const titleKey = type === "svs" ? "entryTitleSVS" : type === "gvg" ? "entryTitleGVG" : type === "ss" ? "entryTitleSS" : type === "kod" ? "entryTitleKoD" : "entryTitleOther";
   document.getElementById("entryTitle").textContent = (week ? week.label + " — " : "") + t(titleKey);
   document.getElementById("entrySearch").value = "";
+  // "Başvuru Ekran Görüntüsü Yükle" — sadece SS türünde, "başvuru" ile
+  // "katılım" verisinin AYRI ekran görüntülerinden gelmesi gerektiği için.
+  document.getElementById("ssAppliedUploadRow").style.display = type === "ss" ? "flex" : "none";
   const thead = document.getElementById("entryThead");
   if (type === "svs" || type === "other") {
     thead.innerHTML = `<tr><th>${t("thStatus")}</th><th>${t("thUsername")}</th><th>${t("thRank")}</th><th>${t("thPointsCol")}</th><th>${t("thExcused")}</th></tr>`;
@@ -221,7 +224,7 @@ function entryVisibleMembers(query) {
 
 export function renderEntryRows() {
   if (!state.entryContext) return;
-  const { type, weekId, aiDraft } = state.entryContext;
+  const { type, weekId, aiDraft, ssAppliedDraft } = state.entryContext;
   const store = storeFor(type);
   const query = (document.getElementById("entrySearch").value || "").toLowerCase().trim();
   const list = entryVisibleMembers(query);
@@ -282,9 +285,10 @@ export function renderEntryRows() {
       const attended = draft && draft.attended != null ? !!draft.attended : (entry ? !!entry.attended : false);
       const excused = draft && draft.excused != null ? !!draft.excused : (entry ? !!entry.excused : false);
       const attendStatus = attended ? "joined" : excused ? "excused" : "absent";
-      const appliedSlot1 = entry ? !!entry.appliedSlot1 : false;
-      const appliedSlot2 = entry ? !!entry.appliedSlot2 : false;
-      const appliedSlot3 = entry ? !!entry.appliedSlot3 : false;
+      const appliedDraft = ssAppliedDraft && ssAppliedDraft[member.id];
+      const appliedSlot1 = appliedDraft && appliedDraft.slot1 != null ? !!appliedDraft.slot1 : (entry ? !!entry.appliedSlot1 : false);
+      const appliedSlot2 = appliedDraft && appliedDraft.slot2 != null ? !!appliedDraft.slot2 : (entry ? !!entry.appliedSlot2 : false);
+      const appliedSlot3 = appliedDraft && appliedDraft.slot3 != null ? !!appliedDraft.slot3 : (entry ? !!entry.appliedSlot3 : false);
       return `<tr>
         <td>${escapeHtml(member.name)}</td>
         <td><span class="rank-badge ${rankClass(member.rank)}" style="font-size:11px;padding:2px 8px;">${member.rank}</span></td>
@@ -455,6 +459,86 @@ export async function handleEntryScreenshot(event) {
     const unmatchedCount = (state.entryContext.aiUnmatched || []).length;
     let message = t("aiFillDone").replace("{n}", String(matchedCount));
     if (unmatchedCount) message += " " + t("aiFillUnmatchedToast").replace("{n}", String(unmatchedCount));
+    if (failedBatches) message += " " + t("aiFillBatchFailed").replace("{n}", String(failedBatches));
+    showToast(message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
+  }
+}
+
+/**
+ * AI'dan dönen (SS) "kim bu ekran görüntüsündeki listede var" sonuçlarını
+ * entryContext.ssAppliedDraft'a EKLER — `applyAiDraft`'ın tersine, bu draft
+ * "AI ile Doldur" (katılım/grup) tarafından SIFIRLANMAZ ve kendisi de o
+ * taslağı SIFIRLAMAZ; ikisi tamamen bağımsız taslaklardır. Aynı şekilde
+ * farklı saat dilimleri için ayrı ayrı yüklenen ekran görüntüleri de
+ * birbirinin üzerine yazmaz — her biri kendi slot alanına yazılır.
+ */
+function applySsAppliedDraft(results, slot) {
+  if (!state.entryContext.ssAppliedDraft) state.entryContext.ssAppliedDraft = {};
+  const draft = state.entryContext.ssAppliedDraft;
+  const slotKey = "slot" + slot;
+  (results || []).forEach((r) => {
+    if (!r || !r.memberId) return;
+    if (!draft[r.memberId]) draft[r.memberId] = {};
+    draft[r.memberId][slotKey] = true;
+  });
+  return Object.keys(draft).length;
+}
+
+/** "📋 Başvuru Ekran Görüntüsü Yükle" (sadece SS) — seçilen saat dilimi için, o listede görünen üyeleri okuyup ssAppliedDraft'a işler. Katılım/grup taslağına (aiDraft) hiç dokunmaz. */
+export async function handleSsAppliedScreenshot(event) {
+  const files = Array.from(event.target.files || []);
+  event.target.value = "";
+  if (!files.length || !state.entryContext) return;
+  if (files.length > MAX_SCREENSHOTS) {
+    showToast(t("aiFillTooMany").replace("{n}", String(MAX_SCREENSHOTS)));
+    return;
+  }
+  const slot = document.getElementById("ssAppliedSlotSelect").value;
+  const roster = entryVisibleMembers("").map((m) => ({ id: m.id, name: m.name || "", gameId: m.gameId || "" }));
+  if (!roster.length) {
+    showToast(t("aiFillNoMembers"));
+    return;
+  }
+
+  const batches = [];
+  for (let i = 0; i < files.length; i += BATCH_SIZE) batches.push(files.slice(i, i + BATCH_SIZE));
+
+  const btn = document.getElementById("t_ssAppliedFillBtn");
+  const originalLabel = btn ? btn.textContent : "";
+  if (btn) btn.disabled = true;
+
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData && sessionData.session ? sessionData.session.access_token : "";
+
+  let matchedCount = 0;
+  let failedBatches = 0;
+  try {
+    for (let i = 0; i < batches.length; i++) {
+      if (btn) {
+        btn.textContent = batches.length > 1
+          ? t("aiFillWorkingBatch").replace("{i}", String(i + 1)).replace("{n}", String(batches.length))
+          : t("aiFillWorking");
+      }
+      try {
+        const images = await Promise.all(batches[i].map((file) => resizeImageToDataUrl(file)));
+        const res = await fetch("/api/read-screenshot", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+          body: JSON.stringify({ type: "ss_applied", slot: Number(slot), roster, images })
+        });
+        const payload = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(payload.error || `HTTP ${res.status}`);
+        matchedCount = applySsAppliedDraft(payload.results, slot);
+        renderUnmatchedBox((state.entryContext.aiUnmatched || []).concat(payload.unmatched || []));
+        renderEntryRows();
+      } catch (batchError) {
+        console.error(batchError);
+        failedBatches++;
+      }
+    }
+    let message = t("aiFillDone").replace("{n}", String(matchedCount));
     if (failedBatches) message += " " + t("aiFillBatchFailed").replace("{n}", String(failedBatches));
     showToast(message);
   } finally {
