@@ -884,6 +884,28 @@ const POWER_MAX_SCREENSHOTS = 30;
 // ne olursa olsun HER ZAMAN şüpheli sayılır (bkz. classifyPowerReading).
 const SUSPICIOUS_JUMP_MULTIPLIER = 2;
 
+/** /api/read-screenshot'a istek atar; kota dolduğunda (HTTP 429) bekleyip yeniden dener (bkz. events.js'teki eşdeğeri — döngüsel import olmasın diye ayrıca tanımlı). */
+async function postReadScreenshot(body, token, onProgress) {
+  const maxAttempts = 3;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const res = await fetch("/api/read-screenshot", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+      body: JSON.stringify(body)
+    });
+    const payload = await res.json().catch(() => ({}));
+    if (res.ok) return payload;
+    if (res.status === 429 && attempt < maxAttempts) {
+      const match = /retry in ([\d.]+)s/i.exec(payload.error || "");
+      const waitMs = Math.min(match ? Math.ceil(parseFloat(match[1]) * 1000) + 1000 : 15000, 30000);
+      if (onProgress) onProgress(waitMs, attempt);
+      await new Promise((resolve) => setTimeout(resolve, waitMs));
+      continue;
+    }
+    throw new Error(payload.error || `HTTP ${res.status}`);
+  }
+}
+
 /** Seçilen görseli, API'ye göndermeden önce makul bir boyuta küçültüp JPEG data URL'ine çevirir (bkz. events.js'teki eşdeğeri — burada da aynı mantık, döngüsel import olmasın diye ayrıca tanımlı). */
 function resizeImageToDataUrl(file, maxDim = 1568, quality = 0.85) {
   return new Promise((resolve, reject) => {
@@ -1016,13 +1038,9 @@ export async function handlePowerScreenshot(event) {
       }
       try {
         const images = await Promise.all(batches[i].map((file) => resizeImageToDataUrl(file)));
-        const res = await fetch("/api/read-screenshot", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-          body: JSON.stringify({ type: "power", roster, images })
+        const payload = await postReadScreenshot({ type: "power", roster, images }, token, (waitMs) => {
+          if (btn) btn.textContent = t("aiFillRateLimited").replace("{s}", String(Math.ceil(waitMs / 1000)));
         });
-        const payload = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(payload.error || `HTTP ${res.status}`);
         const membersById = new Map(state.members.map((m) => [m.id, m]));
         (payload.results || []).forEach((r) => {
           if (!r || !r.memberId || r.power == null) return;

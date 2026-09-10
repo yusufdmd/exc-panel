@@ -400,6 +400,33 @@ const BATCH_SIZE = 6;
 // yüzlerce dosya seçilip onlarca AI isteği atılmasına karşı bir güvenlik supabı.
 const MAX_SCREENSHOTS = 30;
 
+/**
+ * /api/read-screenshot'a istek atar; Gemini'nin ücretsiz kotası anlık
+ * doluysa (HTTP 429) hemen pes etmek yerine, hata mesajındaki "retry in Ns"
+ * ipucunu (yoksa varsayılan 15sn) bekleyip en fazla 2 kez daha dener —
+ * onProgress ile bekleme durumunu buton metnine yansıtabilmek için verilir.
+ */
+async function postReadScreenshot(body, token, onProgress) {
+  const maxAttempts = 3;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const res = await fetch("/api/read-screenshot", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+      body: JSON.stringify(body)
+    });
+    const payload = await res.json().catch(() => ({}));
+    if (res.ok) return payload;
+    if (res.status === 429 && attempt < maxAttempts) {
+      const match = /retry in ([\d.]+)s/i.exec(payload.error || "");
+      const waitMs = Math.min(match ? Math.ceil(parseFloat(match[1]) * 1000) + 1000 : 15000, 30000);
+      if (onProgress) onProgress(waitMs, attempt);
+      await new Promise((resolve) => setTimeout(resolve, waitMs));
+      continue;
+    }
+    throw new Error(payload.error || `HTTP ${res.status}`);
+  }
+}
+
 /** "🤖 AI ile Doldur" — seçilen ekran görüntülerini (gerekirse gruplar hâlinde, arka arkaya) sunucuya gönderir, dönen sonuçları taslak olarak tabloya işler. */
 export async function handleEntryScreenshot(event) {
   const files = Array.from(event.target.files || []);
@@ -442,13 +469,9 @@ export async function handleEntryScreenshot(event) {
       }
       try {
         const images = await Promise.all(batches[i].map((file) => resizeImageToDataUrl(file)));
-        const res = await fetch("/api/read-screenshot", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-          body: JSON.stringify({ type, roster, images })
+        const payload = await postReadScreenshot({ type, roster, images }, token, (waitMs) => {
+          if (btn) btn.textContent = t("aiFillRateLimited").replace("{s}", String(Math.ceil(waitMs / 1000)));
         });
-        const payload = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(payload.error || `HTTP ${res.status}`);
         matchedCount = applyAiDraft(payload.results);
         renderUnmatchedBox((state.entryContext.aiUnmatched || []).concat(payload.unmatched || []));
         renderEntryRows();
@@ -525,13 +548,9 @@ export async function handleSsAppliedScreenshot(event) {
       }
       try {
         const images = await Promise.all(batches[i].map((file) => resizeImageToDataUrl(file)));
-        const res = await fetch("/api/read-screenshot", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-          body: JSON.stringify({ type: "ss_applied", roster, images })
+        const payload = await postReadScreenshot({ type: "ss_applied", roster, images }, token, (waitMs) => {
+          if (btn) btn.textContent = t("aiFillRateLimited").replace("{s}", String(Math.ceil(waitMs / 1000)));
         });
-        const payload = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(payload.error || `HTTP ${res.status}`);
         matchedCount = applySsAppliedDraft(payload.results);
         renderUnmatchedBox((state.entryContext.aiUnmatched || []).concat(payload.unmatched || []));
         renderEntryRows();
