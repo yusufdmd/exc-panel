@@ -432,6 +432,7 @@ export async function handleEntryScreenshot(event) {
 
   let matchedCount = 0;
   let failedBatches = 0;
+  let firstError = "";
   try {
     for (let i = 0; i < batches.length; i++) {
       if (btn) {
@@ -453,13 +454,14 @@ export async function handleEntryScreenshot(event) {
         renderEntryRows();
       } catch (batchError) {
         console.error(batchError);
+        if (!firstError) firstError = batchError && batchError.message ? batchError.message : String(batchError);
         failedBatches++;
       }
     }
     const unmatchedCount = (state.entryContext.aiUnmatched || []).length;
     let message = t("aiFillDone").replace("{n}", String(matchedCount));
     if (unmatchedCount) message += " " + t("aiFillUnmatchedToast").replace("{n}", String(unmatchedCount));
-    if (failedBatches) message += " " + t("aiFillBatchFailed").replace("{n}", String(failedBatches));
+    if (failedBatches) message += " " + t("aiFillBatchFailed").replace("{n}", String(failedBatches)) + (firstError ? ` – ${firstError}` : "");
     showToast(message);
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
@@ -513,6 +515,7 @@ export async function handleSsAppliedScreenshot(event) {
 
   let matchedCount = 0;
   let failedBatches = 0;
+  let firstError = "";
   try {
     for (let i = 0; i < batches.length; i++) {
       if (btn) {
@@ -534,11 +537,12 @@ export async function handleSsAppliedScreenshot(event) {
         renderEntryRows();
       } catch (batchError) {
         console.error(batchError);
+        if (!firstError) firstError = batchError && batchError.message ? batchError.message : String(batchError);
         failedBatches++;
       }
     }
     let message = t("aiFillDone").replace("{n}", String(matchedCount));
-    if (failedBatches) message += " " + t("aiFillBatchFailed").replace("{n}", String(failedBatches));
+    if (failedBatches) message += " " + t("aiFillBatchFailed").replace("{n}", String(failedBatches)) + (firstError ? ` – ${firstError}` : "");
     showToast(message);
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = originalLabel; }

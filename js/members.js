@@ -1006,6 +1006,7 @@ export async function handlePowerScreenshot(event) {
   const token = sessionData && sessionData.session ? sessionData.session.access_token : "";
 
   let failedBatches = 0;
+  let firstError = "";
   try {
     for (let i = 0; i < batches.length; i++) {
       if (btn) {
@@ -1042,6 +1043,7 @@ export async function handlePowerScreenshot(event) {
         renderPowerDraftBar();
       } catch (batchError) {
         console.error(batchError);
+        if (!firstError) firstError = batchError && batchError.message ? batchError.message : String(batchError);
         failedBatches++;
       }
     }
@@ -1051,7 +1053,7 @@ export async function handlePowerScreenshot(event) {
     let message = t("aiFillDone").replace("{n}", String(matchedCount));
     if (suspiciousCount) message += " " + t("powerSuspiciousToast").replace("{n}", String(suspiciousCount));
     if (unmatchedCount) message += " " + t("aiFillUnmatchedToast").replace("{n}", String(unmatchedCount));
-    if (failedBatches) message += " " + t("aiFillBatchFailed").replace("{n}", String(failedBatches));
+    if (failedBatches) message += " " + t("aiFillBatchFailed").replace("{n}", String(failedBatches)) + (firstError ? ` – ${firstError}` : "");
     showToast(message);
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
