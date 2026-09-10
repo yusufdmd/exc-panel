@@ -190,7 +190,7 @@ export function openEntryModal(type, weekId) {
   } else if (type === "kod") {
     thead.innerHTML = `<tr><th>${t("thStatus")}</th><th>${t("thUsername")}</th><th>${t("thRank")}</th><th>${t("thExcused")}</th></tr>`;
   } else {
-    thead.innerHTML = `<tr><th>${t("thUsername")}</th><th>${t("thRank")}</th><th>${t("thAppliedSlots")}</th><th>${t("thSelectedSlot")}</th><th>${t("thAttendStatus")}</th></tr>`;
+    thead.innerHTML = `<tr><th>${t("thUsername")}</th><th>${t("thRank")}</th><th>${t("thAppliedSlots")}</th><th>${t("thGroup")}</th><th>${t("thAttendStatus")}</th></tr>`;
   }
   document.getElementById("entryOverlay").classList.add("active");
   renderEntryRows();
@@ -289,15 +289,14 @@ export function renderEntryRows() {
         <td>${escapeHtml(member.name)}</td>
         <td><span class="rank-badge ${rankClass(member.rank)}" style="font-size:11px;padding:2px 8px;">${member.rank}</span></td>
         <td style="white-space:nowrap;">
-          <label style="margin-right:8px;"><input type="checkbox" class="applied-slot-check" data-mid="${member.id}" data-slot="1" ${appliedSlot1 ? "checked" : ""}> 1</label>
-          <label style="margin-right:8px;"><input type="checkbox" class="applied-slot-check" data-mid="${member.id}" data-slot="2" ${appliedSlot2 ? "checked" : ""}> 2</label>
-          <label><input type="checkbox" class="applied-slot-check" data-mid="${member.id}" data-slot="3" ${appliedSlot3 ? "checked" : ""}> 3</label>
+          <label style="margin-right:8px;"><input type="checkbox" class="applied-slot-check" data-mid="${member.id}" data-slot="1" ${appliedSlot1 ? "checked" : ""}> ${t("ssSlot1")}</label>
+          <label style="margin-right:8px;"><input type="checkbox" class="applied-slot-check" data-mid="${member.id}" data-slot="2" ${appliedSlot2 ? "checked" : ""}> ${t("ssSlot2")}</label>
+          <label><input type="checkbox" class="applied-slot-check" data-mid="${member.id}" data-slot="3" ${appliedSlot3 ? "checked" : ""}> ${t("ssSlot3")}</label>
         </td>
         <td><select class="grp-select" data-mid="${member.id}">
           <option value="" ${group === "" ? "selected" : ""}>${t("groupNone")}</option>
-          <option value="1" ${group === "1" ? "selected" : ""}>${t("ssSlot1")}</option>
-          <option value="2" ${group === "2" ? "selected" : ""}>${t("ssSlot2")}</option>
-          <option value="3" ${group === "3" ? "selected" : ""}>${t("ssSlot3")}</option>
+          <option value="A" ${group === "A" ? "selected" : ""}>${t("groupA")}</option>
+          <option value="B" ${group === "B" ? "selected" : ""}>${t("groupB")}</option>
         </select></td>
         <td><select class="attend-status-select" data-mid="${member.id}">
           <option value="joined" ${attendStatus === "joined" ? "selected" : ""}>${t("statusYes")}</option>
