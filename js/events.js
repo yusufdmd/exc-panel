@@ -526,8 +526,12 @@ export async function handleSsAppliedScreenshot(event) {
     return;
   }
 
-  const batches = [];
-  for (let i = 0; i < files.length; i += BATCH_SIZE) batches.push(files.slice(i, i + BATCH_SIZE));
+  // NOT: burada BATCH_SIZE ile gruplamıyoruz — her ekran görüntüsü FARKLI bir
+  // saat dilimine ait olabileceğinden, birden fazla farklı-saat ekran
+  // görüntüsü aynı isteğe karışırsa model aynı oyuncuyu (yanlışlıkla) tek
+  // saate indirgeyip diğerini atlayabiliyor. Bu riski tamamen ortadan
+  // kaldırmak için her görsel kendi (tek görselli) isteğinde gönderilir.
+  const batches = files.map((file) => [file]);
 
   const btn = document.getElementById("t_ssAppliedFillBtn");
   const originalLabel = btn ? btn.textContent : "";
