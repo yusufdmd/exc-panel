@@ -24,7 +24,15 @@
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://sbzctjpthorlypfrqgte.supabase.co";
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "sb_publishable_FNxETjiXZ4tiWqzgyR0vng_vKxGGSp9";
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.6-flash";
+// Ücretsiz kademede her modelin kotası (RPM/RPD) AYRI sayılıyor — bir modele
+// takılırsak diğerine geçebiliriz. "Flash Lite" modelleri günde 500 istekle
+// (normal Flash'ın 20'sine karşı) en geniş ücretsiz kotaya sahip olduğu için
+// önce onlar denenir; GEMINI_MODEL env değişkeni ayarlıysa (ve zaten zincirde
+// yoksa) en başa eklenir, zincirin geri kalanı yine de yedek olarak kalır.
+const DEFAULT_GEMINI_MODELS = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.6-flash"];
+const GEMINI_MODELS = process.env.GEMINI_MODEL && !DEFAULT_GEMINI_MODELS.includes(process.env.GEMINI_MODEL)
+  ? [process.env.GEMINI_MODEL, ...DEFAULT_GEMINI_MODELS]
+  : DEFAULT_GEMINI_MODELS;
 
 async function verifyAdmin(token) {
   if (!token) return false;
@@ -200,30 +208,42 @@ module.exports = async (req, res) => {
 
     const responseSchema = buildResponseSchema(type);
     const promptText = buildPrompt(type, roster, parsedImages.length);
-
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`;
-    const geminiRes = await fetch(geminiUrl, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            { text: promptText },
-            ...parsedImages.map((img) => ({ inline_data: { mime_type: img.mediaType, data: img.data } }))
-          ]
-        }],
-        generationConfig: {
-          responseMimeType: "application/json",
-          responseSchema
-        }
-      })
+    const geminiBody = JSON.stringify({
+      contents: [{
+        parts: [
+          { text: promptText },
+          ...parsedImages.map((img) => ({ inline_data: { mime_type: img.mediaType, data: img.data } }))
+        ]
+      }],
+      generationConfig: {
+        responseMimeType: "application/json",
+        responseSchema
+      }
     });
 
-    if (!geminiRes.ok) {
-      const errBody = await geminiRes.text().catch(() => "");
-      console.error("[read-screenshot] Gemini error:", geminiRes.status, errBody);
-      res.status(502).json({ error: `AI servisinden yanıt alınamadı (HTTP ${geminiRes.status}): ${errBody.slice(0, 500)}` });
-      return;
+    // Her model ücretsiz kademede AYRI bir kotaya sahip — biri kotaya takılırsa
+    // (429) veya artık sunulmuyorsa (404) ya da geçici olarak aşırı yüklüyse
+    // (503), pes etmeden zincirdeki bir sonraki modele geçiyoruz.
+    let geminiRes = null;
+    for (let mi = 0; mi < GEMINI_MODELS.length; mi++) {
+      const model = GEMINI_MODELS[mi];
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${process.env.GEMINI_API_KEY}`;
+      const attemptRes = await fetch(geminiUrl, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: geminiBody
+      });
+      if (attemptRes.ok) {
+        geminiRes = attemptRes;
+        break;
+      }
+      const errBody = await attemptRes.text().catch(() => "");
+      console.error(`[read-screenshot] Gemini error (model ${model}):`, attemptRes.status, errBody);
+      const retryableStatus = attemptRes.status === 429 || attemptRes.status === 404 || attemptRes.status === 503;
+      if (!retryableStatus || mi === GEMINI_MODELS.length - 1) {
+        res.status(502).json({ error: `AI servisinden yanıt alınamadı (HTTP ${attemptRes.status}, model: ${model}): ${errBody.slice(0, 500)}` });
+        return;
+      }
     }
 
     const geminiData = await geminiRes.json();
