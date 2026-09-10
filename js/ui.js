@@ -943,9 +943,6 @@ export function applyStaticText() {
   document.getElementById("t_save3").textContent = t("save");
   document.getElementById("t_aiFillBtn").textContent = t("aiFillBtn");
   document.getElementById("t_ssAppliedFillBtn").textContent = t("ssAppliedFillBtn");
-  document.getElementById("ssAppliedSlotOpt1").textContent = t("ssSlot1");
-  document.getElementById("ssAppliedSlotOpt2").textContent = t("ssSlot2");
-  document.getElementById("ssAppliedSlotOpt3").textContent = t("ssSlot3");
   document.getElementById("t_powerAiFillBtn").textContent = t("powerAiFillBtn");
   document.getElementById("t_applyPowerDraft").textContent = t("applyPowerDraftBtn");
   document.getElementById("t_discardPowerDraft").textContent = t("cancel");

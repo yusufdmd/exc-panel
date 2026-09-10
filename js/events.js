@@ -467,26 +467,26 @@ export async function handleEntryScreenshot(event) {
 }
 
 /**
- * AI'dan dönen (SS) "kim bu ekran görüntüsündeki listede var" sonuçlarını
+ * AI'dan dönen (SS) "kim hangi saat dilimine başvurmuş" sonuçlarını
  * entryContext.ssAppliedDraft'a EKLER — `applyAiDraft`'ın tersine, bu draft
  * "AI ile Doldur" (katılım/grup) tarafından SIFIRLANMAZ ve kendisi de o
- * taslağı SIFIRLAMAZ; ikisi tamamen bağımsız taslaklardır. Aynı şekilde
- * farklı saat dilimleri için ayrı ayrı yüklenen ekran görüntüleri de
- * birbirinin üzerine yazmaz — her biri kendi slot alanına yazılır.
+ * taslağı SIFIRLAMAZ; ikisi tamamen bağımsız taslaklardır. Saat dilimi
+ * artık istemciden değil, AI'ın her sonuç için ayrı ayrı bildirdiği
+ * `slot` alanından gelir — tek yüklemede karışık saatli birden fazla
+ * ekran görüntüsü gönderilebilir, her biri kendi slot alanına yazılır.
  */
-function applySsAppliedDraft(results, slot) {
+function applySsAppliedDraft(results) {
   if (!state.entryContext.ssAppliedDraft) state.entryContext.ssAppliedDraft = {};
   const draft = state.entryContext.ssAppliedDraft;
-  const slotKey = "slot" + slot;
   (results || []).forEach((r) => {
-    if (!r || !r.memberId) return;
+    if (!r || !r.memberId || !r.slot) return;
     if (!draft[r.memberId]) draft[r.memberId] = {};
-    draft[r.memberId][slotKey] = true;
+    draft[r.memberId]["slot" + r.slot] = true;
   });
   return Object.keys(draft).length;
 }
 
-/** "📋 Başvuru Ekran Görüntüsü Yükle" (sadece SS) — seçilen saat dilimi için, o listede görünen üyeleri okuyup ssAppliedDraft'a işler. Katılım/grup taslağına (aiDraft) hiç dokunmaz. */
+/** "📋 Başvuru Ekran Görüntüsü Yükle" (sadece SS) — birden fazla, karışık saatli ekran görüntüsü birden yüklenebilir; her ekran görüntüsündeki saat etiketini AI kendisi okur. Katılım/grup taslağına (aiDraft) hiç dokunmaz. */
 export async function handleSsAppliedScreenshot(event) {
   const files = Array.from(event.target.files || []);
   event.target.value = "";
@@ -495,7 +495,6 @@ export async function handleSsAppliedScreenshot(event) {
     showToast(t("aiFillTooMany").replace("{n}", String(MAX_SCREENSHOTS)));
     return;
   }
-  const slot = document.getElementById("ssAppliedSlotSelect").value;
   const roster = entryVisibleMembers("").map((m) => ({ id: m.id, name: m.name || "", gameId: m.gameId || "" }));
   if (!roster.length) {
     showToast(t("aiFillNoMembers"));
@@ -526,11 +525,11 @@ export async function handleSsAppliedScreenshot(event) {
         const res = await fetch("/api/read-screenshot", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-          body: JSON.stringify({ type: "ss_applied", slot: Number(slot), roster, images })
+          body: JSON.stringify({ type: "ss_applied", roster, images })
         });
         const payload = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(payload.error || `HTTP ${res.status}`);
-        matchedCount = applySsAppliedDraft(payload.results, slot);
+        matchedCount = applySsAppliedDraft(payload.results);
         renderUnmatchedBox((state.entryContext.aiUnmatched || []).concat(payload.unmatched || []));
         renderEntryRows();
       } catch (batchError) {

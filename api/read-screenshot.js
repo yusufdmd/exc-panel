@@ -78,10 +78,14 @@ function buildResponseSchema(type) {
       power: { type: "NUMBER", description: "Ekran görüntüsünde bu üye için görünen güç (power) değeri, tam sayıya çevrilmiş." }
     };
   } else if (type === "ss_applied") {
-    // Bu tür puan/durum içermez — sadece "bu ekran görüntüsündeki listede
-    // görünen roster üyeleri" demektir (hangi saat dilimine ait olduğunu
-    // istemci zaten biliyor, tek istekte hep aynı saat).
-    itemProps = { memberId: memberIdField };
+    // Tek istekte BİRDEN FAZLA ekran görüntüsü gönderilebilir, her biri
+    // FARKLI bir saat dilimine ait olabilir (görselin kendi üzerinde saat/
+    // saat numarası yazar) — bu yüzden hangi slotta olduğu istemciden değil,
+    // modelden istenir.
+    itemProps = {
+      memberId: memberIdField,
+      slot: { type: "STRING", enum: ["1", "2", "3"], description: "Bu üyenin göründüğü ekran görüntüsünde belirtilen saat dilimi numarası (başlıkta/etikette yazan saate göre 1, 2 veya 3)." }
+    };
   } else {
     // svs / other
     itemProps = {
@@ -116,28 +120,35 @@ function buildResponseSchema(type) {
   };
 }
 
-function buildPrompt(type, roster, imageCount, slot) {
+function buildPrompt(type, roster, imageCount) {
   const rosterJson = JSON.stringify(roster);
   const subject = type === "power"
     ? "You are extracting each player's current power/strength level from mobile game roster screenshots."
     : type === "ss_applied"
-    ? `You are looking at a list of players who applied/voted for time slot ${slot} of a guild event (SandStorm). Identify every player visible in this list — you don't need to read any score/status, just who is present.`
+    ? "You are extracting which time slot(s) each player applied/voted for in a guild event (SandStorm) sign-up. There are 3 possible time slots (1, 2, 3)."
     : "You are extracting guild-event attendance/score data from mobile game screenshots.";
+  const imagesNote = type === "ss_applied"
+    ? (imageCount > 1
+        ? `You are given ${imageCount} screenshots. IMPORTANT: unlike a typical scrolled list, each screenshot here may show the applicant list for a DIFFERENT time slot — the slot number or time (e.g. "1", "09:00", "2", "18:00", "3", "23:00") is usually shown as a header/label on or near the list. Read that label on EACH screenshot separately to determine its slot, then report every player visible in it under that slot. A player appearing in more than one screenshot applied to more than one slot — report them once per slot (i.e. it's fine for the same memberId to appear multiple times in "results" with a different "slot" each time).`
+        : "You are given 1 screenshot. Read its slot number/time label (e.g. \"1\", \"09:00\") to determine which slot (1, 2, or 3) this list belongs to, and report every player visible in it under that slot.")
+    : (imageCount > 1
+        ? `You are given ${imageCount} screenshots — they are different parts of the SAME list (e.g. scrolled sections), not separate snapshots in time. Combine information across all of them.`
+        : "You are given 1 screenshot.");
   return [
     subject,
     type === "power" || type === "ss_applied" ? "" : `Event type: ${type}.`,
-    imageCount > 1
-      ? `You are given ${imageCount} screenshots — they are different parts of the SAME list (e.g. scrolled sections), not separate snapshots in time. Combine information across all of them.`
-      : "You are given 1 screenshot.",
+    imagesNote,
     "Here is the roster of members currently relevant (JSON array of {id, name, gameId}):",
     rosterJson,
     "",
     "Read the screenshot(s) and match each player you can identify (by in-game name and/or numeric ID) to exactly one roster entry.",
     "Rules:",
     "- Only use \"id\" values copied verbatim from the roster above. Never invent an id.",
-    "- If a player in the screenshots does not clearly match any roster member (e.g. their in-game display name changed and it no longer resembles the roster name/ID), do NOT guess or force a match — instead add them to \"unmatched\" with the exact name/ID as shown and a short description of the value seen (points/status/group/power).",
+    "- If a player in the screenshots does not clearly match any roster member (e.g. their in-game display name changed and it no longer resembles the roster name/ID), do NOT guess or force a match — instead add them to \"unmatched\" with the exact name/ID as shown and a short description of the value seen (points/status/group/power/slot).",
     "- If a roster member is not visible in any screenshot, omit them from both results and unmatched — do not fabricate a value.",
-    "- If the same player appears in more than one screenshot, include them only once (in results or unmatched, not both), using the clearest/most complete reading.",
+    type === "ss_applied"
+      ? "- Do NOT merge a player's entries across different slots into one — if they applied to slots 1 and 2, that's two separate items in \"results\" (same memberId, slot \"1\" and slot \"2\")."
+      : "- If the same player appears in more than one screenshot, include them only once (in results or unmatched, not both), using the clearest/most complete reading.",
     "- Numbers in these screenshots are often abbreviated (e.g. \"12.3M\", \"1.2k\") — convert to the full numeric value.",
     "- Respond with JSON matching the given schema only."
   ].filter(Boolean).join("\n");
@@ -163,14 +174,10 @@ module.exports = async (req, res) => {
       return;
     }
 
-    const { type, roster, images, slot } = req.body || {};
+    const { type, roster, images } = req.body || {};
     const validTypes = ["gvg", "svs", "ss", "kod", "other", "power", "ss_applied"];
     if (!validTypes.includes(type)) {
       res.status(400).json({ error: "Geçersiz etkinlik türü." });
-      return;
-    }
-    if (type === "ss_applied" && ![1, 2, 3].includes(Number(slot))) {
-      res.status(400).json({ error: "Geçersiz saat dilimi." });
       return;
     }
     if (!Array.isArray(roster) || !roster.length) {
@@ -192,7 +199,7 @@ module.exports = async (req, res) => {
     }
 
     const responseSchema = buildResponseSchema(type);
-    const promptText = buildPrompt(type, roster, parsedImages.length, slot);
+    const promptText = buildPrompt(type, roster, parsedImages.length);
 
     const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${process.env.GEMINI_API_KEY}`;
     const geminiRes = await fetch(geminiUrl, {
