@@ -339,7 +339,7 @@ th.th-team span{ cursor:pointer; }
 .lb-bar-fill{ height:100%; background: linear-gradient(90deg, var(--cyan-ink), var(--blue-ink)); border-radius:4px; }
 .lb-points{ font-family:var(--font-mono); font-weight:700; color:var(--cyan-ink); width:90px; text-align:right; }
 
-.toast{ position:fixed; bottom:24px; left:50%; transform:translate(-50%, 8px); background:var(--bg-raised); border:1px solid var(--cyan-ink); color:var(--text-primary); padding:10px 20px; border-radius:100px; font-size:13px; z-index:200; opacity:0; transition: opacity .2s, transform .2s; max-width:90vw; text-align:center; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
+.toast{ position:fixed; bottom:24px; left:50%; transform:translate(-50%, 8px); background:var(--bg-raised); border:1px solid var(--cyan-ink); color:var(--text-primary); padding:10px 20px; border-radius:100px; font-size:13px; z-index:200; opacity:0; pointer-events:none; transition: opacity .2s, transform .2s; max-width:90vw; text-align:center; box-shadow: 0 4px 16px rgba(0,0,0,0.3); }
 .toast.show{ opacity:1; transform:translate(-50%, 0); }
 
 @media (max-width:900px){ .stats{ grid-template-columns: repeat(3,1fr); } }
