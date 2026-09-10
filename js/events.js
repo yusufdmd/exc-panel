@@ -32,7 +32,7 @@ export function mapWeek(row) {
 /** Supabase kayıt satırını, türüne göre uygulama şekline çevirir. */
 export function mapEntry(type, row) {
   if (type === "gvg") return { id: row.id, memberId: row.member_id, weekId: row.week_id, points: row.points };
-  if (type === "ss") return { id: row.id, memberId: row.member_id, weekId: row.week_id, group: row.group_name, attended: row.attended, excused: row.excused };
+  if (type === "ss") return { id: row.id, memberId: row.member_id, weekId: row.week_id, group: row.group_name, attended: row.attended, excused: row.excused, appliedSlot1: !!row.applied_slot_1, appliedSlot2: !!row.applied_slot_2, appliedSlot3: !!row.applied_slot_3 };
   if (type === "kod") return { id: row.id, memberId: row.member_id, weekId: row.week_id, status: row.status, excused: row.excused };
   return { id: row.id, memberId: row.member_id, weekId: row.week_id, status: row.status, points: row.points, excused: row.excused };
 }
@@ -58,7 +58,7 @@ export function eventTypeLabel(type) {
 /** Uygulama şeklindeki bir kaydı (mapEntry'nin tersi), belirli bir üye id'sine bağlı olarak veritabanı şekline çevirir — aktivite logundan geri yükleme (restore) için. */
 export function entryToDbPayload(type, entry, memberId) {
   if (type === "gvg") return { week_id: entry.weekId, member_id: memberId, points: entry.points };
-  if (type === "ss") return { week_id: entry.weekId, member_id: memberId, group_name: entry.group || null, attended: !!entry.attended, excused: !!entry.excused };
+  if (type === "ss") return { week_id: entry.weekId, member_id: memberId, group_name: entry.group || null, attended: !!entry.attended, excused: !!entry.excused, applied_slot_1: !!entry.appliedSlot1, applied_slot_2: !!entry.appliedSlot2, applied_slot_3: !!entry.appliedSlot3 };
   if (type === "kod") return { week_id: entry.weekId, member_id: memberId, status: entry.status, excused: !!entry.excused };
   return { week_id: entry.weekId, member_id: memberId, status: entry.status, points: entry.points, excused: !!entry.excused };
 }
@@ -190,7 +190,7 @@ export function openEntryModal(type, weekId) {
   } else if (type === "kod") {
     thead.innerHTML = `<tr><th>${t("thStatus")}</th><th>${t("thUsername")}</th><th>${t("thRank")}</th><th>${t("thExcused")}</th></tr>`;
   } else {
-    thead.innerHTML = `<tr><th>${t("thUsername")}</th><th>${t("thRank")}</th><th>${t("thGroup")}</th><th>${t("thAttended")}</th><th>${t("thExcused")}</th></tr>`;
+    thead.innerHTML = `<tr><th>${t("thUsername")}</th><th>${t("thRank")}</th><th>${t("thAppliedSlots")}</th><th>${t("thSelectedSlot")}</th><th>${t("thAttendStatus")}</th></tr>`;
   }
   document.getElementById("entryOverlay").classList.add("active");
   renderEntryRows();
@@ -281,16 +281,29 @@ export function renderEntryRows() {
       const group = draft && draft.group != null ? draft.group : (entry ? (entry.group || "") : "");
       const attended = draft && draft.attended != null ? !!draft.attended : (entry ? !!entry.attended : false);
       const excused = draft && draft.excused != null ? !!draft.excused : (entry ? !!entry.excused : false);
+      const attendStatus = attended ? "joined" : excused ? "excused" : "absent";
+      const appliedSlot1 = entry ? !!entry.appliedSlot1 : false;
+      const appliedSlot2 = entry ? !!entry.appliedSlot2 : false;
+      const appliedSlot3 = entry ? !!entry.appliedSlot3 : false;
       return `<tr>
         <td>${escapeHtml(member.name)}</td>
         <td><span class="rank-badge ${rankClass(member.rank)}" style="font-size:11px;padding:2px 8px;">${member.rank}</span></td>
+        <td style="white-space:nowrap;">
+          <label style="margin-right:8px;"><input type="checkbox" class="applied-slot-check" data-mid="${member.id}" data-slot="1" ${appliedSlot1 ? "checked" : ""}> 1</label>
+          <label style="margin-right:8px;"><input type="checkbox" class="applied-slot-check" data-mid="${member.id}" data-slot="2" ${appliedSlot2 ? "checked" : ""}> 2</label>
+          <label><input type="checkbox" class="applied-slot-check" data-mid="${member.id}" data-slot="3" ${appliedSlot3 ? "checked" : ""}> 3</label>
+        </td>
         <td><select class="grp-select" data-mid="${member.id}">
           <option value="" ${group === "" ? "selected" : ""}>${t("groupNone")}</option>
-          <option value="A" ${group === "A" ? "selected" : ""}>${t("groupA")}</option>
-          <option value="B" ${group === "B" ? "selected" : ""}>${t("groupB")}</option>
+          <option value="1" ${group === "1" ? "selected" : ""}>${t("ssSlot1")}</option>
+          <option value="2" ${group === "2" ? "selected" : ""}>${t("ssSlot2")}</option>
+          <option value="3" ${group === "3" ? "selected" : ""}>${t("ssSlot3")}</option>
         </select></td>
-        <td><input type="checkbox" class="attend-check" data-mid="${member.id}" ${attended ? "checked" : ""}></td>
-        <td><input type="checkbox" class="excused-check" data-mid="${member.id}" ${excused ? "checked" : ""}></td>
+        <td><select class="attend-status-select" data-mid="${member.id}">
+          <option value="joined" ${attendStatus === "joined" ? "selected" : ""}>${t("statusYes")}</option>
+          <option value="absent" ${attendStatus === "absent" ? "selected" : ""}>${t("statusNo")}</option>
+          <option value="excused" ${attendStatus === "excused" ? "selected" : ""}>${t("ssExcusedStatus")}</option>
+        </select></td>
       </tr>`;
     }).join("");
   }
@@ -490,9 +503,16 @@ export async function saveEntry() {
     document.querySelectorAll("#entryRows tr").forEach((tr) => {
       const memberId = tr.querySelector(".grp-select").dataset.mid;
       const group = tr.querySelector(".grp-select").value;
-      const attended = tr.querySelector(".attend-check").checked;
-      const excused = tr.querySelector(".excused-check").checked;
-      payloads.push({ week_id: weekId, member_id: memberId, group_name: group || null, attended, excused });
+      const attendStatus = tr.querySelector(".attend-status-select").value;
+      const attended = attendStatus === "joined";
+      const excused = attendStatus === "excused";
+      const appliedSlot1 = tr.querySelector('.applied-slot-check[data-slot="1"]').checked;
+      const appliedSlot2 = tr.querySelector('.applied-slot-check[data-slot="2"]').checked;
+      const appliedSlot3 = tr.querySelector('.applied-slot-check[data-slot="3"]').checked;
+      payloads.push({
+        week_id: weekId, member_id: memberId, group_name: group || null, attended, excused,
+        applied_slot_1: appliedSlot1, applied_slot_2: appliedSlot2, applied_slot_3: appliedSlot3
+      });
     });
   }
 
@@ -544,12 +564,40 @@ function buildStatusReportHtml(store, week, members) {
     + reportSection(t("legendNotJoined"), "var(--danger-ink)", absent);
 }
 
-/** SS türü haftalık rapor: A/B grubu ayrı ayrı katıldı/katılmadı listeleri. */
+/** Bir SS "grup" (artık seçilen saat dilimi) değerini okunur bir etikete çevirir — eski A/B haftaları da destekler. */
+function ssGroupLabel(group) {
+  if (group === "1") return t("ssSlot1");
+  if (group === "2") return t("ssSlot2");
+  if (group === "3") return t("ssSlot3");
+  if (group === "A") return t("groupA");
+  if (group === "B") return t("groupB");
+  return group;
+}
+
+/** SS türü haftalık rapor: önce hangi saat dilimine kimlerin başvurduğu, sonra seçilen dilime göre ayrı ayrı katıldı/katılmadı listeleri. */
 function buildSsReportHtml(store, week, members) {
-  const groups = { A: { joined: [], absent: [] }, B: { joined: [], absent: [] } };
+  const applied = { "1": [], "2": [], "3": [] };
   members.forEach((member) => {
     const entry = memberEntryFor(store, member.id, week.id);
-    if (!entry || !entry.group || !groups[entry.group]) return;
+    if (!entry) return;
+    if (entry.appliedSlot1) applied["1"].push(member.name);
+    if (entry.appliedSlot2) applied["2"].push(member.name);
+    if (entry.appliedSlot3) applied["3"].push(member.name);
+  });
+  const appliedHtml = (applied["1"].length || applied["2"].length || applied["3"].length)
+    ? `<div style="margin-bottom:16px; padding-bottom:16px; border-bottom:1px solid var(--line);">
+        <div style="font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); margin-bottom:8px;">${t("ssAppliedSectionTitle")}</div>
+        ${reportSection(t("ssSlot1"), "var(--cyan-ink)", applied["1"])}
+        ${reportSection(t("ssSlot2"), "var(--cyan-ink)", applied["2"])}
+        ${reportSection(t("ssSlot3"), "var(--cyan-ink)", applied["3"])}
+      </div>`
+    : "";
+
+  const groups = {};
+  members.forEach((member) => {
+    const entry = memberEntryFor(store, member.id, week.id);
+    if (!entry || !entry.group) return;
+    if (!groups[entry.group]) groups[entry.group] = { joined: [], absent: [] };
     const bucket = groups[entry.group];
     if (entry.attended) bucket.joined.push(member.name);
     else bucket.absent.push(entry.excused ? member.name + " (M)" : member.name);
@@ -559,7 +607,9 @@ function buildSsReportHtml(store, week, members) {
       ${reportSection(t("legendJoined"), "var(--success-ink)", bucket.joined)}
       ${reportSection(t("legendNotJoined"), "var(--danger-ink)", bucket.absent)}
     </div>`;
-  return groupSection(t("groupA"), groups.A) + groupSection(t("groupB"), groups.B);
+  const groupsHtml = Object.keys(groups).sort().map((key) => groupSection(ssGroupLabel(key), groups[key])).join("");
+
+  return appliedHtml + groupsHtml;
 }
 
 /** GVG türü haftalık rapor: puana göre yeşil/sarı/kırmızı bölge listeleri. */
