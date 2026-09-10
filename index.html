@@ -35,10 +35,10 @@
       <img class="brand-logo" src="images/logo.png" alt="Excellence">
     </div>
     <div class="nav-links" id="navLinks">
-      <a href="#anasayfa" data-i18n="navHome">Home</a>
-      <a href="#hakkimizda" data-i18n="navAbout">About</a>
-      <a href="#goc" data-i18n="navMigrate">Join Migration</a>
-      <a href="#medya" data-i18n="navMedia">YouTube</a>
+      <a href="#anasayfa" data-section-link="home" data-i18n="navHome">Home</a>
+      <a href="#hakkimizda" data-section-link="about" data-i18n="navAbout">About</a>
+      <a href="#goc" data-section-link="migration" data-i18n="navMigrate">Join Migration</a>
+      <a href="#medya" data-section-link="media" data-i18n="navMedia">YouTube</a>
       <a href="#" target="_blank" rel="noopener" data-i18n="navDiscord" data-link="discord">Discord</a>
     </div>
     <div class="nav-actions">
@@ -50,7 +50,7 @@
   </div>
 </nav>
 
-<section class="hero" id="anasayfa">
+<section class="hero" id="anasayfa" data-section-key="home">
   <div class="hero-bg-wrap">
     <video class="hero-bg" autoplay muted loop playsinline poster="images/hero-bg.jpg">
       <source src="videos/hero-bg.mp4" type="video/mp4">
@@ -65,7 +65,7 @@
   </p>
   <div class="hero-actions">
     <a class="btn-gold" href="#" target="_blank" rel="noopener" data-i18n="ctaDiscordJoin" data-link="discord">Join Discord</a>
-    <a class="btn-outline" href="#goc" data-i18n="navMigrate">Join Migration</a>
+    <a class="btn-outline" href="#goc" data-section-link="migration" data-i18n="navMigrate">Join Migration</a>
   </div>
 </section>
 
@@ -84,7 +84,7 @@
   <div class="news-grid" id="newsGrid"></div>
 </section>
 
-<section id="hakkimizda">
+<section id="hakkimizda" data-section-key="about">
   <div class="section-head">
     <img class="section-banner" src="images/about-banner.jpg" alt="About Us — Who We Are">
   </div>
@@ -107,7 +107,7 @@
   </div>
 </section>
 
-<section class="migrate-section" id="goc">
+<section class="migrate-section" id="goc" data-section-key="migration">
   <div class="migrate-wrap">
     <div class="section-head">
       <img class="section-banner" src="images/migrate-banner.jpg" alt="Join Migration">
@@ -149,7 +149,7 @@
   </div>
 </section>
 
-<section id="medya">
+<section id="medya" data-section-key="media">
   <div class="section-head">
     <img class="section-banner" src="images/youtube-banner.jpg" alt="Our YouTube Channel">
   </div>
@@ -172,8 +172,8 @@
   <div class="footer-inner">
     <div class="footer-copy">© <span id="year"></span> Excellence — Server 76</div>
     <div class="footer-links">
-      <a href="#hakkimizda" data-i18n="navAbout">About</a>
-      <a href="#goc" data-i18n="navMigrate">Join Migration</a>
+      <a href="#hakkimizda" data-section-link="about" data-i18n="navAbout">About</a>
+      <a href="#goc" data-section-link="migration" data-i18n="navMigrate">Join Migration</a>
       <a href="panel/" data-i18n="navPanel">Panel</a>
     </div>
     <div class="social-links">

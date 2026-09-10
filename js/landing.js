@@ -193,8 +193,51 @@ function buildLangSwitch() {
   });
 }
 
+// =====================================================================
+// Bölüm URL'leri (#goc, #hakkimizda vb.) artık seçili dile göre değişir —
+// eskiden dilden bağımsız hep Türkçe kalıyorlardı. Her bölüm için sabit
+// bir anahtar (home/about/migration/media) var; GÖRÜNEN slug ise dile
+// göre burada belirlenir. HTML'deki <section data-section-key="..."> ve
+// <a data-section-link="..."> işaretli öğelerin id/href'i dil her
+// değiştiğinde applyLocalizedSectionUrls() ile güncellenir.
+// =====================================================================
+const SECTION_SLUGS = {
+  tr: { home: "anasayfa", about: "hakkimizda", migration: "goc", media: "medya" },
+  en: { home: "home", about: "about", migration: "migration", media: "media" },
+  de: { home: "start", about: "ueber-uns", migration: "migration", media: "medien" },
+  es: { home: "inicio", about: "nosotros", migration: "migracion", media: "medios" },
+  fr: { home: "accueil", about: "a-propos", migration: "migration", media: "medias" },
+  vi: { home: "trang-chu", about: "gioi-thieu", migration: "di-chuyen", media: "truyen-thong" }
+};
+
+/** Verilen slug'ın (başındaki # olmadan) TÜM dillerdeki karşılıklarına bakıp hangi bölüm anahtarına ait olduğunu bulur. */
+function sectionKeyFromSlug(slug) {
+  if (!slug) return null;
+  for (const lang of Object.keys(SECTION_SLUGS)) {
+    const key = Object.keys(SECTION_SLUGS[lang]).find((k) => SECTION_SLUGS[lang][k] === slug);
+    if (key) return key;
+  }
+  return null;
+}
+
+/** Bölüm id'lerini ve onlara giden bağlantıların href'ini o anki dile göre günceller. */
+function applyLocalizedSectionUrls() {
+  document.querySelectorAll("[data-section-key]").forEach((el) => {
+    const slug = SECTION_SLUGS[currentLang][el.dataset.sectionKey];
+    if (slug) el.id = slug;
+  });
+  document.querySelectorAll("[data-section-link]").forEach((a) => {
+    const slug = SECTION_SLUGS[currentLang][a.dataset.sectionLink];
+    if (slug) a.setAttribute("href", "#" + slug);
+  });
+}
+
 function setLang(lang) {
   if (!LANGS.includes(lang)) return;
+  // id'ler az sonra yeni dile göre yeniden atanacağı için, adres çubuğundaki
+  // MEVCUT hash'in hangi bölüme ait olduğunu id'ler değişmeden ÖNCE not ediyoruz —
+  // aksi halde eski hash yeni dilde hiçbir elemente denk gelmez.
+  const activeKey = sectionKeyFromSlug(location.hash.replace(/^#/, ""));
   currentLang = lang;
   try {
     localStorage.setItem(LANGUAGE_STORAGE_KEY, lang);
@@ -203,6 +246,8 @@ function setLang(lang) {
   }
   buildLangSwitch();
   applyI18n();
+  applyLocalizedSectionUrls();
+  if (activeKey) history.replaceState(null, "", "#" + SECTION_SLUGS[currentLang][activeKey]);
 }
 
 function initLang() {
@@ -214,6 +259,16 @@ function initLang() {
   }
   buildLangSwitch();
   applyI18n();
+
+  // Sayfa bir bölüm bağlantısıyla (ör. birinin paylaştığı eski #goc linki) açıldıysa,
+  // id'leri güncellemeden ÖNCE hangi bölüme ait olduğunu (dili fark etmeksizin) buluyoruz.
+  const initialKey = sectionKeyFromSlug(location.hash.replace(/^#/, ""));
+  applyLocalizedSectionUrls();
+  if (initialKey) {
+    const el = document.getElementById(SECTION_SLUGS[currentLang][initialKey]);
+    if (el) el.scrollIntoView({ block: "start" });
+    history.replaceState(null, "", "#" + SECTION_SLUGS[currentLang][initialKey]);
+  }
 }
 
 // =====================================================================
