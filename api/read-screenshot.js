@@ -52,6 +52,12 @@ async function verifyAdmin(token) {
 
 const MAX_IMAGES = 6;
 
+// SS başvuru saatleri sabit — ekran görüntüsünde slot NUMARASI değil, bu
+// saatler yazıyor. Model sadece gördüğü saati birebir kopyalar, slot
+// numarasına çevirme işini biz burada yapıyoruz (bkz. buildResponseSchema
+// ve module.exports içindeki kullanım).
+const SLOT_TIME_MAP = { "09:00": "1", "18:00": "2", "23:00": "3" };
+
 function parseDataUrl(imageDataUrl) {
   const match = /^data:([^;]+);base64,(.+)$/.exec(imageDataUrl || "");
   if (!match) return null;
@@ -86,13 +92,15 @@ function buildResponseSchema(type) {
       power: { type: "NUMBER", description: "Ekran görüntüsünde bu üye için görünen güç (power) değeri, tam sayıya çevrilmiş." }
     };
   } else if (type === "ss_applied") {
-    // Tek istekte BİRDEN FAZLA ekran görüntüsü gönderilebilir, her biri
-    // FARKLI bir saat dilimine ait olabilir (görselin kendi üzerinde saat/
-    // saat numarası yazar) — bu yüzden hangi slotta olduğu istemciden değil,
-    // modelden istenir.
+    // Ekran görüntüsünde bir slot NUMARASI (1/2/3) YAZMIYOR — sadece saat
+    // yazıyor ("Sunucu Zamanı ... 09:00/18:00/23:00"). Modelden bu sırayı
+    // kendisinin hesaplamasını istemek (ör. "başlıktaki saate göre 1, 2
+    // veya 3") güvenilmez çıktı; bunun yerine sadece gördüğü saati BİREBİR
+    // kopyalamasını istiyoruz, saat->slot eşlemesini SLOT_TIME_MAP ile biz
+    // kod tarafında sabit ve güvenilir şekilde yapıyoruz (bkz. aşağıda).
     itemProps = {
       memberId: memberIdField,
-      slot: { type: "STRING", enum: ["1", "2", "3"], description: "Bu üyenin göründüğü ekran görüntüsünde belirtilen saat dilimi numarası (başlıkta/etikette yazan saate göre 1, 2 veya 3)." }
+      time: { type: "STRING", enum: Object.keys(SLOT_TIME_MAP), description: "Bu ekran görüntüsünün başlığındaki 'Sunucu Zamanı ... HH:MM' saatinin BİREBİR kopyası (hesaplama yapma, sadece gördüğün saati yaz)." }
     };
   } else {
     // svs / other
@@ -133,12 +141,12 @@ function buildPrompt(type, roster, imageCount) {
   const subject = type === "power"
     ? "You are extracting each player's current power/strength level from mobile game roster screenshots."
     : type === "ss_applied"
-    ? "You are extracting which time slot(s) each player applied/voted for in a guild event (SandStorm) sign-up. There are 3 possible time slots (1, 2, 3)."
+    ? "You are extracting which time slot(s) each player applied/voted for in a guild event (SandStorm) sign-up. There are 3 possible time slots, each shown on screen as a server time — never as a number."
     : "You are extracting guild-event attendance/score data from mobile game screenshots.";
   const imagesNote = type === "ss_applied"
     ? (imageCount > 1
-        ? `You are given ${imageCount} screenshots. IMPORTANT: unlike a typical scrolled list, each screenshot here may show the applicant list for a DIFFERENT time slot — the slot number or time (e.g. "1", "09:00", "2", "18:00", "3", "23:00") is usually shown as a header/label on or near the list. Read that label on EACH screenshot separately to determine its slot, then report every player visible in it under that slot. A player appearing in more than one screenshot applied to more than one slot — report them once per slot (i.e. it's fine for the same memberId to appear multiple times in "results" with a different "slot" each time).`
-        : "You are given 1 screenshot. Read its slot number/time label (e.g. \"1\", \"09:00\") to determine which slot (1, 2, or 3) this list belongs to, and report every player visible in it under that slot.")
+        ? `You are given ${imageCount} screenshots. IMPORTANT: unlike a typical scrolled list, each screenshot here may show the applicant list for a DIFFERENT time slot — the exact time (e.g. "09:00", "18:00", "23:00") is shown in a "Sunucu Zamanı ..." header on or near the list. Copy that time LITERALLY, per screenshot — do NOT try to compute or guess which ordinal slot (1st/2nd/3rd) it is, just report the time exactly as written. A player appearing in more than one screenshot applied to more than one time — report them once per time (i.e. it's fine for the same memberId to appear multiple times in "results" with a different "time" each time).`
+        : "You are given 1 screenshot. Find its \"Sunucu Zamanı ...\" header and copy that time LITERALLY (do not compute an ordinal slot number) to determine which time this applicant list belongs to, then report every player visible in it under that time.")
     : (imageCount > 1
         ? `You are given ${imageCount} screenshots — they are different parts of the SAME list (e.g. scrolled sections), not separate snapshots in time. Combine information across all of them.`
         : "You are given 1 screenshot.");
@@ -155,7 +163,7 @@ function buildPrompt(type, roster, imageCount) {
     "- If a player in the screenshots does not clearly match any roster member (e.g. their in-game display name changed and it no longer resembles the roster name/ID), do NOT guess or force a match — instead add them to \"unmatched\" with the exact name/ID as shown and a short description of the value seen (points/status/group/power/slot).",
     "- If a roster member is not visible in any screenshot, omit them from both results and unmatched — do not fabricate a value.",
     type === "ss_applied"
-      ? "- Do NOT merge a player's entries across different slots into one — if they applied to slots 1 and 2, that's two separate items in \"results\" (same memberId, slot \"1\" and slot \"2\")."
+      ? "- Do NOT merge a player's entries across different times into one — if they applied to 09:00 and 18:00, that's two separate items in \"results\" (same memberId, time \"09:00\" and time \"18:00\")."
       : "- If the same player appears in more than one screenshot, include them only once (in results or unmatched, not both), using the clearest/most complete reading.",
     "- Numbers in these screenshots are often abbreviated (e.g. \"12.3M\", \"1.2k\") — convert to the full numeric value.",
     "- Respond with JSON matching the given schema only."
@@ -262,7 +270,15 @@ module.exports = async (req, res) => {
 
     // Roster dışı / uydurulmuş id'lere karşı son bir güvenlik filtresi.
     const validIds = new Set(roster.map((m) => m.id));
-    const results = parsed.results.filter((r) => r && validIds.has(r.memberId));
+    let results = parsed.results.filter((r) => r && validIds.has(r.memberId));
+    // ss_applied: modelin birebir kopyaladığı saati ("09:00" vb.) burada,
+    // kod tarafında, sabit ve güvenilir bir eşlemeyle slot numarasına
+    // ("1"/"2"/"3") çeviriyoruz — istemci hâlâ "slot" alanını bekliyor.
+    if (type === "ss_applied") {
+      results = results
+        .filter((r) => SLOT_TIME_MAP[r.time])
+        .map((r) => ({ memberId: r.memberId, slot: SLOT_TIME_MAP[r.time] }));
+    }
     const unmatched = Array.isArray(parsed.unmatched)
       ? parsed.unmatched
           .filter((u) => u && u.rawName)
