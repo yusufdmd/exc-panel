@@ -67,7 +67,11 @@ export function mapPeriod(row) {
 
 /** Supabase'ten dönen ham göç başvurusu (genel siteden gelen) satırını uygulamanın kullandığı şekle çevirir. */
 export function mapLead(row) {
-  return { id: row.id, name: row.name, gameId: row.game_id, contact: row.contact, server: row.current_server, power: row.power, message: row.message, createdAt: row.created_at };
+  return {
+    id: row.id, name: row.name, gameId: row.game_id, contact: row.contact, server: row.current_server, power: row.power,
+    campLevel: row.camp_level || "", teamPower: row.team_power || 0, teamElement: row.team_element || null,
+    message: row.message, createdAt: row.created_at
+  };
 }
 
 /** Supabase'ten dönen ham göç adayı satırını uygulamanın kullandığı şekle çevirir. */
@@ -299,6 +303,8 @@ function renderMigrationLeads() {
       <td>${escapeHtml(lead.contact || "—")}</td>
       <td class="num-cell">${escapeHtml(lead.server != null ? String(lead.server) : "—")}</td>
       <td class="num-cell">${formatPower(lead.power)}</td>
+      <td class="num-cell">${escapeHtml(lead.campLevel || "—")}</td>
+      <td class="num-cell">${lead.teamPower ? `${elementBadge(lead.teamElement, 20)} <span style="vertical-align:middle;">${formatPower(lead.teamPower)}</span>` : "—"}</td>
       <td>${escapeHtml(lead.message || "—")}</td>
       <td>${escapeHtml((lead.createdAt || "").slice(0, 10))}</td>
       <td><div class="row-actions">
@@ -770,6 +776,10 @@ export function processLead(id) {
   document.getElementById("pGameId").value = lead.gameId || "";
   document.getElementById("pServer").value = lead.server != null ? lead.server : "";
   document.getElementById("pPower").value = lead.power || "";
+  document.getElementById("pCamp").value = lead.campLevel || "";
+  document.getElementById("pTeamPower").value = lead.teamPower || "";
+  document.getElementById("pTeamElement").value = lead.teamElement || "";
+  setProspectElementPickerActive(lead.teamElement || "");
 }
 
 export async function dismissLead(id) {

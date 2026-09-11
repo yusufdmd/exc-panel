@@ -201,7 +201,7 @@ const DICT = {
     emptyPeriodsTitle:'Henüz dönem yok', emptyPeriodsDesc:'"+ Dönem Ekle" ile ilk göç dönemini oluştur.',
     needPeriodFirst:'Önce bir göç dönemi oluşturun.',
     statTotal:'Toplam Üye', filterAll:'Tümü', addMember:'+ Üye Ekle', searchPh:'İsim veya ID ile ara…',
-    thRank:'Rütbe', thUsername:'Kullanıcı Adı', thId:'ID', thPower:'Güç Seviyesi', thCamp:'Kamp Seviyesi', thTotalPoints:'Toplam Puan',
+    thRank:'Rütbe', thUsername:'Kullanıcı Adı', thId:'ID', thPower:'Güç Seviyesi', powerTotalLabel:'Toplam Güç Seviyesi', thCamp:'Kamp Seviyesi', thTotalPoints:'Toplam Puan',
     emptyMembersTitle:'Henüz üye yok', emptyMembersDesc:'"+ Üye Ekle" ile ilk üyeyi kaydet.',
     memberAddTitle:'Üye Ekle', memberEditTitle:'Üyeyi Düzenle',
     lblUsername:'Kullanıcı Adı', lblGameId:'ID Numarası', lblRank:'Rütbe', lblPower:'Güç Seviyesi', lblCamp:'Kamp Seviyesi', lblJoinedAt:'Katılma Tarihi', lblOld:'Eski üye (OLD)',
@@ -319,7 +319,7 @@ const DICT = {
     emptyPeriodsTitle:'No periods yet', emptyPeriodsDesc:'Use "+ Add Period" to create the first migration period.',
     needPeriodFirst:'Create a migration period first.',
     statTotal:'Total Members', filterAll:'All', addMember:'+ Add Member', searchPh:'Search by name or ID…',
-    thRank:'Rank', thUsername:'Username', thId:'ID', thPower:'Power Level', thCamp:'Camp Level', thTotalPoints:'Total Points',
+    thRank:'Rank', thUsername:'Username', thId:'ID', thPower:'Power Level', powerTotalLabel:'Total Power Level', thCamp:'Camp Level', thTotalPoints:'Total Points',
     emptyMembersTitle:'No members yet', emptyMembersDesc:'Use "+ Add Member" to add the first one.',
     memberAddTitle:'Add Member', memberEditTitle:'Edit Member',
     lblUsername:'Username', lblGameId:'ID Number', lblRank:'Rank', lblPower:'Power Level', lblCamp:'Camp Level', lblJoinedAt:'Join Date', lblOld:'Old member (OLD)',
@@ -437,7 +437,7 @@ const DICT = {
     emptyPeriodsTitle:'Noch kein Zeitraum', emptyPeriodsDesc:'Mit "+ Zeitraum hinzufügen" den ersten Migrationszeitraum anlegen.',
     needPeriodFirst:'Zuerst einen Migrationszeitraum anlegen.',
     statTotal:'Mitglieder gesamt', filterAll:'Alle', addMember:'+ Mitglied hinzufügen', searchPh:'Nach Name oder ID suchen…',
-    thRank:'Rang', thUsername:'Benutzername', thId:'ID', thPower:'Machtstufe', thCamp:'Basisstufe', thTotalPoints:'Gesamtpunkte',
+    thRank:'Rang', thUsername:'Benutzername', thId:'ID', thPower:'Machtstufe', powerTotalLabel:'Gesamte Machtstufe', thCamp:'Basisstufe', thTotalPoints:'Gesamtpunkte',
     emptyMembersTitle:'Noch keine Mitglieder', emptyMembersDesc:'Mit "+ Mitglied hinzufügen" das erste anlegen.',
     memberAddTitle:'Mitglied hinzufügen', memberEditTitle:'Mitglied bearbeiten',
     lblUsername:'Benutzername', lblGameId:'ID-Nummer', lblRank:'Rang', lblPower:'Machtstufe', lblCamp:'Basisstufe', lblJoinedAt:'Beitrittsdatum', lblOld:'Altes Mitglied (OLD)',
@@ -555,7 +555,7 @@ const DICT = {
     emptyPeriodsTitle:'Aún no hay periodos', emptyPeriodsDesc:'Usa "+ Añadir periodo" para crear el primer periodo de migración.',
     needPeriodFirst:'Crea primero un periodo de migración.',
     statTotal:'Miembros totales', filterAll:'Todos', addMember:'+ Añadir miembro', searchPh:'Buscar por nombre o ID…',
-    thRank:'Rango', thUsername:'Nombre de usuario', thId:'ID', thPower:'Nivel de poder', thCamp:'Nivel de campamento', thTotalPoints:'Puntos totales',
+    thRank:'Rango', thUsername:'Nombre de usuario', thId:'ID', thPower:'Nivel de poder', powerTotalLabel:'Nivel de Poder Total', thCamp:'Nivel de campamento', thTotalPoints:'Puntos totales',
     emptyMembersTitle:'Aún no hay miembros', emptyMembersDesc:'Usa "+ Añadir miembro" para agregar el primero.',
     memberAddTitle:'Añadir miembro', memberEditTitle:'Editar miembro',
     lblUsername:'Nombre de usuario', lblGameId:'Número de ID', lblRank:'Rango', lblPower:'Nivel de poder', lblCamp:'Nivel de campamento', lblJoinedAt:'Fecha de ingreso', lblOld:'Miembro antiguo (OLD)',
@@ -673,7 +673,7 @@ const DICT = {
     emptyPeriodsTitle:'Aucune période pour le moment', emptyPeriodsDesc:'Utilisez "+ Ajouter une période" pour créer la première période de migration.',
     needPeriodFirst:'Créez d\'abord une période de migration.',
     statTotal:'Membres au total', filterAll:'Tous', addMember:'+ Ajouter un membre', searchPh:'Rechercher par nom ou ID…',
-    thRank:'Rang', thUsername:"Nom d'utilisateur", thId:'ID', thPower:'Niveau de puissance', thCamp:'Niveau de camp', thTotalPoints:'Points totaux',
+    thRank:'Rang', thUsername:"Nom d'utilisateur", thId:'ID', thPower:'Niveau de puissance', powerTotalLabel:'Niveau de Puissance Total', thCamp:'Niveau de camp', thTotalPoints:'Points totaux',
     emptyMembersTitle:'Aucun membre pour le moment', emptyMembersDesc:'Utilisez "+ Ajouter un membre" pour ajouter le premier.',
     memberAddTitle:'Ajouter un membre', memberEditTitle:'Modifier le membre',
     lblUsername:"Nom d'utilisateur", lblGameId:"Numéro d'ID", lblRank:'Rang', lblPower:'Niveau de puissance', lblCamp:'Niveau de camp', lblJoinedAt:"Date d'adhésion", lblOld:'Ancien membre (OLD)',
@@ -791,7 +791,7 @@ const DICT = {
     emptyPeriodsTitle:'Chưa có đợt nào', emptyPeriodsDesc:'Dùng "+ Thêm Đợt" để tạo đợt di chuyển đầu tiên.',
     needPeriodFirst:'Hãy tạo một đợt di chuyển trước.',
     statTotal:'Tổng Thành viên', filterAll:'Tất cả', addMember:'+ Thêm Thành viên', searchPh:'Tìm theo tên hoặc ID…',
-    thRank:'Cấp bậc', thUsername:'Tên người dùng', thId:'ID', thPower:'Sức mạnh', thCamp:'Cấp độ Trại', thTotalPoints:'Tổng Điểm',
+    thRank:'Cấp bậc', thUsername:'Tên người dùng', thId:'ID', thPower:'Sức mạnh', powerTotalLabel:'Tổng Sức mạnh', thCamp:'Cấp độ Trại', thTotalPoints:'Tổng Điểm',
     emptyMembersTitle:'Chưa có thành viên nào', emptyMembersDesc:'Dùng "+ Thêm Thành viên" để thêm người đầu tiên.',
     memberAddTitle:'Thêm Thành viên', memberEditTitle:'Sửa Thành viên',
     lblUsername:'Tên người dùng', lblGameId:'Số ID', lblRank:'Cấp bậc', lblPower:'Sức mạnh', lblCamp:'Cấp độ Trại', lblJoinedAt:'Ngày Gia nhập', lblOld:'Thành viên cũ (OLD)',
@@ -1036,7 +1036,7 @@ export function applyStaticText() {
   document.getElementById("t_thColor").textContent = t("thColor");
   document.getElementById("t_thUsername2").textContent = t("thUsername");
   document.getElementById("t_thId2").textContent = t("thId");
-  document.getElementById("t_thPower2").textContent = t("thPower");
+  document.getElementById("t_thPower2").textContent = t("powerTotalLabel");
   document.getElementById("t_thCamp2").textContent = t("thCamp");
   document.getElementById("t_thTeam2").textContent = t("thTeam");
   document.getElementById("t_thServer").textContent = t("thServer");
@@ -1048,7 +1048,7 @@ export function applyStaticText() {
   document.getElementById("t_subMigrationFailed").textContent = t("subMigrationFailed");
   document.getElementById("t_lblProspectName").textContent = t("lblUsername");
   document.getElementById("t_lblProspectId").textContent = t("lblGameId");
-  document.getElementById("t_lblProspectPower").textContent = t("lblPower");
+  document.getElementById("t_lblProspectPower").textContent = t("powerTotalLabel");
   document.getElementById("t_lblServer").textContent = t("lblServer");
   document.getElementById("t_lblColor").textContent = t("lblColor");
   document.getElementById("t_lblProspectCamp").textContent = t("lblCamp");
@@ -1107,7 +1107,9 @@ export function applyStaticText() {
   document.getElementById("t_cancel9").textContent = t("cancel");
   document.getElementById("t_save9").textContent = t("save");
   document.getElementById("t_thLeadServer2").textContent = t("thServer");
-  document.getElementById("t_thLeadPower2").textContent = t("thPower");
+  document.getElementById("t_thLeadPower2").textContent = t("powerTotalLabel");
+  document.getElementById("t_thLeadCamp").textContent = t("thCamp");
+  document.getElementById("t_thLeadTeam").textContent = t("thTeam");
   document.getElementById("t_thLeadMessage").textContent = t("thLeadMessage");
   document.getElementById("t_thLeadDate").textContent = t("thLeadDate");
   document.getElementById("t_lblProspectNote").textContent = t("lblProspectNote");

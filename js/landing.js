@@ -20,6 +20,7 @@
 // =====================================================================
 
 import { getActiveMemberCount, getSiteLinks, getNews, getFeaturedVideos, createMigrationLead } from "./database.js";
+import { CAMP_LEVELS, ELEMENTS } from "./config.js";
 
 /** Kullanıcıdan gelen metni (haber başlığı/içeriği) HTML içine güvenle basmak için kaçış uygular. */
 function escapeHtml(value) {
@@ -50,7 +51,9 @@ const DICT = {
     aboutCard3Title: "Dominance", aboutCard3Desc: "A guild that makes its name known on Server 76 and reaches its goals — we don't compete, we dominate.",
     migrateTag: "Coming From Another Server?",
     migrateDesc: "Want to join Excellence in the upcoming migration window? Fill out the form below and our leadership team will reach out.",
-    fieldName: "Username", fieldGameId: "ID Number", fieldContact: "Contact (Discord, etc.)", fieldServer: "Current Server", fieldPower: "Power Level",
+    fieldName: "Username", fieldGameId: "ID Number", fieldContact: "Contact (Discord, etc.)", fieldServer: "Current Server", fieldPower: "Total Power Level",
+    fieldCamp: "Camp Level", fieldTeamPower: "1st Team Power", fieldTeamElement: "1st Team Element",
+    elementWater: "Water", elementFire: "Fire", elementEarth: "Earth", elementElectric: "Electric",
     fieldMessage: "Message (optional)", fieldMessagePh: "Tell us a bit about yourself…",
     submitBtn: "Submit Application",
     msgNameRequired: "Please enter your username.", msgSending: "Sending…",
@@ -71,7 +74,9 @@ const DICT = {
     aboutCard3Title: "Hükmetme", aboutCard3Desc: "Server 76'da adımızı duyuran, hedeflerine ulaşan bir lonca — rekabet etmeyiz, hükmederiz.",
     migrateTag: "Başka Sunucudan mısınız?",
     migrateDesc: "Önümüzdeki göç döneminde Excellence'a katılmak ister misiniz? Aşağıdaki formu doldurun, liderlik ekibimiz sizinle iletişime geçsin.",
-    fieldName: "Kullanıcı Adı", fieldGameId: "ID Numarası", fieldContact: "İletişim (Discord vb.)", fieldServer: "Mevcut Sunucu", fieldPower: "Güç Seviyesi",
+    fieldName: "Kullanıcı Adı", fieldGameId: "ID Numarası", fieldContact: "İletişim (Discord vb.)", fieldServer: "Mevcut Sunucu", fieldPower: "Toplam Güç Seviyesi",
+    fieldCamp: "Kamp Seviyesi", fieldTeamPower: "1. Takım Gücü", fieldTeamElement: "1. Takım Elementi",
+    elementWater: "Su", elementFire: "Ateş", elementEarth: "Toprak", elementElectric: "Elektrik",
     fieldMessage: "Mesaj (opsiyonel)", fieldMessagePh: "Kendinizden kısaca bahsedin…",
     submitBtn: "Başvuruyu Gönder",
     msgNameRequired: "Lütfen kullanıcı adınızı girin.", msgSending: "Gönderiliyor…",
@@ -92,7 +97,9 @@ const DICT = {
     aboutCard3Title: "Dominanz", aboutCard3Desc: "Eine Gilde, die auf Server 76 ihren Namen macht und ihre Ziele erreicht — wir konkurrieren nicht, wir dominieren.",
     migrateTag: "Kommst du von einem anderen Server?",
     migrateDesc: "Möchtest du Excellence im nächsten Migrationsfenster beitreten? Fülle das untenstehende Formular aus, unser Führungsteam meldet sich bei dir.",
-    fieldName: "Benutzername", fieldGameId: "ID-Nummer", fieldContact: "Kontakt (Discord usw.)", fieldServer: "Aktueller Server", fieldPower: "Machtstufe",
+    fieldName: "Benutzername", fieldGameId: "ID-Nummer", fieldContact: "Kontakt (Discord usw.)", fieldServer: "Aktueller Server", fieldPower: "Gesamte Machtstufe",
+    fieldCamp: "Basisstufe", fieldTeamPower: "1. Team-Stärke", fieldTeamElement: "1. Team-Element",
+    elementWater: "Wasser", elementFire: "Feuer", elementEarth: "Erde", elementElectric: "Elektro",
     fieldMessage: "Nachricht (optional)", fieldMessagePh: "Erzähl uns kurz etwas über dich…",
     submitBtn: "Bewerbung Senden",
     msgNameRequired: "Bitte gib deinen Benutzernamen ein.", msgSending: "Wird gesendet…",
@@ -113,7 +120,9 @@ const DICT = {
     aboutCard3Title: "Dominio", aboutCard3Desc: "Un gremio que se hace notar en el Servidor 76 y alcanza sus metas — no competimos, dominamos.",
     migrateTag: "¿Vienes de Otro Servidor?",
     migrateDesc: "¿Quieres unirte a Excellence en la próxima ventana de migración? Completa el formulario a continuación y nuestro equipo de liderazgo se pondrá en contacto.",
-    fieldName: "Nombre de Usuario", fieldGameId: "Número de ID", fieldContact: "Contacto (Discord, etc.)", fieldServer: "Servidor Actual", fieldPower: "Nivel de Poder",
+    fieldName: "Nombre de Usuario", fieldGameId: "Número de ID", fieldContact: "Contacto (Discord, etc.)", fieldServer: "Servidor Actual", fieldPower: "Nivel de Poder Total",
+    fieldCamp: "Nivel de campamento", fieldTeamPower: "Poder del 1er Equipo", fieldTeamElement: "Elemento del 1er Equipo",
+    elementWater: "Agua", elementFire: "Fuego", elementEarth: "Tierra", elementElectric: "Eléctrico",
     fieldMessage: "Mensaje (opcional)", fieldMessagePh: "Cuéntanos un poco sobre ti…",
     submitBtn: "Enviar Solicitud",
     msgNameRequired: "Por favor, introduce tu nombre de usuario.", msgSending: "Enviando…",
@@ -134,7 +143,9 @@ const DICT = {
     aboutCard3Title: "Domination", aboutCard3Desc: "Une guilde qui se fait connaître sur le Serveur 76 et atteint ses objectifs — nous ne rivalisons pas, nous dominons.",
     migrateTag: "Vous Venez d'un Autre Serveur ?",
     migrateDesc: "Vous voulez rejoindre Excellence lors de la prochaine fenêtre de migration ? Remplissez le formulaire ci-dessous, notre équipe de direction vous contactera.",
-    fieldName: "Nom d'Utilisateur", fieldGameId: "Numéro d'ID", fieldContact: "Contact (Discord, etc.)", fieldServer: "Serveur Actuel", fieldPower: "Niveau de Puissance",
+    fieldName: "Nom d'Utilisateur", fieldGameId: "Numéro d'ID", fieldContact: "Contact (Discord, etc.)", fieldServer: "Serveur Actuel", fieldPower: "Niveau de Puissance Total",
+    fieldCamp: "Niveau de camp", fieldTeamPower: "Puissance de la 1ère Équipe", fieldTeamElement: "Élément de la 1ère Équipe",
+    elementWater: "Eau", elementFire: "Feu", elementEarth: "Terre", elementElectric: "Électrique",
     fieldMessage: "Message (optionnel)", fieldMessagePh: "Parlez-nous un peu de vous…",
     submitBtn: "Envoyer la Candidature",
     msgNameRequired: "Veuillez saisir votre nom d'utilisateur.", msgSending: "Envoi en cours…",
@@ -155,7 +166,9 @@ const DICT = {
     aboutCard3Title: "Thống Trị", aboutCard3Desc: "Một bang hội khẳng định tên tuổi trên Server 76 và đạt được mục tiêu của mình — chúng tôi không cạnh tranh, chúng tôi thống trị.",
     migrateTag: "Đến Từ Máy Chủ Khác?",
     migrateDesc: "Muốn gia nhập Excellence trong đợt di chuyển sắp tới? Điền vào biểu mẫu bên dưới, đội ngũ lãnh đạo của chúng tôi sẽ liên hệ với bạn.",
-    fieldName: "Tên người dùng", fieldGameId: "Số ID", fieldContact: "Liên hệ (Discord, v.v.)", fieldServer: "Máy chủ Hiện tại", fieldPower: "Sức mạnh",
+    fieldName: "Tên người dùng", fieldGameId: "Số ID", fieldContact: "Liên hệ (Discord, v.v.)", fieldServer: "Máy chủ Hiện tại", fieldPower: "Tổng Sức mạnh",
+    fieldCamp: "Cấp độ Trại", fieldTeamPower: "Sức mạnh Đội 1", fieldTeamElement: "Nguyên tố Đội 1",
+    elementWater: "Thủy", elementFire: "Hỏa", elementEarth: "Thổ", elementElectric: "Điện",
     fieldMessage: "Tin nhắn (tùy chọn)", fieldMessagePh: "Hãy cho chúng tôi biết đôi điều về bạn…",
     submitBtn: "Gửi Đơn Đăng ký",
     msgNameRequired: "Vui lòng nhập tên người dùng của bạn.", msgSending: "Đang gửi…",
@@ -220,6 +233,59 @@ function sectionKeyFromSlug(slug) {
   return null;
 }
 
+// =====================================================================
+// "Kamp Seviyesi" seçimi + "1. Takım Elementi" seçici (panel/js/ui.js'teki
+// buildProspectCampOptions/buildProspectElementPicker ile aynı fikir, ama bu
+// sayfa panelden TAMAMEN BAĞIMSIZ olduğu için (bkz. dosya başı) burada ayrıca,
+// kendi küçük i18n sözlüğüyle tanımlanır — panelin admin-only ui.js'ini
+// buraya import etmek gereksiz bağımlılık/yan etki getirirdi.
+// =====================================================================
+const ELEMENT_STYLE = {
+  water: { bg: "#1E6FB8", glyph: '<path d="M12 3.5c-2.6 4-4.6 7.1-4.6 9.9a4.6 4.6 0 0 0 9.2 0c0-2.8-2-5.9-4.6-9.9z"/>' },
+  fire: { bg: "#C23B3B", glyph: '<path d="M12 2.5c.8 2.6 2.9 3.6 2.9 6.3 0 .9-.3 1.7-.8 2.3.6-.2 1.2-.6 1.5-1.2.8 1.1 1.1 2.2 1.1 3.1a4.7 4.7 0 0 1-9.4 0c0-2.3 1.5-3.9 2.6-5.1-.1.8.1 1.5.5 2C9.2 8.1 10.3 5.7 12 2.5z"/>' },
+  earth: { bg: "#B5822A", glyph: '<path d="M12 3 5.5 16.5h4.2L12 11l2.3 5.5h4.2L12 3z"/>' },
+  electric: { bg: "#7A3BC2", glyph: '<path d="M13.2 2.5 6.8 13h3.6l-.9 8.5 7.2-10.8h-3.7l.9-8.2z"/>' }
+};
+let leadTeamElement = "";
+
+function elementBadge(element, size) {
+  const style = ELEMENT_STYLE[element];
+  if (!style) return "";
+  const px = size || 22;
+  return `<span class="element-badge" style="--el-bg:${style.bg}; width:${px}px; height:${px}px;">
+    <svg viewBox="0 0 24 24" width="${Math.round(px * 0.56)}" height="${Math.round(px * 0.56)}" fill="#fff">${style.glyph}</svg>
+  </span>`;
+}
+
+/** Başvuru formundaki "Kamp Seviyesi" açılır listesini doldurur, mevcut seçimi korur. */
+function buildLeadCampOptions() {
+  const select = document.getElementById("leadCamp");
+  if (!select) return;
+  const current = select.value;
+  select.innerHTML = `<option value="">—</option>` + CAMP_LEVELS.map((level) => `<option value="${level}">${level}</option>`).join("");
+  select.value = current;
+}
+
+/** Başvuru formundaki "1. Takım Elementi" seçici rozetlerini (yeniden) çizer — dil değişince de çağrılır (tooltip metni için). */
+function buildLeadElementPicker() {
+  const container = document.getElementById("leadElementPicker");
+  if (!container) return;
+  container.innerHTML = ELEMENTS.map((el) =>
+    `<div class="element-opt ${leadTeamElement === el ? "active" : ""}" data-el="${el}" title="${t("element" + el.charAt(0).toUpperCase() + el.slice(1))}">${elementBadge(el, 32)}</div>`
+  ).join("");
+  container.querySelectorAll(".element-opt").forEach((el) => {
+    el.addEventListener("click", () => setLeadTeamElement(el.dataset.el));
+  });
+}
+
+function setLeadTeamElement(element) {
+  leadTeamElement = leadTeamElement === element ? "" : element; // aynı elemente tekrar tıklayınca seçim kaldırılır
+  document.getElementById("leadTeamElement").value = leadTeamElement;
+  document.querySelectorAll("#leadElementPicker .element-opt").forEach((el) => {
+    el.classList.toggle("active", el.dataset.el === leadTeamElement);
+  });
+}
+
 /** Bölüm id'lerini ve onlara giden bağlantıların href'ini o anki dile göre günceller. */
 function applyLocalizedSectionUrls() {
   document.querySelectorAll("[data-section-key]").forEach((el) => {
@@ -246,6 +312,7 @@ function setLang(lang) {
   }
   buildLangSwitch();
   applyI18n();
+  buildLeadElementPicker();
   applyLocalizedSectionUrls();
   if (activeKey) history.replaceState(null, "", "#" + SECTION_SLUGS[currentLang][activeKey]);
 }
@@ -259,6 +326,8 @@ function initLang() {
   }
   buildLangSwitch();
   applyI18n();
+  buildLeadCampOptions();
+  buildLeadElementPicker();
 
   // Sayfa bir bölüm bağlantısıyla (ör. birinin paylaştığı eski #goc linki) açıldıysa,
   // id'leri güncellemeden ÖNCE hangi bölüme ait olduğunu (dili fark etmeksizin) buluyoruz.
@@ -549,6 +618,9 @@ async function submitLead(event) {
   const contact = document.getElementById("leadContact").value.trim();
   const serverRaw = document.getElementById("leadServer").value.trim();
   const powerRaw = document.getElementById("leadPower").value.trim();
+  const campLevel = document.getElementById("leadCamp").value || null;
+  const teamPowerRaw = document.getElementById("leadTeamPower").value.trim();
+  const teamElement = document.getElementById("leadTeamElement").value || null;
   const message = document.getElementById("leadMessage").value.trim();
 
   if (!name) {
@@ -566,9 +638,13 @@ async function submitLead(event) {
       contact: contact || null,
       current_server: serverRaw === "" ? null : (Number(serverRaw) || null),
       power: Number(powerRaw) || 0,
+      camp_level: campLevel,
+      team_power: teamPowerRaw === "" ? null : (Number(teamPowerRaw) || 0),
+      team_element: teamElement,
       message: message || null
     });
     document.getElementById("leadForm").reset();
+    setLeadTeamElement(leadTeamElement); // seçili elementi de sıfırla (form.reset() hidden input'u ve rozet vurgusunu temizlemez)
     setFormMessage(t("msgSuccess"), false);
   } catch (error) {
     console.error("[Excellence] Göç başvurusu gönderilemedi:", error);

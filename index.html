@@ -134,8 +134,23 @@
         </div>
       </div>
       <div class="field">
-        <label for="leadPower" data-i18n="fieldPower">Power Level</label>
+        <label for="leadPower" data-i18n="fieldPower">Total Power Level</label>
         <input id="leadPower" type="number">
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="leadCamp" data-i18n="fieldCamp">Camp Level</label>
+          <select id="leadCamp"></select>
+        </div>
+        <div class="field">
+          <label for="leadTeamPower" data-i18n="fieldTeamPower">1st Team Power</label>
+          <input id="leadTeamPower" type="number">
+        </div>
+      </div>
+      <div class="field">
+        <label data-i18n="fieldTeamElement">1st Team Element</label>
+        <div class="element-picker" id="leadElementPicker"></div>
+        <input type="hidden" id="leadTeamElement">
       </div>
       <div class="field">
         <label for="leadMessage" data-i18n="fieldMessage">Message (optional)</label>
