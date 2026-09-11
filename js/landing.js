@@ -56,7 +56,7 @@ const DICT = {
     elementWater: "Water", elementFire: "Fire", elementEarth: "Earth", elementElectric: "Electric",
     fieldMessage: "Message (optional)", fieldMessagePh: "Tell us a bit about yourself…",
     submitBtn: "Submit Application",
-    msgFillRequired: "Please fill in all required fields.", msgInvalidGameId: "Please enter a valid ID number.", msgInvalidNumber: "Power fields must be a whole number (no dots or decimals).", msgSending: "Sending…",
+    msgFillRequired: "Please fill in all required fields.", msgInvalidGameId: "Please enter a valid ID number.", msgInvalidNumber: "Power fields must be a whole number (no dots or decimals).", msgCooldown: "You've already submitted an application recently. Please try again in {n} minute(s).", msgSending: "Sending…",
     msgSuccess: "Your application has been received! We'll be in touch soon.", msgError: "Something went wrong, please try again.",
     newsTag: "News", newsSectionTitle: "Latest News",
     mediaTag: "Media", mediaTitle: "Our YouTube Channel", mediaDesc: "Check out our channel for event recaps, guides, and more.", mediaBtn: "Go to Channel",
@@ -79,7 +79,7 @@ const DICT = {
     elementWater: "Su", elementFire: "Ateş", elementEarth: "Toprak", elementElectric: "Elektrik",
     fieldMessage: "Mesaj (opsiyonel)", fieldMessagePh: "Kendinizden kısaca bahsedin…",
     submitBtn: "Başvuruyu Gönder",
-    msgFillRequired: "Lütfen tüm zorunlu alanları doldurun.", msgInvalidGameId: "Lütfen geçerli bir ID numarası yazın.", msgInvalidNumber: "Güç alanları sadece rakamlardan oluşmalı (nokta/virgül olmadan).", msgSending: "Gönderiliyor…",
+    msgFillRequired: "Lütfen tüm zorunlu alanları doldurun.", msgInvalidGameId: "Lütfen geçerli bir ID numarası yazın.", msgInvalidNumber: "Güç alanları sadece rakamlardan oluşmalı (nokta/virgül olmadan).", msgCooldown: "Kısa süre önce bir başvuru gönderdiniz. Lütfen {n} dakika sonra tekrar deneyin.", msgSending: "Gönderiliyor…",
     msgSuccess: "Başvurunuz alındı! En kısa sürede sizinle iletişime geçeceğiz.", msgError: "Bir hata oluştu, lütfen tekrar deneyin.",
     newsTag: "Haberler", newsSectionTitle: "Son Haberler",
     mediaTag: "Medya", mediaTitle: "YouTube Kanalımız", mediaDesc: "Etkinlik özetleri, rehberler ve daha fazlası için kanalımıza göz atın.", mediaBtn: "Kanala Git",
@@ -102,7 +102,7 @@ const DICT = {
     elementWater: "Wasser", elementFire: "Feuer", elementEarth: "Erde", elementElectric: "Elektro",
     fieldMessage: "Nachricht (optional)", fieldMessagePh: "Erzähl uns kurz etwas über dich…",
     submitBtn: "Bewerbung Senden",
-    msgFillRequired: "Bitte fülle alle Pflichtfelder aus.", msgInvalidGameId: "Bitte gib eine gültige ID-Nummer ein.", msgInvalidNumber: "Machtfelder dürfen nur aus Ziffern bestehen (kein Punkt/Komma).", msgSending: "Wird gesendet…",
+    msgFillRequired: "Bitte fülle alle Pflichtfelder aus.", msgInvalidGameId: "Bitte gib eine gültige ID-Nummer ein.", msgInvalidNumber: "Machtfelder dürfen nur aus Ziffern bestehen (kein Punkt/Komma).", msgCooldown: "Du hast vor Kurzem bereits eine Bewerbung eingereicht. Bitte versuche es in {n} Minute(n) erneut.", msgSending: "Wird gesendet…",
     msgSuccess: "Deine Bewerbung ist eingegangen! Wir melden uns bald bei dir.", msgError: "Etwas ist schiefgelaufen, bitte versuche es erneut.",
     newsTag: "Neuigkeiten", newsSectionTitle: "Aktuelle Neuigkeiten",
     mediaTag: "Medien", mediaTitle: "Unser YouTube-Kanal", mediaDesc: "Schau auf unserem Kanal vorbei für Event-Zusammenfassungen, Guides und mehr.", mediaBtn: "Zum Kanal",
@@ -125,7 +125,7 @@ const DICT = {
     elementWater: "Agua", elementFire: "Fuego", elementEarth: "Tierra", elementElectric: "Eléctrico",
     fieldMessage: "Mensaje (opcional)", fieldMessagePh: "Cuéntanos un poco sobre ti…",
     submitBtn: "Enviar Solicitud",
-    msgFillRequired: "Por favor, completa todos los campos obligatorios.", msgInvalidGameId: "Por favor, introduce un número de ID válido.", msgInvalidNumber: "Los campos de poder deben ser un número entero (sin puntos ni decimales).", msgSending: "Enviando…",
+    msgFillRequired: "Por favor, completa todos los campos obligatorios.", msgInvalidGameId: "Por favor, introduce un número de ID válido.", msgInvalidNumber: "Los campos de poder deben ser un número entero (sin puntos ni decimales).", msgCooldown: "Ya has enviado una solicitud recientemente. Por favor, inténtalo de nuevo en {n} minuto(s).", msgSending: "Enviando…",
     msgSuccess: "¡Tu solicitud ha sido recibida! Nos pondremos en contacto pronto.", msgError: "Algo salió mal, por favor inténtalo de nuevo.",
     newsTag: "Noticias", newsSectionTitle: "Últimas Noticias",
     mediaTag: "Medios", mediaTitle: "Nuestro Canal de YouTube", mediaDesc: "Visita nuestro canal para ver resúmenes de eventos, guías y más.", mediaBtn: "Ir al Canal",
@@ -148,7 +148,7 @@ const DICT = {
     elementWater: "Eau", elementFire: "Feu", elementEarth: "Terre", elementElectric: "Électrique",
     fieldMessage: "Message (optionnel)", fieldMessagePh: "Parlez-nous un peu de vous…",
     submitBtn: "Envoyer la Candidature",
-    msgFillRequired: "Veuillez remplir tous les champs obligatoires.", msgInvalidGameId: "Veuillez saisir un numéro d'ID valide.", msgInvalidNumber: "Les champs de puissance doivent être un nombre entier (sans point ni décimale).", msgSending: "Envoi en cours…",
+    msgFillRequired: "Veuillez remplir tous les champs obligatoires.", msgInvalidGameId: "Veuillez saisir un numéro d'ID valide.", msgInvalidNumber: "Les champs de puissance doivent être un nombre entier (sans point ni décimale).", msgCooldown: "Vous avez déjà soumis une candidature récemment. Veuillez réessayer dans {n} minute(s).", msgSending: "Envoi en cours…",
     msgSuccess: "Votre candidature a été reçue ! Nous vous contacterons bientôt.", msgError: "Une erreur s'est produite, veuillez réessayer.",
     newsTag: "Actualités", newsSectionTitle: "Dernières Actualités",
     mediaTag: "Médias", mediaTitle: "Notre Chaîne YouTube", mediaDesc: "Découvrez notre chaîne pour des récapitulatifs d'événements, des guides et plus encore.", mediaBtn: "Aller à la Chaîne",
@@ -171,7 +171,7 @@ const DICT = {
     elementWater: "Thủy", elementFire: "Hỏa", elementEarth: "Thổ", elementElectric: "Điện",
     fieldMessage: "Tin nhắn (tùy chọn)", fieldMessagePh: "Hãy cho chúng tôi biết đôi điều về bạn…",
     submitBtn: "Gửi Đơn Đăng ký",
-    msgFillRequired: "Vui lòng điền vào tất cả các trường bắt buộc.", msgInvalidGameId: "Vui lòng nhập số ID hợp lệ.", msgInvalidNumber: "Các trường sức mạnh chỉ được chứa chữ số (không dấu chấm/thập phân).", msgSending: "Đang gửi…",
+    msgFillRequired: "Vui lòng điền vào tất cả các trường bắt buộc.", msgInvalidGameId: "Vui lòng nhập số ID hợp lệ.", msgInvalidNumber: "Các trường sức mạnh chỉ được chứa chữ số (không dấu chấm/thập phân).", msgCooldown: "Bạn đã gửi đơn đăng ký gần đây. Vui lòng thử lại sau {n} phút.", msgSending: "Đang gửi…",
     msgSuccess: "Đơn đăng ký của bạn đã được tiếp nhận! Chúng tôi sẽ sớm liên hệ với bạn.", msgError: "Đã có lỗi xảy ra, vui lòng thử lại.",
     newsTag: "Tin tức", newsSectionTitle: "Tin tức Mới nhất",
     mediaTag: "Phương tiện", mediaTitle: "Kênh YouTube Của Chúng Tôi", mediaDesc: "Ghé thăm kênh của chúng tôi để xem tóm tắt sự kiện, hướng dẫn và nhiều hơn nữa.", mediaBtn: "Đến Kênh",
@@ -618,8 +618,35 @@ function setFormMessage(text, isError) {
   el.style.color = isError ? "var(--danger)" : "var(--success)";
 }
 
+// Trollere/botlara karşı iki hafif önlem: (1) gerçek kullanıcıların hiç
+// görmediği/dolduramadığı bir "honeypot" alanı — doluysa sessizce (başvuru
+// gerçekten kaydedilmeden, ama başarılıymış gibi) reddedilir; (2) aynı
+// tarayıcıdan art arda gönderimi engelleyen bir bekleme süresi. İkisi de
+// kararlı bir insanı durdurmaz, sadece en yaygın/otomatik spam'i süzer.
+const LEAD_COOLDOWN_MS = 60 * 60 * 1000; // 1 saat
+const LEAD_COOLDOWN_STORAGE_KEY = "exc-landing-lastLeadSubmit";
+
 async function submitLead(event) {
   event.preventDefault();
+
+  // Honeypot: bot'lar genelde her input'u doldurur, gerçek kullanıcı bu
+  // alanı görmediği için asla dolduramaz. Doluysa botu bunun farkına
+  // vardırmadan (sahte başarı göstererek) sessizce hiçbir şey yapmadan çıkıyoruz.
+  if (document.getElementById("leadWebsite").value.trim()) {
+    document.getElementById("leadForm").reset();
+    setFormMessage(t("msgSuccess"), false);
+    return;
+  }
+
+  let lastSubmit = 0;
+  try { lastSubmit = Number(localStorage.getItem(LEAD_COOLDOWN_STORAGE_KEY)) || 0; } catch {}
+  const elapsed = Date.now() - lastSubmit;
+  if (elapsed < LEAD_COOLDOWN_MS) {
+    const minutesLeft = Math.ceil((LEAD_COOLDOWN_MS - elapsed) / 60000);
+    setFormMessage(t("msgCooldown").replace("{n}", String(minutesLeft)), true);
+    return;
+  }
+
   const name = document.getElementById("leadName").value.trim();
   const gameId = document.getElementById("leadGameId").value.trim();
   const contact = document.getElementById("leadContact").value.trim();
@@ -676,6 +703,7 @@ async function submitLead(event) {
     } catch (notifyError) {
       console.error("[Excellence] Göç bildirimi gönderilemedi:", notifyError);
     }
+    try { localStorage.setItem(LEAD_COOLDOWN_STORAGE_KEY, String(Date.now())); } catch {}
     document.getElementById("leadForm").reset();
     setLeadTeamElement(leadTeamElement); // seçili elementi de sıfırla (form.reset() hidden input'u ve rozet vurgusunu temizlemez)
     setFormMessage(t("msgSuccess"), false);
