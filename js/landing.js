@@ -658,6 +658,21 @@ async function submitLead(event) {
       team_element: teamElement,
       message: message || null
     });
+    // Başvuru zaten kaydedildi — Discord bildirimi en iyi çaba (best-effort):
+    // başarısız olsa bile (webhook henüz kurulmamış, Discord geçici hata vb.)
+    // başvuran için bunun bir önemi yok, o yüzden ayrı try/catch'te sessizce yutuyoruz.
+    try {
+      await fetch("/api/notify-migration-lead", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name, gameId, contact, server: serverRaw, power: powerRaw,
+          campLevel, teamPower: teamPowerRaw, teamElement, message
+        })
+      });
+    } catch (notifyError) {
+      console.error("[Excellence] Göç bildirimi gönderilemedi:", notifyError);
+    }
     document.getElementById("leadForm").reset();
     setLeadTeamElement(leadTeamElement); // seçili elementi de sıfırla (form.reset() hidden input'u ve rozet vurgusunu temizlemez)
     setFormMessage(t("msgSuccess"), false);
