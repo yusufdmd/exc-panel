@@ -56,7 +56,7 @@ const DICT = {
     elementWater: "Water", elementFire: "Fire", elementEarth: "Earth", elementElectric: "Electric",
     fieldMessage: "Message (optional)", fieldMessagePh: "Tell us a bit about yourself…",
     submitBtn: "Submit Application",
-    msgNameRequired: "Please enter your username.", msgInvalidGameId: "Please enter a valid ID number.", msgInvalidNumber: "Power fields must be a whole number (no dots or decimals).", msgSending: "Sending…",
+    msgFillRequired: "Please fill in all required fields.", msgInvalidGameId: "Please enter a valid ID number.", msgInvalidNumber: "Power fields must be a whole number (no dots or decimals).", msgSending: "Sending…",
     msgSuccess: "Your application has been received! We'll be in touch soon.", msgError: "Something went wrong, please try again.",
     newsTag: "News", newsSectionTitle: "Latest News",
     mediaTag: "Media", mediaTitle: "Our YouTube Channel", mediaDesc: "Check out our channel for event recaps, guides, and more.", mediaBtn: "Go to Channel",
@@ -79,7 +79,7 @@ const DICT = {
     elementWater: "Su", elementFire: "Ateş", elementEarth: "Toprak", elementElectric: "Elektrik",
     fieldMessage: "Mesaj (opsiyonel)", fieldMessagePh: "Kendinizden kısaca bahsedin…",
     submitBtn: "Başvuruyu Gönder",
-    msgNameRequired: "Lütfen kullanıcı adınızı girin.", msgInvalidGameId: "Lütfen geçerli bir ID numarası yazın.", msgInvalidNumber: "Güç alanları sadece rakamlardan oluşmalı (nokta/virgül olmadan).", msgSending: "Gönderiliyor…",
+    msgFillRequired: "Lütfen tüm zorunlu alanları doldurun.", msgInvalidGameId: "Lütfen geçerli bir ID numarası yazın.", msgInvalidNumber: "Güç alanları sadece rakamlardan oluşmalı (nokta/virgül olmadan).", msgSending: "Gönderiliyor…",
     msgSuccess: "Başvurunuz alındı! En kısa sürede sizinle iletişime geçeceğiz.", msgError: "Bir hata oluştu, lütfen tekrar deneyin.",
     newsTag: "Haberler", newsSectionTitle: "Son Haberler",
     mediaTag: "Medya", mediaTitle: "YouTube Kanalımız", mediaDesc: "Etkinlik özetleri, rehberler ve daha fazlası için kanalımıza göz atın.", mediaBtn: "Kanala Git",
@@ -102,7 +102,7 @@ const DICT = {
     elementWater: "Wasser", elementFire: "Feuer", elementEarth: "Erde", elementElectric: "Elektro",
     fieldMessage: "Nachricht (optional)", fieldMessagePh: "Erzähl uns kurz etwas über dich…",
     submitBtn: "Bewerbung Senden",
-    msgNameRequired: "Bitte gib deinen Benutzernamen ein.", msgInvalidGameId: "Bitte gib eine gültige ID-Nummer ein.", msgInvalidNumber: "Machtfelder dürfen nur aus Ziffern bestehen (kein Punkt/Komma).", msgSending: "Wird gesendet…",
+    msgFillRequired: "Bitte fülle alle Pflichtfelder aus.", msgInvalidGameId: "Bitte gib eine gültige ID-Nummer ein.", msgInvalidNumber: "Machtfelder dürfen nur aus Ziffern bestehen (kein Punkt/Komma).", msgSending: "Wird gesendet…",
     msgSuccess: "Deine Bewerbung ist eingegangen! Wir melden uns bald bei dir.", msgError: "Etwas ist schiefgelaufen, bitte versuche es erneut.",
     newsTag: "Neuigkeiten", newsSectionTitle: "Aktuelle Neuigkeiten",
     mediaTag: "Medien", mediaTitle: "Unser YouTube-Kanal", mediaDesc: "Schau auf unserem Kanal vorbei für Event-Zusammenfassungen, Guides und mehr.", mediaBtn: "Zum Kanal",
@@ -125,7 +125,7 @@ const DICT = {
     elementWater: "Agua", elementFire: "Fuego", elementEarth: "Tierra", elementElectric: "Eléctrico",
     fieldMessage: "Mensaje (opcional)", fieldMessagePh: "Cuéntanos un poco sobre ti…",
     submitBtn: "Enviar Solicitud",
-    msgNameRequired: "Por favor, introduce tu nombre de usuario.", msgInvalidGameId: "Por favor, introduce un número de ID válido.", msgInvalidNumber: "Los campos de poder deben ser un número entero (sin puntos ni decimales).", msgSending: "Enviando…",
+    msgFillRequired: "Por favor, completa todos los campos obligatorios.", msgInvalidGameId: "Por favor, introduce un número de ID válido.", msgInvalidNumber: "Los campos de poder deben ser un número entero (sin puntos ni decimales).", msgSending: "Enviando…",
     msgSuccess: "¡Tu solicitud ha sido recibida! Nos pondremos en contacto pronto.", msgError: "Algo salió mal, por favor inténtalo de nuevo.",
     newsTag: "Noticias", newsSectionTitle: "Últimas Noticias",
     mediaTag: "Medios", mediaTitle: "Nuestro Canal de YouTube", mediaDesc: "Visita nuestro canal para ver resúmenes de eventos, guías y más.", mediaBtn: "Ir al Canal",
@@ -148,7 +148,7 @@ const DICT = {
     elementWater: "Eau", elementFire: "Feu", elementEarth: "Terre", elementElectric: "Électrique",
     fieldMessage: "Message (optionnel)", fieldMessagePh: "Parlez-nous un peu de vous…",
     submitBtn: "Envoyer la Candidature",
-    msgNameRequired: "Veuillez saisir votre nom d'utilisateur.", msgInvalidGameId: "Veuillez saisir un numéro d'ID valide.", msgInvalidNumber: "Les champs de puissance doivent être un nombre entier (sans point ni décimale).", msgSending: "Envoi en cours…",
+    msgFillRequired: "Veuillez remplir tous les champs obligatoires.", msgInvalidGameId: "Veuillez saisir un numéro d'ID valide.", msgInvalidNumber: "Les champs de puissance doivent être un nombre entier (sans point ni décimale).", msgSending: "Envoi en cours…",
     msgSuccess: "Votre candidature a été reçue ! Nous vous contacterons bientôt.", msgError: "Une erreur s'est produite, veuillez réessayer.",
     newsTag: "Actualités", newsSectionTitle: "Dernières Actualités",
     mediaTag: "Médias", mediaTitle: "Notre Chaîne YouTube", mediaDesc: "Découvrez notre chaîne pour des récapitulatifs d'événements, des guides et plus encore.", mediaBtn: "Aller à la Chaîne",
@@ -171,7 +171,7 @@ const DICT = {
     elementWater: "Thủy", elementFire: "Hỏa", elementEarth: "Thổ", elementElectric: "Điện",
     fieldMessage: "Tin nhắn (tùy chọn)", fieldMessagePh: "Hãy cho chúng tôi biết đôi điều về bạn…",
     submitBtn: "Gửi Đơn Đăng ký",
-    msgNameRequired: "Vui lòng nhập tên người dùng của bạn.", msgInvalidGameId: "Vui lòng nhập số ID hợp lệ.", msgInvalidNumber: "Các trường sức mạnh chỉ được chứa chữ số (không dấu chấm/thập phân).", msgSending: "Đang gửi…",
+    msgFillRequired: "Vui lòng điền vào tất cả các trường bắt buộc.", msgInvalidGameId: "Vui lòng nhập số ID hợp lệ.", msgInvalidNumber: "Các trường sức mạnh chỉ được chứa chữ số (không dấu chấm/thập phân).", msgSending: "Đang gửi…",
     msgSuccess: "Đơn đăng ký của bạn đã được tiếp nhận! Chúng tôi sẽ sớm liên hệ với bạn.", msgError: "Đã có lỗi xảy ra, vui lòng thử lại.",
     newsTag: "Tin tức", newsSectionTitle: "Tin tức Mới nhất",
     mediaTag: "Phương tiện", mediaTitle: "Kênh YouTube Của Chúng Tôi", mediaDesc: "Ghé thăm kênh của chúng tôi để xem tóm tắt sự kiện, hướng dẫn và nhiều hơn nữa.", mediaBtn: "Đến Kênh",
@@ -630,15 +630,18 @@ async function submitLead(event) {
   const teamElement = document.getElementById("leadTeamElement").value || null;
   const message = document.getElementById("leadMessage").value.trim();
 
-  if (!name) {
-    setFormMessage(t("msgNameRequired"), true);
+  // Mesaj hariç HER alan zorunlu — form artık kendi tarayıcı doğrulamasını
+  // (novalidate) kullanmıyor, çünkü o zaman hata sayfanın seçili dilinde
+  // değil tarayıcının kendi dilinde görünürdü.
+  if (!name || !gameId || !contact || !serverRaw || !powerRaw || !campLevel || !teamPowerRaw || !teamElement) {
+    setFormMessage(t("msgFillRequired"), true);
     return;
   }
-  if (gameId && !isDigitsOnly(gameId, 15)) {
+  if (!isDigitsOnly(gameId, 15)) {
     setFormMessage(t("msgInvalidGameId"), true);
     return;
   }
-  if ((powerRaw && !isDigitsOnly(powerRaw)) || (teamPowerRaw && !isDigitsOnly(teamPowerRaw))) {
+  if (!isDigitsOnly(powerRaw) || !isDigitsOnly(teamPowerRaw)) {
     setFormMessage(t("msgInvalidNumber"), true);
     return;
   }
