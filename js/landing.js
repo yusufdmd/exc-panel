@@ -705,34 +705,13 @@ async function submitLead(event) {
       team_element: teamElement,
       message: message || null
     });
-    // Başvuru zaten kaydedildi — Discord bildirimi en iyi çaba (best-effort).
-    // NOT: normal bir `fetch` await'lense bile, kullanıcı "başarılı" mesajını
-    // görür görmez sekmeyi kapatır/başka sayfaya geçerse tarayıcı bu isteği
-    // yarıda kesebiliyordu (gerçek testlerde tam olarak bu yaşandı — istek
-    // Vercel'e hiç ulaşmadı). navigator.sendBeacon sayfa kapansa/değişse bile
-    // isteğin gönderilmesini garanti eder, o yüzden bunun için özel olarak var.
-    try {
-      const notifyBody = JSON.stringify({
-        name, gameId, contact, server: serverRaw, power: powerRaw,
-        campLevel, teamPower: teamPowerRaw, teamElement, message
-      });
-      const queued = navigator.sendBeacon && navigator.sendBeacon(
-        "/api/notify-migration-lead",
-        new Blob([notifyBody], { type: "application/json" })
-      );
-      if (!queued) {
-        // sendBeacon desteklenmiyor/kuyruklanamadıysa, en azından sayfa
-        // kapansa da devam etmesi için keepalive'lı bir fetch'e düş.
-        fetch("/api/notify-migration-lead", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: notifyBody,
-          keepalive: true
-        }).catch((notifyError) => console.error("[Excellence] Göç bildirimi gönderilemedi:", notifyError));
-      }
-    } catch (notifyError) {
-      console.error("[Excellence] Göç bildirimi gönderilemedi:", notifyError);
-    }
+    // Discord bildirimi ARTIK burada gönderilmiyor — tarayıcıdan atılan bir
+    // istek (fetch, sendBeacon dahil) sekme kapanması/mobil ağ gibi
+    // durumlarda güvenilmez çıktı (gerçek testlerde çoğu zaman hiç
+    // ulaşmadı). Bunun yerine migration_leads tablosuna INSERT olduğunda
+    // Supabase'in kendisi (bir trigger ile) bildirimi gönderiyor — bkz.
+    // sql/add_migration_lead_discord_trigger.sql. Böylece bağlantı tamamen
+    // sunucudan sunucuya olur, tarayıcı ne yaparsa yapsın etkilenmez.
     try { localStorage.setItem(LEAD_COOLDOWN_STORAGE_KEY, String(Date.now())); } catch {}
     document.getElementById("leadForm").reset();
     setLeadTeamElement(leadTeamElement); // seçili elementi de sıfırla (form.reset() hidden input'u ve rozet vurgusunu temizlemez)
