@@ -139,7 +139,7 @@
       </div>
       <div class="field">
         <label for="leadPower" data-i18n="fieldPower">Total Power Level</label><span class="req-mark">*</span>
-        <input id="leadPower" type="number" required>
+        <input id="leadPower" type="text" inputmode="numeric" oninput="liveFormatNumberInput(this)" required>
       </div>
       <div class="row">
         <div class="field">
@@ -148,7 +148,7 @@
         </div>
         <div class="field">
           <label for="leadTeamPower" data-i18n="fieldTeamPower">1st Team Power</label><span class="req-mark">*</span>
-          <input id="leadTeamPower" type="number" required>
+          <input id="leadTeamPower" type="text" inputmode="numeric" oninput="liveFormatNumberInput(this)" required>
         </div>
       </div>
       <div class="field">

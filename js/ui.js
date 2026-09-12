@@ -1344,6 +1344,22 @@ export function isDigitsOnly(value, exactLength) {
   return true;
 }
 
+/** Bir değerdeki rakam DIŞINDAKİ her şeyi atar (ör. "1.000.000" -> "1000000") — biçimlendirilmiş bir güç alanını kaydetmeden/doğrulamadan önce kullanılır. */
+export function stripNumberFormatting(value) {
+  return String(value == null ? "" : value).replace(/\D/g, "");
+}
+
+/** Bir değeri, sadece rakamlarını 3'lü gruplar hâlinde nokta ile ayırarak biçimlendirir (ör. "1000000" -> "1.000.000") — güç gibi büyük sayı alanlarında kaç sıfır girildiğini görünür kılmak için. */
+export function formatNumberInput(raw) {
+  const digits = stripNumberFormatting(raw);
+  return digits ? digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".") : "";
+}
+
+/** Bir input'un o anki değerini formatNumberInput ile yeniden yazar — güç alanlarının oninput'undan çağrılır, yazarken canlı nokta ekler. */
+export function liveFormatNumberInput(inputEl) {
+  inputEl.value = formatNumberInput(inputEl.value);
+}
+
 // =====================================================================
 // HAFTALIK HÜCRE BİLGİSİ VE TOPLAM/ORAN HESAPLARI
 // =====================================================================

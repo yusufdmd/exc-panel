@@ -30,6 +30,8 @@ import {
   buildCampOptions,
   campLevelSortValue,
   isDigitsOnly,
+  stripNumberFormatting,
+  formatNumberInput,
   elementBadge,
   buildElementPicker,
   setElementPickerActive,
@@ -398,9 +400,9 @@ export function openMemberModal(id) {
     document.getElementById("fName").value = member.name || "";
     document.getElementById("fGameId").value = member.gameId || "";
     document.getElementById("fRank").value = member.rank;
-    document.getElementById("fPower").value = member.power;
+    document.getElementById("fPower").value = formatNumberInput(member.power);
     document.getElementById("fCamp").value = member.campLevel;
-    document.getElementById("fTeamPower").value = member.teamPower || "";
+    document.getElementById("fTeamPower").value = formatNumberInput(member.teamPower || "");
     document.getElementById("fTeamElement").value = member.teamElement || "";
     setElementPickerActive(member.teamElement || "");
     document.getElementById("fJoinedAt").value = member.joinedAt ? member.joinedAt.slice(0, 10) : "";
@@ -505,8 +507,8 @@ export async function saveMember() {
   }
   if (!confirmDuplicateGameId(gameId, editId)) return;
 
-  const powerRaw = document.getElementById("fPower").value.trim();
-  const teamPowerRaw = document.getElementById("fTeamPower").value.trim();
+  const powerRaw = stripNumberFormatting(document.getElementById("fPower").value.trim());
+  const teamPowerRaw = stripNumberFormatting(document.getElementById("fTeamPower").value.trim());
   if ((powerRaw && !isDigitsOnly(powerRaw)) || (teamPowerRaw && !isDigitsOnly(teamPowerRaw)) || (migratedToRaw && !isDigitsOnly(migratedToRaw))) {
     showToast(t("invalidNumberField"));
     return;

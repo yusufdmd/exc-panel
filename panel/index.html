@@ -493,13 +493,13 @@
       </div>
     </div>
     <div class="field-row">
-      <div class="field"><label id="t_lblPower">Güç Seviyesi</label><input id="fPower" type="number"></div>
+      <div class="field"><label id="t_lblPower">Güç Seviyesi</label><input id="fPower" type="text" inputmode="numeric" oninput="liveFormatNumberInput(this)"></div>
       <div class="field"><label id="t_lblCamp">Kamp Seviyesi</label>
         <select id="fCamp"></select>
       </div>
     </div>
     <div class="field-row">
-      <div class="field"><label id="t_lblTeamPower">1. Takım Gücü</label><input id="fTeamPower" type="number"></div>
+      <div class="field"><label id="t_lblTeamPower">1. Takım Gücü</label><input id="fTeamPower" type="text" inputmode="numeric" oninput="liveFormatNumberInput(this)"></div>
       <div class="field">
         <label id="t_lblTeamElement">1. Takım Elementi</label>
         <div class="element-picker" id="elementPicker"></div>
@@ -568,7 +568,7 @@
     </div>
     <div class="field-row">
       <div class="field"><label id="t_lblProspectId">ID Numarası</label><input id="pGameId" inputmode="numeric" maxlength="15"></div>
-      <div class="field"><label id="t_lblProspectPower">Güç Seviyesi</label><input id="pPower" type="number"></div>
+      <div class="field"><label id="t_lblProspectPower">Güç Seviyesi</label><input id="pPower" type="text" inputmode="numeric" oninput="liveFormatNumberInput(this)"></div>
     </div>
     <div class="field-row">
       <div class="field"><label id="t_lblServer">Mevcut Sunucu</label><input id="pServer" type="number"></div>
@@ -584,7 +584,7 @@
       <div class="field"><label id="t_lblProspectCamp">Kamp Seviyesi</label>
         <select id="pCamp"></select>
       </div>
-      <div class="field"><label id="t_lblProspectTeamPower">1. Takım Gücü</label><input id="pTeamPower" type="number"></div>
+      <div class="field"><label id="t_lblProspectTeamPower">1. Takım Gücü</label><input id="pTeamPower" type="text" inputmode="numeric" oninput="liveFormatNumberInput(this)"></div>
     </div>
     <div class="field">
       <label id="t_lblProspectTeamElement">1. Takım Elementi</label>

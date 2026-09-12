@@ -55,24 +55,27 @@ module.exports = async (req, res) => {
     const teamElement = clean(b.teamElement, 20);
     const message = clean(b.message, 500);
 
+    // Kart etiketleri KASITLI olarak her zaman İngilizce — başvuranın hangi
+    // dili seçtiğine bakılmaksızın sabit. Sadece "message" (başvuranın kendi
+    // notu) olduğu gibi bırakılır, hiçbir şekilde çevrilmeye çalışılmaz.
     const fields = [];
-    if (gameId) fields.push({ name: "ID Numarası", value: gameId, inline: true });
-    if (contact) fields.push({ name: "İletişim", value: contact, inline: true });
-    if (server) fields.push({ name: "Mevcut Sunucu", value: server, inline: true });
-    if (power) fields.push({ name: "Toplam Güç Seviyesi", value: groupThousands(power), inline: true });
-    if (campLevel) fields.push({ name: "Kamp Seviyesi", value: campLevel, inline: true });
+    if (gameId) fields.push({ name: "ID Number", value: gameId, inline: true });
+    if (contact) fields.push({ name: "Contact", value: contact, inline: true });
+    if (server) fields.push({ name: "Current Server", value: server, inline: true });
+    if (power) fields.push({ name: "Total Power Level", value: groupThousands(power), inline: true });
+    if (campLevel) fields.push({ name: "Camp Level", value: campLevel, inline: true });
     if (teamPower || teamElement) {
       const emoji = ELEMENT_EMOJI[teamElement] || "";
-      fields.push({ name: "1. Takım", value: `${emoji ? emoji + " " : ""}${teamPower ? groupThousands(teamPower) : "—"}`.trim(), inline: true });
+      fields.push({ name: "1st Team", value: `${emoji ? emoji + " " : ""}${teamPower ? groupThousands(teamPower) : "—"}`.trim(), inline: true });
     }
-    if (message) fields.push({ name: "Mesaj", value: message, inline: false });
+    if (message) fields.push({ name: "Message", value: message, inline: false });
 
     const embed = {
-      title: "📥 Yeni Göç Başvurusu",
-      description: `**${name}** Excellence'a katılmak için başvurdu.`,
+      title: "📥 New Migration Application",
+      description: `**${name}** applied to join Excellence.`,
       color: GOLD_ACCENT,
       fields,
-      footer: { text: "EXC Paneli • Göç Başvurusu" },
+      footer: { text: "EXC Panel • Migration Application" },
       timestamp: new Date().toISOString()
     };
 

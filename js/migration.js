@@ -33,6 +33,8 @@ import {
   formatPower,
   todayStr,
   isDigitsOnly,
+  stripNumberFormatting,
+  formatNumberInput,
   migrationColorClass,
   migrationColorLabel,
   migrationStatusClass,
@@ -458,7 +460,7 @@ export function openProspectModal(id) {
     document.getElementById("prospectModalTitle").textContent = t("prospectEditTitle");
     document.getElementById("pName").value = prospect.name || "";
     document.getElementById("pGameId").value = prospect.gameId || "";
-    document.getElementById("pPower").value = prospect.power || "";
+    document.getElementById("pPower").value = formatNumberInput(prospect.power || "");
     document.getElementById("pServer").value = prospect.server != null ? prospect.server : "";
     document.getElementById("pColor").value = prospect.color;
     document.getElementById("pScore").value = prospect.score != null ? prospect.score : "";
@@ -466,7 +468,7 @@ export function openProspectModal(id) {
     document.getElementById("pNote").value = prospect.note || "";
     document.getElementById("pInvitedBy").value = prospect.invitedBy || "";
     document.getElementById("pCamp").value = prospect.campLevel || "";
-    document.getElementById("pTeamPower").value = prospect.teamPower || "";
+    document.getElementById("pTeamPower").value = formatNumberInput(prospect.teamPower || "");
     document.getElementById("pTeamElement").value = prospect.teamElement || "";
     setProspectElementPickerActive(prospect.teamElement || "");
   } else {
@@ -501,9 +503,9 @@ export async function saveProspect() {
   const editId = document.getElementById("prospectEditId").value;
   const name = document.getElementById("pName").value.trim();
   const gameId = document.getElementById("pGameId").value.trim();
-  const powerRaw = document.getElementById("pPower").value.trim();
+  const powerRaw = stripNumberFormatting(document.getElementById("pPower").value.trim());
   const serverRaw = document.getElementById("pServer").value.trim();
-  const teamPowerRaw = document.getElementById("pTeamPower").value.trim();
+  const teamPowerRaw = stripNumberFormatting(document.getElementById("pTeamPower").value.trim());
   const scoreRaw = document.getElementById("pScore").value.trim();
 
   if (gameId && !isDigitsOnly(gameId, 15)) {
@@ -775,9 +777,9 @@ export function processLead(id) {
   document.getElementById("pName").value = lead.name || "";
   document.getElementById("pGameId").value = lead.gameId || "";
   document.getElementById("pServer").value = lead.server != null ? lead.server : "";
-  document.getElementById("pPower").value = lead.power || "";
+  document.getElementById("pPower").value = formatNumberInput(lead.power || "");
   document.getElementById("pCamp").value = lead.campLevel || "";
-  document.getElementById("pTeamPower").value = lead.teamPower || "";
+  document.getElementById("pTeamPower").value = formatNumberInput(lead.teamPower || "");
   document.getElementById("pTeamElement").value = lead.teamElement || "";
   setProspectElementPickerActive(lead.teamElement || "");
 }

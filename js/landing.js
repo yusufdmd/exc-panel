@@ -612,6 +612,23 @@ function isDigitsOnly(value, exactLength) {
   return true;
 }
 
+/** "1.000.000" -> "1000000" (bkz. panel/js/ui.js -> stripNumberFormatting, aynı mantık). */
+function stripNumberFormatting(value) {
+  return String(value == null ? "" : value).replace(/\D/g, "");
+}
+
+/** "1000000" -> "1.000.000" — güç alanlarında kaç sıfır girildiğini görünür kılmak için (bkz. panel/js/ui.js -> formatNumberInput). */
+function formatNumberInput(raw) {
+  const digits = stripNumberFormatting(raw);
+  return digits ? digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".") : "";
+}
+
+/** Bir input'un değerini formatNumberInput ile yeniden yazar — leadPower/leadTeamPower'ın oninput'undan çağrılır. */
+function liveFormatNumberInput(inputEl) {
+  inputEl.value = formatNumberInput(inputEl.value);
+}
+window.liveFormatNumberInput = liveFormatNumberInput; // satır-içi oninput için (bkz. index.html)
+
 function setFormMessage(text, isError) {
   const el = document.getElementById("leadFormMessage");
   el.textContent = text;
@@ -651,9 +668,9 @@ async function submitLead(event) {
   const gameId = document.getElementById("leadGameId").value.trim();
   const contact = document.getElementById("leadContact").value.trim();
   const serverRaw = document.getElementById("leadServer").value.trim();
-  const powerRaw = document.getElementById("leadPower").value.trim();
+  const powerRaw = stripNumberFormatting(document.getElementById("leadPower").value.trim());
   const campLevel = document.getElementById("leadCamp").value || null;
-  const teamPowerRaw = document.getElementById("leadTeamPower").value.trim();
+  const teamPowerRaw = stripNumberFormatting(document.getElementById("leadTeamPower").value.trim());
   const teamElement = document.getElementById("leadTeamElement").value || null;
   const message = document.getElementById("leadMessage").value.trim();
 
