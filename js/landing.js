@@ -705,18 +705,31 @@ async function submitLead(event) {
       team_element: teamElement,
       message: message || null
     });
-    // Başvuru zaten kaydedildi — Discord bildirimi en iyi çaba (best-effort):
-    // başarısız olsa bile (webhook henüz kurulmamış, Discord geçici hata vb.)
-    // başvuran için bunun bir önemi yok, o yüzden ayrı try/catch'te sessizce yutuyoruz.
+    // Başvuru zaten kaydedildi — Discord bildirimi en iyi çaba (best-effort).
+    // NOT: normal bir `fetch` await'lense bile, kullanıcı "başarılı" mesajını
+    // görür görmez sekmeyi kapatır/başka sayfaya geçerse tarayıcı bu isteği
+    // yarıda kesebiliyordu (gerçek testlerde tam olarak bu yaşandı — istek
+    // Vercel'e hiç ulaşmadı). navigator.sendBeacon sayfa kapansa/değişse bile
+    // isteğin gönderilmesini garanti eder, o yüzden bunun için özel olarak var.
     try {
-      await fetch("/api/notify-migration-lead", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name, gameId, contact, server: serverRaw, power: powerRaw,
-          campLevel, teamPower: teamPowerRaw, teamElement, message
-        })
+      const notifyBody = JSON.stringify({
+        name, gameId, contact, server: serverRaw, power: powerRaw,
+        campLevel, teamPower: teamPowerRaw, teamElement, message
       });
+      const queued = navigator.sendBeacon && navigator.sendBeacon(
+        "/api/notify-migration-lead",
+        new Blob([notifyBody], { type: "application/json" })
+      );
+      if (!queued) {
+        // sendBeacon desteklenmiyor/kuyruklanamadıysa, en azından sayfa
+        // kapansa da devam etmesi için keepalive'lı bir fetch'e düş.
+        fetch("/api/notify-migration-lead", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: notifyBody,
+          keepalive: true
+        }).catch((notifyError) => console.error("[Excellence] Göç bildirimi gönderilemedi:", notifyError));
+      }
     } catch (notifyError) {
       console.error("[Excellence] Göç bildirimi gönderilemedi:", notifyError);
     }
