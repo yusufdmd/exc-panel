@@ -316,6 +316,58 @@ function periodWeekChips(store, member, weeks, isPoint) {
   }).join("");
 }
 
+// =====================================================================
+// "🏆 Katılım Panosu" — Engagement Challenge yüzdesine göre üyeleri sabit
+// dilimlere (100% / 85%+ / 70%+ / 55%+ / 40%+ / <40%) ayırıp, ekran
+// görüntüsü alınıp Discord'da paylaşılmaya uygun bir pano hâlinde gösterir.
+// Ham veriyi hiç DEĞİŞTİRMEZ, sadece "Genel Rapor"un da kullandığı
+// getRowsForPeriod çıktısını farklı biçimde gruplar. Hiç uygulanabilir
+// haftası olmayan (totalApplicable=0) üyeler — henüz katılma şansı
+// bulamadıkları için — panoya hiç dahil edilmez.
+// =====================================================================
+const ENGAGEMENT_BOARD_TIERS = [
+  { min: 100, labelKey: "ebTier100", color: "var(--gold-ink)" },
+  { min: 85, labelKey: "ebTier85", color: "var(--cyan-ink)" },
+  { min: 70, labelKey: "ebTier70", color: "var(--success-ink)" },
+  { min: 55, labelKey: "ebTier55", color: "var(--warn-ink)" },
+  { min: 40, labelKey: "ebTier40", color: "var(--violet-ink)" },
+  { min: 0, labelKey: "ebTierLow", color: "var(--danger-ink)" }
+];
+
+export function openEngagementBoardModal() {
+  const period = selectedPeriod();
+  if (!period) return;
+  const rows = getRowsForPeriod(period).filter((row) => row.totalApplicable > 0);
+  const buckets = ENGAGEMENT_BOARD_TIERS.map((tier) => ({ ...tier, members: [] }));
+  rows.forEach((row) => {
+    const pct = (row.total / row.totalApplicable) * 100;
+    const tier = buckets.find((b) => pct >= b.min) || buckets[buckets.length - 1];
+    tier.members.push(row.member);
+  });
+  buckets.forEach((tier) => tier.members.sort((a, b) => a.name.localeCompare(b.name)));
+
+  document.getElementById("engagementBoardBody").innerHTML = `
+    <div class="engagement-board">
+      ${buckets.map((tier) => `
+        <div class="eb-col" style="--eb-color:${tier.color};">
+          <div class="eb-head">${t(tier.labelKey)}<span class="eb-count">${tier.members.length}</span></div>
+          <div class="eb-members">
+            ${tier.members.length
+              ? tier.members.map((m) => `<div class="eb-member">${escapeHtml(m.name)}</div>`).join("")
+              : `<div class="eb-empty">—</div>`}
+          </div>
+        </div>
+      `).join("")}
+    </div>
+    <p class="eb-footnote">${t("ebFootnote")}</p>
+  `;
+  document.getElementById("engagementBoardOverlay").classList.add("active");
+}
+
+export function closeEngagementBoardModal() {
+  document.getElementById("engagementBoardOverlay").classList.remove("active");
+}
+
 /**
  * Admin-only "📊 Genel Rapor" — sadece admin oturumuna (paylaşılan "üye"
  * hesabına DEĞİL) görünen, o an seçili dönemdeki her hafta için kimin

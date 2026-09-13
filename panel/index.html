@@ -297,6 +297,7 @@
         <input class="search" id="engagementSearch" oninput="renderEngagement()">
         <select id="engagementPeriodSelect" onchange="selectEngagementPeriod(this.value)" style="padding:9px 10px; border-radius:8px; border:1px solid var(--line); background:var(--bg-panel); color:var(--text-primary); font-size:13px;"></select>
         <button class="icon-btn danger admin-only" onclick="deleteEngagementPeriod()" title="Bu dönemi sil" id="t_deleteEngagementPeriod">✕</button>
+        <button class="btn-ghost" onclick="openEngagementBoardModal()" id="t_engagementBoardBtn">🏆 Katılım Panosu</button>
         <button class="btn-ghost admin-only" onclick="openEngagementReportModal()" id="t_overallReport_engagement">📊 Genel Rapor</button>
         <button class="btn-ghost admin-only" onclick="endEngagementPeriod()" id="t_endEngagementPeriod">🏁 Dönemi Bitir</button>
         <input type="date" class="admin-only" id="engagementNewPeriodDate" style="padding:9px 10px; border-radius:8px; border:1px solid var(--line); background:var(--bg-panel); color:var(--text-primary); font-size:13px;">
@@ -748,6 +749,17 @@
     <div id="participationReportBody" style="max-height:60vh; overflow-y:auto;"></div>
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closeParticipationReportModal()" id="t_close8">Kapat</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="engagementBoardOverlay">
+  <div class="modal wide">
+    <h2 id="t_engagementBoardTitle">🏆 Katılım Panosu</h2>
+    <p id="t_engagementBoardSubtitle" style="color:var(--text-muted); font-size:13px; margin:-10px 0 16px;">GVG · SVS · King of Desert · Sandstorm</p>
+    <div id="engagementBoardBody" style="max-height:65vh; overflow-y:auto;"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeEngagementBoardModal()" id="t_close9">Kapat</button>
     </div>
   </div>
 </div>

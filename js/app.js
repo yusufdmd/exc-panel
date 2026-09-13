@@ -22,7 +22,7 @@ import { state, t, showToast, buildLangSwitch, applyStaticText, initLangFromStor
 import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember, openHistoryModal, closeHistoryModal, setMemberView, setRankFilter, setElementFilter, setSort, exportMembers, mapNameSuggestion, openNameSuggestModal, closeNameSuggestModal, submitNameSuggestion, approveNameSuggestion, dismissNameSuggestion, handlePowerScreenshot, removePowerUnmatchedItem, discardPowerDraft, applyPowerDraft, acceptSuspiciousPower, rejectSuspiciousPower } from "./members.js";
 import { mapWeek, mapEntry, openWeekModal, closeWeekModal, saveWeek, deleteWeek, openEntryModal, closeEntryModal, renderEntryRows, saveEntry, handleEntryScreenshot, handleSsAppliedScreenshot, removeUnmatchedItem, openWeekReportModal, closeWeekReportModal, openOverallReportModal, closeOverallReportModal, setOverallReportSort, exportEventTable } from "./events.js";
 import { setBoardSort, openParticipationReportModal, closeParticipationReportModal } from "./dashboard.js";
-import { mapEngagementPeriod, setEngagementSort, startNewEngagementPeriod, endEngagementPeriod, deleteEngagementPeriod, selectEngagementPeriod, renderEngagement, openEngagementReportModal } from "./engagement.js";
+import { mapEngagementPeriod, setEngagementSort, startNewEngagementPeriod, endEngagementPeriod, deleteEngagementPeriod, selectEngagementPeriod, renderEngagement, openEngagementReportModal, openEngagementBoardModal, closeEngagementBoardModal } from "./engagement.js";
 import {
   mapPeriod, mapProspect, mapLead, renderMigration, setMigrationSort, setMigrationView,
   selectMigrationPeriod, openPeriodModal, closePeriodModal, savePeriod, deletePeriod,
@@ -269,7 +269,7 @@ Object.assign(window, {
   openOverallReportModal, closeOverallReportModal, setOverallReportSort, exportEventTable,
   openHistoryModal, closeHistoryModal,
   setBoardSort, openParticipationReportModal, closeParticipationReportModal, setLang,
-  setEngagementSort, startNewEngagementPeriod, endEngagementPeriod, deleteEngagementPeriod, selectEngagementPeriod, renderEngagement, openEngagementReportModal,
+  setEngagementSort, startNewEngagementPeriod, endEngagementPeriod, deleteEngagementPeriod, selectEngagementPeriod, renderEngagement, openEngagementReportModal, openEngagementBoardModal, closeEngagementBoardModal,
   renderMigration, setMigrationSort, setMigrationView, openProspectModal, closeProspectModal, saveProspect, deleteProspect, approveProspect,
   markProspectFailed, restoreProspect, markProspectConfirmed, unconfirmProspect, markProspectFinalized, unfinalizeProspect,
   setMigrationColorFilter, setMigrationStatusFilter, setProspectTeamElement,
