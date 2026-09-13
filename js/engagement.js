@@ -369,6 +369,39 @@ export function closeEngagementBoardModal() {
 }
 
 /**
+ * Panoyu (başlık + sütunlar) tek bir PNG olarak indirir — panel/index.html'de
+ * CDN'den yüklenen html2canvas'ı kullanır. Yakalamadan önce iç listenin
+ * (engagementBoardBody) kaydırma yüksekliği sınırını geçici olarak kaldırır,
+ * yoksa uzun üye listeleri modalda göründüğü gibi kırpılmış çıkardı.
+ */
+export async function downloadEngagementBoardImage() {
+  if (typeof html2canvas !== "function") {
+    showToast("Error");
+    return;
+  }
+  const capture = document.getElementById("engagementBoardCapture");
+  const scrollBody = document.getElementById("engagementBoardBody");
+  const prevMaxHeight = scrollBody.style.maxHeight;
+  const prevOverflowY = scrollBody.style.overflowY;
+  scrollBody.style.maxHeight = "none";
+  scrollBody.style.overflowY = "visible";
+  try {
+    const bg = getComputedStyle(document.querySelector("#engagementBoardOverlay .modal")).backgroundColor;
+    const canvas = await html2canvas(capture, { backgroundColor: bg, scale: 2 });
+    const link = document.createElement("a");
+    link.download = "katilim-panosu.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  } catch (error) {
+    console.error(error);
+    showToast("Error");
+  } finally {
+    scrollBody.style.maxHeight = prevMaxHeight;
+    scrollBody.style.overflowY = prevOverflowY;
+  }
+}
+
+/**
  * Admin-only "📊 Genel Rapor" — sadece admin oturumuna (paylaşılan "üye"
  * hesabına DEĞİL) görünen, o an seçili dönemdeki her hafta için kimin
  * puan alıp almadığını tek tek gösteren detaylı döküm. Mevcut ortak
