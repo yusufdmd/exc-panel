@@ -389,7 +389,7 @@ export async function downloadEngagementBoardImage() {
     const bg = getComputedStyle(document.querySelector("#engagementBoardOverlay .modal")).backgroundColor;
     const canvas = await html2canvas(capture, { backgroundColor: bg, scale: 2 });
     const link = document.createElement("a");
-    link.download = "katilim-panosu.png";
+    link.download = t("engagementBoardFileName") + ".png";
     link.href = canvas.toDataURL("image/png");
     link.click();
   } catch (error) {
