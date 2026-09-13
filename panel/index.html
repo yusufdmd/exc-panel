@@ -761,8 +761,32 @@
       <div id="engagementBoardBody" style="max-height:65vh; overflow-y:auto;"></div>
     </div>
     <div class="modal-actions">
+      <button class="icon-btn" onclick="openEngagementBoardSettings()" title="Dilim sınırlarını ayarla" id="t_engagementBoardSettingsBtn">⚙️</button>
       <button class="btn-ghost" onclick="downloadEngagementBoardImage()" id="t_downloadEngagementBoard">📥 Görsel Olarak İndir</button>
       <button class="btn-ghost" onclick="closeEngagementBoardModal()" id="t_close9">Kapat</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="engagementBoardSettingsOverlay">
+  <div class="modal">
+    <h2 id="t_engagementBoardSettingsTitle">Katılım Panosu Dilimleri</h2>
+    <p id="t_ebSettingsSubtitle" style="color:var(--text-muted); font-size:13px; margin-top:-10px;">En üst (%100) ve en alt dilim sabittir, aradaki 3 sınırı sen belirlersin.</p>
+    <div class="field">
+      <label id="t_ebSetting2Label">2. Dilim Sınırı (%)</label>
+      <input id="ebSetting2" type="number" min="1" max="99">
+    </div>
+    <div class="field">
+      <label id="t_ebSetting3Label">3. Dilim Sınırı (%)</label>
+      <input id="ebSetting3" type="number" min="1" max="99">
+    </div>
+    <div class="field">
+      <label id="t_ebSetting4Label">4. Dilim Sınırı (%)</label>
+      <input id="ebSetting4" type="number" min="1" max="99">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeEngagementBoardSettings()" id="t_cancelEbSettings">Vazgeç</button>
+      <button class="btn-primary" onclick="saveEngagementBoardTiers()" id="t_saveEbSettings">Kaydet</button>
     </div>
   </div>
 </div>

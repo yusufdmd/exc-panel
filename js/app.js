@@ -16,13 +16,13 @@
 // o dosyalar hiç çalıştırılmaz ve tabloları hiç çizilmez.
 // =====================================================================
 
-import { getMembers, getAllPowerHistory, getAllTeamPowerHistory, getEngagementPeriods, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, getNameSuggestions, getSiteLinks, getNews, getFeaturedVideos, getRecentActivity, subscribeToTables } from "./database.js";
+import { getMembers, getAllPowerHistory, getAllTeamPowerHistory, getEngagementPeriods, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, getNameSuggestions, getSiteLinks, getNews, getFeaturedVideos, getRecentActivity, getSetting, subscribeToTables } from "./database.js";
 import { POLL_INTERVAL_MS } from "./config.js";
 import { state, t, showToast, buildLangSwitch, applyStaticText, initLangFromStorage, persistLanguage, initThemeFromStorage, toggleTheme, renderAll, registerDataLoader, registerRenderer, liveFormatNumberInput } from "./ui.js";
 import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember, openHistoryModal, closeHistoryModal, setMemberView, setRankFilter, setElementFilter, setSort, exportMembers, mapNameSuggestion, openNameSuggestModal, closeNameSuggestModal, submitNameSuggestion, approveNameSuggestion, dismissNameSuggestion, handlePowerScreenshot, removePowerUnmatchedItem, discardPowerDraft, applyPowerDraft, acceptSuspiciousPower, rejectSuspiciousPower } from "./members.js";
 import { mapWeek, mapEntry, openWeekModal, closeWeekModal, saveWeek, deleteWeek, openEntryModal, closeEntryModal, renderEntryRows, saveEntry, handleEntryScreenshot, handleSsAppliedScreenshot, removeUnmatchedItem, openWeekReportModal, closeWeekReportModal, openOverallReportModal, closeOverallReportModal, setOverallReportSort, exportEventTable } from "./events.js";
 import { setBoardSort, openParticipationReportModal, closeParticipationReportModal } from "./dashboard.js";
-import { mapEngagementPeriod, setEngagementSort, startNewEngagementPeriod, endEngagementPeriod, deleteEngagementPeriod, selectEngagementPeriod, renderEngagement, openEngagementReportModal, openEngagementBoardModal, closeEngagementBoardModal, downloadEngagementBoardImage } from "./engagement.js";
+import { mapEngagementPeriod, setEngagementSort, startNewEngagementPeriod, endEngagementPeriod, deleteEngagementPeriod, selectEngagementPeriod, renderEngagement, openEngagementReportModal, openEngagementBoardModal, closeEngagementBoardModal, downloadEngagementBoardImage, openEngagementBoardSettings, closeEngagementBoardSettings, saveEngagementBoardTiers } from "./engagement.js";
 import {
   mapPeriod, mapProspect, mapLead, renderMigration, setMigrationSort, setMigrationView,
   selectMigrationPeriod, openPeriodModal, closePeriodModal, savePeriod, deletePeriod,
@@ -77,7 +77,8 @@ async function loadAll(silent) {
       ssWeeksRes, ssRecordsRes,
       kodWeeksRes, kodRecordsRes,
       otherWeeksRes, otherRecordsRes,
-      migrationPeriodsRes, migrationRes, migrationLeadsRes, nameSuggestionsRes, siteLinksRes, newsRes, videosRes, activityRes
+      migrationPeriodsRes, migrationRes, migrationLeadsRes, nameSuggestionsRes, siteLinksRes, newsRes, videosRes, activityRes,
+      engagementBoardTiersRes
     ] = await Promise.allSettled([
       getMembers(), getAllPowerHistory(), getAllTeamPowerHistory(), getEngagementPeriods(),
       getWeeks("svs"), getAllRecords("svs"),
@@ -90,7 +91,8 @@ async function loadAll(silent) {
       restricted ? Promise.resolve([]) : getMigrationLeads(),
       restricted ? Promise.resolve([]) : getNameSuggestions(),
       getSiteLinks(), getNews(), getFeaturedVideos(),
-      restricted ? Promise.resolve([]) : getRecentActivity(200)
+      restricted ? Promise.resolve([]) : getRecentActivity(200),
+      getSetting("engagementBoardTiers", null)
     ]);
 
     const historyByMember = {};
@@ -125,7 +127,13 @@ async function loadAll(silent) {
       siteLinks: mapSiteLinks(siteLinksRes.status === "fulfilled" ? siteLinksRes.value : null),
       news: settledList(newsRes).map(mapNewsItem),
       featuredVideos: settledList(videosRes).map(mapVideoItem),
-      activityLog: settledList(activityRes).map(mapActivity)
+      activityLog: settledList(activityRes).map(mapActivity),
+      engagementBoardTiers: (() => {
+        const value = engagementBoardTiersRes.status === "fulfilled" ? engagementBoardTiersRes.value : null;
+        return (Array.isArray(value) && value.length === 3 && value.every((n) => Number.isFinite(n)))
+          ? value
+          : state.engagementBoardTiers;
+      })()
     };
 
     document.getElementById("syncText").textContent = t("syncLive");
@@ -269,7 +277,7 @@ Object.assign(window, {
   openOverallReportModal, closeOverallReportModal, setOverallReportSort, exportEventTable,
   openHistoryModal, closeHistoryModal,
   setBoardSort, openParticipationReportModal, closeParticipationReportModal, setLang,
-  setEngagementSort, startNewEngagementPeriod, endEngagementPeriod, deleteEngagementPeriod, selectEngagementPeriod, renderEngagement, openEngagementReportModal, openEngagementBoardModal, closeEngagementBoardModal, downloadEngagementBoardImage,
+  setEngagementSort, startNewEngagementPeriod, endEngagementPeriod, deleteEngagementPeriod, selectEngagementPeriod, renderEngagement, openEngagementReportModal, openEngagementBoardModal, closeEngagementBoardModal, downloadEngagementBoardImage, openEngagementBoardSettings, closeEngagementBoardSettings, saveEngagementBoardTiers,
   renderMigration, setMigrationSort, setMigrationView, openProspectModal, closeProspectModal, saveProspect, deleteProspect, approveProspect,
   markProspectFailed, restoreProspect, markProspectConfirmed, unconfirmProspect, markProspectFinalized, unfinalizeProspect,
   setMigrationColorFilter, setMigrationStatusFilter, setProspectTeamElement,

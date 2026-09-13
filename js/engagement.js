@@ -25,7 +25,7 @@
 //     (bkz. config.js -> GVG_THRESHOLDS.green) ulaşmışsa 1 puan.
 // =====================================================================
 
-import { createEngagementPeriod as dbCreateEngagementPeriod, closeEngagementPeriod as dbCloseEngagementPeriod, deleteEngagementPeriod as dbDeleteEngagementPeriod } from "./database.js";
+import { createEngagementPeriod as dbCreateEngagementPeriod, closeEngagementPeriod as dbCloseEngagementPeriod, deleteEngagementPeriod as dbDeleteEngagementPeriod, setSetting as dbSetSetting } from "./database.js";
 import { state, t, escapeHtml, rankClass, rowNumHtml, isExempt, showToast, todayStr, formatRatio, RANK_ORDER, registerRenderer } from "./ui.js";
 import { activeMembers } from "./members.js";
 import { GVG_THRESHOLDS } from "./config.js";
@@ -317,28 +317,36 @@ function periodWeekChips(store, member, weeks, isPoint) {
 }
 
 // =====================================================================
-// "🏆 Katılım Panosu" — Engagement Challenge yüzdesine göre üyeleri sabit
-// dilimlere (100% / 85%+ / 70%+ / 55%+ / 40%+ / <40%) ayırıp, ekran
-// görüntüsü alınıp Discord'da paylaşılmaya uygun bir pano hâlinde gösterir.
-// Ham veriyi hiç DEĞİŞTİRMEZ, sadece "Genel Rapor"un da kullandığı
-// getRowsForPeriod çıktısını farklı biçimde gruplar. Hiç uygulanabilir
-// haftası olmayan (totalApplicable=0) üyeler — henüz katılma şansı
-// bulamadıkları için — panoya hiç dahil edilmez.
+// "🏆 Katılım Panosu" — Engagement Challenge yüzdesine göre üyeleri renkli
+// dilimlere ayırıp, ekran görüntüsü alınıp Discord'da paylaşılmaya uygun
+// bir pano hâlinde gösterir. Ham veriyi hiç DEĞİŞTİRMEZ, sadece "Genel
+// Rapor"un da kullandığı getRowsForPeriod çıktısını farklı biçimde
+// gruplar. Hiç uygulanabilir haftası olmayan (totalApplicable=0) üyeler
+// — henüz katılma şansı bulamadıkları için — panoya hiç dahil edilmez.
+//
+// 5 dilim var: %100 (tek başına — ödülü kazanan dilim), sonra 3 tanesi
+// admin tarafından ayarlanabilen (bkz. state.engagementBoardTiers,
+// "settings" tablosunda kalıcı — Supabase'in genel anahtar/değer
+// mekanizması, bkz. database.js -> getSetting/setSetting) eşiğe göre,
+// en altta da geri kalan herkes. Varsayılan eşikler 70/50/30.
 // =====================================================================
-const ENGAGEMENT_BOARD_TIERS = [
-  { min: 100, labelKey: "ebTier100", color: "var(--gold-ink)" },
-  { min: 85, labelKey: "ebTier85", color: "var(--cyan-ink)" },
-  { min: 70, labelKey: "ebTier70", color: "var(--success-ink)" },
-  { min: 55, labelKey: "ebTier55", color: "var(--warn-ink)" },
-  { min: 40, labelKey: "ebTier40", color: "var(--violet-ink)" },
-  { min: 0, labelKey: "ebTierLow", color: "var(--danger-ink)" }
-];
+function buildEngagementBoardTiers() {
+  const [t2, t3, t4] = state.engagementBoardTiers;
+  const suffix = t("ebParticipationWord");
+  return [
+    { min: 100, label: `100% ${suffix}`, color: "var(--gold-ink)" },
+    { min: t2, label: `${t2}%+ ${suffix}`, color: "var(--success-ink)" },
+    { min: t3, label: `${t3}%+ ${suffix}`, color: "var(--warn-ink)" },
+    { min: t4, label: `${t4}%+ ${suffix}`, color: "var(--violet-ink)" },
+    { min: 0, label: `<${t4}% ${suffix}`, color: "var(--danger-ink)" }
+  ];
+}
 
 export function openEngagementBoardModal() {
   const period = selectedPeriod();
   if (!period) return;
   const rows = getRowsForPeriod(period).filter((row) => row.totalApplicable > 0);
-  const buckets = ENGAGEMENT_BOARD_TIERS.map((tier) => ({ ...tier, members: [] }));
+  const buckets = buildEngagementBoardTiers().map((tier) => ({ ...tier, members: [] }));
   rows.forEach((row) => {
     const pct = (row.total / row.totalApplicable) * 100;
     const tier = buckets.find((b) => pct >= b.min) || buckets[buckets.length - 1];
@@ -350,7 +358,7 @@ export function openEngagementBoardModal() {
     <div class="engagement-board">
       ${buckets.map((tier) => `
         <div class="eb-col" style="--eb-color:${tier.color};">
-          <div class="eb-head">${t(tier.labelKey)}<span class="eb-count">${tier.members.length}</span></div>
+          <div class="eb-head">${escapeHtml(tier.label)}<span class="eb-count">${tier.members.length}</span></div>
           <div class="eb-members">
             ${tier.members.length
               ? tier.members.map((m) => `<div class="eb-member">${escapeHtml(m.name)}</div>`).join("")
@@ -366,6 +374,40 @@ export function openEngagementBoardModal() {
 
 export function closeEngagementBoardModal() {
   document.getElementById("engagementBoardOverlay").classList.remove("active");
+}
+
+/** "⚙️" ile açılan, panonun 3 orta dilim eşiğini (100 ve 0 sabit) elle değiştirmeyi sağlayan küçük ayar modalı. */
+export function openEngagementBoardSettings() {
+  const [t2, t3, t4] = state.engagementBoardTiers;
+  document.getElementById("ebSetting2").value = t2;
+  document.getElementById("ebSetting3").value = t3;
+  document.getElementById("ebSetting4").value = t4;
+  document.getElementById("engagementBoardSettingsOverlay").classList.add("active");
+}
+
+export function closeEngagementBoardSettings() {
+  document.getElementById("engagementBoardSettingsOverlay").classList.remove("active");
+}
+
+export async function saveEngagementBoardTiers() {
+  const t2 = Number(document.getElementById("ebSetting2").value);
+  const t3 = Number(document.getElementById("ebSetting3").value);
+  const t4 = Number(document.getElementById("ebSetting4").value);
+  const allIntegers = [t2, t3, t4].every((n) => Number.isInteger(n) && n >= 1 && n <= 99);
+  if (!allIntegers || !(t2 > t3 && t3 > t4)) {
+    showToast(t("ebInvalidTiers"));
+    return;
+  }
+  try {
+    await dbSetSetting("engagementBoardTiers", [t2, t3, t4]);
+    state.engagementBoardTiers = [t2, t3, t4];
+    closeEngagementBoardSettings();
+    openEngagementBoardModal();
+    showToast(t("ebTiersSaved"));
+  } catch (error) {
+    console.error(error);
+    showToast("Error");
+  }
 }
 
 /**
