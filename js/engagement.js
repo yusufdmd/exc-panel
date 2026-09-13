@@ -15,12 +15,12 @@
 //
 // Katılım kuralları (bkz. "EXC Engagement Challenge" duyurusu):
 //   - SVS / King of Desert: durum "Katıldı" ise 1 puan.
-//   - SS (SandStorm), haftalık 0-2 puan (bkz. ssPointsForEntry):
-//       * Hiç başvurmadıysa: 0 puan.
-//       * Başvurdu ama kontenjan yüzünden seçilmediyse: 1 puan (kişinin
-//         suçu değil, kontenjan sınırlı).
-//       * Seçildi ve fiilen katıldıysa: 2 puan (tam katılım).
-//       * Seçildi ama gelmediyse (mazeretli dahil): 0 puan.
+//   - SS (SandStorm): SEÇİLDİ ve fiilen KATILDIysa 1 puan, aksi hâlde
+//     (hiç başvurmadıysa, başvurup seçilmediyse veya seçilip gelmediyse)
+//     0 puan. Diğer türlerle aynı ağırlıkta, haftada azami 1 puan — eskiden
+//     "başvurdu ama seçilmedi" durumu ayrıca 1 puan veriyordu, bu kaldırıldı
+//     çünkü SS'i (sık yapıldığı için) toplam puanın orantısız büyük bir
+//     kısmını oluşturur hâle getiriyordu.
 //   - GVG: puan, "9 sandık" karşılığı olan mevcut Yeşil Bölge eşiğine
 //     (bkz. config.js -> GVG_THRESHOLDS.green) ulaşmışsa 1 puan.
 // =====================================================================
@@ -36,13 +36,7 @@ import { GVG_THRESHOLDS } from "./config.js";
 const isSvsPoint = (e) => !!e && e.status === "joined";
 const isKodPoint = (e) => !!e && e.status === "joined";
 const isGvgPoint = (e) => !!e && (Number(e.points) || 0) >= GVG_THRESHOLDS.green;
-
-/** SS haftalık puanı: 0 (başvurmadı ya da seçilip gelmedi), 1 (başvurdu, seçilmedi) veya 2 (seçildi, katıldı). */
-function ssPointsForEntry(entry) {
-  if (!entry) return 0;
-  if (!entry.group) return (entry.appliedSlot1 || entry.appliedSlot2 || entry.appliedSlot3) ? 1 : 0;
-  return entry.attended ? 2 : 0;
-}
+const isSsPoint = (e) => !!e && !!e.group && !!e.attended;
 
 /** Supabase dönem satırını uygulama şekline çevirir. */
 export function mapEngagementPeriod(row) {
@@ -83,28 +77,9 @@ function categoryStat(store, member, weeks, isPoint) {
   return { attended, applicable };
 }
 
-/**
- * SS'e özel kategori istatistiği — diğer türlerden farklı olarak puan
- * ikili (0/1) değil 0/1/2 olabildiği için genel `categoryStat`a uymaz.
- * Payda (applicable), haftada alınabilecek AZAMİ puanı (hafta sayısı × 2)
- * yansıtır — böylece oran (%) hâlâ "olabilecek en yüksek puanın kaçta
- * kaçını aldı" anlamına gelir.
- */
-function ssCategoryStat(member, weeks) {
-  let points = 0;
-  let applicableWeeks = 0;
-  weeks.forEach((week) => {
-    if (isExempt(member, week)) return;
-    applicableWeeks++;
-    const entry = state.ss.entries.find((e) => e.memberId === member.id && e.weekId === week.id);
-    points += ssPointsForEntry(entry);
-  });
-  return { points, applicable: applicableWeeks * 2 };
-}
-
 function computeEngagementRow(member, period) {
   const svs = categoryStat(state.svs, member, periodWeeks(state.svs, period), isSvsPoint);
-  const ss = ssCategoryStat(member, periodWeeks(state.ss, period));
+  const ss = categoryStat(state.ss, member, periodWeeks(state.ss, period), isSsPoint);
   const kod = categoryStat(state.kod, member, periodWeeks(state.kod, period), isKodPoint);
   const gvg = categoryStat(state.gvg, member, periodWeeks(state.gvg, period), isGvgPoint);
   return {
@@ -113,10 +88,10 @@ function computeEngagementRow(member, period) {
     // üye sonradan yeniden adlandırılsa/silinse bile o anki hâli korunur.
     member: { id: member.id, name: member.name, rank: member.rank, gameId: member.gameId },
     svsPoints: svs.attended, svsApplicable: svs.applicable,
-    ssPoints: ss.points, ssApplicable: ss.applicable,
+    ssPoints: ss.attended, ssApplicable: ss.applicable,
     kodPoints: kod.attended, kodApplicable: kod.applicable,
     gvgPoints: gvg.attended, gvgApplicable: gvg.applicable,
-    total: svs.attended + ss.points + kod.attended + gvg.attended,
+    total: svs.attended + ss.attended + kod.attended + gvg.attended,
     totalApplicable: svs.applicable + ss.applicable + kod.applicable + gvg.applicable
   };
 }
@@ -341,19 +316,6 @@ function periodWeekChips(store, member, weeks, isPoint) {
   }).join("");
 }
 
-/** SS için haftalık chip'ler — puan 0/1/2 olabildiğinden diğer türlerin ikili (✓/✕) chip'inden ayrı: renk doğrudan puana göre belirlenir. */
-function ssWeekChips(member, weeks) {
-  if (!weeks.length) return `<span style="color:var(--text-dim); font-size:12px;">—</span>`;
-  return weeks.map((week) => {
-    const exempt = isExempt(member, week);
-    if (exempt) return `<span class="cell-pill pill-gray" style="margin:2px; display:inline-block;" title="${escapeHtml(week.label)}">${escapeHtml(week.label)}: ${t("exemptLabel")}</span>`;
-    const entry = state.ss.entries.find((e) => e.memberId === member.id && e.weekId === week.id);
-    const points = ssPointsForEntry(entry);
-    const cls = points === 2 ? "pill-green" : points === 1 ? "pill-yellow" : "pill-red";
-    return `<span class="cell-pill ${cls}" style="margin:2px; display:inline-block;" title="${escapeHtml(week.label)}">${escapeHtml(week.label)}: ${points}</span>`;
-  }).join("");
-}
-
 /**
  * Admin-only "📊 Genel Rapor" — sadece admin oturumuna (paylaşılan "üye"
  * hesabına DEĞİL) görünen, o an seçili dönemdeki her hafta için kimin
@@ -392,7 +354,7 @@ export function openEngagementReportModal() {
             <td class="member-name">${escapeHtml(row.member.name)}</td>
             <td class="num-cell" style="font-weight:700; color:var(--cyan-ink);">${row.total}</td>
             <td>${periodWeekChips(state.svs, row.member, svsWeeks, isSvsPoint)}</td>
-            <td>${ssWeekChips(row.member, ssWeeks)}</td>
+            <td>${periodWeekChips(state.ss, row.member, ssWeeks, isSsPoint)}</td>
             <td>${periodWeekChips(state.kod, row.member, kodWeeks, isKodPoint)}</td>
             <td>${periodWeekChips(state.gvg, row.member, gvgWeeks, isGvgPoint)}</td>
           </tr>
