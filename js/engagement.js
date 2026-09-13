@@ -370,9 +370,11 @@ export function closeEngagementBoardModal() {
 
 /**
  * Panoyu (başlık + sütunlar) tek bir PNG olarak indirir — panel/index.html'de
- * CDN'den yüklenen html2canvas'ı kullanır. Yakalamadan önce iç listenin
- * (engagementBoardBody) kaydırma yüksekliği sınırını geçici olarak kaldırır,
- * yoksa uzun üye listeleri modalda göründüğü gibi kırpılmış çıkardı.
+ * CDN'den yüklenen html2canvas'ı kullanır. Modaldaki hâliyle hem dikey
+ * (uzun üye listeleri) hem yatay (6 sütun modalın genişliğine sığmayıp
+ * kaydırma gerektirebiliyor) kırpılma olabileceğinden, html2canvas'ın
+ * `onclone` kancasıyla SADECE kendi görünmez kopyasında (gerçek sayfada
+ * DEĞİL) tüm yükseklik/genişlik sınırlarını kaldırıp tam hâliyle yakalıyoruz.
  */
 export async function downloadEngagementBoardImage() {
   if (typeof html2canvas !== "function") {
@@ -380,14 +382,20 @@ export async function downloadEngagementBoardImage() {
     return;
   }
   const capture = document.getElementById("engagementBoardCapture");
-  const scrollBody = document.getElementById("engagementBoardBody");
-  const prevMaxHeight = scrollBody.style.maxHeight;
-  const prevOverflowY = scrollBody.style.overflowY;
-  scrollBody.style.maxHeight = "none";
-  scrollBody.style.overflowY = "visible";
   try {
     const bg = getComputedStyle(document.querySelector("#engagementBoardOverlay .modal")).backgroundColor;
-    const canvas = await html2canvas(capture, { backgroundColor: bg, scale: 2 });
+    const canvas = await html2canvas(capture, {
+      backgroundColor: bg,
+      scale: 2,
+      onclone: (clonedDoc) => {
+        const clonedModal = clonedDoc.querySelector("#engagementBoardOverlay .modal");
+        const clonedBody = clonedDoc.getElementById("engagementBoardBody");
+        const clonedBoard = clonedDoc.querySelector("#engagementBoardCapture .engagement-board");
+        if (clonedModal) clonedModal.style.maxWidth = "none";
+        if (clonedBody) { clonedBody.style.maxHeight = "none"; clonedBody.style.overflowY = "visible"; }
+        if (clonedBoard) { clonedBoard.style.overflowX = "visible"; clonedBoard.style.width = "max-content"; }
+      }
+    });
     const link = document.createElement("a");
     link.download = t("engagementBoardFileName") + ".png";
     link.href = canvas.toDataURL("image/png");
@@ -395,9 +403,6 @@ export async function downloadEngagementBoardImage() {
   } catch (error) {
     console.error(error);
     showToast("Error");
-  } finally {
-    scrollBody.style.maxHeight = prevMaxHeight;
-    scrollBody.style.overflowY = prevOverflowY;
   }
 }
 
