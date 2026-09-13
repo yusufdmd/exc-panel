@@ -431,9 +431,15 @@ export async function downloadEngagementBoardImage() {
       scale: 2,
       onclone: (clonedDoc) => {
         const clonedModal = clonedDoc.querySelector("#engagementBoardOverlay .modal");
+        const clonedCapture = clonedDoc.getElementById("engagementBoardCapture");
         const clonedBody = clonedDoc.getElementById("engagementBoardBody");
         const clonedBoard = clonedDoc.querySelector("#engagementBoardCapture .engagement-board");
         if (clonedModal) clonedModal.style.maxWidth = "none";
+        // #engagementBoardCapture normalde bloğun tamamını (modalın genişliği
+        // kadar) kaplar — bu da yakalanan görselde 5 sütundan sonra boş bir
+        // alan kalmasına yol açıyordu. width:max-content ile onu da içeriğe
+        // (yani en geniş çocuğu olan .engagement-board'a) sarmalanmış hâle getiriyoruz.
+        if (clonedCapture) clonedCapture.style.width = "max-content";
         if (clonedBody) { clonedBody.style.maxHeight = "none"; clonedBody.style.overflowY = "visible"; }
         if (clonedBoard) { clonedBoard.style.overflowX = "visible"; clonedBoard.style.width = "max-content"; }
       }
