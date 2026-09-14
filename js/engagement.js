@@ -15,12 +15,10 @@
 //
 // Katılım kuralları (bkz. "EXC Engagement Challenge" duyurusu):
 //   - SVS / King of Desert: durum "Katıldı" ise 1 puan.
-//   - SS (SandStorm): SEÇİLDİ ve fiilen KATILDIysa 1 puan, aksi hâlde
-//     (hiç başvurmadıysa, başvurup seçilmediyse veya seçilip gelmediyse)
-//     0 puan. Diğer türlerle aynı ağırlıkta, haftada azami 1 puan — eskiden
-//     "başvurdu ama seçilmedi" durumu ayrıca 1 puan veriyordu, bu kaldırıldı
-//     çünkü SS'i (sık yapıldığı için) toplam puanın orantısız büyük bir
-//     kısmını oluşturur hâle getiriyordu.
+//   - SS (SandStorm): haftada azami 1 puan (diğer türlerle aynı ağırlık),
+//     iki yoldan biriyle kazanılır: (a) seçilmediyse (kontenjan dolu)
+//     sadece BAŞVURMUŞ olmak yeterli, (b) seçildiyse fiilen KATILMIŞ
+//     olmak gerekir. Hiç başvurmamak, ya da seçilip gelmemek 0 puandır.
 //   - GVG: puan, "9 sandık" karşılığı olan mevcut Yeşil Bölge eşiğine
 //     (bkz. config.js -> GVG_THRESHOLDS.green) ulaşmışsa 1 puan.
 // =====================================================================
@@ -36,7 +34,12 @@ import { GVG_THRESHOLDS } from "./config.js";
 const isSvsPoint = (e) => !!e && e.status === "joined";
 const isKodPoint = (e) => !!e && e.status === "joined";
 const isGvgPoint = (e) => !!e && (Number(e.points) || 0) >= GVG_THRESHOLDS.green;
-const isSsPoint = (e) => !!e && !!e.group && !!e.attended;
+/** SS: seçilmediyse (kontenjan) sadece BAŞVURMUŞ olmak yeterli; seçildiyse fiilen KATILMIŞ olmak gerekir. Her iki yol da aynı 1 puanı verir — hiç başvurmamak ya da seçilip gelmemek 0 puandır. */
+const isSsPoint = (e) => {
+  if (!e) return false;
+  if (!e.group) return !!(e.appliedSlot1 || e.appliedSlot2 || e.appliedSlot3);
+  return !!e.attended;
+};
 
 /** Supabase dönem satırını uygulama şekline çevirir. */
 export function mapEngagementPeriod(row) {
