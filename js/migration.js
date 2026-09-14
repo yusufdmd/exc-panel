@@ -784,11 +784,22 @@ export function processLead(id) {
   setProspectElementPickerActive(lead.teamElement || "");
 }
 
+/** Ham göç başvurusunu (app-shape), `createMigrationLead`'e doğrudan geri verilebilecek veritabanı satırı şekline çevirir. */
+function migrationLeadToDbSnapshot(lead) {
+  return {
+    id: lead.id, name: lead.name, game_id: lead.gameId || null, contact: lead.contact || null,
+    current_server: lead.server, power: lead.power, camp_level: lead.campLevel || null,
+    team_power: lead.teamPower, team_element: lead.teamElement || null, message: lead.message || null
+  };
+}
+
 export async function dismissLead(id) {
   if (!confirm(t("confirmDismissLead"))) return;
+  const target = state.migrationLeads.find((l) => l.id === id);
   try {
     await dbDeleteLead(id);
     state.migrationLeads = state.migrationLeads.filter((l) => l.id !== id);
+    await logActivity("deleted", "migration_lead", id, { name: (target && target.name) || "İsimsiz", snapshot: target ? migrationLeadToDbSnapshot(target) : null }, state.currentAdminUsername);
     renderAll();
     showToast(t("toastLeadDismissed"));
   } catch (error) {

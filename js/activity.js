@@ -20,11 +20,11 @@
 //     yükleme" aksiyonu yoktur — sadece kim/ne zaman girdi bilgisi tutulur.
 // =====================================================================
 
-import { createMember, createWeek, upsertRecordsBulk, addPowerHistoryEntry, addTeamPowerHistoryEntry, createMigrationProspect, createNews, createFeaturedVideo, logActivity } from "./database.js";
+import { createMember, createWeek, upsertRecordsBulk, addPowerHistoryEntry, addTeamPowerHistoryEntry, createMigrationProspect, createMigrationLead, createNews, createFeaturedVideo, logActivity } from "./database.js";
 import { state, t, showToast, escapeHtml, renderAll, registerRenderer } from "./ui.js";
 import { mapMember } from "./members.js";
 import { mapWeek, mapEntry, storeFor, entryToDbPayload, eventTypeLabel } from "./events.js";
-import { mapProspect } from "./migration.js";
+import { mapProspect, mapLead } from "./migration.js";
 import { mapNewsItem } from "./news.js";
 import { mapVideoItem } from "./videos.js";
 
@@ -44,7 +44,7 @@ export function mapActivity(row) {
 const ACTION_LABEL_KEY = { created: "actionCreated", updated: "actionUpdated", deleted: "actionDeleted", restored: "actionRestored" };
 const ACTION_CLASS = { created: "pill-green", updated: "pill-blue", deleted: "pill-red", restored: "pill-yellow" };
 
-const SIMPLE_ENTITY_LABEL_KEY = { member: "lbMember", migration_prospect: "tabMigration", news: "tabNews", featured_video: "tabVideos" };
+const SIMPLE_ENTITY_LABEL_KEY = { member: "lbMember", migration_prospect: "tabMigration", migration_lead: "migrationLeadLabel", news: "tabNews", featured_video: "tabVideos" };
 
 /** Aktivite tablosundaki "Tür" sütunu için, entity_type değerini kısa okunur bir etikete çevirir. */
 function entityTypeLabel(entityType) {
@@ -59,6 +59,7 @@ function entityTypeLabel(entityType) {
 /** Basit (ilişkili alt-veri taşımayan) silinebilir kayıt türleri için ORTAK geri yükleme — göç adayı/haber/video. */
 const SIMPLE_RESTORE = {
   migration_prospect: { create: createMigrationProspect, map: mapProspect, list: "migration" },
+  migration_lead: { create: createMigrationLead, map: mapLead, list: "migrationLeads" },
   news: { create: createNews, map: mapNewsItem, list: "news" },
   featured_video: { create: createFeaturedVideo, map: mapVideoItem, list: "featuredVideos" }
 };
