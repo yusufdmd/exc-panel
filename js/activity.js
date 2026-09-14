@@ -21,7 +21,7 @@
 // =====================================================================
 
 import { createMember, createWeek, upsertRecordsBulk, addPowerHistoryEntry, addTeamPowerHistoryEntry, createMigrationProspect, createMigrationLead, createNews, createFeaturedVideo, logActivity } from "./database.js";
-import { state, t, showToast, escapeHtml, renderAll, registerRenderer } from "./ui.js";
+import { state, t, showToast, escapeHtml, renderAll, registerRenderer, formatPower, elementLabel, migrationColorLabel, migrationStatusLabel } from "./ui.js";
 import { mapMember } from "./members.js";
 import { mapWeek, mapEntry, storeFor, entryToDbPayload, eventTypeLabel } from "./events.js";
 import { mapProspect, mapLead } from "./migration.js";
@@ -80,17 +80,148 @@ export function renderActivity() {
     const restoreBtn = canRestore
       ? `<button class="icon-btn admin-only" onclick="${restoreFn}${restoreArgs}" title="${t("restoreActionTitle")}">↺</button>`
       : "";
+    // Bu tablonun verisi (state.activityLog) zaten SADECE admin oturumunda
+    // çekiliyor (bkz. app.js -> loadAll, "restricted" kontrolü) — üye
+    // (viewer) hesabında bu dizi hep boş kalır, o yüzden burada ayrıca bir
+    // admin-only sarmalayıcıya gerek yok.
+    const nameCell = hasSnapshot
+      ? `<span style="cursor:pointer; text-decoration:underline dotted; color:var(--cyan-ink);" onclick="showActivityDetails('${entry.id}')" title="${t("activityDetailsTitle")}">${escapeHtml(entry.entityName || "—")}</span>`
+      : escapeHtml(entry.entityName || "—");
     return `<tr>
       <td>${escapeHtml((entry.createdAt || "").replace("T", " ").slice(0, 16))}</td>
       <td>${escapeHtml(entry.actor || "—")}</td>
       <td><span class="cell-pill ${ACTION_CLASS[entry.action] || "pill-gray"}">${t(ACTION_LABEL_KEY[entry.action] || "actionUpdated")}</span></td>
       <td>${escapeHtml(entityTypeLabel(entry.entityType))}</td>
-      <td>${escapeHtml(entry.entityName || "—")}</td>
+      <td>${nameCell}</td>
       <td>${restoreBtn}</td>
     </tr>`;
   }).join("");
 }
 registerRenderer(renderActivity);
+
+// =====================================================================
+// "Detaylar" modalı — bir "silindi" satırındaki isme tıklayınca, o anki
+// anlık görüntünün (snapshot) okunur bir dökümünü gösterir. Sadece
+// GÖRÜNTÜLEME amaçlıdır, buradan hiçbir düzenleme yapılmaz — asıl geri
+// getirme işlemi hâlâ aynı restoreDeleted* fonksiyonlarıyla olur (bu
+// modalın içinde de aynı "↺ Geri Yükle" butonu tekrar sunulur).
+// =====================================================================
+
+/** [[etiket, değer], ...] çiftlerinden, boş/null olanları atlayan okunur bir tablo üretir. */
+function renderDetailTable(rows) {
+  const filtered = rows.filter(([, v]) => v !== null && v !== undefined && v !== "");
+  if (!filtered.length) return `<p style="color:var(--text-dim); font-size:13px;">—</p>`;
+  return `<table class="part-table"><tbody>${filtered.map(([label, value]) =>
+    `<tr><td style="color:var(--text-dim); white-space:nowrap;">${escapeHtml(String(label))}</td><td>${escapeHtml(String(value))}</td></tr>`
+  ).join("")}</tbody></table>`;
+}
+
+/** Bir etkinlik haftası kaydını (tür + entry) kısa, okunur bir metne çevirir. */
+function formatWeekEntryValue(type, entry) {
+  if (type === "gvg") return String(Number(entry.points) || 0);
+  if (type === "kod") return `${entry.status === "joined" ? "✓" : "✕"}${entry.excused ? " (M)" : ""}`;
+  if (type === "svs" || type === "other") return `${entry.status === "joined" ? "✓" : "✕"}${entry.excused ? " (M)" : ""} · ${Number(entry.points) || 0}p`;
+  if (type === "ss") {
+    const slots = [entry.appliedSlot1 && "1", entry.appliedSlot2 && "2", entry.appliedSlot3 && "3"].filter(Boolean).join(",");
+    return `${entry.group || "—"} ${entry.attended ? "✓" : "✕"}${entry.excused ? " (M)" : ""}${slots ? ` [${t("thAppliedSlots")}: ${slots}]` : ""}`;
+  }
+  return "—";
+}
+
+const PROSPECT_DETAIL_FIELDS = [
+  ["name", "lblUsername"], ["game_id", "lblGameId"], ["power", "powerTotalLabel", "power"], ["server", "lblServer"],
+  ["color", "lblColor", "migrationColor"], ["status", "thStatus", "migrationStatus"], ["camp_level", "lblCamp"],
+  ["team_power", "lblTeamPower", "power"], ["team_element", "lblTeamElement", "element"],
+  ["note", "lblProspectNote"], ["invited_by", "lblInvitedBy"], ["score", "lblProspectScore"]
+];
+const LEAD_DETAIL_FIELDS = [
+  ["name", "lblUsername"], ["game_id", "lblGameId"], ["contact", "thLeadContact"], ["current_server", "lblServer"],
+  ["power", "powerTotalLabel", "power"], ["camp_level", "lblCamp"], ["team_power", "lblTeamPower", "power"],
+  ["team_element", "lblTeamElement", "element"], ["message", "thLeadMessage"]
+];
+const NEWS_DETAIL_FIELDS = [["title", "lblNewsTitle"], ["body", "lblNewsBody"], ["published_at", "lblNewsDate"]];
+const VIDEO_DETAIL_FIELDS = [["title", "lblVideoTitle"], ["url", "lblVideoUrl"]];
+
+/** field tanımındaki 3. öğeye (varsa) göre ham değeri okunur hâle getirir. */
+function formatDetailValue(kind, raw) {
+  if (raw == null || raw === "") return raw;
+  if (kind === "power") return formatPower(raw);
+  if (kind === "element") return elementLabel(raw);
+  if (kind === "migrationColor") return migrationColorLabel(raw);
+  if (kind === "migrationStatus") return migrationStatusLabel(raw);
+  return raw;
+}
+
+function renderFieldMapDetails(snapshot, fields) {
+  return renderDetailTable(fields.map(([key, labelKey, kind]) => [t(labelKey), formatDetailValue(kind, snapshot[key])]));
+}
+
+/** Bir aktivite kaydının anlık görüntüsünü, türüne göre okunur bir HTML dökümüne çevirir. */
+function snapshotDetailHtml(entry) {
+  const snapshot = entry.details && entry.details.snapshot;
+  if (!snapshot) return `<p style="color:var(--text-dim); font-size:13px;">${t("snapshotNoData")}</p>`;
+
+  if (entry.entityType === "member") {
+    const m = snapshot.member || {};
+    const mainRows = [
+      [t("lblUsername"), m.name], [t("lblGameId"), m.game_id], [t("lblRank"), m.rank], [t("lblCamp"), m.camp_level],
+      [t("lblPower"), formatDetailValue("power", m.power)], [t("lblTeamPower"), formatDetailValue("power", m.team_power)],
+      [t("lblTeamElement"), formatDetailValue("element", m.team_element)], [t("lblJoinedAt"), m.joined_at]
+    ];
+    const counts = [
+      [t("snapshotPowerHistory"), (snapshot.powerHistory || []).length],
+      [t("snapshotTeamPowerHistory"), (snapshot.teamPowerHistory || []).length],
+      ...["gvg", "svs", "ss", "kod", "other"].map((type) => [eventTypeLabel(type), ((snapshot.entries && snapshot.entries[type]) || []).length])
+    ];
+    return renderDetailTable(mainRows)
+      + `<h3 style="font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-dim); margin:14px 0 8px;">${t("snapshotEntryCounts")}</h3>`
+      + renderDetailTable(counts);
+  }
+
+  const weekMatch = /^(gvg|svs|ss|kod|other)_week$/.exec(entry.entityType || "");
+  if (weekMatch) {
+    const type = weekMatch[1];
+    const week = snapshot.week || {};
+    const entries = snapshot.entries || [];
+    const rows = entries.map((e) => {
+      const member = state.members.find((mm) => mm.id === e.memberId);
+      return [member ? member.name : e.memberId, formatWeekEntryValue(type, e)];
+    });
+    return `<p style="color:var(--text-muted); font-size:13px; margin-bottom:10px;">${escapeHtml(week.label || "")}${week.date ? " · " + escapeHtml(week.date) : ""}</p>`
+      + renderDetailTable(rows);
+  }
+
+  if (entry.entityType === "migration_prospect") return renderFieldMapDetails(snapshot, PROSPECT_DETAIL_FIELDS);
+  if (entry.entityType === "migration_lead") return renderFieldMapDetails(snapshot, LEAD_DETAIL_FIELDS);
+  if (entry.entityType === "news") return renderFieldMapDetails(snapshot, NEWS_DETAIL_FIELDS);
+  if (entry.entityType === "featured_video") return renderFieldMapDetails(snapshot, VIDEO_DETAIL_FIELDS);
+
+  return `<pre style="white-space:pre-wrap; font-size:12px; color:var(--text-muted);">${escapeHtml(JSON.stringify(snapshot, null, 2))}</pre>`;
+}
+
+export function showActivityDetails(activityId) {
+  const entry = state.activityLog.find((e) => e.id === activityId);
+  if (!entry) return;
+  const isMember = entry.entityType === "member";
+  const isWeek = /_week$/.test(entry.entityType || "");
+  const isSimple = !!SIMPLE_RESTORE[entry.entityType];
+  const hasSnapshot = entry.action === "deleted" && entry.details && entry.details.snapshot;
+  const canRestore = hasSnapshot && (isMember || isWeek || isSimple);
+  const restoreFn = isMember ? "restoreDeletedMember" : isWeek ? "restoreDeletedWeek" : "restoreDeletedSimple";
+  const restoreArgs = isSimple ? `('${entry.id}','${entry.entityType}')` : `('${entry.id}')`;
+
+  document.getElementById("activityDetailsTitleText").textContent = entry.entityName || "—";
+  document.getElementById("activityDetailsBody").innerHTML = snapshotDetailHtml(entry);
+  const restoreBtn = document.getElementById("activityDetailsRestoreBtn");
+  restoreBtn.style.display = canRestore ? "" : "none";
+  restoreBtn.textContent = "↺ " + t("restoreActionTitle");
+  restoreBtn.setAttribute("onclick", canRestore ? `${restoreFn}${restoreArgs}; closeActivityDetails();` : "");
+  document.getElementById("activityDetailsOverlay").classList.add("active");
+}
+
+export function closeActivityDetails() {
+  document.getElementById("activityDetailsOverlay").classList.remove("active");
+}
 
 /**
  * Admin — silinmiş bir üyeyi, o anki (silinme anındaki) tüm bilgileriyle

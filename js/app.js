@@ -36,7 +36,7 @@ import { closeExportModal, toggleExportAll, confirmExport } from "./exportCsv.js
 import { mapSiteLinks, populateSiteLinksForm, saveSiteLinks } from "./siteLinks.js";
 import { mapNewsItem, openNewsModal, closeNewsModal, saveNews, deleteNews } from "./news.js";
 import { mapVideoItem, openVideoModal, closeVideoModal, saveVideo, deleteVideo, moveVideo } from "./videos.js";
-import { mapActivity, restoreDeletedMember, restoreDeletedWeek, restoreDeletedSimple } from "./activity.js";
+import { mapActivity, restoreDeletedMember, restoreDeletedWeek, restoreDeletedSimple, showActivityDetails, closeActivityDetails } from "./activity.js";
 import { doLogin, doLogout } from "./auth.js";
 import "./gvg.js";
 import "./svs.js";
@@ -289,7 +289,7 @@ Object.assign(window, {
   openVideoModal, closeVideoModal, saveVideo, deleteVideo, moveVideo,
   selectPanelMode, backToChooser,
   doLogin, doLogout, toggleTheme,
-  restoreDeletedMember, restoreDeletedWeek, restoreDeletedSimple
+  restoreDeletedMember, restoreDeletedWeek, restoreDeletedSimple, showActivityDetails, closeActivityDetails
 });
 
 // =====================================================================
