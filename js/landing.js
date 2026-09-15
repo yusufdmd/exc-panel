@@ -636,10 +636,40 @@ function formatNumberInput(raw) {
 /** Güç alanlarına şimdilik izin verilen azami hane sayısı (bkz. panel/js/ui.js -> POWER_SHORTHAND_MAX_DIGITS, aynı sınır). */
 const POWER_SHORTHAND_MAX_DIGITS = 4;
 
+/** Bir alana odaklanılınca çağrılır (onfocus) — bkz. panel/js/ui.js -> initPowerShorthandMode, aynı mantık: alanda zaten uzun bir değer varsa bu oturumda hane sınırı/kısayol devreye girmez. */
+function initPowerShorthandMode(inputEl) {
+  inputEl._powerRawEditMode = stripNumberFormatting(inputEl.value).length > POWER_SHORTHAND_MAX_DIGITS;
+}
+window.initPowerShorthandMode = initPowerShorthandMode; // satır-içi onfocus için (bkz. index.html)
+
+/** Bkz. panel/js/ui.js -> cursorPosKeepingDigitsBefore, aynı mantık: imlecin SOLUNDAKİ hane sayısı sabit referans, araya yeni nokta girse bile imleç o hanenin hemen ardında (nokta öncesinde) kalır. */
+function cursorPosKeepingDigitsBefore(formatted, digitsBefore) {
+  if (digitsBefore <= 0) return 0;
+  let count = 0;
+  for (let i = 0; i < formatted.length; i++) {
+    if (/\d/.test(formatted[i])) {
+      count++;
+      if (count === digitsBefore) return i + 1;
+    }
+  }
+  return formatted.length;
+}
+
 function liveFormatNumberInput(inputEl) {
-  const digits = stripNumberFormatting(inputEl.value).slice(0, POWER_SHORTHAND_MAX_DIGITS);
-  inputEl.value = formatNumberInput(digits);
-  scheduleShorthandExpansion(inputEl);
+  const oldValue = inputEl.value;
+  const oldCursor = inputEl.selectionStart == null ? oldValue.length : inputEl.selectionStart;
+  const digitsBeforeCursor = stripNumberFormatting(oldValue.slice(0, oldCursor)).length;
+
+  const digits = stripNumberFormatting(oldValue);
+  if (!digits.length) inputEl._powerRawEditMode = false;
+
+  const cappedDigits = inputEl._powerRawEditMode ? digits : digits.slice(0, POWER_SHORTHAND_MAX_DIGITS);
+  const newValue = formatNumberInput(cappedDigits);
+  inputEl.value = newValue;
+  const newCursor = cursorPosKeepingDigitsBefore(newValue, digitsBeforeCursor);
+  inputEl.setSelectionRange(newCursor, newCursor);
+
+  if (!inputEl._powerRawEditMode) scheduleShorthandExpansion(inputEl);
 }
 window.liveFormatNumberInput = liveFormatNumberInput; // satır-içi oninput için (bkz. index.html)
 

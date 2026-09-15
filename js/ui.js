@@ -1405,11 +1405,55 @@ export function formatNumberInput(raw) {
  */
 const POWER_SHORTHAND_MAX_DIGITS = 4;
 
-/** Bir input'un o anki değerini formatNumberInput ile yeniden yazar — güç alanlarının oninput'undan çağrılır, yazarken canlı nokta ekler; kısayol hane sınırını (POWER_SHORTHAND_MAX_DIGITS) aşan fazla haneleri atar. */
+/**
+ * Bir alana odaklanılınca çağrılır (onfocus): alanda hâlâ mevcut, zaten uzun
+ * bir değer varsa (ör. bir üyenin kayıtlı 367.000.000'ı) "ham düzenleme
+ * modu"na geçer — bu oturumda hane sınırı/kısayol genişletmesi devreye
+ * GİRMEZ, tuş vuruşu başına tüm değeri 4 haneye kesip elin altında sayıyı
+ * bozmaz. Alan boş/kısaysa (yeni giriş) normal kısayol modunda kalır.
+ */
+export function initPowerShorthandMode(inputEl) {
+  inputEl._powerRawEditMode = stripNumberFormatting(inputEl.value).length > POWER_SHORTHAND_MAX_DIGITS;
+}
+
+/**
+ * Biçimlendirilmiş (nokta içeren) bir sayı alanında, yeniden biçimlendirme
+ * imleci sona ATMASIN diye kullanılır: imlecin SOLUNDA kaç hane olduğunu
+ * sayıp yeni metinde de imleci tam o kadar haneden sonra konumlandırır
+ * (araya yeni bir nokta girse bile hemen o nokta ÖNCESİNDE kalır — ör.
+ * "367.000.000" ortasında "67"yi silip "7" yazınca imleç "37" 'den hemen
+ * sonra, noktadan önce kalmalı).
+ */
+function cursorPosKeepingDigitsBefore(formatted, digitsBefore) {
+  if (digitsBefore <= 0) return 0;
+  let count = 0;
+  for (let i = 0; i < formatted.length; i++) {
+    if (/\d/.test(formatted[i])) {
+      count++;
+      if (count === digitsBefore) return i + 1;
+    }
+  }
+  return formatted.length;
+}
+
+/** Bir input'un o anki değerini formatNumberInput ile yeniden yazar (imleç konumunu koruyarak) — güç alanlarının oninput'undan çağrılır, yazarken canlı nokta ekler; sadece kısayol modundayken (bkz. initPowerShorthandMode) hane sınırını (POWER_SHORTHAND_MAX_DIGITS) aşan fazla haneleri atar. */
 export function liveFormatNumberInput(inputEl) {
-  const digits = stripNumberFormatting(inputEl.value).slice(0, POWER_SHORTHAND_MAX_DIGITS);
-  inputEl.value = formatNumberInput(digits);
-  scheduleShorthandExpansion(inputEl);
+  const oldValue = inputEl.value;
+  const oldCursor = inputEl.selectionStart == null ? oldValue.length : inputEl.selectionStart;
+  const digitsBeforeCursor = stripNumberFormatting(oldValue.slice(0, oldCursor)).length;
+
+  const digits = stripNumberFormatting(oldValue);
+  // Alan tamamen temizlendiyse (ör. mevcut değeri silip yeniden kısayolla
+  // yazmak isteniyor) kısayol moduna geri dön.
+  if (!digits.length) inputEl._powerRawEditMode = false;
+
+  const cappedDigits = inputEl._powerRawEditMode ? digits : digits.slice(0, POWER_SHORTHAND_MAX_DIGITS);
+  const newValue = formatNumberInput(cappedDigits);
+  inputEl.value = newValue;
+  const newCursor = cursorPosKeepingDigitsBefore(newValue, digitsBeforeCursor);
+  inputEl.setSelectionRange(newCursor, newCursor);
+
+  if (!inputEl._powerRawEditMode) scheduleShorthandExpansion(inputEl);
 }
 
 /**

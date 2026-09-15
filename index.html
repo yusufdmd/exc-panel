@@ -139,7 +139,7 @@
       </div>
       <div class="field">
         <label for="leadPower" data-i18n="fieldPower">Total Power Level</label><span class="req-mark">*</span>
-        <input id="leadPower" type="text" inputmode="numeric" oninput="liveFormatNumberInput(this)" onblur="expandPowerShorthandInput(this)" required>
+        <input id="leadPower" type="text" inputmode="numeric" onfocus="initPowerShorthandMode(this)" oninput="liveFormatNumberInput(this)" onblur="expandPowerShorthandInput(this)" required>
         <div class="field-hint" data-i18n="powerShorthandHint">Shortcut: just type the millions part (e.g. 564 → 564,000,000).</div>
       </div>
       <div class="row">
@@ -149,7 +149,7 @@
         </div>
         <div class="field">
           <label for="leadTeamPower" data-i18n="fieldTeamPower">1st Team Power</label><span class="req-mark">*</span>
-          <input id="leadTeamPower" type="text" inputmode="numeric" oninput="liveFormatNumberInput(this)" onblur="expandPowerShorthandInput(this)" required>
+          <input id="leadTeamPower" type="text" inputmode="numeric" onfocus="initPowerShorthandMode(this)" oninput="liveFormatNumberInput(this)" onblur="expandPowerShorthandInput(this)" required>
           <div class="field-hint" data-i18n="powerShorthandHint">Shortcut: just type the millions part (e.g. 564 → 564,000,000).</div>
         </div>
       </div>
