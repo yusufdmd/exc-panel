@@ -1397,20 +1397,30 @@ export function formatNumberInput(raw) {
   return digits ? digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".") : "";
 }
 
-/** Bir input'un o anki değerini formatNumberInput ile yeniden yazar — güç alanlarının oninput'undan çağrılır, yazarken canlı nokta ekler. */
+/**
+ * Güç alanlarına şimdilik en fazla bu kadar hane girilebilir — yanlışlıkla
+ * uzun/hatalı bir sayı (ör. fazladan bir sıfır) yazılmasını engellemek için;
+ * herkes milyon (bazıları artık milyar) seviyesinde olduğundan 4 hane
+ * (ör. "9999" -> 9.999.000.000) şimdilik yeterli (bkz. expandPowerShorthand).
+ */
+const POWER_SHORTHAND_MAX_DIGITS = 4;
+
+/** Bir input'un o anki değerini formatNumberInput ile yeniden yazar — güç alanlarının oninput'undan çağrılır, yazarken canlı nokta ekler; kısayol hane sınırını (POWER_SHORTHAND_MAX_DIGITS) aşan fazla haneleri atar. */
 export function liveFormatNumberInput(inputEl) {
-  inputEl.value = formatNumberInput(inputEl.value);
+  const digits = stripNumberFormatting(inputEl.value).slice(0, POWER_SHORTHAND_MAX_DIGITS);
+  inputEl.value = formatNumberInput(digits);
   scheduleShorthandExpansion(inputEl);
 }
 
 /**
- * Güç alanına girilen kısayolu genişletir: en fazla 3 haneli bir sayı girildiyse
- * (ör. "564") bunun milyon cinsinden söylendiğini varsayıp 1.000.000 ile çarpar
- * ("564" -> "564000000"). 4+ haneli (zaten tam yazılmış) girişlere dokunmaz.
+ * Güç alanına girilen kısayolu genişletir: en fazla POWER_SHORTHAND_MAX_DIGITS haneli
+ * bir sayı girildiyse (ör. "564") bunun milyon cinsinden söylendiğini varsayıp
+ * 1.000.000 ile çarpar ("564" -> "564000000"). Daha uzun (zaten tam yazılmış,
+ * ör. mevcut bir üyenin kayıtlı değeri) girişlere dokunmaz.
  */
 export function expandPowerShorthand(raw) {
   const digits = stripNumberFormatting(raw);
-  if (digits && digits.length <= 3) {
+  if (digits && digits.length <= POWER_SHORTHAND_MAX_DIGITS) {
     return String(Number(digits) * 1000000);
   }
   return digits;

@@ -633,16 +633,20 @@ function formatNumberInput(raw) {
 }
 
 /** Bir input'un değerini formatNumberInput ile yeniden yazar — leadPower/leadTeamPower'ın oninput'undan çağrılır. */
+/** Güç alanlarına şimdilik izin verilen azami hane sayısı (bkz. panel/js/ui.js -> POWER_SHORTHAND_MAX_DIGITS, aynı sınır). */
+const POWER_SHORTHAND_MAX_DIGITS = 4;
+
 function liveFormatNumberInput(inputEl) {
-  inputEl.value = formatNumberInput(inputEl.value);
+  const digits = stripNumberFormatting(inputEl.value).slice(0, POWER_SHORTHAND_MAX_DIGITS);
+  inputEl.value = formatNumberInput(digits);
   scheduleShorthandExpansion(inputEl);
 }
 window.liveFormatNumberInput = liveFormatNumberInput; // satır-içi oninput için (bkz. index.html)
 
-/** Güç alanına girilen kısayolu genişletir: en fazla 3 haneli girişi milyon kabul edip 1.000.000 ile çarpar (bkz. panel/js/ui.js -> expandPowerShorthand, aynı mantık). */
+/** Güç alanına girilen kısayolu genişletir: en fazla POWER_SHORTHAND_MAX_DIGITS haneli girişi milyon kabul edip 1.000.000 ile çarpar (bkz. panel/js/ui.js -> expandPowerShorthand, aynı mantık). */
 function expandPowerShorthand(raw) {
   const digits = stripNumberFormatting(raw);
-  if (digits && digits.length <= 3) {
+  if (digits && digits.length <= POWER_SHORTHAND_MAX_DIGITS) {
     return String(Number(digits) * 1000000);
   }
   return digits;
