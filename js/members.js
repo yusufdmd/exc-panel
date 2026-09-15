@@ -32,6 +32,7 @@ import {
   isDigitsOnly,
   stripNumberFormatting,
   formatNumberInput,
+  expandPowerShorthand,
   elementBadge,
   buildElementPicker,
   setElementPickerActive,
@@ -507,8 +508,8 @@ export async function saveMember() {
   }
   if (!confirmDuplicateGameId(gameId, editId)) return;
 
-  const powerRaw = stripNumberFormatting(document.getElementById("fPower").value.trim());
-  const teamPowerRaw = stripNumberFormatting(document.getElementById("fTeamPower").value.trim());
+  const powerRaw = expandPowerShorthand(document.getElementById("fPower").value.trim());
+  const teamPowerRaw = expandPowerShorthand(document.getElementById("fTeamPower").value.trim());
   if ((powerRaw && !isDigitsOnly(powerRaw)) || (teamPowerRaw && !isDigitsOnly(teamPowerRaw)) || (migratedToRaw && !isDigitsOnly(migratedToRaw))) {
     showToast(t("invalidNumberField"));
     return;

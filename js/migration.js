@@ -35,6 +35,7 @@ import {
   isDigitsOnly,
   stripNumberFormatting,
   formatNumberInput,
+  expandPowerShorthand,
   migrationColorClass,
   migrationColorLabel,
   migrationStatusClass,
@@ -503,9 +504,9 @@ export async function saveProspect() {
   const editId = document.getElementById("prospectEditId").value;
   const name = document.getElementById("pName").value.trim();
   const gameId = document.getElementById("pGameId").value.trim();
-  const powerRaw = stripNumberFormatting(document.getElementById("pPower").value.trim());
+  const powerRaw = expandPowerShorthand(document.getElementById("pPower").value.trim());
   const serverRaw = document.getElementById("pServer").value.trim();
-  const teamPowerRaw = stripNumberFormatting(document.getElementById("pTeamPower").value.trim());
+  const teamPowerRaw = expandPowerShorthand(document.getElementById("pTeamPower").value.trim());
   const scoreRaw = document.getElementById("pScore").value.trim();
 
   if (gameId && !isDigitsOnly(gameId, 15)) {

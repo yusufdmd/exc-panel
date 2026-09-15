@@ -206,6 +206,7 @@ const DICT = {
     emptyMembersTitle:'Henüz üye yok', emptyMembersDesc:'"+ Üye Ekle" ile ilk üyeyi kaydet.',
     memberAddTitle:'Üye Ekle', memberEditTitle:'Üyeyi Düzenle',
     lblUsername:'Kullanıcı Adı', lblGameId:'ID Numarası', lblRank:'Rütbe', lblPower:'Güç Seviyesi', lblCamp:'Kamp Seviyesi', lblJoinedAt:'Katılma Tarihi', lblOld:'Eski üye (OLD)',
+    powerShorthandHint:'Kısayol: sadece milyon kısmını yaz, gerisini biz tamamlarız (ör. 564 → 564.000.000).',
     cancel:'Vazgeç', save:'Kaydet', close:'Kapat',
     toastMemberSaved:'Üye kaydedildi.', toastMemberDeleted:'Üye silindi.', confirmDeleteMember:'Bu üyeyi silmek istediğinize emin misiniz?',
     nameIdRequired:'Kullanıcı adı ve ID zorunludur.',
@@ -327,6 +328,7 @@ ebParticipationWord:'Katılım', ebFootnote:'%50\'nin altındaysan daha çok etk
     emptyMembersTitle:'No members yet', emptyMembersDesc:'Use "+ Add Member" to add the first one.',
     memberAddTitle:'Add Member', memberEditTitle:'Edit Member',
     lblUsername:'Username', lblGameId:'ID Number', lblRank:'Rank', lblPower:'Power Level', lblCamp:'Camp Level', lblJoinedAt:'Join Date', lblOld:'Old member (OLD)',
+    powerShorthandHint:"Shortcut: just type the millions part, we'll fill in the rest (e.g. 564 → 564,000,000).",
     cancel:'Cancel', save:'Save', close:'Close',
     toastMemberSaved:'Member saved.', toastMemberDeleted:'Member deleted.', confirmDeleteMember:'Are you sure you want to delete this member?',
     nameIdRequired:'Username and ID are required.',
@@ -448,6 +450,7 @@ ebParticipationWord:'Participation', ebFootnote:'If you\'re under 50%, consider 
     emptyMembersTitle:'Noch keine Mitglieder', emptyMembersDesc:'Mit "+ Mitglied hinzufügen" das erste anlegen.',
     memberAddTitle:'Mitglied hinzufügen', memberEditTitle:'Mitglied bearbeiten',
     lblUsername:'Benutzername', lblGameId:'ID-Nummer', lblRank:'Rang', lblPower:'Machtstufe', lblCamp:'Basisstufe', lblJoinedAt:'Beitrittsdatum', lblOld:'Altes Mitglied (OLD)',
+    powerShorthandHint:'Abkürzung: gib nur die Millionenzahl ein, den Rest ergänzen wir (z. B. 564 → 564.000.000).',
     cancel:'Abbrechen', save:'Speichern', close:'Schließen',
     toastMemberSaved:'Mitglied gespeichert.', toastMemberDeleted:'Mitglied gelöscht.', confirmDeleteMember:'Dieses Mitglied wirklich löschen?',
     nameIdRequired:'Benutzername und ID sind erforderlich.',
@@ -569,6 +572,7 @@ ebParticipationWord:'Teilnahme', ebFootnote:'Bist du unter 50%, nimm an mehr Eve
     emptyMembersTitle:'Aún no hay miembros', emptyMembersDesc:'Usa "+ Añadir miembro" para agregar el primero.',
     memberAddTitle:'Añadir miembro', memberEditTitle:'Editar miembro',
     lblUsername:'Nombre de usuario', lblGameId:'Número de ID', lblRank:'Rango', lblPower:'Nivel de poder', lblCamp:'Nivel de campamento', lblJoinedAt:'Fecha de ingreso', lblOld:'Miembro antiguo (OLD)',
+    powerShorthandHint:'Atajo: escribe solo la parte en millones, nosotros completamos el resto (ej. 564 → 564.000.000).',
     cancel:'Cancelar', save:'Guardar', close:'Cerrar',
     toastMemberSaved:'Miembro guardado.', toastMemberDeleted:'Miembro eliminado.', confirmDeleteMember:'¿Seguro que quieres eliminar a este miembro?',
     nameIdRequired:'El nombre de usuario y el ID son obligatorios.',
@@ -690,6 +694,7 @@ ebParticipationWord:'Participación', ebFootnote:'¡Si estás por debajo del 50%
     emptyMembersTitle:'Aucun membre pour le moment', emptyMembersDesc:'Utilisez "+ Ajouter un membre" pour ajouter le premier.',
     memberAddTitle:'Ajouter un membre', memberEditTitle:'Modifier le membre',
     lblUsername:"Nom d'utilisateur", lblGameId:"Numéro d'ID", lblRank:'Rang', lblPower:'Niveau de puissance', lblCamp:'Niveau de camp', lblJoinedAt:"Date d'adhésion", lblOld:'Ancien membre (OLD)',
+    powerShorthandHint:'Raccourci : indiquez juste le nombre de millions, on complète le reste (ex. 564 → 564 000 000).',
     cancel:'Annuler', save:'Enregistrer', close:'Fermer',
     toastMemberSaved:'Membre enregistré.', toastMemberDeleted:'Membre supprimé.', confirmDeleteMember:'Voulez-vous vraiment supprimer ce membre ?',
     nameIdRequired:"Le nom d'utilisateur et l'ID sont obligatoires.",
@@ -811,6 +816,7 @@ ebParticipationWord:'Participation', ebFootnote:"Si tu es en dessous de 50%, pen
     emptyMembersTitle:'Chưa có thành viên nào', emptyMembersDesc:'Dùng "+ Thêm Thành viên" để thêm người đầu tiên.',
     memberAddTitle:'Thêm Thành viên', memberEditTitle:'Sửa Thành viên',
     lblUsername:'Tên người dùng', lblGameId:'Số ID', lblRank:'Cấp bậc', lblPower:'Sức mạnh', lblCamp:'Cấp độ Trại', lblJoinedAt:'Ngày Gia nhập', lblOld:'Thành viên cũ (OLD)',
+    powerShorthandHint:'Lối tắt: chỉ cần nhập phần triệu, phần còn lại sẽ tự động điền (vd. 564 → 564.000.000).',
     cancel:'Hủy', save:'Lưu', close:'Đóng',
     toastMemberSaved:'Đã lưu thành viên.', toastMemberDeleted:'Đã xóa thành viên.', confirmDeleteMember:'Bạn có chắc muốn xóa thành viên này không?',
     nameIdRequired:'Tên người dùng và ID là bắt buộc.',
@@ -950,6 +956,8 @@ export function applyStaticText() {
   document.getElementById("t_lblPower").textContent = t("lblPower");
   document.getElementById("t_lblCamp").textContent = t("lblCamp");
   document.getElementById("t_lblTeamPower").textContent = t("lblTeamPower");
+  document.getElementById("t_powerHint_fPower").textContent = t("powerShorthandHint");
+  document.getElementById("t_powerHint_fTeamPower").textContent = t("powerShorthandHint");
   document.getElementById("t_lblTeamElement").textContent = t("lblTeamElement");
   document.getElementById("t_lblJoinedAt").textContent = t("lblJoinedAt");
   document.getElementById("t_thJoinedAt").textContent = t("lblJoinedAt");
@@ -1081,10 +1089,12 @@ export function applyStaticText() {
   document.getElementById("t_lblProspectName").textContent = t("lblUsername");
   document.getElementById("t_lblProspectId").textContent = t("lblGameId");
   document.getElementById("t_lblProspectPower").textContent = t("powerTotalLabel");
+  document.getElementById("t_powerHint_pPower").textContent = t("powerShorthandHint");
   document.getElementById("t_lblServer").textContent = t("lblServer");
   document.getElementById("t_lblColor").textContent = t("lblColor");
   document.getElementById("t_lblProspectCamp").textContent = t("lblCamp");
   document.getElementById("t_lblProspectTeamPower").textContent = t("lblTeamPower");
+  document.getElementById("t_powerHint_pTeamPower").textContent = t("powerShorthandHint");
   document.getElementById("t_lblProspectTeamElement").textContent = t("lblTeamElement");
   document.getElementById("t_lblMigrationStatus").textContent = t("thStatus");
   document.getElementById("t_thMigrationStatus").textContent = t("thStatus");
@@ -1390,6 +1400,43 @@ export function formatNumberInput(raw) {
 /** Bir input'un o anki değerini formatNumberInput ile yeniden yazar — güç alanlarının oninput'undan çağrılır, yazarken canlı nokta ekler. */
 export function liveFormatNumberInput(inputEl) {
   inputEl.value = formatNumberInput(inputEl.value);
+  scheduleShorthandExpansion(inputEl);
+}
+
+/**
+ * Güç alanına girilen kısayolu genişletir: en fazla 3 haneli bir sayı girildiyse
+ * (ör. "564") bunun milyon cinsinden söylendiğini varsayıp 1.000.000 ile çarpar
+ * ("564" -> "564000000"). 4+ haneli (zaten tam yazılmış) girişlere dokunmaz.
+ */
+export function expandPowerShorthand(raw) {
+  const digits = stripNumberFormatting(raw);
+  if (digits && digits.length <= 3) {
+    return String(Number(digits) * 1000000);
+  }
+  return digits;
+}
+
+/** Bir güç input'unun değerini kısayolu genişletip yeniden biçimlendirir — alandan çıkılınca (onblur) ÇAĞRILIR. */
+export function expandPowerShorthandInput(inputEl) {
+  if (inputEl._powerShorthandTimer) {
+    clearTimeout(inputEl._powerShorthandTimer);
+    inputEl._powerShorthandTimer = null;
+  }
+  inputEl.value = formatNumberInput(expandPowerShorthand(inputEl.value));
+}
+
+/**
+ * Kullanıcı yazmayı ~600ms kesince (alandan hiç çıkmadan) kısayolu otomatik
+ * genişletir — böylece "564" yazıp beklemek, Tab'a basmak kadar işe yarar.
+ * Her tuş vuruşunda önceki zamanlayıcı iptal edilir, sadece son duraklamada çalışır.
+ */
+function scheduleShorthandExpansion(inputEl) {
+  if (inputEl._powerShorthandTimer) clearTimeout(inputEl._powerShorthandTimer);
+  inputEl._powerShorthandTimer = setTimeout(() => {
+    inputEl._powerShorthandTimer = null;
+    const expanded = formatNumberInput(expandPowerShorthand(inputEl.value));
+    if (expanded !== inputEl.value) inputEl.value = expanded;
+  }, 600);
 }
 
 // =====================================================================

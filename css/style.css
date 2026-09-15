@@ -295,6 +295,7 @@ tr.threshold-cut td{ border-top: 2px solid var(--gold-ink); }
 .field input:focus, .field select:focus, .field textarea:focus{ outline:none; border-color:var(--cyan-ink); }
 .field textarea{ resize:vertical; }
 .field input[type="file"]{ padding:8px; }
+.field-hint{ font-size:11px; color:var(--text-dim); margin-top:6px; line-height:1.35; }
 .field-row{ display:flex; gap:12px; }
 .field-row .field{ flex:1; }
 .toggle-row{ display:flex; align-items:center; gap:10px; margin-bottom:16px; cursor:pointer; }

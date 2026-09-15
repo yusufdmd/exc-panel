@@ -53,6 +53,7 @@ const DICT = {
     migrateDesc: "Want to join Excellence in the upcoming migration window? Fill out the form below and our leadership team will reach out.",
     fieldName: "Username", fieldGameId: "ID Number", fieldContact: "Contact (Discord, etc.)", fieldServer: "Current Server", fieldPower: "Total Power Level",
     fieldCamp: "Camp Level", fieldTeamPower: "1st Team Power", fieldTeamElement: "1st Team Element",
+    powerShorthandHint: "Shortcut: just type the millions part, we'll fill in the rest (e.g. 564 → 564,000,000).",
     elementWater: "Water", elementFire: "Fire", elementEarth: "Earth", elementElectric: "Electric",
     fieldMessage: "Message (optional)", fieldMessagePh: "Tell us a bit about yourself…",
     submitBtn: "Submit Application",
@@ -76,6 +77,7 @@ const DICT = {
     migrateDesc: "Önümüzdeki göç döneminde Excellence'a katılmak ister misiniz? Aşağıdaki formu doldurun, liderlik ekibimiz sizinle iletişime geçsin.",
     fieldName: "Kullanıcı Adı", fieldGameId: "ID Numarası", fieldContact: "İletişim (Discord vb.)", fieldServer: "Mevcut Sunucu", fieldPower: "Toplam Güç Seviyesi",
     fieldCamp: "Kamp Seviyesi", fieldTeamPower: "1. Takım Gücü", fieldTeamElement: "1. Takım Elementi",
+    powerShorthandHint: "Kısayol: sadece milyon kısmını yaz, gerisini biz tamamlarız (ör. 564 → 564.000.000).",
     elementWater: "Su", elementFire: "Ateş", elementEarth: "Toprak", elementElectric: "Elektrik",
     fieldMessage: "Mesaj (opsiyonel)", fieldMessagePh: "Kendinizden kısaca bahsedin…",
     submitBtn: "Başvuruyu Gönder",
@@ -99,6 +101,7 @@ const DICT = {
     migrateDesc: "Möchtest du Excellence im nächsten Migrationsfenster beitreten? Fülle das untenstehende Formular aus, unser Führungsteam meldet sich bei dir.",
     fieldName: "Benutzername", fieldGameId: "ID-Nummer", fieldContact: "Kontakt (Discord usw.)", fieldServer: "Aktueller Server", fieldPower: "Gesamte Machtstufe",
     fieldCamp: "Basisstufe", fieldTeamPower: "1. Team-Stärke", fieldTeamElement: "1. Team-Element",
+    powerShorthandHint: "Abkürzung: gib nur die Millionenzahl ein, den Rest ergänzen wir (z. B. 564 → 564.000.000).",
     elementWater: "Wasser", elementFire: "Feuer", elementEarth: "Erde", elementElectric: "Elektro",
     fieldMessage: "Nachricht (optional)", fieldMessagePh: "Erzähl uns kurz etwas über dich…",
     submitBtn: "Bewerbung Senden",
@@ -122,6 +125,7 @@ const DICT = {
     migrateDesc: "¿Quieres unirte a Excellence en la próxima ventana de migración? Completa el formulario a continuación y nuestro equipo de liderazgo se pondrá en contacto.",
     fieldName: "Nombre de Usuario", fieldGameId: "Número de ID", fieldContact: "Contacto (Discord, etc.)", fieldServer: "Servidor Actual", fieldPower: "Nivel de Poder Total",
     fieldCamp: "Nivel de campamento", fieldTeamPower: "Poder del 1er Equipo", fieldTeamElement: "Elemento del 1er Equipo",
+    powerShorthandHint: "Atajo: escribe solo la parte en millones, nosotros completamos el resto (ej. 564 → 564.000.000).",
     elementWater: "Agua", elementFire: "Fuego", elementEarth: "Tierra", elementElectric: "Eléctrico",
     fieldMessage: "Mensaje (opcional)", fieldMessagePh: "Cuéntanos un poco sobre ti…",
     submitBtn: "Enviar Solicitud",
@@ -145,6 +149,7 @@ const DICT = {
     migrateDesc: "Vous voulez rejoindre Excellence lors de la prochaine fenêtre de migration ? Remplissez le formulaire ci-dessous, notre équipe de direction vous contactera.",
     fieldName: "Nom d'Utilisateur", fieldGameId: "Numéro d'ID", fieldContact: "Contact (Discord, etc.)", fieldServer: "Serveur Actuel", fieldPower: "Niveau de Puissance Total",
     fieldCamp: "Niveau de camp", fieldTeamPower: "Puissance de la 1ère Équipe", fieldTeamElement: "Élément de la 1ère Équipe",
+    powerShorthandHint: "Raccourci : indiquez juste le nombre de millions, on complète le reste (ex. 564 → 564 000 000).",
     elementWater: "Eau", elementFire: "Feu", elementEarth: "Terre", elementElectric: "Électrique",
     fieldMessage: "Message (optionnel)", fieldMessagePh: "Parlez-nous un peu de vous…",
     submitBtn: "Envoyer la Candidature",
@@ -168,6 +173,7 @@ const DICT = {
     migrateDesc: "Muốn gia nhập Excellence trong đợt di chuyển sắp tới? Điền vào biểu mẫu bên dưới, đội ngũ lãnh đạo của chúng tôi sẽ liên hệ với bạn.",
     fieldName: "Tên người dùng", fieldGameId: "Số ID", fieldContact: "Liên hệ (Discord, v.v.)", fieldServer: "Máy chủ Hiện tại", fieldPower: "Tổng Sức mạnh",
     fieldCamp: "Cấp độ Trại", fieldTeamPower: "Sức mạnh Đội 1", fieldTeamElement: "Nguyên tố Đội 1",
+    powerShorthandHint: "Lối tắt: chỉ cần nhập phần triệu, phần còn lại sẽ tự động điền (vd. 564 → 564.000.000).",
     elementWater: "Thủy", elementFire: "Hỏa", elementEarth: "Thổ", elementElectric: "Điện",
     fieldMessage: "Tin nhắn (tùy chọn)", fieldMessagePh: "Hãy cho chúng tôi biết đôi điều về bạn…",
     submitBtn: "Gửi Đơn Đăng ký",
@@ -594,7 +600,10 @@ async function loadSiteLinks() {
   try {
     const links = await getSiteLinks();
     const apply = (key, url) => {
-      if (!url) return;
+      // Sadece http(s) şemasına izin verilir — "javascript:" gibi bir şema linki
+      // (site_links admin panelinden serbest metin olarak girildiği için) sayfadaki
+      // her ziyaretçinin tarayıcısında kod çalıştırabilirdi.
+      if (!url || !/^https?:\/\//i.test(url.trim())) return;
       document.querySelectorAll(`[data-link="${key}"]`).forEach((el) => { el.href = url; });
     };
     apply("discord", links.discord_url);
@@ -626,8 +635,38 @@ function formatNumberInput(raw) {
 /** Bir input'un değerini formatNumberInput ile yeniden yazar — leadPower/leadTeamPower'ın oninput'undan çağrılır. */
 function liveFormatNumberInput(inputEl) {
   inputEl.value = formatNumberInput(inputEl.value);
+  scheduleShorthandExpansion(inputEl);
 }
 window.liveFormatNumberInput = liveFormatNumberInput; // satır-içi oninput için (bkz. index.html)
+
+/** Güç alanına girilen kısayolu genişletir: en fazla 3 haneli girişi milyon kabul edip 1.000.000 ile çarpar (bkz. panel/js/ui.js -> expandPowerShorthand, aynı mantık). */
+function expandPowerShorthand(raw) {
+  const digits = stripNumberFormatting(raw);
+  if (digits && digits.length <= 3) {
+    return String(Number(digits) * 1000000);
+  }
+  return digits;
+}
+
+/** Bir güç input'unun değerini kısayolu genişletip yeniden biçimlendirir — alandan çıkılınca (onblur) ÇAĞRILIR. */
+function expandPowerShorthandInput(inputEl) {
+  if (inputEl._powerShorthandTimer) {
+    clearTimeout(inputEl._powerShorthandTimer);
+    inputEl._powerShorthandTimer = null;
+  }
+  inputEl.value = formatNumberInput(expandPowerShorthand(inputEl.value));
+}
+window.expandPowerShorthandInput = expandPowerShorthandInput; // satır-içi onblur için (bkz. index.html)
+
+/** Kullanıcı yazmayı ~600ms kesince (alandan hiç çıkmadan) kısayolu otomatik genişletir (bkz. panel/js/ui.js -> scheduleShorthandExpansion, aynı mantık). */
+function scheduleShorthandExpansion(inputEl) {
+  if (inputEl._powerShorthandTimer) clearTimeout(inputEl._powerShorthandTimer);
+  inputEl._powerShorthandTimer = setTimeout(() => {
+    inputEl._powerShorthandTimer = null;
+    const expanded = formatNumberInput(expandPowerShorthand(inputEl.value));
+    if (expanded !== inputEl.value) inputEl.value = expanded;
+  }, 600);
+}
 
 function setFormMessage(text, isError) {
   const el = document.getElementById("leadFormMessage");
@@ -668,9 +707,9 @@ async function submitLead(event) {
   const gameId = document.getElementById("leadGameId").value.trim();
   const contact = document.getElementById("leadContact").value.trim();
   const serverRaw = document.getElementById("leadServer").value.trim();
-  const powerRaw = stripNumberFormatting(document.getElementById("leadPower").value.trim());
+  const powerRaw = expandPowerShorthand(document.getElementById("leadPower").value.trim());
   const campLevel = document.getElementById("leadCamp").value || null;
-  const teamPowerRaw = stripNumberFormatting(document.getElementById("leadTeamPower").value.trim());
+  const teamPowerRaw = expandPowerShorthand(document.getElementById("leadTeamPower").value.trim());
   const teamElement = document.getElementById("leadTeamElement").value || null;
   const message = document.getElementById("leadMessage").value.trim();
 
