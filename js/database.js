@@ -260,7 +260,8 @@ export async function getPowerHistory(memberId) {
     .from("power_history")
     .select("*")
     .eq("member_id", memberId)
-    .order("history_date", { ascending: true });
+    .order("history_date", { ascending: true })
+    .order("created_at", { ascending: true }); // aynı güne birden fazla kayıt düşebildiği için (bkz. addPowerHistoryEntry) gerçek kronolojik sıra için
   if (error) dbError("Güç geçmişi alınamadı", error);
   return data;
 }
@@ -270,19 +271,20 @@ export async function getAllPowerHistory() {
     .from("power_history")
     .select("*")
     .order("history_date", { ascending: true })
-    .order("member_id", { ascending: true }); // aynı tarihli satırlar arasında kararlı sıra için (bkz. getAllRecords yorumu)
+    .order("member_id", { ascending: true }) // aynı tarihli satırlar arasında kararlı sıra için (bkz. getAllRecords yorumu)
+    .order("created_at", { ascending: true }); // aynı üye+günde birden fazla kayıt düşebildiği için gerçek kronolojik sıra
   if (error) dbError("Güç geçmişi alınamadı", error);
   return data;
 }
 
-// Aynı gün için ikinci kez kayıt edilirse günceller, farklı günse yeni satır ekler.
+// Her çağrı yeni bir satır ekler (artık günde tek kayıtla sınırlı değil — bkz.
+// sql/power_history_multiple_per_day.sql) — aynı gün içinde art arda birden
+// fazla değişiklik yapılsa bile hepsi geçmişte ayrı ayrı görünür kalır. Aynı
+// değere tekrar kaydetmemek çağıran tarafın (members.js) sorumluluğundadır.
 export async function addPowerHistoryEntry(memberId, historyDate, power) {
   const { data, error } = await supabase
     .from("power_history")
-    .upsert(
-      { member_id: memberId, history_date: historyDate, power },
-      { onConflict: "member_id,history_date" }
-    )
+    .insert({ member_id: memberId, history_date: historyDate, power })
     .select()
     .single();
   if (error) dbError("Güç geçmişi kaydedilemedi", error);
@@ -297,19 +299,17 @@ export async function getAllTeamPowerHistory() {
     .from("team_power_history")
     .select("*")
     .order("history_date", { ascending: true })
-    .order("member_id", { ascending: true }); // aynı tarihli satırlar arasında kararlı sıra için (bkz. getAllRecords yorumu)
+    .order("member_id", { ascending: true }) // aynı tarihli satırlar arasında kararlı sıra için (bkz. getAllRecords yorumu)
+    .order("created_at", { ascending: true }); // aynı üye+günde birden fazla kayıt düşebildiği için gerçek kronolojik sıra
   if (error) dbError("Takım gücü geçmişi alınamadı", error);
   return data;
 }
 
-// Aynı gün için ikinci kez kayıt edilirse günceller, farklı günse yeni satır ekler.
+// Her çağrı yeni bir satır ekler — bkz. addPowerHistoryEntry, birebir aynı mantık.
 export async function addTeamPowerHistoryEntry(memberId, historyDate, teamPower) {
   const { data, error } = await supabase
     .from("team_power_history")
-    .upsert(
-      { member_id: memberId, history_date: historyDate, team_power: teamPower },
-      { onConflict: "member_id,history_date" }
-    )
+    .insert({ member_id: memberId, history_date: historyDate, team_power: teamPower })
     .select()
     .single();
   if (error) dbError("Takım gücü geçmişi kaydedilemedi", error);

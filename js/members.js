@@ -558,21 +558,22 @@ export async function saveMember() {
         user_changed_at: userChangedAt, joined_at: joinedAt
       });
 
+      // Değer gerçekten değiştiyse her zaman YENİ bir satır eklenir — aynı gün içinde
+      // art arda birden fazla değişiklik olsa bile hiçbiri üzerine yazılmaz/kaybolmaz
+      // (bkz. database.js -> addPowerHistoryEntry, artık günde tek kayıtla sınırlı değil).
       const history = Array.isArray(previous.powerHistory) ? [...previous.powerHistory] : [];
       const lastEntry = history[history.length - 1];
       if (!lastEntry || Number(lastEntry.power) !== power) {
         const today = todayStr();
-        if (lastEntry && lastEntry.date === today) lastEntry.power = power;
-        else history.push({ date: today, power });
-        await addPowerHistoryEntry(editId, history[history.length - 1].date, power);
+        history.push({ date: today, power });
+        await addPowerHistoryEntry(editId, today, power);
       }
       const teamHistory = Array.isArray(previous.teamPowerHistory) ? [...previous.teamPowerHistory] : [];
       const lastTeamEntry = teamHistory[teamHistory.length - 1];
       if (!lastTeamEntry || Number(lastTeamEntry.teamPower) !== teamPower) {
         const today = todayStr();
-        if (lastTeamEntry && lastTeamEntry.date === today) lastTeamEntry.teamPower = teamPower;
-        else teamHistory.push({ date: today, teamPower });
-        await addTeamPowerHistoryEntry(editId, teamHistory[teamHistory.length - 1].date, teamPower);
+        teamHistory.push({ date: today, teamPower });
+        await addTeamPowerHistoryEntry(editId, today, teamPower);
       }
       state.members[index] = { ...mapMember(row), powerHistory: history, teamPowerHistory: teamHistory };
       await logActivity("updated", "member", editId, { name: name || previous.name || "İsimsiz" }, state.currentAdminUsername);
@@ -1109,9 +1110,8 @@ export async function applyPowerDraft() {
       const lastEntry = history[history.length - 1];
       const today = todayStr();
       if (!lastEntry || Number(lastEntry.power) !== newPower) {
-        if (lastEntry && lastEntry.date === today) lastEntry.power = newPower;
-        else history.push({ date: today, power: newPower });
-        await addPowerHistoryEntry(memberId, history[history.length - 1].date, newPower);
+        history.push({ date: today, power: newPower });
+        await addPowerHistoryEntry(memberId, today, newPower);
       }
       state.members[index] = { ...mapMember(row), powerHistory: history, teamPowerHistory: previous.teamPowerHistory };
       await logActivity("updated", "member", memberId, { name: row.name || "İsimsiz" }, state.currentAdminUsername);

@@ -10,13 +10,14 @@
 -- birebir aynı politika deseni (current_user_role()).
 -- =====================================================================
 
+-- Aynı üye+günde birden fazla satır olabilir (kasıtlı — bkz. power_history
+-- ve sql/power_history_multiple_per_day.sql).
 create table if not exists team_power_history (
   id            uuid primary key default gen_random_uuid(),
   member_id     uuid not null references members(id) on delete cascade,
   history_date  date not null,
   team_power    bigint not null,
-  created_at    timestamptz not null default now(),
-  unique (member_id, history_date)
+  created_at    timestamptz not null default now()
 );
 
 create index if not exists idx_team_power_history_member on team_power_history (member_id);

@@ -56,14 +56,16 @@ create trigger trg_members_updated_at
 -- =====================================================================
 -- 2) POWER_HISTORY — Güç seviyesi geçmişi (grafik/tablo için)
 --    (Mevcut uygulamadaki "Güç Geçmişi" özelliğini korumak için eklendi)
+--    Aynı üye+günde birden fazla satır olabilir (kasıtlı — aynı gün içinde
+--    art arda yapılan değişikliklerin hiçbiri kaybolmasın diye, bkz.
+--    sql/power_history_multiple_per_day.sql ve js/members.js -> saveMember).
 -- =====================================================================
 create table if not exists power_history (
   id            uuid primary key default gen_random_uuid(),
   member_id     uuid not null references members(id) on delete cascade,
   history_date  date not null,
   power         bigint not null,
-  created_at    timestamptz not null default now(),
-  unique (member_id, history_date)
+  created_at    timestamptz not null default now()
 );
 
 create index if not exists idx_power_history_member on power_history (member_id);
