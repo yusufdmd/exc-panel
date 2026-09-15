@@ -53,11 +53,11 @@ const BIWEEKLY_ANCHORS = {
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
-// GEÇİCİ: KOD ve GVG verileri bir süre işlenmeyecek (kullanıcı talebi),
-// bu yüzden bunlarla ilgili hatırlatmalar askıya alındı — SVS ve SS
-// hatırlatmaları normal şekilde devam ediyor. Tekrar açmak için bu
-// diziyi boşaltmak (veya ilgili anahtarları çıkarmak) yeterli.
-const PAUSED_EVENTS = new Set(["kod", "gvg1", "gvg2", "kodgvg1", "kodgvg2"]);
+// GEÇİCİ: "KOD - GVG" (Pazar günü birleşik etkinlik) verisi bir süre
+// işlenmeyecek (kullanıcı talebi), bu yüzden SADECE o hatırlatmalar
+// askıya alındı — düz GVG (Cumartesi), SVS ve SS normal devam ediyor.
+// Tekrar açmak için bu diziyi boşaltmak yeterli.
+const PAUSED_EVENTS = new Set(["kodgvg1", "kodgvg2"]);
 
 /** `anchorDateStr` (UTC gece yarısı, "YYYY-MM-DD") ile aynı 14 günlük periyotta mıyız? */
 function isActiveBiweek(anchorDateStr) {
