@@ -9,15 +9,24 @@
 // dosya hiçbir domain'e özel veri bilmez.
 // =====================================================================
 
-import { t, showToast } from "./ui.js";
+import { t, showToast, escapeHtml } from "./ui.js";
 
 // Modal onaylanınca çağrılacak, seçilen id listesini alıp {filename, rows} döndürecek
 // fonksiyonu tutar (bkz. openExportModal). Aynı anda tek bir export akışı olabilir.
 let pendingBuilder = null;
 
-/** CSV hücresi için kaçış: virgül/tırnak/satır sonu içeriyorsa tırnak içine alır. */
+/**
+ * CSV hücresi için kaçış: virgül/tırnak/satır sonu içeriyorsa tırnak içine alır.
+ * Ayrıca "formül enjeksiyonuna" (CSV injection) karşı korur: hücre =, +, -, @, TAB
+ * veya CR ile başlıyorsa başına bir tek tırnak (') eklenir — Excel/Sheets bu
+ * karakterleri formül başlangıcı sayıp otomatik çalıştırabilir (ör. bir üye/aday
+ * ismi ya da notu "=cmd|'/c calc'!A1" gibi girilip dışa aktarılan dosya açıldığında
+ * kod çalıştırabilirdi). Bu alanların çoğu (göç başvuruları, isim önerileri) giriş
+ * yapmamış ziyaretçilerden geldiği için ekstra önemli.
+ */
 function csvEscapeCell(value) {
-  const str = value == null ? "" : String(value);
+  let str = value == null ? "" : String(value);
+  if (/^[=+\-@\t\r]/.test(str)) str = "'" + str;
   if (/[",\n\r]/.test(str)) return '"' + str.replace(/"/g, '""') + '"';
   return str;
 }
@@ -53,8 +62,8 @@ export function openExportModal(title, items, onConfirm) {
   document.getElementById("exportModalTitle").textContent = title;
   document.getElementById("exportItems").innerHTML = items.map((item) => `
     <label class="export-item">
-      <input type="checkbox" class="export-check" value="${item.id}" checked>
-      <span>${item.label}</span>
+      <input type="checkbox" class="export-check" value="${escapeHtml(String(item.id))}" checked>
+      <span>${escapeHtml(String(item.label))}</span>
     </label>
   `).join("");
   document.getElementById("exportOverlay").classList.add("active");

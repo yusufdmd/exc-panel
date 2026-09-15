@@ -155,7 +155,8 @@ export async function getMigrationProspects() {
   const { data, error } = await supabase
     .from("migration_prospects")
     .select("*")
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: true })
+    .order("id", { ascending: true }); // aynı anda toplu eklenen (aynı created_at'li) satırlar arasında kararlı sıra için
   if (error) dbError("Göç adayları alınamadı", error);
   return data;
 }
@@ -197,7 +198,8 @@ export async function getMigrationLeads() {
   const { data, error } = await supabase
     .from("migration_leads")
     .select("*")
-    .order("created_at", { ascending: false });
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false }); // aynı anda gelen satırlar arasında kararlı sıra için
   if (error) dbError("Göç başvuruları alınamadı", error);
   return data;
 }
@@ -238,7 +240,8 @@ export async function getNameSuggestions() {
   const { data, error } = await supabase
     .from("name_suggestions")
     .select("*")
-    .order("created_at", { ascending: true });
+    .order("created_at", { ascending: true })
+    .order("id", { ascending: true }); // aynı anda gelen satırlar arasında kararlı sıra için
   if (error) dbError("İsim önerileri alınamadı", error);
   return data;
 }
@@ -266,7 +269,8 @@ export async function getAllPowerHistory() {
   const { data, error } = await supabase
     .from("power_history")
     .select("*")
-    .order("history_date", { ascending: true });
+    .order("history_date", { ascending: true })
+    .order("member_id", { ascending: true }); // aynı tarihli satırlar arasında kararlı sıra için (bkz. getAllRecords yorumu)
   if (error) dbError("Güç geçmişi alınamadı", error);
   return data;
 }
@@ -292,7 +296,8 @@ export async function getAllTeamPowerHistory() {
   const { data, error } = await supabase
     .from("team_power_history")
     .select("*")
-    .order("history_date", { ascending: true });
+    .order("history_date", { ascending: true })
+    .order("member_id", { ascending: true }); // aynı tarihli satırlar arasında kararlı sıra için (bkz. getAllRecords yorumu)
   if (error) dbError("Takım gücü geçmişi alınamadı", error);
   return data;
 }
@@ -361,13 +366,29 @@ export async function getRecordsForWeek(type, weekId) {
   const { data, error } = await supabase
     .from(recordsTable(type))
     .select("*")
-    .eq("week_id", weekId);
+    .eq("week_id", weekId)
+    .order("member_id", { ascending: true });
   if (error) dbError(`${type.toUpperCase()} kayıtları alınamadı`, error);
   return data;
 }
 
+/**
+ * ÖNEMLİ: `.order(...)` bilerek eklendi. Bu sorgu her 12 saniyelik yoklamada
+ * (bkz. app.js -> loadAll) ve her realtime yankısında tekrar çalışıyor;
+ * app.js gelen veriyi bir öncekiyle JSON olarak karşılaştırıp AYNIYSA hiç
+ * yeniden çizmiyor (kaydırma konumunun/ekranın "titremesini" önlemek için).
+ * ORDER BY olmadan Postgres, satırlar hiç değişmemiş olsa bile art arda
+ * gelen aynı sorgudan FARKLI sırada sonuç dönebilir — bu da "veri değişti"
+ * sanılıp gereksiz yere tüm tabloyu yeniden çizip tam da önlenmeye çalışılan
+ * o titremeye geri sebep oluyordu. week_id+member_id (week_id, member_id)
+ * UNIQUE kısıtına göre her satır için tekil bir sıralama anahtarı sağlar.
+ */
 export async function getAllRecords(type) {
-  const { data, error } = await supabase.from(recordsTable(type)).select("*");
+  const { data, error } = await supabase
+    .from(recordsTable(type))
+    .select("*")
+    .order("week_id", { ascending: true })
+    .order("member_id", { ascending: true });
   if (error) dbError(`${type.toUpperCase()} kayıtları alınamadı`, error);
   return data;
 }
@@ -427,7 +448,8 @@ export async function getEngagementPeriods() {
   const { data, error } = await supabase
     .from("engagement_periods")
     .select("*")
-    .order("start_date", { ascending: false });
+    .order("start_date", { ascending: false })
+    .order("id", { ascending: false }); // aynı başlangıç tarihli satırlar arasında kararlı sıra için
   if (error) dbError("Katılım yarışması dönemleri alınamadı", error);
   return data;
 }
@@ -653,6 +675,7 @@ export async function getRecentActivity(limit = 50) {
     .from("activity_logs")
     .select("*")
     .order("created_at", { ascending: false })
+    .order("id", { ascending: false }) // aynı anda yazılan (toplu içe aktarma vb.) kayıtlar arasında kararlı sıra için
     .limit(limit);
   if (error) dbError("Aktivite geçmişi alınamadı", error);
   return data;

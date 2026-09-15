@@ -28,10 +28,20 @@ export function populateSiteLinksForm() {
   document.getElementById("slInstagram").value = state.siteLinks.instagramUrl || "";
 }
 
+/** Sadece http(s) linklerine izin verir — "javascript:" gibi bir şema, bu link sayfada
+ *  bir <a href> olarak basılıp tıklandığında ziyaretçinin tarayıcısında kod çalıştırabilir. */
+function isSafeHttpUrl(url) {
+  return !url || /^https?:\/\//i.test(url);
+}
+
 export async function saveSiteLinks() {
   const discordUrl = document.getElementById("slDiscord").value.trim();
   const youtubeUrl = document.getElementById("slYoutube").value.trim();
   const instagramUrl = document.getElementById("slInstagram").value.trim();
+  if (![discordUrl, youtubeUrl, instagramUrl].every(isSafeHttpUrl)) {
+    showToast("Linkler http:// veya https:// ile başlamalı.");
+    return;
+  }
   try {
     const row = await updateSiteLinks({
       discord_url: discordUrl || null,
