@@ -68,7 +68,12 @@ let lastDataSnapshot = null;
 async function loadAll(silent) {
   if (!state.isAdmin && !state.isMember) return;
   try {
-    document.getElementById("syncText").textContent = t("syncConnecting");
+    // "Bağlanıyor…" metni sadece sessiz OLMAYAN (ilk giriş / elle "Yenile") yüklemelerde
+    // gösterilir. 12 saniyelik arka plan yoklamasında (silent=true) bunu her seferinde
+    // yazıp hemen "Canlı"ya geri döndürmek, iki metnin uzunluğu farklı olduğu için üst
+    // barın o bölümünün genişliğini periyodik olarak değiştirip görünür bir "titreme"
+    // yaratıyordu — bağlantı hiç kopmadığı hâlde.
+    if (!silent) document.getElementById("syncText").textContent = t("syncConnecting");
     const restricted = state.isMember;
     const [
       membersRes, historyRes, teamHistoryRes, engagementPeriodsRes,
