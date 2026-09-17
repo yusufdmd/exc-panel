@@ -34,3 +34,5 @@ drop policy if exists name_suggestions_delete_admin on name_suggestions;
 create policy name_suggestions_delete_admin on name_suggestions for delete using (public.current_user_role() = 'admin');
 
 alter publication supabase_realtime add table name_suggestions;
+
+NOTIFY pgrst, 'reload schema';
