@@ -110,7 +110,7 @@ export function openWeekModal(type, weekId) {
     document.getElementById("wkDate").value = week ? week.date : "";
   } else {
     document.getElementById("weekModalTitle").textContent = isOther ? t("eventAddTitle") : t("weekAddTitle");
-    document.getElementById("wkLabel").value = (isOther ? (state.currentLang === "tr" ? "Etkinlik " : "Event ") : "Hafta ") + (store.weeks.length + 1);
+    document.getElementById("wkLabel").value = t(isOther ? "eventNamePrefix" : "weekNamePrefix") + " " + (store.weeks.length + 1);
     document.getElementById("wkDate").value = "";
   }
   document.getElementById("weekOverlay").classList.add("active");
