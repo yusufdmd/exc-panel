@@ -20,7 +20,7 @@ import { state, t, showToast, todayStr, reloadAllData } from "./ui.js";
 
 /** Mevcut tüm veriyi (üyeler + dört etkinlik türü) bir JSON dosyası olarak indirir. */
 export function exportBackup() {
-  const payload = { exportedAt: new Date().toISOString(), members: state.members, svs: state.svs, gvg: state.gvg, ss: state.ss, other: state.other };
+  const payload = { exportedAt: new Date().toISOString(), members: state.members, svs: state.svs, gvg: state.gvg, ss: state.ss, kodgvg: state.kodgvg, other: state.other };
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -44,7 +44,7 @@ async function importEventType(type, source, memberIdMap) {
     const memberId = memberIdMap[entry.memberId];
     const weekId = weekIdMap[entry.weekId];
     if (!memberId || !weekId) return null;
-    if (type === "gvg") return { week_id: weekId, member_id: memberId, points: Number(entry.points) || 0 };
+    if (type === "gvg" || type === "kodgvg") return { week_id: weekId, member_id: memberId, points: Number(entry.points) || 0 };
     if (type === "ss") return { week_id: weekId, member_id: memberId, group_name: entry.group || null, attended: !!entry.attended, excused: !!entry.excused };
     const status = entry.status || (entry.joined === true ? "joined" : entry.joined === false ? "absent" : "unknown");
     return { week_id: weekId, member_id: memberId, status, points: Number(entry.points) || 0, excused: !!entry.excused };
@@ -67,6 +67,7 @@ export function importBackup(file) {
       const newSvs = data.svs && Array.isArray(data.svs.weeks) ? data.svs : { weeks: [], entries: [] };
       const newGvg = data.gvg && Array.isArray(data.gvg.weeks) ? data.gvg : { weeks: [], entries: [] };
       const newSs = data.ss && Array.isArray(data.ss.weeks) ? data.ss : { weeks: [], entries: [] };
+      const newKodGvg = data.kodgvg && Array.isArray(data.kodgvg.weeks) ? data.kodgvg : { weeks: [], entries: [] };
       const newOther = data.other && Array.isArray(data.other.weeks) ? data.other : { weeks: [], entries: [] };
 
       // Mevcut paylaşılan veriyi temizle (kayıtlar/güç geçmişi veritabanı foreign key'leriyle otomatik silinir).
@@ -75,6 +76,7 @@ export function importBackup(file) {
         ...state.svs.weeks.map((w) => dbDeleteWeek("svs", w.id)),
         ...state.gvg.weeks.map((w) => dbDeleteWeek("gvg", w.id)),
         ...state.ss.weeks.map((w) => dbDeleteWeek("ss", w.id)),
+        ...state.kodgvg.weeks.map((w) => dbDeleteWeek("kodgvg", w.id)),
         ...state.other.weeks.map((w) => dbDeleteWeek("other", w.id))
       ]);
 
@@ -97,6 +99,7 @@ export function importBackup(file) {
       await importEventType("svs", newSvs, memberIdMap);
       await importEventType("gvg", newGvg, memberIdMap);
       await importEventType("ss", newSs, memberIdMap);
+      await importEventType("kodgvg", newKodGvg, memberIdMap);
       await importEventType("other", newOther, memberIdMap);
 
       await reloadAllData();

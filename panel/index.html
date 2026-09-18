@@ -203,6 +203,7 @@
     <div class="subtabs">
       <div class="subtab active" data-sub="svs" onclick="switchSub('svs')">SVS</div>
       <div class="subtab" data-sub="gvg" onclick="switchSub('gvg')">GVG</div>
+      <div class="subtab" data-sub="kodgvg" onclick="switchSub('kodgvg')">KOD - GVG</div>
       <div class="subtab" data-sub="ss" onclick="switchSub('ss')">SS</div>
       <div class="subtab" data-sub="kod" onclick="switchSub('kod')">King of Desert</div>
       <div class="subtab" data-sub="other" onclick="switchSub('other')" id="t_subOther">Diğer</div>
@@ -240,6 +241,22 @@
       </div>
       <div class="table-wrap"><table id="tbl-gvg"><thead></thead><tbody></tbody></table></div>
       <div class="empty-state" id="empty-gvg" style="display:none;"><h3 id="t_emptyWeeksTitle2">Henüz hafta yok</h3><p id="t_emptyWeeksDesc2">"+ Hafta Ekle" ile ilk haftayı oluştur.</p></div>
+    </div>
+
+    <!-- KOD - GVG -->
+    <div class="subpanel" id="sub-kodgvg">
+      <div class="event-toolbar">
+        <div class="legend">
+          <span><i class="sw" style="background:var(--success-ink)"></i>≥ 43.500.000</span>
+          <span><i class="sw" style="background:var(--warn-ink)"></i>13.200.000 – 43.499.999</span>
+          <span><i class="sw" style="background:var(--danger-ink)"></i>≤ 13.199.999</span>
+        </div>
+        <button class="btn-ghost" onclick="openOverallReportModal('kodgvg')" id="t_overallReport_kodgvg">📊 Genel Rapor</button>
+        <button class="btn-ghost admin-only" onclick="exportEventTable('kodgvg')" id="t_export_kodgvg">⬇️ Dışa Aktar</button>
+        <button class="btn-primary admin-only" onclick="openWeekModal('kodgvg')" id="t_addWeek_kodgvg">+ Hafta Ekle</button>
+      </div>
+      <div class="table-wrap"><table id="tbl-kodgvg"><thead></thead><tbody></tbody></table></div>
+      <div class="empty-state" id="empty-kodgvg" style="display:none;"><h3 id="t_emptyWeeksTitle6">Henüz hafta yok</h3><p id="t_emptyWeeksDesc6">"+ Hafta Ekle" ile ilk haftayı oluştur.</p></div>
     </div>
 
     <!-- SS -->
@@ -773,7 +790,7 @@
   <div class="modal wide">
     <div id="engagementBoardCapture">
       <h2 id="t_engagementBoardTitle">🏆 Katılım Panosu</h2>
-      <p id="t_engagementBoardSubtitle" style="color:var(--text-muted); font-size:13px; margin:-10px 0 16px;">GVG · SVS · King of Desert · Sandstorm</p>
+      <p id="t_engagementBoardSubtitle" style="color:var(--text-muted); font-size:13px; margin:-10px 0 16px;">GVG · KOD - GVG · SVS · King of Desert · Sandstorm</p>
       <div id="engagementBoardBody" style="max-height:65vh; overflow-y:auto;"></div>
     </div>
     <div class="modal-actions">

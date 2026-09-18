@@ -42,6 +42,7 @@ import "./gvg.js";
 import "./svs.js";
 import "./ss.js";
 import "./kod.js";
+import "./kodgvg.js";
 
 const REALTIME_RELOAD_DEBOUNCE_MS = 400;
 
@@ -81,6 +82,7 @@ async function loadAll(silent) {
       gvgWeeksRes, gvgRecordsRes,
       ssWeeksRes, ssRecordsRes,
       kodWeeksRes, kodRecordsRes,
+      kodgvgWeeksRes, kodgvgRecordsRes,
       otherWeeksRes, otherRecordsRes,
       migrationPeriodsRes, migrationRes, migrationLeadsRes, nameSuggestionsRes, siteLinksRes, newsRes, videosRes, activityRes,
       engagementBoardTiersRes
@@ -90,6 +92,7 @@ async function loadAll(silent) {
       getWeeks("gvg"), getAllRecords("gvg"),
       getWeeks("ss"), getAllRecords("ss"),
       getWeeks("kod"), getAllRecords("kod"),
+      getWeeks("kodgvg"), getAllRecords("kodgvg"),
       getWeeks("other"), getAllRecords("other"),
       restricted ? Promise.resolve([]) : getMigrationPeriods(),
       restricted ? Promise.resolve([]) : getMigrationProspects(),
@@ -124,6 +127,7 @@ async function loadAll(silent) {
       gvg: { weeks: settledList(gvgWeeksRes).map(mapWeek), entries: settledList(gvgRecordsRes).map((r) => mapEntry("gvg", r)) },
       ss: { weeks: settledList(ssWeeksRes).map(mapWeek), entries: settledList(ssRecordsRes).map((r) => mapEntry("ss", r)) },
       kod: { weeks: settledList(kodWeeksRes).map(mapWeek), entries: settledList(kodRecordsRes).map((r) => mapEntry("kod", r)) },
+      kodgvg: { weeks: settledList(kodgvgWeeksRes).map(mapWeek), entries: settledList(kodgvgRecordsRes).map((r) => mapEntry("kodgvg", r)) },
       other: { weeks: settledList(otherWeeksRes).map(mapWeek), entries: settledList(otherRecordsRes).map((r) => mapEntry("other", r)) },
       migrationPeriods: settledList(migrationPeriodsRes).map(mapPeriod),
       migration: settledList(migrationRes).map(mapProspect),
@@ -165,7 +169,7 @@ setInterval(() => loadAll(true), POLL_INTERVAL_MS);
 
 let realtimeReloadTimer = null;
 subscribeToTables(
-  ["members", "power_history", "team_power_history", "engagement_periods", "gvg_weeks", "gvg_records", "svs_weeks", "svs_records", "ss_weeks", "ss_records", "kod_weeks", "kod_records", "other_weeks", "other_records", "migration_periods", "migration_prospects", "migration_leads", "name_suggestions", "site_links", "news", "featured_videos", "activity_logs"],
+  ["members", "power_history", "team_power_history", "engagement_periods", "gvg_weeks", "gvg_records", "svs_weeks", "svs_records", "ss_weeks", "ss_records", "kod_weeks", "kod_records", "kodgvg_weeks", "kodgvg_records", "other_weeks", "other_records", "migration_periods", "migration_prospects", "migration_leads", "name_suggestions", "site_links", "news", "featured_videos", "activity_logs"],
   () => {
     clearTimeout(realtimeReloadTimer);
     realtimeReloadTimer = setTimeout(() => loadAll(true), REALTIME_RELOAD_DEBOUNCE_MS);

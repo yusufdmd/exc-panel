@@ -1,7 +1,7 @@
 // =====================================================================
 // EXC PANELİ — engagement.js
 // =====================================================================
-// "EXC Engagement Challenge" — GVG/SVS/SS/King of Desert'te katılım
+// "EXC Engagement Challenge" — GVG/KOD-GVG/SVS/SS/King of Desert'te katılım
 // başına 1 puan veren, admin'in başlatıp kapattığı ayrı, DÖNEMSEL bir
 // yarışma sıralaması (migration_periods ile aynı desen: geçmiş dönemler
 // kalıcı olarak saklanır, en fazla birinin bitiş tarihi boştur — aktif
@@ -19,8 +19,10 @@
 //     iki yoldan biriyle kazanılır: (a) seçilmediyse (kontenjan dolu)
 //     sadece BAŞVURMUŞ olmak yeterli, (b) seçildiyse fiilen KATILMIŞ
 //     olmak gerekir. Hiç başvurmamak, ya da seçilip gelmemek 0 puandır.
-//   - GVG: puan, "9 sandık" karşılığı olan mevcut Yeşil Bölge eşiğine
-//     (bkz. config.js -> GVG_THRESHOLDS.green) ulaşmışsa 1 puan.
+//   - GVG / KOD - GVG: puan, "9 sandık" karşılığı olan mevcut Yeşil Bölge
+//     eşiğine (bkz. config.js -> GVG_THRESHOLDS.green) ulaşmışsa 1 puan —
+//     ikisi birbirinden tamamen ayrı haftalar/kayıtlar olarak tutulur
+//     (bkz. state.gvg / state.kodgvg), sadece kural aynıdır.
 // =====================================================================
 
 import { createEngagementPeriod as dbCreateEngagementPeriod, closeEngagementPeriod as dbCloseEngagementPeriod, deleteEngagementPeriod as dbDeleteEngagementPeriod, setSetting as dbSetSetting } from "./database.js";
@@ -85,6 +87,7 @@ function computeEngagementRow(member, period) {
   const ss = categoryStat(state.ss, member, periodWeeks(state.ss, period), isSsPoint);
   const kod = categoryStat(state.kod, member, periodWeeks(state.kod, period), isKodPoint);
   const gvg = categoryStat(state.gvg, member, periodWeeks(state.gvg, period), isGvgPoint);
+  const kodgvg = categoryStat(state.kodgvg, member, periodWeeks(state.kodgvg, period), isGvgPoint);
   return {
     // Sadece görüntüleme/eşleştirme için gereken küçük bir anlık görüntü —
     // dönem kapanıp dondurulduğunda bu haliyle kalıcı olarak saklanır,
@@ -94,8 +97,9 @@ function computeEngagementRow(member, period) {
     ssPoints: ss.attended, ssApplicable: ss.applicable,
     kodPoints: kod.attended, kodApplicable: kod.applicable,
     gvgPoints: gvg.attended, gvgApplicable: gvg.applicable,
-    total: svs.attended + ss.attended + kod.attended + gvg.attended,
-    totalApplicable: svs.applicable + ss.applicable + kod.applicable + gvg.applicable
+    kodGvgPoints: kodgvg.attended, kodGvgApplicable: kodgvg.applicable,
+    total: svs.attended + ss.attended + kod.attended + gvg.attended + kodgvg.attended,
+    totalApplicable: svs.applicable + ss.applicable + kod.applicable + gvg.applicable + kodgvg.applicable
   };
 }
 
@@ -107,7 +111,7 @@ function getRowsForPeriod(period) {
 }
 
 function hasAnyPeriodWeek(period) {
-  return [state.svs, state.ss, state.kod, state.gvg].some((store) => periodWeeks(store, period).length > 0);
+  return [state.svs, state.ss, state.kod, state.gvg, state.kodgvg].some((store) => periodWeeks(store, period).length > 0);
 }
 
 function periodOptionLabel(period) {
@@ -195,6 +199,7 @@ export function renderEngagement() {
           <th onclick="setEngagementSort('ssPoints')">SS</th>
           <th onclick="setEngagementSort('kodPoints')">King of Desert</th>
           <th onclick="setEngagementSort('gvgPoints')">GVG</th>
+          <th onclick="setEngagementSort('kodGvgPoints')">KOD - GVG</th>
           <th onclick="setEngagementSort('total')">${t("thEngagementTotal")}</th>
         </tr>
       </thead>
@@ -207,6 +212,7 @@ export function renderEngagement() {
             <td class="num-cell">${formatRatio(row.ssPoints, row.ssApplicable)}</td>
             <td class="num-cell">${formatRatio(row.kodPoints, row.kodApplicable)}</td>
             <td class="num-cell">${formatRatio(row.gvgPoints, row.gvgApplicable)}</td>
+            <td class="num-cell">${formatRatio(row.kodGvgPoints, row.kodGvgApplicable)}</td>
             <td class="num-cell" style="color:var(--cyan-ink); font-weight:700;">${formatRatio(row.total, row.totalApplicable)}</td>
           </tr>
         `).join("")}
@@ -474,6 +480,7 @@ export function openEngagementReportModal() {
   const ssWeeks = periodWeeks(state.ss, period);
   const kodWeeks = periodWeeks(state.kod, period);
   const gvgWeeks = periodWeeks(state.gvg, period);
+  const kodGvgWeeks = periodWeeks(state.kodgvg, period);
 
   document.getElementById("overallReportBody").innerHTML = `
     <table>
@@ -486,6 +493,7 @@ export function openEngagementReportModal() {
           <th>SS</th>
           <th>King of Desert</th>
           <th>GVG</th>
+          <th>KOD - GVG</th>
         </tr>
       </thead>
       <tbody>
@@ -498,6 +506,7 @@ export function openEngagementReportModal() {
             <td>${periodWeekChips(state.ss, row.member, ssWeeks, isSsPoint)}</td>
             <td>${periodWeekChips(state.kod, row.member, kodWeeks, isKodPoint)}</td>
             <td>${periodWeekChips(state.gvg, row.member, gvgWeeks, isGvgPoint)}</td>
+            <td>${periodWeekChips(state.kodgvg, row.member, kodGvgWeeks, isGvgPoint)}</td>
           </tr>
         `).join("")}
       </tbody>

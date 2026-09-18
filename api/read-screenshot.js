@@ -68,7 +68,7 @@ function parseDataUrl(imageDataUrl) {
 function buildResponseSchema(type) {
   const memberIdField = { type: "STRING", description: "Roster listesindeki üyenin id alanı (birebir kopyalanmalı, uydurulmamalı)." };
   let itemProps;
-  if (type === "gvg") {
+  if (type === "gvg" || type === "kodgvg") {
     itemProps = {
       memberId: memberIdField,
       points: { type: "NUMBER", description: "Ekran görüntüsünde bu üye için görünen puan/skor." }
@@ -191,7 +191,7 @@ module.exports = async (req, res) => {
     }
 
     const { type, roster, images } = req.body || {};
-    const validTypes = ["gvg", "svs", "ss", "kod", "other", "power", "ss_applied"];
+    const validTypes = ["gvg", "svs", "ss", "kod", "kodgvg", "other", "power", "ss_applied"];
     if (!validTypes.includes(type)) {
       res.status(400).json({ error: "Geçersiz etkinlik türü." });
       return;

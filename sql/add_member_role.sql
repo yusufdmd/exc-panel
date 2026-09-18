@@ -43,7 +43,8 @@ begin
       'svs_weeks','svs_records',
       'ss_weeks','ss_records',
       'other_weeks','other_records',
-      'kod_weeks','kod_records'
+      'kod_weeks','kod_records',
+      'kodgvg_weeks','kodgvg_records'
     ])
   loop
     execute format('drop policy if exists %I on %I;', t || '_select_auth', t);

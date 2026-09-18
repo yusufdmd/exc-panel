@@ -642,6 +642,7 @@ export async function deleteMember(id) {
       svs: state.svs.entries.filter((e) => e.memberId === id),
       ss: state.ss.entries.filter((e) => e.memberId === id),
       kod: state.kod.entries.filter((e) => e.memberId === id),
+      kodgvg: state.kodgvg.entries.filter((e) => e.memberId === id),
       other: state.other.entries.filter((e) => e.memberId === id)
     }
   } : null;
@@ -652,6 +653,7 @@ export async function deleteMember(id) {
     state.gvg.entries = state.gvg.entries.filter((e) => e.memberId !== id);
     state.ss.entries = state.ss.entries.filter((e) => e.memberId !== id);
     state.kod.entries = state.kod.entries.filter((e) => e.memberId !== id);
+    state.kodgvg.entries = state.kodgvg.entries.filter((e) => e.memberId !== id);
     state.other.entries = state.other.entries.filter((e) => e.memberId !== id);
     await logActivity("deleted", "member", id, { name: (target && target.name) || "İsimsiz", snapshot }, state.currentAdminUsername);
     renderAll();

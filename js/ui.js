@@ -48,6 +48,7 @@ export const state = {
   gvg: { weeks: [], entries: [] },
   ss: { weeks: [], entries: [] },
   kod: { weeks: [], entries: [] },
+  kodgvg: { weeks: [], entries: [] },
   other: { weeks: [], entries: [] },
   migration: [],
   migrationPeriods: [],
@@ -219,7 +220,7 @@ const DICT = {
     dataVisibilityNote:'Not: İlk 200\'ün dışındaki oyuncular oyun içinde görünmez, bu yüzden buradaki "Katılmadı"/"Bilgi Yok" işareti yanlış olabilir — yanlış görünüyorsa bir yöneticiye bildirin.',
     thJoined:'Katıldı', thPointsCol:'Puan', thGroup:'Grup', thAttended:'Katıldı mı', groupNone:'—', groupA:'A Grubu', groupB:'B Grubu',
     thAppliedSlots:'Başvurduğu Saatler', thAttendStatus:'Katılım Durumu', ssSlot1:'1 (09:00)', ssSlot2:'2 (18:00)', ssSlot3:'3 (23:00)', ssExcusedStatus:'Mazeretli', ssAppliedNotSelected:'Başvurdu', ssAppliedSectionTitle:'Başvurular (Saat Dilimine Göre)', ssAppliedFillBtn:'📋 Başvuru Ekran Görüntüsü Yükle',
-    entryTitleSVS:'SVS Girişi', entryTitleGVG:'GVG Girişi', entryTitleSS:'SS Girişi', entryTitleKoD:'King of Desert Girişi',
+    entryTitleSVS:'SVS Girişi', entryTitleGVG:'GVG Girişi', entryTitleSS:'SS Girişi', entryTitleKoD:'King of Desert Girişi', entryTitleKodGvg:'KOD - GVG Girişi',
     toastEntrySaved:'Kayıt tamamlandı.', notRegistered:'—',
     aiFillBtn:'🤖 AI ile Doldur', aiFillWorking:'AI okuyor…', aiFillWorkingBatch:'AI okuyor ({i}/{n})…', aiFillRateLimited:'Kota doldu, {s}sn sonra tekrar denenecek…', aiFillBatchFailed:'({n} grup okunamadı)', aiFillDone:'{n} üye için dolduruldu, kontrol edip kaydedin.', aiFillError:'AI okuma başarısız oldu.', aiFillNoMembers:'Listede üye yok.', aiFillTooMany:'En fazla {n} fotoğraf birden seçebilirsin.', aiUnmatchedTitle:'⚠️ {n} eşleşmeyen kayıt — elle kontrol et:', aiFillUnmatchedToast:'({n} eşleşmeyen kayıt var, aşağıda listelendi)', aiUnmatchedRemove:'Listeden kaldır', powerAiFillBtn:'🤖 AI ile Güç Güncelle', powerDraftLabel:'{n} üye için yeni güç değeri önerildi — kontrol edip uygula.', applyPowerDraftBtn:'✅ Değişiklikleri Uygula', confirmApplyPowerDraft:'{n} üyenin güç değeri güncellensin mi?', toastPowerDraftApplied:'{n} üyenin gücü güncellendi.', powerSuspiciousLabel:'{n} tanesi düşüş/aşırı sıçrama içerdiği için tablodaki ⚠️ işaretinden tek tek onaylanmayı bekliyor.', powerSuspiciousToast:'({n} tanesi düşüş/sıçrama nedeniyle onay bekliyor)', powerSuspiciousTitle:'Bu değer düşüş veya aşırı sıçrama içeriyor, elle onaylaman gerekiyor.', powerSuspiciousAccept:'Bu değeri onayla', powerSuspiciousReject:'Bu değeri reddet', powerOnlySuspiciousLeft:'Sadece onay bekleyen şüpheli değerler kaldı — önce tablodaki ⚠️ satırlarını tek tek onayla/reddet.',
     boardEmptyTitle:'Henüz veri yok', boardEmptyDesc:'Üye ve etkinlik ekledikçe sıralama burada oluşur.',
@@ -233,7 +234,7 @@ ebParticipationWord:'Katılım', ebFootnote:'%50\'nin altındaysan daha çok etk
     toastEventSaved:'Etkinlik eklendi.', toastEventDeleted:'Etkinlik silindi.', confirmDeleteEvent:'Bu etkinliği ve tüm verilerini silmek istiyor musunuz?',
     emptyEventsTitle:'Henüz etkinlik yok', emptyEventsDesc:'"+ Etkinlik Ekle" ile ilk etkinliği oluştur.',
     entryTitleOther:'Diğer Etkinlik Girişi', thStatus:'Durum',
-    lbRankCol:'Sıra', lbMember:'Üye', lbGvgTotal:'GVG Toplam', lbSvsTotal:'SVS Toplam', lbSvsRatio:'SVS Katılım', lbSsRatio:'SS Katılım', lbKodRatio:'KoD Katılım', lbOtherTotal:'Diğer Toplam', lbOtherRatio:'Diğer Katılım',
+    lbRankCol:'Sıra', lbMember:'Üye', lbGvgTotal:'GVG Toplam', lbKodGvgTotal:'KOD - GVG Toplam', lbSvsTotal:'SVS Toplam', lbSvsRatio:'SVS Katılım', lbSsRatio:'SS Katılım', lbKodRatio:'KoD Katılım', lbOtherTotal:'Diğer Toplam', lbOtherRatio:'Diğer Katılım',
     lbParticipation:'Genel Katılım (Son 4 Hafta)', belowThresholdTitle:'Katılım %50\'nin altında',
     participationReportBtn:'📊 Katılım Raporu', participationReportTitle:'Katılım Raporu',
     groupAboveThreshold:'🟢 Eşik Üstü (≥ %50)', groupBelowThreshold:'🔴 Eşik Altı (< %50)', groupNoData:'⚪ Henüz Veri Yok',
@@ -341,7 +342,7 @@ ebParticipationWord:'Katılım', ebFootnote:'%50\'nin altındaysan daha çok etk
     dataVisibilityNote:'Note: Players outside the top 200 aren\'t visible in-game, so a "Not Joined"/"No Data" mark here may be inaccurate — flag it to an admin if it looks wrong.',
     thJoined:'Joined', thPointsCol:'Points', thGroup:'Group', thAttended:'Attended', groupNone:'—', groupA:'Group A', groupB:'Group B',
     thAppliedSlots:'Applied Slots', thAttendStatus:'Attendance', ssSlot1:'1 (09:00)', ssSlot2:'2 (18:00)', ssSlot3:'3 (23:00)', ssExcusedStatus:'Excused', ssAppliedNotSelected:'Applied', ssAppliedSectionTitle:'Applications (by Time Slot)', ssAppliedFillBtn:'📋 Upload Applications Screenshot',
-    entryTitleSVS:'SVS Entry', entryTitleGVG:'GVG Entry', entryTitleSS:'SS Entry', entryTitleKoD:'King of Desert Entry',
+    entryTitleSVS:'SVS Entry', entryTitleGVG:'GVG Entry', entryTitleSS:'SS Entry', entryTitleKoD:'King of Desert Entry', entryTitleKodGvg:'KOD - GVG Entry',
     toastEntrySaved:'Saved.', notRegistered:'—',
     aiFillBtn:'🤖 Fill with AI', aiFillWorking:'Reading…', aiFillWorkingBatch:'Reading ({i}/{n})…', aiFillRateLimited:'Quota hit, retrying in {s}s…', aiFillBatchFailed:'({n} batches failed)', aiFillDone:'Filled {n} members — review and save.', aiFillError:'AI reading failed.', aiFillNoMembers:'No members in the list.', aiFillTooMany:'You can select at most {n} photos at once.', aiUnmatchedTitle:'⚠️ {n} unmatched entries — check manually:', aiFillUnmatchedToast:'({n} unmatched entries, listed below)', aiUnmatchedRemove:'Remove from list', powerAiFillBtn:'🤖 Update Power with AI', powerDraftLabel:'Proposed new power for {n} members — review and apply.', applyPowerDraftBtn:'✅ Apply Changes', confirmApplyPowerDraft:'Update power for {n} members?', toastPowerDraftApplied:'Updated power for {n} members.', powerSuspiciousLabel:'{n} need individual approval (drop/oversized jump) — see the ⚠️ marks in the table.', powerSuspiciousToast:'({n} awaiting approval due to a drop/jump)', powerSuspiciousTitle:'This value is a drop or an unusually large jump — needs manual approval.', powerSuspiciousAccept:'Approve this value', powerSuspiciousReject:'Reject this value', powerOnlySuspiciousLeft:'Only entries awaiting approval remain — approve/reject the ⚠️ rows in the table first.',
     boardEmptyTitle:'No data yet', boardEmptyDesc:'The leaderboard fills in as you add members and events.',
@@ -355,7 +356,7 @@ ebParticipationWord:'Participation', ebFootnote:'If you\'re under 50%, consider 
     toastEventSaved:'Event added.', toastEventDeleted:'Event deleted.', confirmDeleteEvent:'Delete this event and all its data?',
     emptyEventsTitle:'No events yet', emptyEventsDesc:'Use "+ Add Event" to create the first one.',
     entryTitleOther:'Other Event Entry', thStatus:'Status',
-    lbRankCol:'Rank', lbMember:'Member', lbGvgTotal:'GVG Total', lbSvsTotal:'SVS Total', lbSvsRatio:'SVS Attendance', lbSsRatio:'SS Attendance', lbKodRatio:'KoD Attendance', lbOtherTotal:'Other Total', lbOtherRatio:'Other Attendance',
+    lbRankCol:'Rank', lbMember:'Member', lbGvgTotal:'GVG Total', lbKodGvgTotal:'KOD - GVG Total', lbSvsTotal:'SVS Total', lbSvsRatio:'SVS Attendance', lbSsRatio:'SS Attendance', lbKodRatio:'KoD Attendance', lbOtherTotal:'Other Total', lbOtherRatio:'Other Attendance',
     lbParticipation:'Overall Participation (Last 4 Weeks)', belowThresholdTitle:'Participation below 50%',
     participationReportBtn:'📊 Participation Report', participationReportTitle:'Participation Report',
     groupAboveThreshold:'🟢 Above Threshold (≥ 50%)', groupBelowThreshold:'🔴 Below Threshold (< 50%)', groupNoData:'⚪ No Data Yet',
@@ -463,7 +464,7 @@ ebParticipationWord:'Participation', ebFootnote:'If you\'re under 50%, consider 
     dataVisibilityNote:'Hinweis: Spieler außerhalb der Top 200 sind im Spiel nicht sichtbar, daher kann eine Markierung als "Nicht teilgenommen"/"Keine Daten" hier ungenau sein — melde es einem Admin, falls es falsch aussieht.',
     thJoined:'Teilgenommen', thPointsCol:'Punkte', thGroup:'Gruppe', thAttended:'Teilgenommen', groupNone:'—', groupA:'Gruppe A', groupB:'Gruppe B',
     thAppliedSlots:'Beworbene Zeiten', thAttendStatus:'Teilnahmestatus', ssSlot1:'1 (09:00)', ssSlot2:'2 (18:00)', ssSlot3:'3 (23:00)', ssExcusedStatus:'Entschuldigt', ssAppliedNotSelected:'Beworben', ssAppliedSectionTitle:'Bewerbungen (nach Zeitfenster)', ssAppliedFillBtn:'📋 Bewerbungs-Screenshot hochladen',
-    entryTitleSVS:'SVS-Eintrag', entryTitleGVG:'GVG-Eintrag', entryTitleSS:'SS-Eintrag', entryTitleKoD:'King of Desert-Eintrag',
+    entryTitleSVS:'SVS-Eintrag', entryTitleGVG:'GVG-Eintrag', entryTitleSS:'SS-Eintrag', entryTitleKoD:'King of Desert-Eintrag', entryTitleKodGvg:'KOD - GVG-Eintrag',
     toastEntrySaved:'Gespeichert.', notRegistered:'—',
     aiFillBtn:'🤖 Mit KI ausfüllen', aiFillWorking:'Wird gelesen…', aiFillWorkingBatch:'Wird gelesen ({i}/{n})…', aiFillRateLimited:'Kontingent erreicht, erneuter Versuch in {s}s…', aiFillBatchFailed:'({n} Gruppen fehlgeschlagen)', aiFillDone:'{n} Mitglieder ausgefüllt — bitte prüfen und speichern.', aiFillError:'KI-Auslesen fehlgeschlagen.', aiFillNoMembers:'Keine Mitglieder in der Liste.', aiFillTooMany:'Du kannst höchstens {n} Fotos gleichzeitig auswählen.', aiUnmatchedTitle:'⚠️ {n} nicht zugeordnete Einträge — bitte manuell prüfen:', aiFillUnmatchedToast:'({n} nicht zugeordnete Einträge, unten aufgelistet)', aiUnmatchedRemove:'Aus der Liste entfernen', powerAiFillBtn:'🤖 Stärke per KI aktualisieren', powerDraftLabel:'Neue Stärke für {n} Mitglieder vorgeschlagen — prüfen und übernehmen.', applyPowerDraftBtn:'✅ Änderungen übernehmen', confirmApplyPowerDraft:'Stärke für {n} Mitglieder aktualisieren?', toastPowerDraftApplied:'Stärke für {n} Mitglieder aktualisiert.', powerSuspiciousLabel:'{n} benötigen eine einzelne Bestätigung (Rückgang/übergroßer Sprung) — siehe ⚠️ in der Tabelle.', powerSuspiciousToast:'({n} warten wegen Rückgang/Sprung auf Bestätigung)', powerSuspiciousTitle:'Dieser Wert ist ein Rückgang oder ein ungewöhnlich großer Sprung — benötigt manuelle Bestätigung.', powerSuspiciousAccept:'Diesen Wert bestätigen', powerSuspiciousReject:'Diesen Wert ablehnen', powerOnlySuspiciousLeft:'Es sind nur noch Werte übrig, die auf Bestätigung warten — bestätige/lehne zuerst die ⚠️-Zeilen in der Tabelle ab.',
     boardEmptyTitle:'Noch keine Daten', boardEmptyDesc:'Die Bestenliste füllt sich mit Mitgliedern und Events.',
@@ -477,7 +478,7 @@ ebParticipationWord:'Teilnahme', ebFootnote:'Bist du unter 50%, nimm an mehr Eve
     toastEventSaved:'Event hinzugefügt.', toastEventDeleted:'Event gelöscht.', confirmDeleteEvent:'Dieses Event und alle Daten löschen?',
     emptyEventsTitle:'Noch keine Events', emptyEventsDesc:'Mit "+ Event hinzufügen" das erste anlegen.',
     entryTitleOther:'Sonstiger Event-Eintrag', thStatus:'Status',
-    lbRankCol:'Platz', lbMember:'Mitglied', lbGvgTotal:'GVG Gesamt', lbSvsTotal:'SVS Gesamt', lbSvsRatio:'SVS Teilnahme', lbSsRatio:'SS Teilnahme', lbKodRatio:'KoD Teilnahme', lbOtherTotal:'Sonstige Gesamt', lbOtherRatio:'Sonstige Teilnahme',
+    lbRankCol:'Platz', lbMember:'Mitglied', lbGvgTotal:'GVG Gesamt', lbKodGvgTotal:'KOD - GVG Gesamt', lbSvsTotal:'SVS Gesamt', lbSvsRatio:'SVS Teilnahme', lbSsRatio:'SS Teilnahme', lbKodRatio:'KoD Teilnahme', lbOtherTotal:'Sonstige Gesamt', lbOtherRatio:'Sonstige Teilnahme',
     lbParticipation:'Gesamtteilnahme (Letzte 4 Wochen)', belowThresholdTitle:'Teilnahme unter 50%',
     participationReportBtn:'📊 Teilnahmebericht', participationReportTitle:'Teilnahmebericht',
     groupAboveThreshold:'🟢 Über dem Schwellenwert (≥ 50%)', groupBelowThreshold:'🔴 Unter dem Schwellenwert (< 50%)', groupNoData:'⚪ Noch keine Daten',
@@ -585,7 +586,7 @@ ebParticipationWord:'Teilnahme', ebFootnote:'Bist du unter 50%, nimm an mehr Eve
     dataVisibilityNote:'Nota: Los jugadores fuera del top 200 no son visibles en el juego, por lo que una marca de "No participó"/"Sin datos" aquí puede ser inexacta — avisa a un administrador si parece incorrecto.',
     thJoined:'Participó', thPointsCol:'Puntos', thGroup:'Grupo', thAttended:'Participó', groupNone:'—', groupA:'Grupo A', groupB:'Grupo B',
     thAppliedSlots:'Horarios Solicitados', thAttendStatus:'Estado de Asistencia', ssSlot1:'1 (09:00)', ssSlot2:'2 (18:00)', ssSlot3:'3 (23:00)', ssExcusedStatus:'Justificado', ssAppliedNotSelected:'Solicitó', ssAppliedSectionTitle:'Solicitudes (por Horario)', ssAppliedFillBtn:'📋 Subir Captura de Solicitudes',
-    entryTitleSVS:'Registro SVS', entryTitleGVG:'Registro GVG', entryTitleSS:'Registro SS', entryTitleKoD:'Registro King of Desert',
+    entryTitleSVS:'Registro SVS', entryTitleGVG:'Registro GVG', entryTitleSS:'Registro SS', entryTitleKoD:'Registro King of Desert', entryTitleKodGvg:'Registro KOD - GVG',
     toastEntrySaved:'Guardado.', notRegistered:'—',
     aiFillBtn:'🤖 Rellenar con IA', aiFillWorking:'Leyendo…', aiFillWorkingBatch:'Leyendo ({i}/{n})…', aiFillRateLimited:'Cuota agotada, reintentando en {s}s…', aiFillBatchFailed:'({n} grupos fallaron)', aiFillDone:'Se completaron {n} miembros — revisa y guarda.', aiFillError:'Error al leer con IA.', aiFillNoMembers:'No hay miembros en la lista.', aiFillTooMany:'Puedes seleccionar como máximo {n} fotos a la vez.', aiUnmatchedTitle:'⚠️ {n} registros sin coincidencia — revisa manualmente:', aiFillUnmatchedToast:'({n} registros sin coincidencia, listados abajo)', aiUnmatchedRemove:'Quitar de la lista', powerAiFillBtn:'🤖 Actualizar Poder con IA', powerDraftLabel:'Nuevo poder propuesto para {n} miembros — revisa y aplica.', applyPowerDraftBtn:'✅ Aplicar Cambios', confirmApplyPowerDraft:'¿Actualizar el poder de {n} miembros?', toastPowerDraftApplied:'Poder actualizado para {n} miembros.', powerSuspiciousLabel:'{n} necesitan aprobación individual (caída/salto excesivo) — mira las marcas ⚠️ en la tabla.', powerSuspiciousToast:'({n} esperando aprobación por caída/salto)', powerSuspiciousTitle:'Este valor es una caída o un salto inusualmente grande — necesita aprobación manual.', powerSuspiciousAccept:'Aprobar este valor', powerSuspiciousReject:'Rechazar este valor', powerOnlySuspiciousLeft:'Solo quedan valores pendientes de aprobación — aprueba/rechaza primero las filas ⚠️ en la tabla.',
     boardEmptyTitle:'Aún no hay datos', boardEmptyDesc:'La clasificación se completa a medida que agregas miembros y eventos.',
@@ -599,7 +600,7 @@ ebParticipationWord:'Participación', ebFootnote:'¡Si estás por debajo del 50%
     toastEventSaved:'Evento añadido.', toastEventDeleted:'Evento eliminado.', confirmDeleteEvent:'¿Eliminar este evento y todos sus datos?',
     emptyEventsTitle:'Aún no hay eventos', emptyEventsDesc:'Usa "+ Añadir evento" para crear el primero.',
     entryTitleOther:'Registro de otro evento', thStatus:'Estado',
-    lbRankCol:'Puesto', lbMember:'Miembro', lbGvgTotal:'Total GVG', lbSvsTotal:'Total SVS', lbSvsRatio:'Asistencia SVS', lbSsRatio:'Asistencia SS', lbKodRatio:'Asistencia KoD', lbOtherTotal:'Total Otro', lbOtherRatio:'Asistencia Otro',
+    lbRankCol:'Puesto', lbMember:'Miembro', lbGvgTotal:'Total GVG', lbKodGvgTotal:'Total KOD - GVG', lbSvsTotal:'Total SVS', lbSvsRatio:'Asistencia SVS', lbSsRatio:'Asistencia SS', lbKodRatio:'Asistencia KoD', lbOtherTotal:'Total Otro', lbOtherRatio:'Asistencia Otro',
     lbParticipation:'Participación General (Últimas 4 Semanas)', belowThresholdTitle:'Participación por debajo del 50%',
     participationReportBtn:'📊 Informe de Participación', participationReportTitle:'Informe de Participación',
     groupAboveThreshold:'🟢 Por Encima del Umbral (≥ 50%)', groupBelowThreshold:'🔴 Por Debajo del Umbral (< 50%)', groupNoData:'⚪ Aún Sin Datos',
@@ -707,7 +708,7 @@ ebParticipationWord:'Participación', ebFootnote:'¡Si estás por debajo del 50%
     dataVisibilityNote:"Remarque : Les joueurs hors du top 200 ne sont pas visibles en jeu, donc une mention « Non participé »/« Aucune donnée » ici peut être inexacte — signalez-le à un administrateur si cela semble incorrect.",
     thJoined:'A participé', thPointsCol:'Points', thGroup:'Groupe', thAttended:'Présent', groupNone:'—', groupA:'Groupe A', groupB:'Groupe B',
     thAppliedSlots:'Créneaux Demandés', thAttendStatus:'Statut de Présence', ssSlot1:'1 (09:00)', ssSlot2:'2 (18:00)', ssSlot3:'3 (23:00)', ssExcusedStatus:'Excusé', ssAppliedNotSelected:'A postulé', ssAppliedSectionTitle:'Candidatures (par Créneau)', ssAppliedFillBtn:'📋 Importer la Capture des Candidatures',
-    entryTitleSVS:'Saisie SVS', entryTitleGVG:'Saisie GVG', entryTitleSS:'Saisie SS', entryTitleKoD:'Saisie King of Desert',
+    entryTitleSVS:'Saisie SVS', entryTitleGVG:'Saisie GVG', entryTitleSS:'Saisie SS', entryTitleKoD:'Saisie King of Desert', entryTitleKodGvg:'Saisie KOD - GVG',
     toastEntrySaved:'Enregistré.', notRegistered:'—',
     aiFillBtn:'🤖 Remplir avec l\'IA', aiFillWorking:'Lecture en cours…', aiFillWorkingBatch:'Lecture en cours ({i}/{n})…', aiFillRateLimited:'Quota atteint, nouvel essai dans {s}s…', aiFillBatchFailed:'({n} groupes en échec)', aiFillDone:'{n} membres remplis — vérifiez et enregistrez.', aiFillError:'Échec de la lecture par l\'IA.', aiFillNoMembers:'Aucun membre dans la liste.', aiFillTooMany:'Tu peux sélectionner au maximum {n} photos à la fois.', aiUnmatchedTitle:'⚠️ {n} entrées non appariées — à vérifier manuellement :', aiFillUnmatchedToast:'({n} entrées non appariées, listées ci-dessous)', aiUnmatchedRemove:'Retirer de la liste', powerAiFillBtn:'🤖 Mettre à jour la Puissance par IA', powerDraftLabel:'Nouvelle puissance proposée pour {n} membres — vérifiez et appliquez.', applyPowerDraftBtn:'✅ Appliquer les Changements', confirmApplyPowerDraft:'Mettre à jour la puissance de {n} membres ?', toastPowerDraftApplied:'Puissance mise à jour pour {n} membres.', powerSuspiciousLabel:'{n} nécessitent une approbation individuelle (baisse/saut excessif) — voir les ⚠️ dans le tableau.', powerSuspiciousToast:'({n} en attente d\'approbation pour baisse/saut)', powerSuspiciousTitle:'Cette valeur est une baisse ou un saut anormalement important — approbation manuelle requise.', powerSuspiciousAccept:'Approuver cette valeur', powerSuspiciousReject:'Rejeter cette valeur', powerOnlySuspiciousLeft:'Il ne reste que des valeurs en attente d\'approbation — approuvez/rejetez d\'abord les lignes ⚠️ dans le tableau.',
     boardEmptyTitle:'Aucune donnée pour le moment', boardEmptyDesc:'Le classement se remplit au fur et à mesure que vous ajoutez membres et événements.',
@@ -721,7 +722,7 @@ ebParticipationWord:'Participation', ebFootnote:"Si tu es en dessous de 50%, pen
     toastEventSaved:'Événement ajouté.', toastEventDeleted:'Événement supprimé.', confirmDeleteEvent:'Supprimer cet événement et toutes ses données ?',
     emptyEventsTitle:'Aucun événement pour le moment', emptyEventsDesc:'Utilisez "+ Ajouter un événement" pour créer le premier.',
     entryTitleOther:'Saisie autre événement', thStatus:'Statut',
-    lbRankCol:'Rang', lbMember:'Membre', lbGvgTotal:'Total GVG', lbSvsTotal:'Total SVS', lbSvsRatio:'Participation SVS', lbSsRatio:'Participation SS', lbKodRatio:'Participation KoD', lbOtherTotal:'Total Autre', lbOtherRatio:'Participation Autre',
+    lbRankCol:'Rang', lbMember:'Membre', lbGvgTotal:'Total GVG', lbKodGvgTotal:'Total KOD - GVG', lbSvsTotal:'Total SVS', lbSvsRatio:'Participation SVS', lbSsRatio:'Participation SS', lbKodRatio:'Participation KoD', lbOtherTotal:'Total Autre', lbOtherRatio:'Participation Autre',
     lbParticipation:'Participation Globale (4 Dernières Semaines)', belowThresholdTitle:'Participation inférieure à 50%',
     participationReportBtn:'📊 Rapport de Participation', participationReportTitle:'Rapport de Participation',
     groupAboveThreshold:'🟢 Au-dessus du Seuil (≥ 50%)', groupBelowThreshold:'🔴 En Dessous du Seuil (< 50%)', groupNoData:'⚪ Pas Encore de Données',
@@ -829,7 +830,7 @@ ebParticipationWord:'Participation', ebFootnote:"Si tu es en dessous de 50%, pen
     dataVisibilityNote:'Lưu ý: Người chơi ngoài top 200 sẽ không hiển thị trong game, vì vậy dấu "Không tham gia"/"Không có dữ liệu" ở đây có thể không chính xác — hãy báo cho quản trị viên nếu thấy sai.',
     thJoined:'Đã tham gia', thPointsCol:'Điểm', thGroup:'Nhóm', thAttended:'Tham dự', groupNone:'—', groupA:'Nhóm A', groupB:'Nhóm B',
     thAppliedSlots:'Khung giờ Đã Đăng ký', thAttendStatus:'Trạng thái Tham gia', ssSlot1:'1 (09:00)', ssSlot2:'2 (18:00)', ssSlot3:'3 (23:00)', ssExcusedStatus:'Được miễn', ssAppliedNotSelected:'Đã đăng ký', ssAppliedSectionTitle:'Đăng ký (theo Khung giờ)', ssAppliedFillBtn:'📋 Tải Ảnh Chụp Đăng ký',
-    entryTitleSVS:'Nhập liệu SVS', entryTitleGVG:'Nhập liệu GVG', entryTitleSS:'Nhập liệu SS', entryTitleKoD:'Nhập liệu King of Desert',
+    entryTitleSVS:'Nhập liệu SVS', entryTitleGVG:'Nhập liệu GVG', entryTitleSS:'Nhập liệu SS', entryTitleKoD:'Nhập liệu King of Desert', entryTitleKodGvg:'Nhập liệu KOD - GVG',
     toastEntrySaved:'Đã lưu.', notRegistered:'—',
     aiFillBtn:'🤖 Điền bằng AI', aiFillWorking:'Đang đọc…', aiFillWorkingBatch:'Đang đọc ({i}/{n})…', aiFillRateLimited:'Hết hạn ngạch, thử lại sau {s}s…', aiFillBatchFailed:'({n} nhóm thất bại)', aiFillDone:'Đã điền {n} thành viên — kiểm tra rồi lưu.', aiFillError:'AI đọc thất bại.', aiFillNoMembers:'Không có thành viên trong danh sách.', aiFillTooMany:'Bạn chỉ có thể chọn tối đa {n} ảnh cùng lúc.', aiUnmatchedTitle:'⚠️ {n} mục không khớp — kiểm tra thủ công:', aiFillUnmatchedToast:'({n} mục không khớp, liệt kê bên dưới)', aiUnmatchedRemove:'Xóa khỏi danh sách', powerAiFillBtn:'🤖 Cập nhật Sức mạnh bằng AI', powerDraftLabel:'Đã đề xuất sức mạnh mới cho {n} thành viên — kiểm tra rồi áp dụng.', applyPowerDraftBtn:'✅ Áp dụng Thay đổi', confirmApplyPowerDraft:'Cập nhật sức mạnh cho {n} thành viên?', toastPowerDraftApplied:'Đã cập nhật sức mạnh cho {n} thành viên.', powerSuspiciousLabel:'{n} cần được duyệt riêng (giảm/tăng vọt bất thường) — xem dấu ⚠️ trong bảng.', powerSuspiciousToast:'({n} đang chờ duyệt do giảm/tăng vọt)', powerSuspiciousTitle:'Giá trị này bị giảm hoặc tăng vọt bất thường — cần duyệt thủ công.', powerSuspiciousAccept:'Duyệt giá trị này', powerSuspiciousReject:'Từ chối giá trị này', powerOnlySuspiciousLeft:'Chỉ còn lại các giá trị chờ duyệt — hãy duyệt/từ chối các dòng ⚠️ trong bảng trước.',
     boardEmptyTitle:'Chưa có dữ liệu', boardEmptyDesc:'Bảng xếp hạng sẽ được điền khi bạn thêm thành viên và sự kiện.',
@@ -843,7 +844,7 @@ ebParticipationWord:'Tham gia', ebFootnote:'Nếu bạn dưới 50%, hãy tham g
     toastEventSaved:'Đã thêm sự kiện.', toastEventDeleted:'Đã xóa sự kiện.', confirmDeleteEvent:'Xóa sự kiện này và toàn bộ dữ liệu của nó?',
     emptyEventsTitle:'Chưa có sự kiện nào', emptyEventsDesc:'Dùng "+ Thêm Sự kiện" để tạo sự kiện đầu tiên.',
     entryTitleOther:'Nhập liệu Sự kiện Khác', thStatus:'Trạng thái',
-    lbRankCol:'Cấp bậc', lbMember:'Thành viên', lbGvgTotal:'Tổng GVG', lbSvsTotal:'Tổng SVS', lbSvsRatio:'Tỷ lệ Tham dự SVS', lbSsRatio:'Tỷ lệ Tham dự SS', lbKodRatio:'Tỷ lệ Tham dự KoD', lbOtherTotal:'Tổng Khác', lbOtherRatio:'Tỷ lệ Tham dự Khác',
+    lbRankCol:'Cấp bậc', lbMember:'Thành viên', lbGvgTotal:'Tổng GVG', lbKodGvgTotal:'Tổng KOD - GVG', lbSvsTotal:'Tổng SVS', lbSvsRatio:'Tỷ lệ Tham dự SVS', lbSsRatio:'Tỷ lệ Tham dự SS', lbKodRatio:'Tỷ lệ Tham dự KoD', lbOtherTotal:'Tổng Khác', lbOtherRatio:'Tỷ lệ Tham dự Khác',
     lbParticipation:'Tỷ lệ Tham gia Chung (4 Tuần gần nhất)', belowThresholdTitle:'Tỷ lệ tham gia dưới 50%',
     participationReportBtn:'📊 Báo cáo Tham gia', participationReportTitle:'Báo cáo Tham gia',
     groupAboveThreshold:'🟢 Trên Ngưỡng (≥ 50%)', groupBelowThreshold:'🔴 Dưới Ngưỡng (< 50%)', groupNoData:'⚪ Chưa có Dữ liệu',
@@ -978,7 +979,8 @@ export function applyStaticText() {
   document.getElementById("t_addWeek_svs").textContent = t("addWeek");
   document.getElementById("t_addWeek_gvg").textContent = t("addWeek");
   document.getElementById("t_addWeek_ss").textContent = t("addWeek");
-  ["svs", "gvg", "ss", "kod", "other", "engagement"].forEach((type) => {
+  document.getElementById("t_addWeek_kodgvg").textContent = t("addWeek");
+  ["svs", "gvg", "ss", "kod", "kodgvg", "other", "engagement"].forEach((type) => {
     document.getElementById("t_overallReport_" + type).textContent = t("overallReportBtn");
   });
   document.getElementById("t_overallReportTitle").textContent = t("overallReport");
@@ -1018,7 +1020,7 @@ export function applyStaticText() {
   document.getElementById("t_legendNotJoinedOther").textContent = t("legendNotJoined");
   document.getElementById("t_legendUnknownOther").textContent = t("legendUnknown");
   document.getElementById("t_addEvent_other").textContent = t("addEvent");
-  ["1", "2", "3", "5"].forEach((suffix) => {
+  ["1", "2", "3", "5", "6"].forEach((suffix) => {
     document.getElementById("t_emptyWeeksTitle" + suffix).textContent = t("emptyWeeksTitle");
     document.getElementById("t_emptyWeeksDesc" + suffix).textContent = t("emptyWeeksDesc");
   });
@@ -1172,6 +1174,7 @@ export function applyStaticText() {
   document.getElementById("t_export_gvg").textContent = t("exportBtn");
   document.getElementById("t_export_ss").textContent = t("exportBtn");
   document.getElementById("t_export_kod").textContent = t("exportBtn");
+  document.getElementById("t_export_kodgvg").textContent = t("exportBtn");
   document.getElementById("t_export_other").textContent = t("exportBtn");
   updateAdminUI();
   buildCampOptions();

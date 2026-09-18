@@ -219,6 +219,32 @@ create trigger trg_kod_records_updated_at
   before update on kod_records
   for each row execute function set_updated_at();
 
+-- "KOD - GVG" — GVG ile birebir aynı yapı/puanlama, ayrı bir sekme/depo (bkz. js/kodgvg.js).
+create table if not exists kodgvg_weeks (
+  id          uuid primary key default gen_random_uuid(),
+  label       text not null,
+  week_date   date,
+  created_at  timestamptz not null default now()
+);
+
+create table if not exists kodgvg_records (
+  id          uuid primary key default gen_random_uuid(),
+  week_id     uuid not null references kodgvg_weeks(id) on delete cascade,
+  member_id   uuid not null references members(id) on delete cascade,
+  points      bigint not null default 0,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now(),
+  unique (week_id, member_id)
+);
+
+create index if not exists idx_kodgvg_records_week   on kodgvg_records (week_id);
+create index if not exists idx_kodgvg_records_member on kodgvg_records (member_id);
+
+drop trigger if exists trg_kodgvg_records_updated_at on kodgvg_records;
+create trigger trg_kodgvg_records_updated_at
+  before update on kodgvg_records
+  for each row execute function set_updated_at();
+
 -- =====================================================================
 -- 6.2) MIGRATION_PERIODS — Göç dönemleri (iki haftalık göç pencereleri).
 --      Etkinlik haftalarının aksine EN YENİ ÖNCE sıralanır (bkz. database.js
@@ -526,6 +552,7 @@ begin
       'ss_weeks','ss_records',
       'other_weeks','other_records',
       'kod_weeks','kod_records',
+      'kodgvg_weeks','kodgvg_records',
       'migration_periods','migration_prospects',
       'settings','users','activity_logs'
     ])
@@ -568,6 +595,7 @@ alter publication supabase_realtime add table
   ss_weeks, ss_records,
   other_weeks, other_records,
   kod_weeks, kod_records,
+  kodgvg_weeks, kodgvg_records,
   migration_periods, migration_prospects, migration_leads, name_suggestions,
   settings, site_links, news, featured_videos, activity_logs;
 

@@ -31,7 +31,7 @@ export function mapWeek(row) {
 
 /** Supabase kayıt satırını, türüne göre uygulama şekline çevirir. */
 export function mapEntry(type, row) {
-  if (type === "gvg") return { id: row.id, memberId: row.member_id, weekId: row.week_id, points: row.points };
+  if (type === "gvg" || type === "kodgvg") return { id: row.id, memberId: row.member_id, weekId: row.week_id, points: row.points };
   if (type === "ss") return { id: row.id, memberId: row.member_id, weekId: row.week_id, group: row.group_name, attended: row.attended, excused: row.excused, appliedSlot1: !!row.applied_slot_1, appliedSlot2: !!row.applied_slot_2, appliedSlot3: !!row.applied_slot_3 };
   if (type === "kod") return { id: row.id, memberId: row.member_id, weekId: row.week_id, status: row.status, excused: row.excused };
   return { id: row.id, memberId: row.member_id, weekId: row.week_id, status: row.status, points: row.points, excused: row.excused };
@@ -43,21 +43,23 @@ export function storeFor(type) {
   if (type === "gvg") return state.gvg;
   if (type === "ss") return state.ss;
   if (type === "kod") return state.kod;
+  if (type === "kodgvg") return state.kodgvg;
   return state.other;
 }
 
-/** Aktivite logunda/rapor isimlerinde etkinlik türü için kısa, tanınabilir bir etiket — kasıtlı olarak dile göre çevrilmez (GVG/SVS/SS/King of Desert zaten her dilde aynı kısaltmalarla kullanılıyor). */
+/** Aktivite logunda/rapor isimlerinde etkinlik türü için kısa, tanınabilir bir etiket — kasıtlı olarak dile göre çevrilmez (GVG/SVS/SS/King of Desert/KOD - GVG zaten her dilde aynı kısaltmalarla kullanılıyor). */
 export function eventTypeLabel(type) {
   if (type === "gvg") return "GVG";
   if (type === "svs") return "SVS";
   if (type === "ss") return "SS";
   if (type === "kod") return "King of Desert";
+  if (type === "kodgvg") return "KOD - GVG";
   return t("subOther");
 }
 
 /** Uygulama şeklindeki bir kaydı (mapEntry'nin tersi), belirli bir üye id'sine bağlı olarak veritabanı şekline çevirir — aktivite logundan geri yükleme (restore) için. */
 export function entryToDbPayload(type, entry, memberId) {
-  if (type === "gvg") return { week_id: entry.weekId, member_id: memberId, points: entry.points };
+  if (type === "gvg" || type === "kodgvg") return { week_id: entry.weekId, member_id: memberId, points: entry.points };
   if (type === "ss") return { week_id: entry.weekId, member_id: memberId, group_name: entry.group || null, attended: !!entry.attended, excused: !!entry.excused, applied_slot_1: !!entry.appliedSlot1, applied_slot_2: !!entry.appliedSlot2, applied_slot_3: !!entry.appliedSlot3 };
   if (type === "kod") return { week_id: entry.weekId, member_id: memberId, status: entry.status, excused: !!entry.excused };
   return { week_id: entry.weekId, member_id: memberId, status: entry.status, points: entry.points, excused: !!entry.excused };
@@ -66,7 +68,7 @@ export function entryToDbPayload(type, entry, memberId) {
 /** Etkinlik türüne karşılık gelen hücre-bilgisi fonksiyonunu döndürür (tablolardakiyle BİREBİR aynı metin — bkz. gvg.js/svs.js/ss.js/kod.js render fonksiyonları). */
 function cellInfoFor(type) {
   if (type === "svs" || type === "other") return svsOtherCellInfo;
-  if (type === "gvg") return gvgCellInfo;
+  if (type === "gvg" || type === "kodgvg") return gvgCellInfo;
   if (type === "ss") return ssCellInfo;
   return attendanceCellInfo; // kod
 }
@@ -179,7 +181,7 @@ export function openEntryModal(type, weekId) {
   renderUnmatchedBox(null);
   const store = storeFor(type);
   const week = store.weeks.find((w) => w.id === weekId);
-  const titleKey = type === "svs" ? "entryTitleSVS" : type === "gvg" ? "entryTitleGVG" : type === "ss" ? "entryTitleSS" : type === "kod" ? "entryTitleKoD" : "entryTitleOther";
+  const titleKey = type === "svs" ? "entryTitleSVS" : type === "gvg" ? "entryTitleGVG" : type === "ss" ? "entryTitleSS" : type === "kod" ? "entryTitleKoD" : type === "kodgvg" ? "entryTitleKodGvg" : "entryTitleOther";
   document.getElementById("entryTitle").textContent = (week ? week.label + " — " : "") + t(titleKey);
   document.getElementById("entrySearch").value = "";
   // "Başvuru Ekran Görüntüsü Yükle" — sadece SS türünde, "başvuru" ile
@@ -188,7 +190,7 @@ export function openEntryModal(type, weekId) {
   const thead = document.getElementById("entryThead");
   if (type === "svs" || type === "other") {
     thead.innerHTML = `<tr><th>${t("thStatus")}</th><th>${t("thUsername")}</th><th>${t("thRank")}</th><th>${t("thPointsCol")}</th><th>${t("thExcused")}</th></tr>`;
-  } else if (type === "gvg") {
+  } else if (type === "gvg" || type === "kodgvg") {
     thead.innerHTML = `<tr><th>${t("thUsername")}</th><th>${t("thRank")}</th><th>${t("thPointsCol")}</th></tr>`;
   } else if (type === "kod") {
     thead.innerHTML = `<tr><th>${t("thStatus")}</th><th>${t("thUsername")}</th><th>${t("thRank")}</th><th>${t("thExcused")}</th></tr>`;
@@ -249,7 +251,7 @@ export function renderEntryRows() {
         <td><input type="checkbox" class="excused-check" data-mid="${member.id}" ${excused ? "checked" : ""}></td>
       </tr>`;
     }).join("");
-  } else if (type === "gvg") {
+  } else if (type === "gvg" || type === "kodgvg") {
     rowsEl.innerHTML = list.map((member) => {
       const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === weekId);
       const draft = aiDraft && aiDraft[member.id];
@@ -586,7 +588,7 @@ export async function saveEntry() {
       const excused = tr.querySelector(".excused-check").checked;
       payloads.push({ week_id: weekId, member_id: memberId, status, points, excused });
     });
-  } else if (type === "gvg") {
+  } else if (type === "gvg" || type === "kodgvg") {
     // Tüm satırlar geçerli olmadan hiçbiri kaydedilmez (kısmi/tutarsız bir kayıt kalmasın diye).
     const invalidRow = [...document.querySelectorAll("#entryRows tr")].some((tr) => {
       const raw = tr.querySelector(".pts-input").value.trim();
@@ -742,7 +744,7 @@ export function openWeekReportModal(type, weekId) {
   document.getElementById("weekReportTitle").textContent = week.label;
   const members = filteredSortedMembers();
   const bodyHtml = type === "ss" ? buildSsReportHtml(store, week, members)
-    : type === "gvg" ? buildGvgReportHtml(store, week, members)
+    : (type === "gvg" || type === "kodgvg") ? buildGvgReportHtml(store, week, members)
     : buildStatusReportHtml(store, week, members);
   document.getElementById("weekReportBody").innerHTML = bodyHtml;
   document.getElementById("weekReportOverlay").classList.add("active");
@@ -823,9 +825,9 @@ function renderOverallReport() {
 
   const members = filteredSortedMembers();
   const rows = sortOverallReportRows(
-    members.map((member) => type === "gvg" ? buildOverallReportRowGvg(store, member) : buildOverallReportRow(type, store, member))
+    members.map((member) => (type === "gvg" || type === "kodgvg") ? buildOverallReportRowGvg(store, member) : buildOverallReportRow(type, store, member))
   );
-  const valueHeaderKey = type === "gvg" ? "lbGvgTotal" : type === "ss" ? "lbSsRatio" : type === "kod" ? "lbKodRatio" : type === "svs" ? "lbSvsRatio" : "lbOtherRatio";
+  const valueHeaderKey = type === "gvg" ? "lbGvgTotal" : type === "kodgvg" ? "lbKodGvgTotal" : type === "ss" ? "lbSsRatio" : type === "kod" ? "lbKodRatio" : type === "svs" ? "lbSvsRatio" : "lbOtherRatio";
 
   body.innerHTML = `
     <table>

@@ -50,7 +50,7 @@ const SIMPLE_ENTITY_LABEL_KEY = { member: "lbMember", migration_prospect: "tabMi
 function entityTypeLabel(entityType) {
   if (!entityType) return "—";
   if (SIMPLE_ENTITY_LABEL_KEY[entityType]) return t(SIMPLE_ENTITY_LABEL_KEY[entityType]);
-  const match = /^(gvg|svs|ss|kod|other)_(week|entries)$/.exec(entityType);
+  const match = /^(gvg|kodgvg|svs|ss|kod|other)_(week|entries)$/.exec(entityType);
   if (!match) return entityType;
   const [, type, kind] = match;
   return kind === "week" ? `${eventTypeLabel(type)} ${t("thWeeks")}` : `${eventTypeLabel(type)} ${t("entryKindLabel")}`;
@@ -118,7 +118,7 @@ function renderDetailTable(rows) {
 
 /** Bir etkinlik haftası kaydını (tür + entry) kısa, okunur bir metne çevirir. */
 function formatWeekEntryValue(type, entry) {
-  if (type === "gvg") return String(Number(entry.points) || 0);
+  if (type === "gvg" || type === "kodgvg") return String(Number(entry.points) || 0);
   if (type === "kod") return `${entry.status === "joined" ? "✓" : "✕"}${entry.excused ? " (M)" : ""}`;
   if (type === "svs" || type === "other") return `${entry.status === "joined" ? "✓" : "✕"}${entry.excused ? " (M)" : ""} · ${Number(entry.points) || 0}p`;
   if (type === "ss") {
@@ -171,14 +171,14 @@ function snapshotDetailHtml(entry) {
     const counts = [
       [t("snapshotPowerHistory"), (snapshot.powerHistory || []).length],
       [t("snapshotTeamPowerHistory"), (snapshot.teamPowerHistory || []).length],
-      ...["gvg", "svs", "ss", "kod", "other"].map((type) => [eventTypeLabel(type), ((snapshot.entries && snapshot.entries[type]) || []).length])
+      ...["gvg", "kodgvg", "svs", "ss", "kod", "other"].map((type) => [eventTypeLabel(type), ((snapshot.entries && snapshot.entries[type]) || []).length])
     ];
     return renderDetailTable(mainRows)
       + `<h3 style="font-size:12px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-dim); margin:14px 0 8px;">${t("snapshotEntryCounts")}</h3>`
       + renderDetailTable(counts);
   }
 
-  const weekMatch = /^(gvg|svs|ss|kod|other)_week$/.exec(entry.entityType || "");
+  const weekMatch = /^(gvg|kodgvg|svs|ss|kod|other)_week$/.exec(entry.entityType || "");
   if (weekMatch) {
     const type = weekMatch[1];
     const week = snapshot.week || {};
@@ -245,7 +245,7 @@ export async function restoreDeletedMember(activityId) {
     for (const h of snapshot.powerHistory || []) await addPowerHistoryEntry(restored.id, h.date, h.power);
     for (const h of snapshot.teamPowerHistory || []) await addTeamPowerHistoryEntry(restored.id, h.date, h.teamPower);
 
-    for (const type of ["gvg", "svs", "ss", "kod", "other"]) {
+    for (const type of ["gvg", "kodgvg", "svs", "ss", "kod", "other"]) {
       const store = storeFor(type);
       const weekIds = new Set(store.weeks.map((w) => w.id));
       const entries = (snapshot.entries && snapshot.entries[type]) || [];
@@ -272,7 +272,7 @@ export async function restoreDeletedMember(activityId) {
 export async function restoreDeletedWeek(activityId) {
   const entry = state.activityLog.find((e) => e.id === activityId);
   const snapshot = entry && entry.details && entry.details.snapshot;
-  const match = /^(gvg|svs|ss|kod|other)_week$/.exec((entry && entry.entityType) || "");
+  const match = /^(gvg|kodgvg|svs|ss|kod|other)_week$/.exec((entry && entry.entityType) || "");
   if (!snapshot || !snapshot.week || !match) return;
   const type = match[1];
   if (!confirm(t("confirmRestoreWeek"))) return;

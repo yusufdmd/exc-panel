@@ -35,6 +35,7 @@ begin
       'ss_weeks','ss_records',
       'other_weeks','other_records',
       'kod_weeks','kod_records',
+      'kodgvg_weeks','kodgvg_records',
       'migration_periods','migration_prospects',
       'settings','users','activity_logs'
     ])

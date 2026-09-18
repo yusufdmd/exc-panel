@@ -434,6 +434,7 @@ export async function deleteAllRecordsForMember(memberId) {
     deleteRecordsForMember("svs", memberId),
     deleteRecordsForMember("ss", memberId),
     deleteRecordsForMember("kod", memberId),
+    deleteRecordsForMember("kodgvg", memberId),
     deleteRecordsForMember("other", memberId)
   ]);
   return true;
