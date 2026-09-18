@@ -49,9 +49,10 @@ module.exports = async (req, res) => {
 
     const safeOld = String(oldName || "?").slice(0, 60);
     const safeNew = suggestedName.slice(0, 60);
-    await postToDiscord(`📝 A new name change suggestion came in: **${safeOld}** → **${safeNew}**. Please review and approve it in the panel.`);
+    const { ok, detail } = await postToDiscord(`📝 A new name change suggestion came in: **${safeOld}** → **${safeNew}**. Please review and approve it in the panel.`);
+    if (!ok) console.error("[notify-name-suggestion] Discord bildirimi gönderilemedi:", detail);
 
-    res.status(200).json({ ok: true });
+    res.status(200).json({ ok: true, notified: ok });
   } catch (error) {
     console.error("[notify-name-suggestion] Beklenmeyen hata:", error);
     res.status(500).json({ error: "Beklenmeyen bir hata oluştu." });
