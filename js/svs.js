@@ -10,14 +10,14 @@
 // events.js'dedir.
 // =====================================================================
 
-import { state, t, escapeHtml, rankClass, rowNumHtml, cellInfoHtml, svsOtherCellInfo, registerRenderer } from "./ui.js";
+import { state, t, escapeHtml, rankClass, rowNumHtml, cellInfoHtml, svsOtherCellInfo, registerRenderer, sortMembersForWeek, weekSortIcon } from "./ui.js";
 import { filteredSortedMembers } from "./members.js";
 
 /** SVS ve Diğer sekmeleri için ortak tablo render mantığı. */
 function renderStatusTypeTable(type, store, tableElementId, emptyElementId) {
   const table = document.getElementById(tableElementId);
   document.getElementById(emptyElementId).style.display = store.weeks.length ? "none" : "block";
-  const list = filteredSortedMembers();
+  const list = sortMembersForWeek(type, store, filteredSortedMembers());
   const thead = table.querySelector("thead");
   const tbody = table.querySelector("tbody");
 
@@ -26,6 +26,7 @@ function renderStatusTypeTable(type, store, tableElementId, emptyElementId) {
       <th class="sticky-col" style="left:105px;">${t("thUsername")}</th>
       ${store.weeks.map((week) => `<th class="week-col"><div class="week-head"><span class="wname">${escapeHtml(week.label)}</span>
         <span class="week-actions">
+          <button class="icon-btn" style="width:20px;height:20px;" onclick="setEventWeekSort('${type}','${week.id}')" title="${t("sortByWeekTitle")}">${weekSortIcon(type, week.id)}</button>
           <button class="icon-btn" style="width:20px;height:20px;" onclick="openWeekReportModal('${type}','${week.id}')" title="${t("weekReport")}">📋</button>
           <button class="icon-btn admin-only" style="width:20px;height:20px;" onclick="openWeekModal('${type}','${week.id}')" title="${type === "other" ? t("eventEditTitle") : t("weekEditTitle")}">🏷</button>
           <button class="icon-btn admin-only" style="width:20px;height:20px;" onclick="openEntryModal('${type}','${week.id}')">✎</button>

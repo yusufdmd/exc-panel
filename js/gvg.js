@@ -7,13 +7,13 @@
 // window'a bağlanır). Bu dosya sadece `state.gvg`'yi okuyup tabloyu çizer.
 // =====================================================================
 
-import { state, t, escapeHtml, rankClass, rowNumHtml, cellInfoHtml, gvgCellInfo, registerRenderer } from "./ui.js";
+import { state, t, escapeHtml, rankClass, rowNumHtml, cellInfoHtml, gvgCellInfo, registerRenderer, sortMembersForWeek, weekSortIcon } from "./ui.js";
 import { filteredSortedMembers } from "./members.js";
 
 export function renderGvg() {
   const table = document.getElementById("tbl-gvg");
   document.getElementById("empty-gvg").style.display = state.gvg.weeks.length ? "none" : "block";
-  const list = filteredSortedMembers();
+  const list = sortMembersForWeek("gvg", state.gvg, filteredSortedMembers());
   const thead = table.querySelector("thead");
   const tbody = table.querySelector("tbody");
 
@@ -22,6 +22,7 @@ export function renderGvg() {
       <th class="sticky-col" style="left:105px;">${t("thUsername")}</th>
       ${state.gvg.weeks.map((week) => `<th class="week-col"><div class="week-head"><span class="wname">${escapeHtml(week.label)}</span>
         <span class="week-actions">
+          <button class="icon-btn" style="width:20px;height:20px;" onclick="setEventWeekSort('gvg','${week.id}')" title="${t("sortByWeekTitle")}">${weekSortIcon("gvg", week.id)}</button>
           <button class="icon-btn" style="width:20px;height:20px;" onclick="openWeekReportModal('gvg','${week.id}')" title="${t("weekReport")}">📋</button>
           <button class="icon-btn admin-only" style="width:20px;height:20px;" onclick="openWeekModal('gvg','${week.id}')" title="${t("weekEditTitle")}">🏷</button>
           <button class="icon-btn admin-only" style="width:20px;height:20px;" onclick="openEntryModal('gvg','${week.id}')">✎</button>

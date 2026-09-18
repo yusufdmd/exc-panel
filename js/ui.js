@@ -78,6 +78,7 @@ export const state = {
   oldFlag: false,
   migratedFlag: false,
   entryContext: null, // { type: 'svs'|'gvg'|'ss'|'other', weekId }
+  eventWeekSort: null, // { type, weekId, dir } — puanlı etkinlik tablolarında (gvg/kodgvg/svs/other) bir hafta sütununun başlığındaki sıralama butonuna tıklanınca kurulur; dir 1: en yüksekten en düşüğe, -1: tersi (bkz. setEventWeekSort/sortMembersForWeek)
   powerAiDraft: null, // { memberId: yeni güç } — "AI ile Güç Güncelle" sonucu (artışlar), "Uygula"ya basılana kadar hiçbir şey kaydedilmez (bkz. members.js)
   powerAiSuspicious: null, // { memberId: yeni güç } — düşüş veya aşırı sıçrama, tek tek ✓/✕ onay bekler (bkz. members.js -> isSuspiciousPowerReading)
   powerAiUnmatched: null, // [{ rawName, details }] — ekran görüntüsünde görülen ama roster'da eşleşmeyen satırlar
@@ -263,7 +264,7 @@ ebParticipationWord:'Katılım', ebFootnote:'%50\'nin altındaysan daha çok etk
     confirmApproveNameSuggestion:'Bu ismi onaylayıp üyenin kayıtlı adını değiştirmek istiyor musunuz?', confirmDismissNameSuggestion:'Bu öneriyi reddetmek istediğinize emin misiniz?',
     toastNameSuggestionApproved:'İsim değişikliği onaylandı.', toastNameSuggestionDismissed:'Öneri reddedildi.',
     nameSuggestionMemberGone:'Bu öneriyi yapan üye artık listede yok.',
-    weekReport:'Hafta Raporu', zoneGreen:'Yeşil Bölge', zoneYellow:'Sarı Bölge', zoneRed:'Kırmızı Bölge',
+    weekReport:'Hafta Raporu', sortByWeekTitle:'Bu haftaya göre sırala', zoneGreen:'Yeşil Bölge', zoneYellow:'Sarı Bölge', zoneRed:'Kırmızı Bölge',
     weekEditTitle:'Haftayı Düzenle', eventEditTitle:'Etkinliği Düzenle',
     overallReportBtn:'📊 Genel Rapor', overallReport:'Genel Rapor', thWeeks:'Haftalar',
     thTeam:'1. Takım', lblTeamPower:'1. Takım Gücü', lblTeamElement:'1. Takım Elementi',
@@ -385,7 +386,7 @@ ebParticipationWord:'Participation', ebFootnote:'If you\'re under 50%, consider 
     confirmApproveNameSuggestion:"Approve this name and change the member's recorded name?", confirmDismissNameSuggestion:'Are you sure you want to reject this suggestion?',
     toastNameSuggestionApproved:'Name change approved.', toastNameSuggestionDismissed:'Suggestion rejected.',
     nameSuggestionMemberGone:'The member who made this suggestion is no longer in the list.',
-    weekReport:'Week Report', zoneGreen:'Green Zone', zoneYellow:'Yellow Zone', zoneRed:'Red Zone',
+    weekReport:'Week Report', sortByWeekTitle:'Sort by this week', zoneGreen:'Green Zone', zoneYellow:'Yellow Zone', zoneRed:'Red Zone',
     weekEditTitle:'Edit Week', eventEditTitle:'Edit Event',
     overallReportBtn:'📊 Overall Report', overallReport:'Overall Report', thWeeks:'Weeks',
     thTeam:'1st Team', lblTeamPower:'1st Team Power', lblTeamElement:'1st Team Element',
@@ -507,7 +508,7 @@ ebParticipationWord:'Teilnahme', ebFootnote:'Bist du unter 50%, nimm an mehr Eve
     confirmApproveNameSuggestion:'Diesen Namen genehmigen und den gespeicherten Namen des Mitglieds ändern?', confirmDismissNameSuggestion:'Diesen Vorschlag wirklich ablehnen?',
     toastNameSuggestionApproved:'Namensänderung genehmigt.', toastNameSuggestionDismissed:'Vorschlag abgelehnt.',
     nameSuggestionMemberGone:'Das Mitglied, das diesen Vorschlag gemacht hat, ist nicht mehr in der Liste.',
-    weekReport:'Wochenbericht', zoneGreen:'Grüne Zone', zoneYellow:'Gelbe Zone', zoneRed:'Rote Zone',
+    weekReport:'Wochenbericht', sortByWeekTitle:'Nach dieser Woche sortieren', zoneGreen:'Grüne Zone', zoneYellow:'Gelbe Zone', zoneRed:'Rote Zone',
     weekEditTitle:'Woche bearbeiten', eventEditTitle:'Event bearbeiten',
     overallReportBtn:'📊 Gesamtbericht', overallReport:'Gesamtbericht', thWeeks:'Wochen',
     thTeam:'1. Team', lblTeamPower:'1. Team-Stärke', lblTeamElement:'1. Team-Element',
@@ -629,7 +630,7 @@ ebParticipationWord:'Participación', ebFootnote:'¡Si estás por debajo del 50%
     confirmApproveNameSuggestion:'¿Aprobar este nombre y cambiar el nombre registrado del miembro?', confirmDismissNameSuggestion:'¿Seguro que quieres rechazar esta sugerencia?',
     toastNameSuggestionApproved:'Cambio de nombre aprobado.', toastNameSuggestionDismissed:'Sugerencia rechazada.',
     nameSuggestionMemberGone:'El miembro que hizo esta sugerencia ya no está en la lista.',
-    weekReport:'Informe Semanal', zoneGreen:'Zona Verde', zoneYellow:'Zona Amarilla', zoneRed:'Zona Roja',
+    weekReport:'Informe Semanal', sortByWeekTitle:'Ordenar por esta semana', zoneGreen:'Zona Verde', zoneYellow:'Zona Amarilla', zoneRed:'Zona Roja',
     weekEditTitle:'Editar semana', eventEditTitle:'Editar evento',
     overallReportBtn:'📊 Informe General', overallReport:'Informe General', thWeeks:'Semanas',
     thTeam:'1er Equipo', lblTeamPower:'Poder del 1er Equipo', lblTeamElement:'Elemento del 1er Equipo',
@@ -751,7 +752,7 @@ ebParticipationWord:'Participation', ebFootnote:"Si tu es en dessous de 50%, pen
     confirmApproveNameSuggestion:"Approuver ce nom et changer le nom enregistré du membre ?", confirmDismissNameSuggestion:'Voulez-vous vraiment rejeter cette suggestion ?',
     toastNameSuggestionApproved:'Changement de nom approuvé.', toastNameSuggestionDismissed:'Suggestion rejetée.',
     nameSuggestionMemberGone:"Le membre qui a fait cette suggestion n'est plus dans la liste.",
-    weekReport:'Rapport Hebdomadaire', zoneGreen:'Zone Verte', zoneYellow:'Zone Jaune', zoneRed:'Zone Rouge',
+    weekReport:'Rapport Hebdomadaire', sortByWeekTitle:'Trier par cette semaine', zoneGreen:'Zone Verte', zoneYellow:'Zone Jaune', zoneRed:'Zone Rouge',
     weekEditTitle:'Modifier la semaine', eventEditTitle:"Modifier l'événement",
     overallReportBtn:'📊 Rapport Global', overallReport:'Rapport Global', thWeeks:'Semaines',
     thTeam:'1ère Équipe', lblTeamPower:'Puissance de la 1ère Équipe', lblTeamElement:'Élément de la 1ère Équipe',
@@ -873,7 +874,7 @@ ebParticipationWord:'Tham gia', ebFootnote:'Nếu bạn dưới 50%, hãy tham g
     confirmApproveNameSuggestion:'Duyệt tên này và thay đổi tên đã lưu của thành viên?', confirmDismissNameSuggestion:'Bạn có chắc muốn từ chối đề xuất này không?',
     toastNameSuggestionApproved:'Đã duyệt đổi tên.', toastNameSuggestionDismissed:'Đã từ chối đề xuất.',
     nameSuggestionMemberGone:'Thành viên đã gửi đề xuất này không còn trong danh sách.',
-    weekReport:'Báo cáo Tuần', zoneGreen:'Vùng Xanh', zoneYellow:'Vùng Vàng', zoneRed:'Vùng Đỏ',
+    weekReport:'Báo cáo Tuần', sortByWeekTitle:'Sắp xếp theo tuần này', zoneGreen:'Vùng Xanh', zoneYellow:'Vùng Vàng', zoneRed:'Vùng Đỏ',
     weekEditTitle:'Sửa Tuần', eventEditTitle:'Sửa Sự kiện',
     overallReportBtn:'📊 Báo cáo Tổng quan', overallReport:'Báo cáo Tổng quan', thWeeks:'Các Tuần',
     thTeam:'Đội 1', lblTeamPower:'Sức mạnh Đội 1', lblTeamElement:'Nguyên tố Đội 1',
@@ -1563,6 +1564,46 @@ export function sumGvgPoints(store, memberId) {
 /** Bir üyenin "katıldı" işaretli kayıtlarındaki toplam puanını hesaplar (SVS/Diğer). */
 export function sumStatusPoints(store, memberId) {
   return store.entries.filter((e) => e.memberId === memberId && statusOf(e) === "joined").reduce((sum, e) => sum + (Number(e.points) || 0), 0);
+}
+
+// =====================================================================
+// HAFTA SÜTUNU BAŞLIĞINDAN SIRALAMA (puanlı etkinlikler — gvg/kodgvg/svs/other)
+// =====================================================================
+// SS/King of Desert'te sayısal bir puan olmadığı için (grup/katılım) bu
+// sıralama onlara uygulanmaz. Sıralanan liste zaten filteredSortedMembers()
+// (rütbe -> isim) sırasıyla geldiği için, eşit puanlı üyeler arasında bu
+// sıra korunur (Array.prototype.sort kararlıdır).
+
+/** Bir üyenin belirli bir hafta+etkinlikteki, sıralamada kullanılacak puanı — GVG/KOD-GVG'de doğrudan puan, SVS/Diğer'de sadece "katıldı" işaretliyse puanı (sumStatusPoints ile aynı kural), yoksa 0. */
+function weekSortValue(type, store, member, week) {
+  const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === week.id);
+  if (!entry) return 0;
+  if (type === "gvg" || type === "kodgvg") return Number(entry.points) || 0;
+  return statusOf(entry) === "joined" ? (Number(entry.points) || 0) : 0;
+}
+
+/** `members` listesini, bu etkinlik türü için aktif bir hafta sıralaması kuruluysa (bkz. setEventWeekSort) o haftanın puanına göre yeniden sıralar; aktif değilse (ya da o hafta artık yoksa) listeyi olduğu gibi döndürür. */
+export function sortMembersForWeek(type, store, members) {
+  const s = state.eventWeekSort;
+  if (!s || s.type !== type) return members;
+  const week = store.weeks.find((w) => w.id === s.weekId);
+  if (!week) return members;
+  return [...members].sort((a, b) => (weekSortValue(type, store, b, week) - weekSortValue(type, store, a, week)) * s.dir);
+}
+
+/** Bir hafta başlığındaki sıralama ikonunu (etkin değilse nötr, etkinse yönü) döndürür — bkz. gvg.js/kodgvg.js/svs.js render fonksiyonları. */
+export function weekSortIcon(type, weekId) {
+  const s = state.eventWeekSort;
+  if (!s || s.type !== type || s.weekId !== weekId) return "⇅";
+  return s.dir === 1 ? "▼" : "▲";
+}
+
+/** Bir hafta başlığındaki sıralama butonuna tıklanınca çağrılır: aynı hafta zaten aktifse yönü ters çevirir, değilse o haftayı (en yüksek puandan başlayarak) aktif sıralama yapar. */
+export function setEventWeekSort(type, weekId) {
+  const s = state.eventWeekSort;
+  if (s && s.type === type && s.weekId === weekId) s.dir *= -1;
+  else state.eventWeekSort = { type, weekId, dir: 1 };
+  renderAll();
 }
 
 /** SVS/Diğer türü bir üyenin katılım oranını (x/y) hesaplar; gerçek kaydı olan haftalar muaf sayılmaz. */
