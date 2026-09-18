@@ -661,17 +661,18 @@ function reportSection(title, color, names) {
   </div>`;
 }
 
-/** SVS/KoD/Diğer türü haftalık rapor: katıldı/katılmadı listeleri. */
-function buildStatusReportHtml(store, week, members) {
+/** SVS/KoD/Diğer türü haftalık rapor: katıldı/katılmadı listeleri. SVS/Diğer'de katılanlar puana göre (en yüksek önce) sıralanır — KoD'da puan kavramı olmadığından (bkz. mapEntry) rütbe/isim sırasında bırakılır. */
+function buildStatusReportHtml(type, store, week, members) {
   const joined = [];
   const absent = [];
   members.forEach((member) => {
     const entry = memberEntryFor(store, member.id, week.id);
     const status = statusOf(entry);
-    if (status === "joined") joined.push(member.name);
+    if (status === "joined") joined.push({ name: member.name, points: entry ? (Number(entry.points) || 0) : 0 });
     else if (status === "absent") absent.push(entry.excused ? member.name + " (M)" : member.name);
   });
-  return reportSection(t("legendJoined"), "var(--success-ink)", joined)
+  const joinedNames = type === "kod" ? joined.map((j) => j.name) : joined.sort((a, b) => b.points - a.points).map((j) => j.name);
+  return reportSection(t("legendJoined"), "var(--success-ink)", joinedNames)
     + reportSection(t("legendNotJoined"), "var(--danger-ink)", absent);
 }
 
@@ -723,17 +724,18 @@ function buildSsReportHtml(store, week, members) {
   return appliedHtml + groupsHtml;
 }
 
-/** GVG türü haftalık rapor: puana göre yeşil/sarı/kırmızı bölge listeleri. */
+/** GVG/KOD-GVG türü haftalık rapor: puana göre (bölge içinde en yüksek önce) yeşil/sarı/kırmızı bölge listeleri. */
 function buildGvgReportHtml(store, week, members) {
   const zones = { "pill-green": [], "pill-yellow": [], "pill-red": [] };
   members.forEach((member) => {
     const entry = memberEntryFor(store, member.id, week.id);
     const points = entry ? (Number(entry.points) || 0) : 0;
-    zones[gvgColorClass(points)].push(member.name + " (" + formatPower(points) + ")");
+    zones[gvgColorClass(points)].push({ name: member.name, points });
   });
-  return reportSection(t("zoneGreen"), "var(--success-ink)", zones["pill-green"])
-    + reportSection(t("zoneYellow"), "var(--warn-ink)", zones["pill-yellow"])
-    + reportSection(t("zoneRed"), "var(--danger-ink)", zones["pill-red"]);
+  const toLabels = (list) => list.sort((a, b) => b.points - a.points).map((m) => m.name + " (" + formatPower(m.points) + ")");
+  return reportSection(t("zoneGreen"), "var(--success-ink)", toLabels(zones["pill-green"]))
+    + reportSection(t("zoneYellow"), "var(--warn-ink)", toLabels(zones["pill-yellow"]))
+    + reportSection(t("zoneRed"), "var(--danger-ink)", toLabels(zones["pill-red"]));
 }
 
 /** Herkesin görebildiği, salt okunur haftalık katılım/puan raporunu açar. */
@@ -745,7 +747,7 @@ export function openWeekReportModal(type, weekId) {
   const members = filteredSortedMembers();
   const bodyHtml = type === "ss" ? buildSsReportHtml(store, week, members)
     : (type === "gvg" || type === "kodgvg") ? buildGvgReportHtml(store, week, members)
-    : buildStatusReportHtml(store, week, members);
+    : buildStatusReportHtml(type, store, week, members);
   document.getElementById("weekReportBody").innerHTML = bodyHtml;
   document.getElementById("weekReportOverlay").classList.add("active");
 }
