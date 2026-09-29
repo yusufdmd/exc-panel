@@ -204,14 +204,19 @@ export async function getMigrationLeads() {
   return data;
 }
 
+/**
+ * Bilerek `.select()` ZİNCİRLEMEZ: migration_leads'i artık sadece admin
+ * okuyabilir (bkz. sql/add_member_role.sql RLS düzeltmesi), bu yüzden giriş
+ * yapmamış bir ziyaretçinin (genel site formu) INSERT'ine Supabase'in
+ * eklenen satırı geri döndürmeye çalışması (RETURNING) RLS'e takılıp
+ * hataya neden olur — eklenen satırın kendisine zaten ihtiyaç yok (bkz.
+ * js/landing.js -> submitLead, dönen değeri hiç kullanmıyor). Aynı desen
+ * createNameSuggestion'da da var.
+ */
 export async function createMigrationLead(payload) {
-  const { data, error } = await supabase
-    .from("migration_leads")
-    .insert(payload)
-    .select()
-    .single();
+  const { error } = await supabase.from("migration_leads").insert(payload);
   if (error) dbError("Göç başvurusu gönderilemedi", error);
-  return data;
+  return true;
 }
 
 export async function deleteMigrationLead(id) {
