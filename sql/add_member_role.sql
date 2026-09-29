@@ -12,6 +12,16 @@
 --    `users` tablosunda eşleşen bir kayıt yoksa (mevcut TÜM admin
 --    hesapları böyledir — bu tablo şimdiye kadar hiç kullanılmamıştı)
 --    geriye dönük uyumluluk için 'admin' varsayılır.
+--
+--    KRİTİK DÜZELTME (2026-09-29): Önceki sürüm `auth.role() = 'authenticated'`
+--    kontrolü yapmadan doğrudan `users` tablosuna bakıyordu. Hiç giriş
+--    yapmamış (anon) bir istekte `auth.uid()` NULL olur, `users` tablosunda
+--    eşleşme bulunamaz ve coalesce geriye 'admin' döndürürdü — yani
+--    "sadece admin görebilir" diye yazılmış HER RLS politikası (migration_leads,
+--    migration_prospects, activity_logs, settings, users, migration_periods)
+--    aslında hiç giriş yapılmadan herkese açıktı. Şimdi anon istekler için
+--    NULL dönüyor — `current_user_role() = 'admin'` karşılaştırması NULL
+--    olduğunda RLS'te "false" sayılır, yani erişim doğru şekilde reddedilir.
 -- ---------------------------------------------------------------------
 create or replace function public.current_user_role()
 returns text
@@ -20,10 +30,13 @@ stable
 security definer
 set search_path = public
 as $$
-  select coalesce(
-    (select role from users where auth_user_id = auth.uid() limit 1),
-    'admin'
-  );
+  select case
+    when auth.role() <> 'authenticated' then null
+    else coalesce(
+      (select role from users where auth_user_id = auth.uid() limit 1),
+      'admin'
+    )
+  end;
 $$;
 
 grant execute on function public.current_user_role() to authenticated;
