@@ -249,6 +249,10 @@ ebParticipationWord:'Katılım', ebFootnote:'%50\'nin altındaysan daha çok etk
     gateDesc:'Bu panele giriş yapmak için hesabınızla oturum açın.',
     loginFailed:'Giriş başarısız.', loginSuccess:'Giriş yapıldı.', logoutSuccess:'Çıkış yapıldı.',
     emailPasswordRequired:'Kullanıcı adı ve şifre gerekli.', viewOnlyLabel:'Salt okunur',
+    changePasswordMenuLabel:'Şifre Değiştir', changePasswordTitle:'Şifremi Değiştir',
+    lblCurrentPassword:'Mevcut Şifre', lblNewPassword:'Yeni Şifre', lblConfirmNewPassword:'Yeni Şifre (Tekrar)', changePasswordBtn:'Değiştir',
+    msgPasswordsDontMatch:'Yeni şifreler eşleşmiyor.', msgPasswordTooShort:'Şifre en az 8 karakter olmalı.',
+    msgCurrentPasswordWrong:'Mevcut şifre yanlış.', toastPasswordChanged:'Şifreniz değiştirildi.',
     previousNames:'Önceki Kullanıcı Adları',
     userChangedHistoryLabel:'🔄 Kullanıcı Değişti — Önceki Kullanıcı',
     lblUserChanged:'Kullanıcı Değişikliği', userChangedBtn:'🔄 Kullanıcı Değişti',
@@ -371,6 +375,10 @@ ebParticipationWord:'Participation', ebFootnote:'If you\'re under 50%, consider 
     gateDesc:'Sign in with your account to access this panel.',
     loginFailed:'Sign-in failed.', loginSuccess:'Signed in.', logoutSuccess:'Signed out.',
     emailPasswordRequired:'Username and password are required.', viewOnlyLabel:'View only',
+    changePasswordMenuLabel:'Change Password', changePasswordTitle:'Change My Password',
+    lblCurrentPassword:'Current Password', lblNewPassword:'New Password', lblConfirmNewPassword:'Confirm New Password', changePasswordBtn:'Change',
+    msgPasswordsDontMatch:'The new passwords do not match.', msgPasswordTooShort:'Password must be at least 8 characters.',
+    msgCurrentPasswordWrong:'Current password is incorrect.', toastPasswordChanged:'Your password has been changed.',
     previousNames:'Previous Usernames',
     userChangedHistoryLabel:'🔄 User Changed — Previous User',
     lblUserChanged:'User Change', userChangedBtn:'🔄 User Changed',
@@ -493,6 +501,10 @@ ebParticipationWord:'Teilnahme', ebFootnote:'Bist du unter 50%, nimm an mehr Eve
     gateDesc:'Melden Sie sich mit Ihrem Konto an, um auf dieses Panel zuzugreifen.',
     loginFailed:'Anmeldung fehlgeschlagen.', loginSuccess:'Angemeldet.', logoutSuccess:'Abgemeldet.',
     emailPasswordRequired:'Benutzername und Passwort sind erforderlich.', viewOnlyLabel:'Nur Ansicht',
+    changePasswordMenuLabel:'Passwort ändern', changePasswordTitle:'Passwort ändern',
+    lblCurrentPassword:'Aktuelles Passwort', lblNewPassword:'Neues Passwort', lblConfirmNewPassword:'Neues Passwort (Wiederholen)', changePasswordBtn:'Ändern',
+    msgPasswordsDontMatch:'Die neuen Passwörter stimmen nicht überein.', msgPasswordTooShort:'Das Passwort muss mindestens 8 Zeichen lang sein.',
+    msgCurrentPasswordWrong:'Das aktuelle Passwort ist falsch.', toastPasswordChanged:'Ihr Passwort wurde geändert.',
     previousNames:'Frühere Benutzernamen',
     userChangedHistoryLabel:'🔄 Nutzer gewechselt — Vorheriger Nutzer',
     lblUserChanged:'Nutzerwechsel', userChangedBtn:'🔄 Nutzer gewechselt',
@@ -615,6 +627,10 @@ ebParticipationWord:'Participación', ebFootnote:'¡Si estás por debajo del 50%
     gateDesc:'Inicie sesión con su cuenta para acceder a este panel.',
     loginFailed:'Error al iniciar sesión.', loginSuccess:'Sesión iniciada.', logoutSuccess:'Sesión cerrada.',
     emailPasswordRequired:'Nombre de usuario y contraseña son obligatorios.', viewOnlyLabel:'Solo lectura',
+    changePasswordMenuLabel:'Cambiar Contraseña', changePasswordTitle:'Cambiar Mi Contraseña',
+    lblCurrentPassword:'Contraseña Actual', lblNewPassword:'Nueva Contraseña', lblConfirmNewPassword:'Confirmar Nueva Contraseña', changePasswordBtn:'Cambiar',
+    msgPasswordsDontMatch:'Las nuevas contraseñas no coinciden.', msgPasswordTooShort:'La contraseña debe tener al menos 8 caracteres.',
+    msgCurrentPasswordWrong:'La contraseña actual es incorrecta.', toastPasswordChanged:'Tu contraseña ha sido cambiada.',
     previousNames:'Nombres de usuario anteriores',
     userChangedHistoryLabel:'🔄 Usuario Cambiado — Usuario Anterior',
     lblUserChanged:'Cambio de Usuario', userChangedBtn:'🔄 Usuario Cambiado',
@@ -737,6 +753,10 @@ ebParticipationWord:'Participation', ebFootnote:"Si tu es en dessous de 50%, pen
     gateDesc:'Connectez-vous avec votre compte pour accéder à ce panneau.',
     loginFailed:'Échec de la connexion.', loginSuccess:'Connecté.', logoutSuccess:'Déconnecté.',
     emailPasswordRequired:"Le nom d'utilisateur et le mot de passe sont requis.", viewOnlyLabel:'Lecture seule',
+    changePasswordMenuLabel:'Changer le Mot de Passe', changePasswordTitle:'Changer Mon Mot de Passe',
+    lblCurrentPassword:'Mot de Passe Actuel', lblNewPassword:'Nouveau Mot de Passe', lblConfirmNewPassword:'Confirmer le Nouveau Mot de Passe', changePasswordBtn:'Changer',
+    msgPasswordsDontMatch:'Les nouveaux mots de passe ne correspondent pas.', msgPasswordTooShort:'Le mot de passe doit comporter au moins 8 caractères.',
+    msgCurrentPasswordWrong:'Le mot de passe actuel est incorrect.', toastPasswordChanged:'Votre mot de passe a été changé.',
     previousNames:"Anciens noms d'utilisateur",
     userChangedHistoryLabel:"🔄 Utilisateur Changé — Utilisateur Précédent",
     lblUserChanged:"Changement d'utilisateur", userChangedBtn:'🔄 Utilisateur Changé',
@@ -859,6 +879,10 @@ ebParticipationWord:'Tham gia', ebFootnote:'Nếu bạn dưới 50%, hãy tham g
     gateDesc:'Đăng nhập bằng tài khoản của bạn để truy cập bảng điều khiển này.',
     loginFailed:'Đăng nhập thất bại.', loginSuccess:'Đã đăng nhập.', logoutSuccess:'Đã đăng xuất.',
     emailPasswordRequired:'Tên người dùng và mật khẩu là bắt buộc.', viewOnlyLabel:'Chỉ xem',
+    changePasswordMenuLabel:'Đổi Mật Khẩu', changePasswordTitle:'Đổi Mật Khẩu',
+    lblCurrentPassword:'Mật Khẩu Hiện Tại', lblNewPassword:'Mật Khẩu Mới', lblConfirmNewPassword:'Xác Nhận Mật Khẩu Mới', changePasswordBtn:'Đổi',
+    msgPasswordsDontMatch:'Mật khẩu mới không khớp.', msgPasswordTooShort:'Mật khẩu phải có ít nhất 8 ký tự.',
+    msgCurrentPasswordWrong:'Mật khẩu hiện tại không đúng.', toastPasswordChanged:'Mật khẩu của bạn đã được thay đổi.',
     previousNames:'Tên người dùng Trước đây',
     userChangedHistoryLabel:'🔄 Đã Đổi Người dùng — Người dùng Trước',
     lblUserChanged:'Đổi Người dùng', userChangedBtn:'🔄 Đã Đổi Người dùng',
@@ -1058,6 +1082,13 @@ export function applyStaticText() {
   document.getElementById("t_gateSubmit").textContent = t("loginBtn");
   document.getElementById("t_gateBackToSite").textContent = t("backToSite");
   document.getElementById("t_logoutBtn").textContent = t("logoutBtn");
+  document.getElementById("t_changePasswordMenuLabel").textContent = t("changePasswordMenuLabel");
+  document.getElementById("t_changePasswordTitle").textContent = t("changePasswordTitle");
+  document.getElementById("t_lblCurrentPassword").textContent = t("lblCurrentPassword");
+  document.getElementById("t_lblNewPassword").textContent = t("lblNewPassword");
+  document.getElementById("t_lblConfirmNewPassword").textContent = t("lblConfirmNewPassword");
+  document.getElementById("t_cancelChangePassword").textContent = t("cancel");
+  document.getElementById("t_submitChangePassword").textContent = t("changePasswordBtn");
   document.getElementById("t_tabMigration").textContent = t("tabMigration");
   document.getElementById("t_tabActivity").textContent = t("tabActivity");
   document.getElementById("t_thWhen").textContent = t("thWhen");
@@ -1754,6 +1785,7 @@ export function updateAdminUI() {
   const loggedIn = state.isAdmin || state.isMember;
   document.body.classList.toggle("is-admin", state.isAdmin);
   document.getElementById("logoutBtn").style.display = loggedIn ? "" : "none";
+  document.getElementById("changePasswordBtn").style.display = loggedIn ? "" : "none";
   const statusEl = document.getElementById("authStatus");
   if (!statusEl) return;
   if (state.isAdmin) statusEl.textContent = state.currentAdminUsername || t("logoutBtn");

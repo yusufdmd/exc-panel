@@ -37,7 +37,7 @@ import { mapSiteLinks, populateSiteLinksForm, saveSiteLinks } from "./siteLinks.
 import { mapNewsItem, openNewsModal, closeNewsModal, saveNews, deleteNews } from "./news.js";
 import { mapVideoItem, openVideoModal, closeVideoModal, saveVideo, deleteVideo, moveVideo } from "./videos.js";
 import { mapActivity, restoreDeletedMember, restoreDeletedWeek, restoreDeletedSimple, showActivityDetails, closeActivityDetails } from "./activity.js";
-import { doLogin, doLogout } from "./auth.js";
+import { doLogin, doLogout, openChangePasswordModal, closeChangePasswordModal, submitChangePassword } from "./auth.js";
 import "./gvg.js";
 import "./svs.js";
 import "./ss.js";
@@ -297,7 +297,7 @@ Object.assign(window, {
   openNewsModal, closeNewsModal, saveNews, deleteNews,
   openVideoModal, closeVideoModal, saveVideo, deleteVideo, moveVideo,
   selectPanelMode, backToChooser,
-  doLogin, doLogout, toggleTheme,
+  doLogin, doLogout, toggleTheme, openChangePasswordModal, closeChangePasswordModal, submitChangePassword,
   restoreDeletedMember, restoreDeletedWeek, restoreDeletedSimple, showActivityDetails, closeActivityDetails
 });
 

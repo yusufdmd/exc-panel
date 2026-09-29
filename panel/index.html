@@ -66,6 +66,9 @@
       <div class="sync" id="authBox">
         <span id="authStatus">…</span>
       </div>
+      <button class="btn-refresh" id="changePasswordBtn" onclick="openChangePasswordModal()" style="display:none;">
+        <span id="t_changePasswordMenuLabel">Şifre Değiştir</span>
+      </button>
       <button class="btn-refresh" id="logoutBtn" onclick="doLogout()" style="display:none;">
         <span id="t_logoutBtn">Çıkış Yap</span>
       </button>
@@ -579,6 +582,29 @@
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closeNameSuggestModal()" id="t_cancelNs">Vazgeç</button>
       <button class="btn-primary" onclick="submitNameSuggestion()" id="t_submitNs">Gönder</button>
+    </div>
+  </div>
+</div>
+
+<!-- Şifre Değiştir Modalı — giriş yapmış herkes (admin/üye) kendi şifresini değiştirebilir -->
+<div class="overlay" id="changePasswordOverlay">
+  <div class="modal">
+    <h2 id="t_changePasswordTitle">Şifremi Değiştir</h2>
+    <div class="field">
+      <label id="t_lblCurrentPassword">Mevcut Şifre</label>
+      <input id="cpCurrentPassword" type="password" autocomplete="current-password">
+    </div>
+    <div class="field">
+      <label id="t_lblNewPassword">Yeni Şifre</label>
+      <input id="cpNewPassword" type="password" autocomplete="new-password">
+    </div>
+    <div class="field">
+      <label id="t_lblConfirmNewPassword">Yeni Şifre (Tekrar)</label>
+      <input id="cpConfirmPassword" type="password" autocomplete="new-password" onkeydown="if(event.key==='Enter') submitChangePassword();">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeChangePasswordModal()" id="t_cancelChangePassword">Vazgeç</button>
+      <button class="btn-primary" onclick="submitChangePassword()" id="t_submitChangePassword">Değiştir</button>
     </div>
   </div>
 </div>

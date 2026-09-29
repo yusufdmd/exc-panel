@@ -120,3 +120,78 @@ export async function doLogout() {
   await supabase.auth.signOut();
   showToast(t("logoutSuccess"));
 }
+
+// =====================================================================
+// ŞİFRE DEĞİŞTİRME — herhangi bir admin/üye, panelden çıkmadan kendi
+// şifresini değiştirebilir (bkz. panel/index.html -> changePasswordOverlay).
+// Supabase'in updateUser çağrısı zaten SADECE o an oturumu kimin açtıysa
+// onun şifresini değiştirir — başka bir hesabı hedeflemek teknik olarak
+// mümkün değil (Supabase bunu sunucu tarafında, jetonun sahibine göre
+// zorunlu kılar). Buna ek olarak, burada BİLEREK mevcut şifre de istenip
+// (signInWithPassword ile) doğrulanıyor — aksi halde biri kilitlenmemiş/
+// açık kalmış bir oturumu (ör. paylaşılan bir bilgisayarda) bulup mevcut
+// şifreyi hiç bilmeden yeni bir şifre koyup asıl sahibini dışarıda
+// bırakabilirdi (bkz. 2026-09-29 olayı — bir hesabın ele geçirilmesi/
+// kilitlenmesi riskini büyüten tam da bu tür bir şeydi).
+// =====================================================================
+
+const MIN_NEW_PASSWORD_LENGTH = 8;
+
+export function openChangePasswordModal() {
+  document.getElementById("cpCurrentPassword").value = "";
+  document.getElementById("cpNewPassword").value = "";
+  document.getElementById("cpConfirmPassword").value = "";
+  document.getElementById("changePasswordOverlay").classList.add("active");
+}
+
+export function closeChangePasswordModal() {
+  // Şifre alanlarını DOM'da bırakmamak için kapanışta da temizleniyor.
+  document.getElementById("cpCurrentPassword").value = "";
+  document.getElementById("cpNewPassword").value = "";
+  document.getElementById("cpConfirmPassword").value = "";
+  document.getElementById("changePasswordOverlay").classList.remove("active");
+}
+
+export async function submitChangePassword() {
+  const currentPassword = document.getElementById("cpCurrentPassword").value;
+  const newPassword = document.getElementById("cpNewPassword").value;
+  const confirmPassword = document.getElementById("cpConfirmPassword").value;
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    showToast(t("emailPasswordRequired"));
+    return;
+  }
+  if (newPassword !== confirmPassword) {
+    showToast(t("msgPasswordsDontMatch"));
+    return;
+  }
+  if (newPassword.length < MIN_NEW_PASSWORD_LENGTH) {
+    showToast(t("msgPasswordTooShort"));
+    return;
+  }
+
+  const { data: sessionData } = await supabase.auth.getSession();
+  const email = sessionData && sessionData.session && sessionData.session.user ? sessionData.session.user.email : "";
+  if (!email) {
+    showToast(t("loginFailed"));
+    return;
+  }
+
+  // Mevcut şifreyi, oturumu bozmadan doğrulamanın yolu: aynı hesapla
+  // tekrar signInWithPassword denemek. Yanlışsa hata döner, oturum
+  // etkilenmez; doğruysa zaten hâlâ aynı oturumdayız.
+  const { error: verifyError } = await supabase.auth.signInWithPassword({ email, password: currentPassword });
+  if (verifyError) {
+    showToast(t("msgCurrentPasswordWrong"));
+    return;
+  }
+
+  const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+  if (updateError) {
+    showToast(t("loginFailed"));
+    return;
+  }
+
+  closeChangePasswordModal();
+  showToast(t("toastPasswordChanged"));
+}
