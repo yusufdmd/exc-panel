@@ -15,7 +15,7 @@ security definer
 as $$
 begin
   perform net.http_post(
-    url := 'https://exc-panel-6jgp.vercel.app/api/notify-migration-lead',
+    url := 'https://exc-panel.vercel.app/api/notify-migration-lead',
     headers := '{"Content-Type": "application/json"}'::jsonb,
     body := jsonb_build_object(
       'name', new.name,
