@@ -133,11 +133,21 @@ export async function doLogout() {
 // şifreyi hiç bilmeden yeni bir şifre koyup asıl sahibini dışarıda
 // bırakabilirdi (bkz. 2026-09-29 olayı — bir hesabın ele geçirilmesi/
 // kilitlenmesi riskini büyüten tam da bu tür bir şeydi).
+//
+// SADECE ADMİN: "exc" (viewer) TÜM lonca üyelerinin paylaştığı TEK bir
+// giriş — bu hesap kendi şifresini değiştirebilseydi, o şifreyi bilen
+// HERHANGİ BİR üye, aynı şifreyi bilen diğer HERKESİ tek taraflı olarak
+// (kazayla ya da bilerek) dışarıda bırakabilirdi. Admin hesapları tek
+// kişiye ait olduğu için onlarda sorun yok, ama paylaşılan hesap için bu
+// özellik tamamen kapatılıyor — hem butonun görünürlüğünde (updateAdminUI)
+// hem de burada (fonksiyonun kendisinde, biri doğrudan konsoldan
+// çağırmaya kalkarsa diye) çift kontrol var.
 // =====================================================================
 
 const MIN_NEW_PASSWORD_LENGTH = 8;
 
 export function openChangePasswordModal() {
+  if (!state.isAdmin) return;
   document.getElementById("cpCurrentPassword").value = "";
   document.getElementById("cpNewPassword").value = "";
   document.getElementById("cpConfirmPassword").value = "";
@@ -153,6 +163,7 @@ export function closeChangePasswordModal() {
 }
 
 export async function submitChangePassword() {
+  if (!state.isAdmin) return; // paylaşılan "exc" (viewer) girişi kendi şifresini değiştiremez — yukarıdaki açıklamaya bkz.
   const currentPassword = document.getElementById("cpCurrentPassword").value;
   const newPassword = document.getElementById("cpNewPassword").value;
   const confirmPassword = document.getElementById("cpConfirmPassword").value;

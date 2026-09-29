@@ -1785,7 +1785,10 @@ export function updateAdminUI() {
   const loggedIn = state.isAdmin || state.isMember;
   document.body.classList.toggle("is-admin", state.isAdmin);
   document.getElementById("logoutBtn").style.display = loggedIn ? "" : "none";
-  document.getElementById("changePasswordBtn").style.display = loggedIn ? "" : "none";
+  // Sadece admin — paylaşılan "exc" (viewer) girişi kendi şifresini
+  // değiştiremez, aksi halde o şifreyi bilen tek bir üye diğer tüm loncayı
+  // dışarıda bırakabilirdi (bkz. auth.js -> submitChangePassword yorumu).
+  document.getElementById("changePasswordBtn").style.display = state.isAdmin ? "" : "none";
   const statusEl = document.getElementById("authStatus");
   if (!statusEl) return;
   if (state.isAdmin) statusEl.textContent = state.currentAdminUsername || t("logoutBtn");
