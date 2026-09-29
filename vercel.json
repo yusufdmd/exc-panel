@@ -37,6 +37,7 @@
     { "path": "/api/cron-reminder?event=gvg1", "schedule": "0 22 * * 6" },
     { "path": "/api/cron-reminder?event=gvg2", "schedule": "0 1 * * 0" },
     { "path": "/api/cron-reminder?event=kodgvg1", "schedule": "0 22 * * 0" },
-    { "path": "/api/cron-reminder?event=kodgvg2", "schedule": "0 1 * * 1" }
+    { "path": "/api/cron-reminder?event=kodgvg2", "schedule": "0 1 * * 1" },
+    { "path": "/api/security-check", "schedule": "0 6 * * *" }
   ]
 }
