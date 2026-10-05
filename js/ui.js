@@ -1089,6 +1089,9 @@ export function applyStaticText() {
   document.getElementById("t_lblConfirmNewPassword").textContent = t("lblConfirmNewPassword");
   document.getElementById("t_cancelChangePassword").textContent = t("cancel");
   document.getElementById("t_submitChangePassword").textContent = t("changePasswordBtn");
+  document.getElementById("t_thLeadColor").textContent = t("thColor");
+  document.getElementById("t_lblProspectContact").textContent = t("thLeadContact");
+  document.getElementById("t_lblProspectMessage").textContent = t("thLeadMessage");
   document.getElementById("t_tabMigration").textContent = t("tabMigration");
   document.getElementById("t_tabActivity").textContent = t("tabActivity");
   document.getElementById("t_thWhen").textContent = t("thWhen");

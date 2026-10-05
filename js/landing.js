@@ -54,6 +54,7 @@ const DICT = {
     fieldName: "Username", fieldGameId: "ID Number", fieldContact: "Contact (Discord, etc.)", fieldServer: "Current Server", fieldPower: "Total Power Level",
     fieldCamp: "Camp Level", fieldTeamPower: "1st Team Power", fieldTeamElement: "1st Team Element",
     powerShorthandHint: "Shortcut: just type the millions part, we'll fill in the rest (e.g. 564 → 564,000,000).",
+    fieldColor: "Migration Color / Rank", colorGold: "Empire Challenger", colorPurple: "Frontier Captain", colorBlue: "Discovery Seeker", colorGray: "Voyager",
     elementWater: "Water", elementFire: "Fire", elementEarth: "Earth", elementElectric: "Electric",
     fieldMessage: "Message (optional)", fieldMessagePh: "Tell us a bit about yourself…",
     submitBtn: "Submit Application",
@@ -78,6 +79,7 @@ const DICT = {
     fieldName: "Kullanıcı Adı", fieldGameId: "ID Numarası", fieldContact: "İletişim (Discord vb.)", fieldServer: "Mevcut Sunucu", fieldPower: "Toplam Güç Seviyesi",
     fieldCamp: "Kamp Seviyesi", fieldTeamPower: "1. Takım Gücü", fieldTeamElement: "1. Takım Elementi",
     powerShorthandHint: "Kısayol: sadece milyon kısmını yaz, gerisini biz tamamlarız (ör. 564 → 564.000.000).",
+    fieldColor: "Göç Rengi / Ünvan", colorGold: "İmparatorluk Rakibi", colorPurple: "Hudut Kaptanı", colorBlue: "Keşif Peşinde", colorGray: "Gezgin",
     elementWater: "Su", elementFire: "Ateş", elementEarth: "Toprak", elementElectric: "Elektrik",
     fieldMessage: "Mesaj (opsiyonel)", fieldMessagePh: "Kendinizden kısaca bahsedin…",
     submitBtn: "Başvuruyu Gönder",
@@ -102,6 +104,7 @@ const DICT = {
     fieldName: "Benutzername", fieldGameId: "ID-Nummer", fieldContact: "Kontakt (Discord usw.)", fieldServer: "Aktueller Server", fieldPower: "Gesamte Machtstufe",
     fieldCamp: "Basisstufe", fieldTeamPower: "1. Team-Stärke", fieldTeamElement: "1. Team-Element",
     powerShorthandHint: "Abkürzung: gib nur die Millionenzahl ein, den Rest ergänzen wir (z. B. 564 → 564.000.000).",
+    fieldColor: "Migrationsfarbe / Rang", colorGold: "Reichsherausforderer", colorPurple: "Grenzkapitän", colorBlue: "Entdeckungssuchender", colorGray: "Reisender",
     elementWater: "Wasser", elementFire: "Feuer", elementEarth: "Erde", elementElectric: "Elektro",
     fieldMessage: "Nachricht (optional)", fieldMessagePh: "Erzähl uns kurz etwas über dich…",
     submitBtn: "Bewerbung Senden",
@@ -126,6 +129,7 @@ const DICT = {
     fieldName: "Nombre de Usuario", fieldGameId: "Número de ID", fieldContact: "Contacto (Discord, etc.)", fieldServer: "Servidor Actual", fieldPower: "Nivel de Poder Total",
     fieldCamp: "Nivel de campamento", fieldTeamPower: "Poder del 1er Equipo", fieldTeamElement: "Elemento del 1er Equipo",
     powerShorthandHint: "Atajo: escribe solo la parte en millones, nosotros completamos el resto (ej. 564 → 564.000.000).",
+    fieldColor: "Color de migración / Rango", colorGold: "Retador del Imperio", colorPurple: "Capitán de Frontera", colorBlue: "Buscador de Descubrimientos", colorGray: "Viajero",
     elementWater: "Agua", elementFire: "Fuego", elementEarth: "Tierra", elementElectric: "Eléctrico",
     fieldMessage: "Mensaje (opcional)", fieldMessagePh: "Cuéntanos un poco sobre ti…",
     submitBtn: "Enviar Solicitud",
@@ -150,6 +154,7 @@ const DICT = {
     fieldName: "Nom d'Utilisateur", fieldGameId: "Numéro d'ID", fieldContact: "Contact (Discord, etc.)", fieldServer: "Serveur Actuel", fieldPower: "Niveau de Puissance Total",
     fieldCamp: "Niveau de camp", fieldTeamPower: "Puissance de la 1ère Équipe", fieldTeamElement: "Élément de la 1ère Équipe",
     powerShorthandHint: "Raccourci : indiquez juste le nombre de millions, on complète le reste (ex. 564 → 564 000 000).",
+    fieldColor: "Couleur de migration / Titre", colorGold: "Challenger de l'Empire", colorPurple: "Capitaine de Frontière", colorBlue: "Chercheur de Découvertes", colorGray: "Voyageur",
     elementWater: "Eau", elementFire: "Feu", elementEarth: "Terre", elementElectric: "Électrique",
     fieldMessage: "Message (optionnel)", fieldMessagePh: "Parlez-nous un peu de vous…",
     submitBtn: "Envoyer la Candidature",
@@ -174,6 +179,7 @@ const DICT = {
     fieldName: "Tên người dùng", fieldGameId: "Số ID", fieldContact: "Liên hệ (Discord, v.v.)", fieldServer: "Máy chủ Hiện tại", fieldPower: "Tổng Sức mạnh",
     fieldCamp: "Cấp độ Trại", fieldTeamPower: "Sức mạnh Đội 1", fieldTeamElement: "Nguyên tố Đội 1",
     powerShorthandHint: "Lối tắt: chỉ cần nhập phần triệu, phần còn lại sẽ tự động điền (vd. 564 → 564.000.000).",
+    fieldColor: "Màu / Danh hiệu di chuyển", colorGold: "Người Thách thức Đế chế", colorPurple: "Đội trưởng Biên cương", colorBlue: "Người Tìm kiếm Khám phá", colorGray: "Người Lữ hành",
     elementWater: "Thủy", elementFire: "Hỏa", elementEarth: "Thổ", elementElectric: "Điện",
     fieldMessage: "Tin nhắn (tùy chọn)", fieldMessagePh: "Hãy cho chúng tôi biết đôi điều về bạn…",
     submitBtn: "Gửi Đơn Đăng ký",
@@ -272,6 +278,17 @@ function buildLeadCampOptions() {
   select.value = current;
 }
 
+/** Başvuru formundaki "Göç Rengi / Ünvan" açılır listesini doldurur — dil değişince etiketler yeniden çizilir, seçim korunur. */
+function buildLeadColorOptions() {
+  const select = document.getElementById("leadColor");
+  if (!select) return;
+  const current = select.value;
+  const colors = ["gold", "purple", "blue", "gray"];
+  const labelKey = { gold: "colorGold", purple: "colorPurple", blue: "colorBlue", gray: "colorGray" };
+  select.innerHTML = `<option value="">—</option>` + colors.map((c) => `<option value="${c}">${t(labelKey[c])}</option>`).join("");
+  select.value = current;
+}
+
 /** Başvuru formundaki "1. Takım Elementi" seçici rozetlerini (yeniden) çizer — dil değişince de çağrılır (tooltip metni için). */
 function buildLeadElementPicker() {
   const container = document.getElementById("leadElementPicker");
@@ -319,6 +336,7 @@ function setLang(lang) {
   buildLangSwitch();
   applyI18n();
   buildLeadElementPicker();
+  buildLeadColorOptions();
   applyLocalizedSectionUrls();
   if (activeKey) history.replaceState(null, "", "#" + SECTION_SLUGS[currentLang][activeKey]);
 }
@@ -334,6 +352,7 @@ function initLang() {
   applyI18n();
   buildLeadCampOptions();
   buildLeadElementPicker();
+  buildLeadColorOptions();
 
   // Sayfa bir bölüm bağlantısıyla (ör. birinin paylaştığı eski #goc linki) açıldıysa,
   // id'leri güncellemeden ÖNCE hangi bölüme ait olduğunu (dili fark etmeksizin) buluyoruz.
@@ -745,12 +764,13 @@ async function submitLead(event) {
   const campLevel = document.getElementById("leadCamp").value || null;
   const teamPowerRaw = expandPowerShorthand(document.getElementById("leadTeamPower").value.trim());
   const teamElement = document.getElementById("leadTeamElement").value || null;
+  const color = document.getElementById("leadColor").value || null;
   const message = document.getElementById("leadMessage").value.trim();
 
   // Mesaj hariç HER alan zorunlu — form artık kendi tarayıcı doğrulamasını
   // (novalidate) kullanmıyor, çünkü o zaman hata sayfanın seçili dilinde
   // değil tarayıcının kendi dilinde görünürdü.
-  if (!name || !gameId || !contact || !serverRaw || !powerRaw || !campLevel || !teamPowerRaw || !teamElement) {
+  if (!name || !gameId || !contact || !serverRaw || !powerRaw || !campLevel || !teamPowerRaw || !teamElement || !color) {
     setFormMessage(t("msgFillRequired"), true);
     return;
   }
@@ -776,6 +796,7 @@ async function submitLead(event) {
       camp_level: campLevel,
       team_power: teamPowerRaw === "" ? null : (Number(teamPowerRaw) || 0),
       team_element: teamElement,
+      color,
       message: message || null
     });
     // Discord bildirimi ARTIK burada gönderilmiyor — tarayıcıdan atılan bir
