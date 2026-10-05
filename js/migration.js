@@ -311,7 +311,7 @@ function renderMigrationLeads() {
       <td class="num-cell">${escapeHtml(lead.campLevel || "—")}</td>
       <td class="num-cell">${lead.teamPower ? `${elementBadge(lead.teamElement, 20)} <span style="vertical-align:middle;">${formatPower(lead.teamPower)}</span>` : "—"}</td>
       <td>${lead.color ? `<span class="rank-badge ${migrationColorClass(lead.color)}">${migrationColorLabel(lead.color)}</span>` : "—"}</td>
-      <td><div class="cell-clip" title="${escapeHtml(lead.message || "")}">${escapeHtml(lead.message || "—")}</div></td>
+      <td><div class="cell-clip" title="${t("clickToExpand")}" onclick="this.classList.toggle('expanded')">${escapeHtml(lead.message || "—")}</div></td>
       <td>${escapeHtml((lead.createdAt || "").slice(0, 10))}</td>
       <td><div class="row-actions">
         <button class="icon-btn" onclick="processLead('${lead.id}')" title="${t("processLeadTitle")}">✅</button>
@@ -364,7 +364,7 @@ export function renderMigration() {
   rowsEl.innerHTML = list.map((p) => `
     <tr class="migration-row-${p.color}">
       <td><span class="rank-badge ${migrationColorClass(p.color)}">${migrationColorLabel(p.color)}</span>${p.score != null ? `<div style="font-size:11px; color:var(--text-dim); margin-top:2px;">${escapeHtml(String(p.score))}</div>` : ""}</td>
-      <td><span class="member-name">${escapeHtml(p.name || "—")}</span>${p.convertedToMember ? `<span class="old-tag">${t("convertedTag")}</span>` : ""}${p.contact ? `<div style="font-size:11px; color:var(--text-dim); white-space:normal; max-width:220px;">${escapeHtml(t("thLeadContact"))}: ${escapeHtml(p.contact)}</div>` : ""}${p.message ? `<div class="cell-clip" title="${escapeHtml(p.message)}" style="font-size:11px; color:var(--text-dim);">${escapeHtml(t("thLeadMessage"))}: ${escapeHtml(p.message)}</div>` : ""}${p.note ? `<div style="font-size:11px; color:var(--text-dim); white-space:normal; max-width:220px;">${escapeHtml(p.note)}</div>` : ""}${p.invitedBy ? `<div style="font-size:11px; color:var(--text-dim); white-space:normal; max-width:220px;">${escapeHtml(t("lblInvitedBy"))}: ${escapeHtml(p.invitedBy)}</div>` : ""}</td>
+      <td><span class="member-name">${escapeHtml(p.name || "—")}</span>${p.convertedToMember ? `<span class="old-tag">${t("convertedTag")}</span>` : ""}${p.contact ? `<div style="font-size:11px; color:var(--text-dim); white-space:normal; max-width:220px;">${escapeHtml(t("thLeadContact"))}: ${escapeHtml(p.contact)}</div>` : ""}${p.message ? `<div class="cell-clip" title="${t("clickToExpand")}" onclick="this.classList.toggle('expanded')" style="font-size:11px; color:var(--text-dim);">${escapeHtml(t("thLeadMessage"))}: ${escapeHtml(p.message)}</div>` : ""}${p.note ? `<div style="font-size:11px; color:var(--text-dim); white-space:normal; max-width:220px;">${escapeHtml(p.note)}</div>` : ""}${p.invitedBy ? `<div style="font-size:11px; color:var(--text-dim); white-space:normal; max-width:220px;">${escapeHtml(t("lblInvitedBy"))}: ${escapeHtml(p.invitedBy)}</div>` : ""}</td>
       <td class="member-id">${escapeHtml(String(p.gameId || "—"))}</td>
       <td class="num-cell" title="${Number(p.power) || 0}">${formatPower(p.power)}</td>
       <td class="num-cell">${escapeHtml(p.campLevel || "—")}</td>
