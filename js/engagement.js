@@ -207,7 +207,7 @@ export function renderEngagement() {
         ${rows.map((row, index) => `
           <tr>
             <td class="sticky-col">${rowNumHtml(index)}<span class="rank-badge ${rankClass(row.member.rank)}" style="font-size:11px;padding:2px 8px;">${row.member.rank}</span></td>
-            <td class="sticky-col member-name" style="left:105px;">${escapeHtml(row.member.name)}</td>
+            <td class="sticky-col member-name" style="left:105px;">${escapeHtml(row.member.name)}${row.winnerRank === 1 ? " 🥇" : row.winnerRank === 2 ? " 🥈" : ""}</td>
             <td class="num-cell">${formatRatio(row.svsPoints, row.svsApplicable)}</td>
             <td class="num-cell">${formatRatio(row.ssPoints, row.ssApplicable)}</td>
             <td class="num-cell">${formatRatio(row.kodPoints, row.kodApplicable)}</td>
@@ -264,7 +264,10 @@ export async function startNewEngagementPeriod() {
  * kazananı ilan ettikten sonra, yeni dönemi istediği an ayrıca başlatabilir
  * (bu arada aktif dönem olmaz, ki bu tamamen normaldir).
  */
-export async function endEngagementPeriod() {
+let pendingEngagementClose = null;
+
+/** "Dönemi Bitir": önce kazananları (1. ve 2.) seçtirir, sonra dönemi kapatır. */
+export function endEngagementPeriod() {
   const current = activePeriod();
   if (!current) {
     showToast(t("engagementNoActivePeriod"));
@@ -275,13 +278,50 @@ export async function endEngagementPeriod() {
     showToast(t("engagementNewPeriodMustBeAfterStart"));
     return;
   }
+  const rows = activeMembers().map((member) => computeEngagementRow(member, current)).sort((a, b) => b.total - a.total);
+  pendingEngagementClose = { period: current, endDate, rows };
+
+  const placeholder = `<option value="">${escapeHtml(t("engagementWinnersPick"))}</option>`;
+  const options = rows.map((row) => `<option value="${escapeHtml(row.member.id)}">${escapeHtml(row.member.name)} — ${row.total}</option>`).join("");
+  document.getElementById("ewTitle").textContent = t("engagementWinnersTitle");
+  document.getElementById("ewFirstLabel").textContent = t("engagementWinnersFirst");
+  document.getElementById("ewSecondLabel").textContent = t("engagementWinnersSecond");
+  document.getElementById("ewFirst").innerHTML = placeholder + options;
+  document.getElementById("ewSecond").innerHTML = placeholder + options;
+  document.getElementById("ewConfirm").textContent = t("engagementWinnersConfirm");
+  document.getElementById("ewCancel").textContent = t("cancel");
+  document.getElementById("engagementWinnersOverlay").classList.add("active");
+}
+
+export function closeEngagementWinners() {
+  pendingEngagementClose = null;
+  document.getElementById("engagementWinnersOverlay").classList.remove("active");
+}
+
+export async function confirmEngagementWinners() {
+  if (!pendingEngagementClose) return;
+  const firstId = document.getElementById("ewFirst").value;
+  const secondId = document.getElementById("ewSecond").value;
+  if (!firstId || !secondId) {
+    showToast(t("engagementWinnersMissing"));
+    return;
+  }
+  if (firstId === secondId) {
+    showToast(t("engagementWinnersSame"));
+    return;
+  }
+  const { period, endDate, rows } = pendingEngagementClose;
   if (!confirm(t("confirmEndEngagementPeriod").replace("{date}", endDate))) return;
+  const frozenRows = rows.map((row) => ({
+    ...row,
+    winnerRank: row.member.id === firstId ? 1 : row.member.id === secondId ? 2 : null
+  }));
   try {
-    const frozenRows = activeMembers().map((member) => computeEngagementRow(member, current));
-    await dbCloseEngagementPeriod(current.id, endDate, frozenRows);
-    current.endDate = endDate;
-    current.results = frozenRows;
-    state.engagementSelectedPeriodId = current.id;
+    await dbCloseEngagementPeriod(period.id, endDate, frozenRows);
+    period.endDate = endDate;
+    period.results = frozenRows;
+    state.engagementSelectedPeriodId = period.id;
+    closeEngagementWinners();
     renderEngagement();
     showToast(t("toastEngagementPeriodEnded"));
   } catch (error) {
