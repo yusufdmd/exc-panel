@@ -1,13 +1,13 @@
 // =====================================================================
 // EXC PANELİ — kod.js
 // =====================================================================
-// King of Desert sekmesinin tablo render'ı. SVS/Diğer'den farkı: puan
-// tutulmaz, sadece katıldı/katılmadı/bilgi yok durumu + mazeret vardır
-// (bkz. ui.js -> attendanceCellInfo). Hafta/kayıt ekleme-silme mantığı
-// (tüm etkinlik türleri için ortak) events.js'dedir.
+// King of Desert sekmesinin tablo render'ı. SVS ile aynı: katıldı/katılmadı
+// durumu, puan ve mazeret gösterilir (bkz. ui.js -> svsOtherCellInfo).
+// Hafta/kayıt ekleme-silme mantığı (tüm etkinlik türleri için ortak)
+// events.js'dedir.
 // =====================================================================
 
-import { state, t, escapeHtml, rankClass, rowNumHtml, cellInfoHtml, attendanceCellInfo, registerRenderer } from "./ui.js";
+import { state, t, escapeHtml, rankClass, rowNumHtml, cellInfoHtml, svsOtherCellInfo, registerRenderer } from "./ui.js";
 import { filteredSortedMembers } from "./members.js";
 
 export function renderKod() {
@@ -33,7 +33,7 @@ export function renderKod() {
     <tr>
       <td class="sticky-col">${rowNumHtml(index)}<span class="rank-badge ${rankClass(member.rank)}" style="font-size:11px;padding:2px 8px;">${member.rank}</span></td>
       <td class="sticky-col" style="left:105px;">${escapeHtml(member.name)}</td>
-      ${state.kod.weeks.map((week) => cellInfoHtml(attendanceCellInfo(state.kod, member, week))).join("")}
+      ${state.kod.weeks.map((week) => cellInfoHtml(svsOtherCellInfo(state.kod, member, week))).join("")}
     </tr>
   `).join("");
 }

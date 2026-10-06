@@ -40,7 +40,6 @@ import {
   gvgCellInfo,
   ssCellInfo,
   svsOtherCellInfo,
-  attendanceCellInfo,
   sumGvgPoints,
   sumStatusPoints,
   ratioStatus,
@@ -784,7 +783,6 @@ function buildEventSummaryHtml(member) {
     const chips = weeks.map((week) => {
       const info = key === "gvg" ? gvgCellInfo(visibleStore, member, week)
         : key === "ss" ? ssCellInfo(visibleStore, member, week)
-        : key === "kod" ? attendanceCellInfo(visibleStore, member, week)
         : svsOtherCellInfo(visibleStore, member, week);
       return `<span class="cell-pill ${info.cls}" style="margin:3px 4px 3px 0;" title="${escapeHtml(week.label)}">${escapeHtml(week.label)}: ${info.text}</span>`;
     }).join("");

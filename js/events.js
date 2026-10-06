@@ -18,7 +18,7 @@ import { createWeek as dbCreateWeek, updateWeek as dbUpdateWeek, deleteWeek as d
 import { supabase } from "./supabase.js";
 import {
   state, t, showToast, escapeHtml, rankClass, statusOf, gvgColorClass, formatPower, formatRatio, renderAll,
-  cellInfoHtml, svsOtherCellInfo, ssCellInfo, attendanceCellInfo, gvgCellInfo, isExempt, isDigitsOnly,
+  cellInfoHtml, svsOtherCellInfo, ssCellInfo, gvgCellInfo, isExempt, isDigitsOnly,
   ratioStatus, ratioSs, sumGvgPoints, RANK_ORDER, todayStr
 } from "./ui.js";
 import { filteredSortedMembers } from "./members.js";
@@ -33,7 +33,7 @@ export function mapWeek(row) {
 export function mapEntry(type, row) {
   if (type === "gvg" || type === "kodgvg") return { id: row.id, memberId: row.member_id, weekId: row.week_id, points: row.points };
   if (type === "ss") return { id: row.id, memberId: row.member_id, weekId: row.week_id, group: row.group_name, attended: row.attended, excused: row.excused, appliedSlot1: !!row.applied_slot_1, appliedSlot2: !!row.applied_slot_2, appliedSlot3: !!row.applied_slot_3 };
-  if (type === "kod") return { id: row.id, memberId: row.member_id, weekId: row.week_id, status: row.status, excused: row.excused };
+  if (type === "kod") return { id: row.id, memberId: row.member_id, weekId: row.week_id, status: row.status, points: row.points, excused: row.excused };
   return { id: row.id, memberId: row.member_id, weekId: row.week_id, status: row.status, points: row.points, excused: row.excused };
 }
 
@@ -61,7 +61,7 @@ export function eventTypeLabel(type) {
 export function entryToDbPayload(type, entry, memberId) {
   if (type === "gvg" || type === "kodgvg") return { week_id: entry.weekId, member_id: memberId, points: entry.points };
   if (type === "ss") return { week_id: entry.weekId, member_id: memberId, group_name: entry.group || null, attended: !!entry.attended, excused: !!entry.excused, applied_slot_1: !!entry.appliedSlot1, applied_slot_2: !!entry.appliedSlot2, applied_slot_3: !!entry.appliedSlot3 };
-  if (type === "kod") return { week_id: entry.weekId, member_id: memberId, status: entry.status, excused: !!entry.excused };
+  if (type === "kod") return { week_id: entry.weekId, member_id: memberId, status: entry.status, points: entry.points, excused: !!entry.excused };
   return { week_id: entry.weekId, member_id: memberId, status: entry.status, points: entry.points, excused: !!entry.excused };
 }
 
@@ -70,7 +70,7 @@ function cellInfoFor(type) {
   if (type === "svs" || type === "other") return svsOtherCellInfo;
   if (type === "gvg" || type === "kodgvg") return gvgCellInfo;
   if (type === "ss") return ssCellInfo;
-  return attendanceCellInfo; // kod
+  return svsOtherCellInfo; // kod
 }
 
 /**
@@ -193,7 +193,7 @@ export function openEntryModal(type, weekId) {
   } else if (type === "gvg" || type === "kodgvg") {
     thead.innerHTML = `<tr><th>${t("thUsername")}</th><th>${t("thRank")}</th><th>${t("thPointsCol")}</th></tr>`;
   } else if (type === "kod") {
-    thead.innerHTML = `<tr><th>${t("thStatus")}</th><th>${t("thUsername")}</th><th>${t("thRank")}</th><th>${t("thExcused")}</th></tr>`;
+    thead.innerHTML = `<tr><th>${t("thStatus")}</th><th>${t("thUsername")}</th><th>${t("thRank")}</th><th>${t("thPointsCol")}</th><th>${t("thExcused")}</th></tr>`;
   } else {
     thead.innerHTML = `<tr><th>${t("thUsername")}</th><th>${t("thRank")}</th><th>${t("thAppliedSlots")}</th><th>${t("thGroup")}</th><th>${t("thAttendStatus")}</th></tr>`;
   }
@@ -267,6 +267,7 @@ export function renderEntryRows() {
       const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === weekId);
       const draft = aiDraft && aiDraft[member.id];
       const status = draft ? (draft.status || "unknown") : statusOf(entry);
+      const points = draft && draft.points != null ? draft.points : (entry ? entry.points : 0);
       const excused = draft && draft.excused != null ? !!draft.excused : (entry ? !!entry.excused : false);
       return `<tr>
         <td><select class="status-select" data-mid="${member.id}">
@@ -276,6 +277,7 @@ export function renderEntryRows() {
         </select></td>
         <td>${escapeHtml(member.name)}</td>
         <td><span class="rank-badge ${rankClass(member.rank)}" style="font-size:11px;padding:2px 8px;">${member.rank}</span></td>
+        <td><input type="number" class="pts-input" data-mid="${member.id}" value="${points}"></td>
         <td><input type="checkbox" class="excused-check" data-mid="${member.id}" ${excused ? "checked" : ""}></td>
       </tr>`;
     }).join("");
@@ -607,8 +609,9 @@ export async function saveEntry() {
     document.querySelectorAll("#entryRows tr").forEach((tr) => {
       const memberId = tr.querySelector(".status-select").dataset.mid;
       const status = tr.querySelector(".status-select").value;
+      const points = Number(tr.querySelector(".pts-input").value) || 0;
       const excused = tr.querySelector(".excused-check").checked;
-      payloads.push({ week_id: weekId, member_id: memberId, status, excused });
+      payloads.push({ week_id: weekId, member_id: memberId, status, points, excused });
     });
   } else {
     document.querySelectorAll("#entryRows tr").forEach((tr) => {
@@ -775,7 +778,6 @@ function buildOverallReportRow(type, store, member) {
   const ratio = type === "ss" ? ratioSs(store, member) : ratioStatus(store, member);
   const chips = store.weeks.map((week) => {
     const info = type === "ss" ? ssCellInfo(store, member, week)
-      : type === "kod" ? attendanceCellInfo(store, member, week)
       : svsOtherCellInfo(store, member, week);
     return overallReportChip(week, info);
   }).join("");

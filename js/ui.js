@@ -1556,16 +1556,6 @@ export function svsOtherCellInfo(store, member, week) {
   return { cls: excused ? "pill-yellow" : "pill-red", text: "✕" + (excused ? " (M)" : "") };
 }
 
-/** King of Desert türü bir hücrenin rengini/metnini hesaplar — svsOtherCellInfo ile aynı ama puan yok, sadece katıldı/katılmadı. */
-export function attendanceCellInfo(store, member, week) {
-  const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === week.id);
-  if (!entry) return isExempt(member, week) ? { cls: "pill-gray", text: t("exemptLabel") } : { cls: "pill-gray", text: t("notRegistered") };
-  const status = statusOf(entry);
-  if (status === "joined") return { cls: "pill-green", text: "✓" };
-  if (status === "unknown") return { cls: "pill-gray", text: t("notRegistered") };
-  const excused = !!entry.excused;
-  return { cls: excused ? "pill-yellow" : "pill-red", text: "✕" + (excused ? " (M)" : "") };
-}
 
 /** GVG türü bir hücrenin (üye × hafta) rengini ve metnini hesaplar. */
 // Bir hafta için hiç kayıt girilmemişse ve üye o hafta henüz katılmamışsa
