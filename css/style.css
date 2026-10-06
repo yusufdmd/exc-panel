@@ -246,6 +246,7 @@ tbody tr:hover .sticky-col{ background: var(--bg-raised); }
 .member-name{ font-weight:700; }
 .cell-clip{ display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; max-width:220px; white-space:normal; word-break:break-word; cursor:pointer; }
 .cell-clip.expanded{ display:block; -webkit-line-clamp:unset; overflow:visible; }
+.engagement-winners{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px; font-size:13px; }
 .member-name-link{ cursor:pointer; }
 .member-name-link:hover{ color:var(--cyan-ink); text-decoration:underline; }
 .member-id{ color:var(--text-dim); font-family: var(--font-mono); font-size:12px; }

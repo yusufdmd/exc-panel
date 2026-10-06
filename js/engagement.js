@@ -162,6 +162,10 @@ export function renderEngagement() {
   }
 
   let rows = getRowsForPeriod(period);
+  const winners = rows.filter((r) => r.winnerRank).sort((a, b) => a.winnerRank - b.winnerRank);
+  const winnersHtml = winners.length
+    ? `<div class="engagement-winners"><strong>${t("engagementWinnersTitle")}:</strong>${winners.map((r) => `<span class="cell-pill pill-yellow">${r.winnerRank === 1 ? "🥇" : "🥈"} ${escapeHtml(r.member.name)} · ${r.total}</span>`).join("")}</div>`
+    : "";
 
   const searchEl = document.getElementById("engagementSearch");
   const query = (searchEl ? searchEl.value : "").toLowerCase().trim();
@@ -189,7 +193,7 @@ export function renderEngagement() {
     return 0;
   });
 
-  wrap.innerHTML = `
+  wrap.innerHTML = `${winnersHtml}
     <table>
       <thead>
         <tr>
