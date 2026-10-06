@@ -44,7 +44,7 @@ export function mapActivity(row) {
 const ACTION_LABEL_KEY = { created: "actionCreated", updated: "actionUpdated", deleted: "actionDeleted", purged: "actionDeleted", restored: "actionRestored" };
 const ACTION_CLASS = { created: "pill-green", updated: "pill-blue", deleted: "pill-red", purged: "pill-red", restored: "pill-yellow" };
 
-const SIMPLE_ENTITY_LABEL_KEY = { member: "lbMember", migration_prospect: "tabMigration", migration_lead: "migrationLeadLabel", news: "tabNews", featured_video: "tabVideos" };
+const SIMPLE_ENTITY_LABEL_KEY = { member: "lbMember", migration_prospect: "tabMigration", migration_lead: "migrationLeadLabel", news: "tabNews", featured_video: "tabVideos", engagement_period: "subEngagement" };
 
 /** Aktivite tablosundaki "Tür" sütunu için, entity_type değerini kısa okunur bir etikete çevirir. */
 function entityTypeLabel(entityType) {

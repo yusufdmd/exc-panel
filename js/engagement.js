@@ -25,7 +25,7 @@
 //     (bkz. state.gvg / state.kodgvg), sadece kural aynıdır.
 // =====================================================================
 
-import { createEngagementPeriod as dbCreateEngagementPeriod, closeEngagementPeriod as dbCloseEngagementPeriod, deleteEngagementPeriod as dbDeleteEngagementPeriod, setSetting as dbSetSetting } from "./database.js";
+import { createEngagementPeriod as dbCreateEngagementPeriod, closeEngagementPeriod as dbCloseEngagementPeriod, deleteEngagementPeriod as dbDeleteEngagementPeriod, setSetting as dbSetSetting, logActivity } from "./database.js";
 import { state, t, escapeHtml, rankClass, rowNumHtml, isExempt, showToast, todayStr, formatRatio, RANK_ORDER, registerRenderer } from "./ui.js";
 import { activeMembers } from "./members.js";
 import { GVG_THRESHOLDS } from "./config.js";
@@ -342,6 +342,7 @@ export async function deleteEngagementPeriod() {
   if (!confirm(t("confirmDeleteEngagementPeriod").replace("{date}", periodOptionLabel(period)))) return;
   try {
     await dbDeleteEngagementPeriod(period.id);
+    await logActivity("deleted", "engagement_period", period.id, { name: periodOptionLabel(period) }, state.currentAdminUsername);
     state.engagementPeriods = state.engagementPeriods.filter((p) => p.id !== period.id);
     if (state.engagementSelectedPeriodId === period.id) state.engagementSelectedPeriodId = null;
     renderEngagement();
