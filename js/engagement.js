@@ -45,7 +45,7 @@ const isSsPoint = (e) => {
 
 /** Supabase dönem satırını uygulama şekline çevirir. */
 export function mapEngagementPeriod(row) {
-  return { id: row.id, startDate: row.start_date, endDate: row.end_date || null, results: row.results || null };
+  return { id: row.id, seq: row.seq || null, startDate: row.start_date, endDate: row.end_date || null, results: row.results || null };
 }
 
 function addDaysIso(iso, delta) {
@@ -115,7 +115,8 @@ function hasAnyPeriodWeek(period) {
 }
 
 function periodOptionLabel(period) {
-  return period.endDate ? `${period.startDate} – ${period.endDate}` : `${period.startDate} – ${t("engagementOngoing")}`;
+  const dates = period.endDate ? `${period.startDate} – ${period.endDate}` : `${period.startDate} – ${t("engagementOngoing")}`;
+  return period.seq ? `${t("periodWord")} ${period.seq} (${dates})` : dates;
 }
 
 function populatePeriodSelect(period) {
@@ -356,7 +357,7 @@ export async function deleteEngagementPeriod() {
     await dbDeleteEngagementPeriod(period.id);
     await logActivity("deleted", "engagement_period", period.id, {
       name: periodOptionLabel(period),
-      snapshot: { id: period.id, start_date: period.startDate, end_date: period.endDate || null, results: period.results || null }
+      snapshot: { id: period.id, seq: period.seq || null, start_date: period.startDate, end_date: period.endDate || null, results: period.results || null }
     }, state.currentAdminUsername);
     state.engagementPeriods = state.engagementPeriods.filter((p) => p.id !== period.id);
     if (state.engagementSelectedPeriodId === period.id) state.engagementSelectedPeriodId = null;

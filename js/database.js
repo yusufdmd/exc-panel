@@ -492,7 +492,7 @@ export async function closeEngagementPeriod(id, endDate, results) {
 export async function restoreEngagementPeriod(snapshot) {
   const { data, error } = await supabase
     .from("engagement_periods")
-    .insert({ id: snapshot.id, start_date: snapshot.start_date, end_date: snapshot.end_date || null, results: snapshot.results || null })
+    .insert({ id: snapshot.id, ...(snapshot.seq ? { seq: snapshot.seq } : {}), start_date: snapshot.start_date, end_date: snapshot.end_date || null, results: snapshot.results || null })
     .select()
     .single();
   if (error) dbError("Dönem geri yüklenemedi", error);
