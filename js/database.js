@@ -500,8 +500,9 @@ export async function restoreEngagementPeriod(snapshot) {
 }
 
 export async function deleteEngagementPeriod(id) {
-  const { error } = await supabase.from("engagement_periods").delete().eq("id", id);
+  const { data, error } = await supabase.from("engagement_periods").delete().eq("id", id).select();
   if (error) dbError("Dönem silinemedi", error);
+  if (!data || !data.length) throw new Error("Dönem silinemedi: veritabanı hiçbir satırı silmedi (yetki veya kayıt bulunamadı).");
   return true;
 }
 
