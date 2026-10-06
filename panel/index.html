@@ -341,6 +341,10 @@
   <div class="panel" id="panel-migration">
     <div class="admin-only" id="migrationLeadsSection">
       <h3 style="font-size:13px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); margin-bottom:10px;" id="t_leadsHeading">📥 Göç Başvuruları</h3>
+      <div class="subtabs" style="margin-bottom:10px;">
+        <div class="subtab active" data-lv="pending" onclick="setMigrationLeadView('pending')" id="t_leadViewPending">Bekleyen</div>
+        <div class="subtab" data-lv="rejected" onclick="setMigrationLeadView('rejected')" id="t_leadViewRejected">Elenenler</div>
+      </div>
       <div class="empty-state" id="migrationLeadsEmpty" style="display:none; padding:24px;">
         <p id="t_emptyLeadsDesc">Genel siteden gelen yeni başvurular burada görünecek.</p>
       </div>

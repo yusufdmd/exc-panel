@@ -219,6 +219,12 @@ export async function createMigrationLead(payload) {
   return true;
 }
 
+export async function setMigrationLeadStatus(id, status) {
+  const { error } = await supabase.from("migration_leads").update({ status }).eq("id", id);
+  if (error) dbError("Göç başvurusu güncellenemedi", error);
+  return true;
+}
+
 export async function deleteMigrationLead(id) {
   const { error } = await supabase.from("migration_leads").delete().eq("id", id);
   if (error) dbError("Göç başvurusu silinemedi", error);

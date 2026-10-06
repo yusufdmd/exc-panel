@@ -23,7 +23,7 @@
 import {
   createMigrationPeriod, updateMigrationPeriod, deleteMigrationPeriod as dbDeletePeriod,
   createMigrationProspect, updateMigrationProspect, deleteMigrationProspect as dbDeleteProspect,
-  deleteMigrationLead as dbDeleteLead, logActivity
+  deleteMigrationLead as dbDeleteLead, setMigrationLeadStatus, logActivity
 } from "./database.js";
 import {
   state,
@@ -73,7 +73,7 @@ export function mapLead(row) {
   return {
     id: row.id, name: row.name, gameId: row.game_id, contact: row.contact, server: row.current_server, power: row.power,
     campLevel: row.camp_level || "", teamPower: row.team_power || 0, teamElement: row.team_element || null,
-    color: row.color || null, message: row.message, createdAt: row.created_at
+    color: row.color || null, status: row.status || "pending", message: row.message, createdAt: row.created_at
   };
 }
 
@@ -298,10 +298,13 @@ function renderMigrationStats(list) {
  * özelliğin var olduğunu ve nerede olduğunu her zaman görebilir.
  */
 function renderMigrationLeads() {
-  const hasLeads = state.migrationLeads.length > 0;
+  const view = state.migrationLeadView;
+  const visibleLeads = state.migrationLeads.filter((l) => (l.status || "pending") === view);
+  document.querySelectorAll("[data-lv]").forEach((el) => el.classList.toggle("active", el.dataset.lv === view));
+  const hasLeads = visibleLeads.length > 0;
   document.getElementById("migrationLeadsEmpty").style.display = hasLeads ? "none" : "block";
   document.getElementById("migrationLeadsTableWrap").style.display = hasLeads ? "" : "none";
-  document.getElementById("migrationLeadsRows").innerHTML = state.migrationLeads.map((lead) => `
+  document.getElementById("migrationLeadsRows").innerHTML = visibleLeads.map((lead) => `
     <tr>
       <td><span class="member-name">${escapeHtml(lead.name || "—")}</span></td>
       <td class="member-id">${escapeHtml(lead.gameId || "—")}</td>
@@ -314,8 +317,13 @@ function renderMigrationLeads() {
       <td><div class="cell-clip" title="${t("clickToExpand")}" onclick="this.classList.toggle('expanded')">${escapeHtml(lead.message || "—")}</div></td>
       <td>${escapeHtml((lead.createdAt || "").slice(0, 10))}</td>
       <td><div class="row-actions">
-        <button class="icon-btn" onclick="processLead('${lead.id}')" title="${t("processLeadTitle")}">✅</button>
-        <button class="icon-btn danger" onclick="dismissLead('${lead.id}')">✕</button>
+        ${view === "pending" ? `
+          <button class="icon-btn" onclick="processLead('${lead.id}')" title="${t("processLeadTitle")}">✅</button>
+          <button class="icon-btn danger" onclick="rejectLead('${lead.id}')" title="${t("rejectLeadTitle")}">✕</button>
+        ` : `
+          <button class="icon-btn" onclick="restoreLead('${lead.id}')" title="${t("restoreLeadTitle")}">↺</button>
+          <button class="icon-btn danger" onclick="dismissLead('${lead.id}')" title="${t("confirmDeleteLeadPermanently")}">🗑</button>
+        `}
       </div></td>
     </tr>
   `).join("");
@@ -806,8 +814,41 @@ function migrationLeadToDbSnapshot(lead) {
   };
 }
 
+export function setMigrationLeadView(view) {
+  state.migrationLeadView = view;
+  renderMigrationLeads();
+}
+
+/** Bir başvuruyu silmeden "Elenenler" listesine taşır; ileride geri alınabilir. */
+export async function rejectLead(id) {
+  if (!confirm(t("confirmRejectLead"))) return;
+  try {
+    await setMigrationLeadStatus(id, "rejected");
+    const lead = state.migrationLeads.find((l) => l.id === id);
+    if (lead) lead.status = "rejected";
+    renderAll();
+    showToast(t("toastLeadRejected"));
+  } catch (error) {
+    console.error(error);
+    showToast("Error");
+  }
+}
+
+export async function restoreLead(id) {
+  try {
+    await setMigrationLeadStatus(id, "pending");
+    const lead = state.migrationLeads.find((l) => l.id === id);
+    if (lead) lead.status = "pending";
+    renderAll();
+    showToast(t("toastLeadRestored"));
+  } catch (error) {
+    console.error(error);
+    showToast("Error");
+  }
+}
+
 export async function dismissLead(id) {
-  if (!confirm(t("confirmDismissLead"))) return;
+  if (!confirm(t("confirmDeleteLeadPermanently"))) return;
   const target = state.migrationLeads.find((l) => l.id === id);
   try {
     await dbDeleteLead(id);
