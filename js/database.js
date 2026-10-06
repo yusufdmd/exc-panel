@@ -488,6 +488,17 @@ export async function closeEngagementPeriod(id, endDate, results) {
   return data;
 }
 
+/** Silinmiş bir dönemi aktivite kaydındaki tam kopyasından (aynı id ile) yeniden ekler. */
+export async function restoreEngagementPeriod(snapshot) {
+  const { data, error } = await supabase
+    .from("engagement_periods")
+    .insert({ id: snapshot.id, start_date: snapshot.start_date, end_date: snapshot.end_date || null, results: snapshot.results || null })
+    .select()
+    .single();
+  if (error) dbError("Dönem geri yüklenemedi", error);
+  return data;
+}
+
 export async function deleteEngagementPeriod(id) {
   const { error } = await supabase.from("engagement_periods").delete().eq("id", id);
   if (error) dbError("Dönem silinemedi", error);

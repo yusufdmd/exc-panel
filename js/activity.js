@@ -23,6 +23,7 @@
 import { createMember, createWeek, upsertRecordsBulk, addPowerHistoryEntry, addTeamPowerHistoryEntry, createMigrationProspect, createMigrationLead, createNews, createFeaturedVideo, logActivity } from "./database.js";
 import { state, t, showToast, escapeHtml, renderAll, registerRenderer, formatPower, elementLabel, migrationColorLabel, migrationStatusLabel } from "./ui.js";
 import { mapMember } from "./members.js";
+import { mapEngagementPeriod, restoreEngagementPeriodFromSnapshot } from "./engagement.js";
 import { mapWeek, mapEntry, storeFor, entryToDbPayload, eventTypeLabel } from "./events.js";
 import { mapProspect, mapLead } from "./migration.js";
 import { mapNewsItem } from "./news.js";
@@ -61,7 +62,8 @@ const SIMPLE_RESTORE = {
   migration_prospect: { create: createMigrationProspect, map: mapProspect, list: "migration" },
   migration_lead: { create: createMigrationLead, map: mapLead, list: "migrationLeads" },
   news: { create: createNews, map: mapNewsItem, list: "news" },
-  featured_video: { create: createFeaturedVideo, map: mapVideoItem, list: "featuredVideos" }
+  featured_video: { create: createFeaturedVideo, map: mapVideoItem, list: "featuredVideos" },
+  engagement_period: { create: restoreEngagementPeriodFromSnapshot, map: mapEngagementPeriod, list: "engagementPeriods" }
 };
 
 export function renderActivity() {
@@ -312,7 +314,7 @@ export async function restoreDeletedSimple(activityId, entityType) {
   try {
     const row = await handler.create(snapshot);
     state[handler.list].push(handler.map(row));
-    await logActivity("restored", entityType, row.id, { name: row.name || row.title || row.url || "İsimsiz" }, state.currentAdminUsername);
+    await logActivity("restored", entityType, row.id, { name: row.name || row.title || row.url || row.start_date || "İsimsiz" }, state.currentAdminUsername);
     renderAll();
     showToast(t("toastGenericRestored"));
   } catch (error) {

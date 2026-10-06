@@ -25,7 +25,7 @@
 //     (bkz. state.gvg / state.kodgvg), sadece kural aynıdır.
 // =====================================================================
 
-import { createEngagementPeriod as dbCreateEngagementPeriod, closeEngagementPeriod as dbCloseEngagementPeriod, deleteEngagementPeriod as dbDeleteEngagementPeriod, setSetting as dbSetSetting, logActivity } from "./database.js";
+import { createEngagementPeriod as dbCreateEngagementPeriod, closeEngagementPeriod as dbCloseEngagementPeriod, deleteEngagementPeriod as dbDeleteEngagementPeriod, restoreEngagementPeriod as dbRestoreEngagementPeriod, setSetting as dbSetSetting, logActivity } from "./database.js";
 import { state, t, escapeHtml, rankClass, rowNumHtml, isExempt, showToast, todayStr, formatRatio, RANK_ORDER, registerRenderer } from "./ui.js";
 import { activeMembers } from "./members.js";
 import { GVG_THRESHOLDS } from "./config.js";
@@ -336,13 +336,24 @@ export async function confirmEngagementWinners() {
  * sadece bu dönemin kaydını kaldırır; donmuş bir dönemse o dönemin
  * kazananı/sıralaması bir daha geri getirilemez.
  */
+/** Aktivite'den geri yükleme: aktif bir dönem zaten varken ikinci bir aktif dönem oluşturmaz. */
+export async function restoreEngagementPeriodFromSnapshot(snapshot) {
+  if (!snapshot.end_date && state.engagementPeriods.some((p) => !p.endDate)) {
+    throw new Error("Zaten aktif bir katılım yarışması dönemi var.");
+  }
+  return dbRestoreEngagementPeriod(snapshot);
+}
+
 export async function deleteEngagementPeriod() {
   const period = selectedPeriod();
   if (!period) return;
   if (!confirm(t("confirmDeleteEngagementPeriod").replace("{date}", periodOptionLabel(period)))) return;
   try {
     await dbDeleteEngagementPeriod(period.id);
-    await logActivity("deleted", "engagement_period", period.id, { name: periodOptionLabel(period) }, state.currentAdminUsername);
+    await logActivity("deleted", "engagement_period", period.id, {
+      name: periodOptionLabel(period),
+      snapshot: { id: period.id, start_date: period.startDate, end_date: period.endDate || null, results: period.results || null }
+    }, state.currentAdminUsername);
     state.engagementPeriods = state.engagementPeriods.filter((p) => p.id !== period.id);
     if (state.engagementSelectedPeriodId === period.id) state.engagementSelectedPeriodId = null;
     renderEngagement();
