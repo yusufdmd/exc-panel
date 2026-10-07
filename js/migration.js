@@ -99,7 +99,9 @@ export function mapProspect(row) {
     teamElement: row.team_element || null,
     contact: row.contact || "",
     message: row.message || "",
-    score: row.score != null ? row.score : null
+    score: row.score != null ? row.score : null,
+    createdAt: row.created_at, updatedAt: row.updated_at,
+    createdBy: row.created_by || "", updatedBy: row.updated_by || ""
   };
 }
 
@@ -372,7 +374,7 @@ export function renderMigration() {
   rowsEl.innerHTML = list.map((p) => `
     <tr class="migration-row-${p.color}">
       <td><span class="rank-badge ${migrationColorClass(p.color)}">${migrationColorLabel(p.color)}</span>${p.score != null ? `<div style="font-size:11px; color:var(--text-dim); margin-top:2px;">${escapeHtml(String(p.score))}</div>` : ""}</td>
-      <td><span class="member-name">${escapeHtml(p.name || "—")}</span>${p.convertedToMember ? `<span class="old-tag">${t("convertedTag")}</span>` : ""}${p.contact ? `<div style="font-size:11px; color:var(--text-dim); white-space:normal; max-width:220px;">${escapeHtml(t("thLeadContact"))}: ${escapeHtml(p.contact)}</div>` : ""}${p.message ? `<div class="cell-clip" title="${t("clickToExpand")}" onclick="this.classList.toggle('expanded')" style="font-size:11px; color:var(--text-dim);">${escapeHtml(t("thLeadMessage"))}: ${escapeHtml(p.message)}</div>` : ""}${p.note ? `<div style="font-size:11px; color:var(--text-dim); white-space:normal; max-width:220px;">${escapeHtml(p.note)}</div>` : ""}${p.invitedBy ? `<div style="font-size:11px; color:var(--text-dim); white-space:normal; max-width:220px;">${escapeHtml(t("lblInvitedBy"))}: ${escapeHtml(p.invitedBy)}</div>` : ""}</td>
+      <td><span class="member-name">${escapeHtml(p.name || "—")}</span>${p.convertedToMember ? `<span class="old-tag">${t("convertedTag")}</span>` : ""}${p.contact ? `<div style="font-size:11px; color:var(--text-dim); white-space:normal; max-width:220px;">${escapeHtml(t("thLeadContact"))}: ${escapeHtml(p.contact)}</div>` : ""}${p.message ? `<div class="cell-clip" title="${t("clickToExpand")}" onclick="this.classList.toggle('expanded')" style="font-size:11px; color:var(--text-dim);">${escapeHtml(t("thLeadMessage"))}: ${escapeHtml(p.message)}</div>` : ""}${p.note ? `<div style="font-size:11px; color:var(--text-dim); white-space:normal; max-width:220px;">${escapeHtml(p.note)}</div>` : ""}${p.invitedBy ? `<div style="font-size:11px; color:var(--text-dim); white-space:normal; max-width:220px;">${escapeHtml(t("lblInvitedBy"))}: ${escapeHtml(p.invitedBy)}</div>` : ""}${p.createdBy ? `<div style="font-size:11px; color:var(--text-dim); white-space:normal; max-width:220px;">${escapeHtml((p.createdAt || "").slice(0, 10))} · ${escapeHtml(t("prospectAddedByLabel"))}: ${escapeHtml(p.createdBy)}</div>` : ""}</td>
       <td class="member-id">${escapeHtml(String(p.gameId || "—"))}</td>
       <td class="num-cell" title="${Number(p.power) || 0}">${formatPower(p.power)}</td>
       <td class="num-cell">${escapeHtml(p.campLevel || "—")}</td>
@@ -457,6 +459,22 @@ export function exportMigration() {
 // =====================================================================
 // ADAY MODALI (EKLE/DÜZENLE)
 // =====================================================================
+// Formdaki tarih seçicinin AÇILIŞTAKİ tam zaman damgasını (varsa) tutar —
+// kaydederken sadece GERÇEKTEN değiştiyse yeni bir created_at gönderilir,
+// aksi halde orijinal saat/dakika hassasiyeti (ör. "İşle" ile taşınan
+// gerçek başvuru anı) korunur (bkz. saveProspect).
+let prospectModalOriginalDate = null;
+
+/** "Ekleyen"/"Son düzenleyen" bilgi satırını doldurur — ikisi de yoksa (eski kayıtlar) hiçbir şey göstermez. */
+function renderProspectAuditInfo(prospect) {
+  const el = document.getElementById("pCreatedByInfo");
+  if (!el) return;
+  const lines = [];
+  if (prospect && prospect.createdBy) lines.push(`${t("prospectAddedByLabel")}: ${escapeHtml(prospect.createdBy)}`);
+  if (prospect && prospect.updatedBy && prospect.updatedBy !== prospect.createdBy) lines.push(`${t("prospectUpdatedByLabel")}: ${escapeHtml(prospect.updatedBy)}`);
+  el.innerHTML = lines.join(" · ");
+}
+
 export function openProspectModal(id) {
   if (!id && !state.migrationActivePeriodId) {
     showToast(t("needPeriodFirst"));
@@ -485,12 +503,18 @@ export function openProspectModal(id) {
     document.getElementById("pTeamPower").value = formatNumberInput(prospect.teamPower || "");
     document.getElementById("pTeamElement").value = prospect.teamElement || "";
     setProspectElementPickerActive(prospect.teamElement || "");
+    prospectModalOriginalDate = prospect.createdAt || null;
+    document.getElementById("pCreatedAt").value = prospectModalOriginalDate ? prospectModalOriginalDate.slice(0, 10) : "";
+    renderProspectAuditInfo(prospect);
   } else {
     document.getElementById("prospectModalTitle").textContent = t("prospectAddTitle");
     ["pName", "pGameId", "pPower", "pServer", "pNote", "pInvitedBy", "pContact", "pMessage", "pCamp", "pTeamPower", "pTeamElement", "pScore"].forEach((fieldId) => { document.getElementById(fieldId).value = ""; });
     document.getElementById("pColor").value = "unknown";
     document.getElementById("pStatus").value = "uncertain";
     setProspectElementPickerActive("");
+    prospectModalOriginalDate = null;
+    document.getElementById("pCreatedAt").value = todayStr();
+    renderProspectAuditInfo(null);
   }
   document.getElementById("prospectOverlay").classList.add("active");
 }
@@ -498,6 +522,7 @@ export function openProspectModal(id) {
 export function closeProspectModal() {
   document.getElementById("prospectOverlay").classList.remove("active");
   state.pendingLeadProcessingId = null;
+  prospectModalOriginalDate = null;
 }
 
 /**
@@ -545,14 +570,30 @@ export async function saveProspect() {
   const teamPower = Number(teamPowerRaw) || 0;
   const teamElement = document.getElementById("pTeamElement").value || null;
 
+  // Tarih seçicide gösterilen gün, açılıştaki orijinal tam zaman damgasıyla (varsa)
+  // AYNIYSA değiştirilmemiş demektir — o zaman orijinal saat/dakika hassasiyetini
+  // (ör. "İşle" ile taşınan gerçek başvuru anı) koruyoruz, sadece günü değil. Admin
+  // günü GERÇEKTEN değiştirdiyse ya da bu yepyeni bir kayıtsa, seçilen günü öğlen
+  // UTC'de (gün kaymasını önlemek için) yeni created_at olarak kullanıyoruz.
+  const createdAtInput = document.getElementById("pCreatedAt").value;
+  let createdAtOverride = null;
+  if (createdAtInput) {
+    const originalDatePart = prospectModalOriginalDate ? prospectModalOriginalDate.slice(0, 10) : null;
+    createdAtOverride = (createdAtInput === originalDatePart && prospectModalOriginalDate)
+      ? prospectModalOriginalDate
+      : createdAtInput + "T12:00:00.000Z";
+  }
+
   try {
     if (editId) {
-      const payload = { name: name || null, game_id: gameId || null, power, server, color, score, status, note: note || null, invited_by: invitedBy || null, contact: contact || null, message: message || null, camp_level: campLevel, team_power: teamPower, team_element: teamElement };
+      const payload = { name: name || null, game_id: gameId || null, power, server, color, score, status, note: note || null, invited_by: invitedBy || null, contact: contact || null, message: message || null, camp_level: campLevel, team_power: teamPower, team_element: teamElement, updated_by: state.currentAdminUsername || null };
+      if (createdAtOverride) payload.created_at = createdAtOverride;
       const row = await updateMigrationProspect(editId, payload);
       const index = state.migration.findIndex((p) => p.id === editId);
       if (index >= 0) state.migration[index] = mapProspect(row);
     } else {
-      const payload = { period_id: state.migrationActivePeriodId, name: name || null, game_id: gameId || null, power, server, color, score, status, note: note || null, invited_by: invitedBy || null, contact: contact || null, message: message || null, camp_level: campLevel, team_power: teamPower, team_element: teamElement };
+      const payload = { period_id: state.migrationActivePeriodId, name: name || null, game_id: gameId || null, power, server, color, score, status, note: note || null, invited_by: invitedBy || null, contact: contact || null, message: message || null, camp_level: campLevel, team_power: teamPower, team_element: teamElement, created_by: state.currentAdminUsername || null };
+      if (createdAtOverride) payload.created_at = createdAtOverride;
       const row = await createMigrationProspect(payload);
       state.migration.push(mapProspect(row));
 
@@ -801,6 +842,10 @@ export function processLead(id) {
   document.getElementById("pContact").value = lead.contact || "";
   document.getElementById("pMessage").value = lead.message || "";
   if (lead.color) document.getElementById("pColor").value = lead.color;
+  // Başvurunun orijinal gönderim anını (tarih seçicide gösterilen) koru —
+  // aday "şimdi eklenmiş" gibi değil, gerçekten başvurduğu tarihte görünsün.
+  prospectModalOriginalDate = lead.createdAt || null;
+  document.getElementById("pCreatedAt").value = prospectModalOriginalDate ? prospectModalOriginalDate.slice(0, 10) : todayStr();
   setProspectElementPickerActive(lead.teamElement || "");
 }
 

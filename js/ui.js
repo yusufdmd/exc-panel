@@ -190,6 +190,7 @@ const DICT = {
     lblAvMember:'Bağlı Üye (opsiyonel)', lblAvName:'İsim', lblAvGameEmail:'Oyun Hesabı E-postası', lblAvGamePassword:'Oyun Hesabı Şifresi', lblAvHasEmailAccess:'Kurtarma e-postasına erişim var', lblAvRecoveryEmail:'Kurtarma E-postası', lblAvRecoveryPassword:'Kurtarma E-postası Şifresi', lblAvNote:'Not',
     avNoMemberOption:'— Bağımsız —', avEditTitle:'Hesabı Düzenle', avAddTitle:'Hesap Ekle', avPasswordKeepHint:'Değiştirmek için yazın (boş bırak → aynı kalsın)', avPasswordPlaceholder:'Şifre', avNameRequired:'Lütfen bir isim girin.',
     toastAccountVaultSaved:'Hesap kaydı kaydedildi.', toastAccountVaultDeleted:'Hesap kaydı silindi.', confirmDeleteAccountVault:'Bu hesap kaydını silmek istediğinize emin misiniz?', avDecryptError:'Şifre çözülemedi.', avShow:'Göster', avHide:'Gizle', avStandaloneTag:'Bağımsız',
+    lblProspectDate:'Başvuru/Ekleme Tarihi', prospectAddedByLabel:'Ekleyen', prospectUpdatedByLabel:'Son düzenleyen',
     statMigrationTotal:'Toplam Aday', migrationStatusCertain:'Kesin', migrationStatusWaitlist:'Yedek', migrationStatusUncertain:'Belirsiz',
     subMigrationActive:'Adaylar', subMigrationFailed:'Başarısız', statMigrationFailedTotal:'Toplam Başarısız',
     markFailedTitle:'Başarısız İşaretle (Kontenjan Yok)', confirmMarkFailed:'Bu adayı, yeterli kontenjan olmadığı için göç edemedi diye işaretlemek istiyor musunuz? Aday "Başarısız" sekmesine taşınacak.',
@@ -322,6 +323,7 @@ ebParticipationWord:'Katılım', ebFootnote:'%50\'nin altındaysan daha çok etk
     lblAvMember:'Linked Member (optional)', lblAvName:'Name', lblAvGameEmail:'Game Account Email', lblAvGamePassword:'Game Account Password', lblAvHasEmailAccess:'Has access to the recovery email', lblAvRecoveryEmail:'Recovery Email', lblAvRecoveryPassword:'Recovery Email Password', lblAvNote:'Note',
     avNoMemberOption:'— Standalone —', avEditTitle:'Edit Account', avAddTitle:'Add Account', avPasswordKeepHint:'Type to change (leave blank to keep)', avPasswordPlaceholder:'Password', avNameRequired:'Please enter a name.',
     toastAccountVaultSaved:'Account entry saved.', toastAccountVaultDeleted:'Account entry deleted.', confirmDeleteAccountVault:'Are you sure you want to delete this account entry?', avDecryptError:'Could not decrypt.', avShow:'Show', avHide:'Hide', avStandaloneTag:'Standalone',
+    lblProspectDate:'Application/Added Date', prospectAddedByLabel:'Added by', prospectUpdatedByLabel:'Last edited by',
     statMigrationTotal:'Total Candidates', migrationStatusCertain:'Certain', migrationStatusWaitlist:'Waitlisted', migrationStatusUncertain:'Uncertain',
     subMigrationActive:'Candidates', subMigrationFailed:'Failed', statMigrationFailedTotal:'Total Failed',
     markFailedTitle:'Mark as Failed (No Slot Available)', confirmMarkFailed:'Mark this candidate as unable to migrate due to insufficient slots? They will move to the "Failed" tab.',
@@ -454,6 +456,7 @@ ebParticipationWord:'Participation', ebFootnote:'If you\'re under 50%, consider 
     lblAvMember:'Verknüpftes Mitglied (optional)', lblAvName:'Name', lblAvGameEmail:'E-Mail des Spielkontos', lblAvGamePassword:'Passwort des Spielkontos', lblAvHasEmailAccess:'Hat Zugriff auf die Wiederherstellungs-E-Mail', lblAvRecoveryEmail:'Wiederherstellungs-E-Mail', lblAvRecoveryPassword:'Passwort der Wiederherstellungs-E-Mail', lblAvNote:'Notiz',
     avNoMemberOption:'— Eigenständig —', avEditTitle:'Konto bearbeiten', avAddTitle:'Konto hinzufügen', avPasswordKeepHint:'Zum Ändern eingeben (leer lassen = unverändert)', avPasswordPlaceholder:'Passwort', avNameRequired:'Bitte einen Namen eingeben.',
     toastAccountVaultSaved:'Kontoeintrag gespeichert.', toastAccountVaultDeleted:'Kontoeintrag gelöscht.', confirmDeleteAccountVault:'Diesen Kontoeintrag wirklich löschen?', avDecryptError:'Entschlüsselung fehlgeschlagen.', avShow:'Anzeigen', avHide:'Verbergen', avStandaloneTag:'Eigenständig',
+    lblProspectDate:'Bewerbungs-/Hinzufügedatum', prospectAddedByLabel:'Hinzugefügt von', prospectUpdatedByLabel:'Zuletzt bearbeitet von',
     statMigrationTotal:'Kandidaten gesamt', migrationStatusCertain:'Sicher', migrationStatusWaitlist:'Warteliste', migrationStatusUncertain:'Unsicher',
     subMigrationActive:'Kandidaten', subMigrationFailed:'Gescheitert', statMigrationFailedTotal:'Gescheitert gesamt',
     markFailedTitle:'Als gescheitert markieren (kein Platz frei)', confirmMarkFailed:'Diesen Kandidaten als "konnte wegen Platzmangel nicht migrieren" markieren? Er wird in den Tab "Gescheitert" verschoben.',
@@ -586,6 +589,7 @@ ebParticipationWord:'Teilnahme', ebFootnote:'Bist du unter 50%, nimm an mehr Eve
     lblAvMember:'Miembro Vinculado (opcional)', lblAvName:'Nombre', lblAvGameEmail:'Correo de la Cuenta del Juego', lblAvGamePassword:'Contraseña de la Cuenta del Juego', lblAvHasEmailAccess:'Tiene acceso al correo de recuperación', lblAvRecoveryEmail:'Correo de Recuperación', lblAvRecoveryPassword:'Contraseña del Correo de Recuperación', lblAvNote:'Nota',
     avNoMemberOption:'— Independiente —', avEditTitle:'Editar Cuenta', avAddTitle:'Añadir Cuenta', avPasswordKeepHint:'Escribe para cambiar (deja en blanco para mantener)', avPasswordPlaceholder:'Contraseña', avNameRequired:'Por favor ingresa un nombre.',
     toastAccountVaultSaved:'Registro de cuenta guardado.', toastAccountVaultDeleted:'Registro de cuenta eliminado.', confirmDeleteAccountVault:'¿Seguro que quieres eliminar este registro de cuenta?', avDecryptError:'No se pudo desencriptar.', avShow:'Mostrar', avHide:'Ocultar', avStandaloneTag:'Independiente',
+    lblProspectDate:'Fecha de Solicitud/Alta', prospectAddedByLabel:'Añadido por', prospectUpdatedByLabel:'Última edición por',
     statMigrationTotal:'Total de candidatos', migrationStatusCertain:'Seguro', migrationStatusWaitlist:'Lista de Espera', migrationStatusUncertain:'Incierto',
     subMigrationActive:'Candidatos', subMigrationFailed:'Fallidos', statMigrationFailedTotal:'Total Fallidos',
     markFailedTitle:'Marcar como Fallido (Sin Cupo)', confirmMarkFailed:'¿Marcar a este candidato como no pudo migrar por falta de cupo? Se moverá a la pestaña "Fallidos".',
@@ -718,6 +722,7 @@ ebParticipationWord:'Participación', ebFootnote:'¡Si estás por debajo del 50%
     lblAvMember:'Membre Lié (optionnel)', lblAvName:'Nom', lblAvGameEmail:'E-mail du Compte de Jeu', lblAvGamePassword:'Mot de Passe du Compte de Jeu', lblAvHasEmailAccess:"A accès à l'e-mail de récupération", lblAvRecoveryEmail:'E-mail de Récupération', lblAvRecoveryPassword:"Mot de Passe de l'E-mail de Récupération", lblAvNote:'Note',
     avNoMemberOption:'— Indépendant —', avEditTitle:'Modifier le Compte', avAddTitle:'Ajouter un Compte', avPasswordKeepHint:'Tapez pour changer (laissez vide pour conserver)', avPasswordPlaceholder:'Mot de passe', avNameRequired:'Veuillez saisir un nom.',
     toastAccountVaultSaved:'Entrée de compte enregistrée.', toastAccountVaultDeleted:'Entrée de compte supprimée.', confirmDeleteAccountVault:'Voulez-vous vraiment supprimer cette entrée de compte ?', avDecryptError:'Impossible de déchiffrer.', avShow:'Afficher', avHide:'Masquer', avStandaloneTag:'Indépendant',
+    lblProspectDate:"Date de Candidature/Ajout", prospectAddedByLabel:'Ajouté par', prospectUpdatedByLabel:'Dernière modification par',
     statMigrationTotal:'Total des candidats', migrationStatusCertain:'Certain', migrationStatusWaitlist:"Liste d'Attente", migrationStatusUncertain:'Incertain',
     subMigrationActive:'Candidats', subMigrationFailed:'Échoués', statMigrationFailedTotal:'Total Échoués',
     markFailedTitle:"Marquer comme échoué (pas de place disponible)", confirmMarkFailed:"Marquer ce candidat comme n'ayant pas pu migrer faute de place ? Il sera déplacé vers l'onglet « Échoués ».",
@@ -850,6 +855,7 @@ ebParticipationWord:'Participation', ebFootnote:"Si tu es en dessous de 50%, pen
     lblAvMember:'Thành viên Liên kết (tùy chọn)', lblAvName:'Tên', lblAvGameEmail:'Email Tài khoản Game', lblAvGamePassword:'Mật khẩu Tài khoản Game', lblAvHasEmailAccess:'Có quyền truy cập email khôi phục', lblAvRecoveryEmail:'Email Khôi phục', lblAvRecoveryPassword:'Mật khẩu Email Khôi phục', lblAvNote:'Ghi chú',
     avNoMemberOption:'— Độc lập —', avEditTitle:'Sửa Tài khoản', avAddTitle:'Thêm Tài khoản', avPasswordKeepHint:'Nhập để đổi (để trống để giữ nguyên)', avPasswordPlaceholder:'Mật khẩu', avNameRequired:'Vui lòng nhập tên.',
     toastAccountVaultSaved:'Đã lưu bản ghi tài khoản.', toastAccountVaultDeleted:'Đã xóa bản ghi tài khoản.', confirmDeleteAccountVault:'Bạn có chắc muốn xóa bản ghi tài khoản này không?', avDecryptError:'Không thể giải mã.', avShow:'Hiện', avHide:'Ẩn', avStandaloneTag:'Độc lập',
+    lblProspectDate:'Ngày Ứng tuyển/Thêm vào', prospectAddedByLabel:'Thêm bởi', prospectUpdatedByLabel:'Sửa lần cuối bởi',
     statMigrationTotal:'Tổng Ứng viên', migrationStatusCertain:'Chắc chắn', migrationStatusWaitlist:'Danh sách Chờ', migrationStatusUncertain:'Không chắc chắn',
     subMigrationActive:'Ứng viên', subMigrationFailed:'Thất bại', statMigrationFailedTotal:'Tổng Thất bại',
     markFailedTitle:'Đánh dấu Thất bại (Hết Chỗ)', confirmMarkFailed:'Đánh dấu ứng viên này là không thể di chuyển do hết chỗ? Họ sẽ được chuyển sang tab "Thất bại".',
@@ -1154,6 +1160,7 @@ export function applyStaticText() {
   document.getElementById("t_lblAvNote").textContent = t("lblAvNote");
   document.getElementById("t_cancelAv").textContent = t("cancel");
   document.getElementById("t_saveAv").textContent = t("save");
+  document.getElementById("t_lblProspectDate").textContent = t("lblProspectDate");
   document.getElementById("t_lblProspectContact").textContent = t("thLeadContact");
   document.getElementById("t_lblProspectMessage").textContent = t("thLeadMessage");
   document.getElementById("t_tabMigration").textContent = t("tabMigration");
