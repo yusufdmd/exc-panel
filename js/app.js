@@ -16,7 +16,7 @@
 // o dosyalar hiç çalıştırılmaz ve tabloları hiç çizilmez.
 // =====================================================================
 
-import { getMembers, getAllPowerHistory, getAllTeamPowerHistory, getEngagementPeriods, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, getNameSuggestions, getSiteLinks, getNews, getFeaturedVideos, getRecentActivity, getSetting, subscribeToTables } from "./database.js";
+import { getMembers, getAllPowerHistory, getAllTeamPowerHistory, getEngagementPeriods, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, getNameSuggestions, getSiteLinks, getNews, getFeaturedVideos, getRecentActivity, getAccountVault, getSetting, subscribeToTables } from "./database.js";
 import { POLL_INTERVAL_MS } from "./config.js";
 import { state, t, showToast, buildLangSwitch, applyStaticText, initLangFromStorage, persistLanguage, initThemeFromStorage, toggleTheme, renderAll, registerDataLoader, registerRenderer, liveFormatNumberInput, expandPowerShorthandInput, initPowerShorthandMode, setEventWeekSort } from "./ui.js";
 import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember, openHistoryModal, closeHistoryModal, setMemberView, setRankFilter, setElementFilter, setSort, exportMembers, mapNameSuggestion, openNameSuggestModal, closeNameSuggestModal, submitNameSuggestion, approveNameSuggestion, dismissNameSuggestion, handlePowerScreenshot, removePowerUnmatchedItem, discardPowerDraft, applyPowerDraft, acceptSuspiciousPower, rejectSuspiciousPower } from "./members.js";
@@ -39,6 +39,10 @@ import { mapNewsItem, openNewsModal, closeNewsModal, saveNews, deleteNews } from
 import { mapVideoItem, openVideoModal, closeVideoModal, saveVideo, deleteVideo, moveVideo } from "./videos.js";
 import { mapActivity, restoreDeletedMember, restoreDeletedWeek, restoreDeletedSimple, showActivityDetails, closeActivityDetails } from "./activity.js";
 import { doLogin, doLogout, openChangePasswordModal, closeChangePasswordModal, submitChangePassword } from "./auth.js";
+import {
+  mapAccountVaultEntry, renderAccountVault, openAccountVaultModal, closeAccountVaultModal,
+  applyAccountVaultMemberSelection, saveAccountVault, deleteAccountVaultEntry, toggleAccountVaultReveal
+} from "./accountVault.js";
 import "./gvg.js";
 import "./svs.js";
 import "./ss.js";
@@ -86,7 +90,7 @@ async function loadAll(silent) {
       kodgvgWeeksRes, kodgvgRecordsRes,
       otherWeeksRes, otherRecordsRes,
       migrationPeriodsRes, migrationRes, migrationLeadsRes, nameSuggestionsRes, siteLinksRes, newsRes, videosRes, activityRes,
-      engagementBoardTiersRes
+      accountVaultRes, engagementBoardTiersRes
     ] = await Promise.allSettled([
       getMembers(), getAllPowerHistory(), getAllTeamPowerHistory(), getEngagementPeriods(),
       getWeeks("svs"), getAllRecords("svs"),
@@ -101,6 +105,7 @@ async function loadAll(silent) {
       restricted ? Promise.resolve([]) : getNameSuggestions(),
       getSiteLinks(), getNews(), getFeaturedVideos(),
       restricted ? Promise.resolve([]) : getRecentActivity(200),
+      restricted ? Promise.resolve([]) : getAccountVault(),
       getSetting("engagementBoardTiers", null)
     ]);
 
@@ -138,6 +143,7 @@ async function loadAll(silent) {
       news: settledList(newsRes).map(mapNewsItem),
       featuredVideos: settledList(videosRes).map(mapVideoItem),
       activityLog: settledList(activityRes).map(mapActivity),
+      accountVault: settledList(accountVaultRes).map(mapAccountVaultEntry),
       engagementBoardTiers: (() => {
         const value = engagementBoardTiersRes.status === "fulfilled" ? engagementBoardTiersRes.value : null;
         return (Array.isArray(value) && value.length === 3 && value.every((n) => Number.isFinite(n)))
@@ -170,7 +176,7 @@ setInterval(() => loadAll(true), POLL_INTERVAL_MS);
 
 let realtimeReloadTimer = null;
 subscribeToTables(
-  ["members", "power_history", "team_power_history", "engagement_periods", "gvg_weeks", "gvg_records", "svs_weeks", "svs_records", "ss_weeks", "ss_records", "kod_weeks", "kod_records", "kodgvg_weeks", "kodgvg_records", "other_weeks", "other_records", "migration_periods", "migration_prospects", "migration_leads", "name_suggestions", "site_links", "news", "featured_videos", "activity_logs"],
+  ["members", "power_history", "team_power_history", "engagement_periods", "gvg_weeks", "gvg_records", "svs_weeks", "svs_records", "ss_weeks", "ss_records", "kod_weeks", "kod_records", "kodgvg_weeks", "kodgvg_records", "other_weeks", "other_records", "migration_periods", "migration_prospects", "migration_leads", "name_suggestions", "site_links", "news", "featured_videos", "activity_logs", "account_vault"],
   () => {
     clearTimeout(realtimeReloadTimer);
     realtimeReloadTimer = setTimeout(() => loadAll(true), REALTIME_RELOAD_DEBOUNCE_MS);
@@ -222,8 +228,10 @@ function renderPanelMode() {
   backBtn.style.display = state.panelMode && !restricted ? "" : "none";
   const migrationTab = document.querySelector('#dataTabs .tab[data-tab="migration"]');
   const activityTab = document.querySelector('#dataTabs .tab[data-tab="activity"]');
+  const accountVaultTab = document.querySelector('#dataTabs .tab[data-tab="accountvault"]');
   if (migrationTab) migrationTab.style.display = restricted ? "none" : "";
   if (activityTab) activityTab.style.display = restricted ? "none" : "";
+  if (accountVaultTab) accountVaultTab.style.display = restricted ? "none" : "";
   // Üye rolü üye listesinde sadece "Aktif Üyeler"i görür — eski/göç eden üye
   // alt sekmeleri de gizlenir (bkz. members.js -> setMemberView'daki eşleşen koruma).
   const oldMembersTab = document.querySelector('.subtab[data-mv="old"]');
@@ -300,7 +308,9 @@ Object.assign(window, {
   openVideoModal, closeVideoModal, saveVideo, deleteVideo, moveVideo,
   selectPanelMode, backToChooser,
   doLogin, doLogout, toggleTheme, openChangePasswordModal, closeChangePasswordModal, submitChangePassword,
-  restoreDeletedMember, restoreDeletedWeek, restoreDeletedSimple, showActivityDetails, closeActivityDetails
+  restoreDeletedMember, restoreDeletedWeek, restoreDeletedSimple, showActivityDetails, closeActivityDetails,
+  renderAccountVault, openAccountVaultModal, closeAccountVaultModal, applyAccountVaultMemberSelection,
+  saveAccountVault, deleteAccountVaultEntry, toggleAccountVaultReveal
 });
 
 // =====================================================================

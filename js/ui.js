@@ -55,6 +55,7 @@ export const state = {
   migrationActivePeriodId: null,
   pendingProspectApprovalId: null, // "Onayla" ile üye ekleme ekranına gidilirken hangi göç adayının dönüştürüldüğünü hatırlar (bkz. members.js -> saveMember)
   migrationLeads: [], // genel tanıtım sitesindeki formdan gelen, henüz işlenmemiş ham başvurular
+  accountVault: [], // "Hesap Kasası" — sadece admin; viewer oturumunda hiç çekilmez (bkz. app.js -> loadAll)
   nameSuggestions: [], // üyelerden gelen, henüz onaylanmamış isim değişikliği önerileri (bkz. members.js -> renderNameSuggestions)
   pendingLeadProcessingId: null, // "İşle" ile aday ekleme formuna gidilirken hangi başvurunun dönüştürüldüğünü hatırlar (bkz. migration.js -> saveProspect)
   siteLinks: { discordUrl: "", youtubeUrl: "", instagramUrl: "" }, // genel tanıtım sitesindeki Discord/YouTube/Instagram linkleri (bkz. siteLinks.js)
@@ -183,6 +184,12 @@ const DICT = {
     thVideoThumb:'Görsel', thVideoTitle:'Başlık', moveUp:'Yukarı Taşı', moveDown:'Aşağı Taşı',
     processLeadTitle:'Aday Olarak İşle', confirmDismissLead:'Bu başvuruyu reddetmek/silmek istediğinize emin misiniz?', migrationLeadLabel:'Göç Başvurusu',
     toastLeadDismissed:'Başvuru silindi.', leadViewPending:'Bekleyen', leadViewRejected:'Elenenler', rejectLeadTitle:'Elenenlere taşı', restoreLeadTitle:'Bekleyenlere geri al', confirmRejectLead:'Bu başvuru elenenlere taşınsın mı?', confirmDeleteLeadPermanently:'Bu başvuru kalıcı olarak silinsin mi? (Aktivite kaydından geri yüklenebilir)', toastLeadRejected:'Başvuru elenenlere taşındı.', toastLeadRestored:'Başvuru bekleyenlere geri alındı.', engagementWinnersTitle:'Kazananlar', engagementWinnersFirst:'1. Kazanan', engagementWinnersSecond:'2. Kazanan', engagementWinnersPick:'— Seçin —', engagementWinnersSame:'1. ve 2. farklı oyuncular olmalı.', engagementWinnersMissing:'Lütfen iki kazananı da seçin.', engagementWinnersConfirm:'Dönemi Kapat',
+    tabAccountVault:'🔐 Hesap Kasası', avDesc:'Oyun hesabı devir/sahiplik süreci için tutulan bilgiler. Sadece adminler görebilir.', avAddBtn:'+ Hesap Ekle',
+    thAvGameEmail:'Oyun E-postası', thAvGamePassword:'Oyun Şifresi', thAvEmailAccess:'E-posta Erişimi', thAvRecoveryEmail:'Kurtarma E-postası', thAvRecoveryPassword:'Kurtarma Şifresi', thAvNote:'Not',
+    emptyAvTitle:'Henüz kayıt yok', emptyAvDesc:'"+ Hesap Ekle" ile ilk kaydı oluştur.',
+    lblAvMember:'Bağlı Üye (opsiyonel)', lblAvName:'İsim', lblAvGameEmail:'Oyun Hesabı E-postası', lblAvGamePassword:'Oyun Hesabı Şifresi', lblAvHasEmailAccess:'Kurtarma e-postasına erişim var', lblAvRecoveryEmail:'Kurtarma E-postası', lblAvRecoveryPassword:'Kurtarma E-postası Şifresi', lblAvNote:'Not',
+    avNoMemberOption:'— Bağımsız —', avEditTitle:'Hesabı Düzenle', avAddTitle:'Hesap Ekle', avPasswordKeepHint:'Değiştirmek için yazın (boş bırak → aynı kalsın)', avPasswordPlaceholder:'Şifre', avNameRequired:'Lütfen bir isim girin.',
+    toastAccountVaultSaved:'Hesap kaydı kaydedildi.', toastAccountVaultDeleted:'Hesap kaydı silindi.', confirmDeleteAccountVault:'Bu hesap kaydını silmek istediğinize emin misiniz?', avDecryptError:'Şifre çözülemedi.', avShow:'Göster', avHide:'Gizle', avStandaloneTag:'Bağımsız',
     statMigrationTotal:'Toplam Aday', migrationStatusCertain:'Kesin', migrationStatusWaitlist:'Yedek', migrationStatusUncertain:'Belirsiz',
     subMigrationActive:'Adaylar', subMigrationFailed:'Başarısız', statMigrationFailedTotal:'Toplam Başarısız',
     markFailedTitle:'Başarısız İşaretle (Kontenjan Yok)', confirmMarkFailed:'Bu adayı, yeterli kontenjan olmadığı için göç edemedi diye işaretlemek istiyor musunuz? Aday "Başarısız" sekmesine taşınacak.',
@@ -309,6 +316,12 @@ ebParticipationWord:'Katılım', ebFootnote:'%50\'nin altındaysan daha çok etk
     thVideoThumb:'Image', thVideoTitle:'Title', moveUp:'Move Up', moveDown:'Move Down',
     processLeadTitle:'Process as Candidate', confirmDismissLead:'Are you sure you want to dismiss/delete this request?', migrationLeadLabel:'Migration Application',
     toastLeadDismissed:'Request deleted.', leadViewPending:'Pending', leadViewRejected:'Rejected', rejectLeadTitle:'Move to rejected', restoreLeadTitle:'Restore to pending', confirmRejectLead:'Move this application to rejected?', confirmDeleteLeadPermanently:'Permanently delete this application? (It can be restored from the Activity log)', toastLeadRejected:'Application moved to rejected.', toastLeadRestored:'Application restored to pending.', engagementWinnersTitle:'Winners', engagementWinnersFirst:'1st Place', engagementWinnersSecond:'2nd Place', engagementWinnersPick:'— Select —', engagementWinnersSame:'1st and 2nd must be different players.', engagementWinnersMissing:'Please select both winners.', engagementWinnersConfirm:'Close Period',
+    tabAccountVault:'🔐 Account Vault', avDesc:'Information kept for the game account handover/ownership process. Only admins can see this.', avAddBtn:'+ Add Account',
+    thAvGameEmail:'Game Email', thAvGamePassword:'Game Password', thAvEmailAccess:'Email Access', thAvRecoveryEmail:'Recovery Email', thAvRecoveryPassword:'Recovery Password', thAvNote:'Note',
+    emptyAvTitle:'No entries yet', emptyAvDesc:'Use "+ Add Account" to create the first one.',
+    lblAvMember:'Linked Member (optional)', lblAvName:'Name', lblAvGameEmail:'Game Account Email', lblAvGamePassword:'Game Account Password', lblAvHasEmailAccess:'Has access to the recovery email', lblAvRecoveryEmail:'Recovery Email', lblAvRecoveryPassword:'Recovery Email Password', lblAvNote:'Note',
+    avNoMemberOption:'— Standalone —', avEditTitle:'Edit Account', avAddTitle:'Add Account', avPasswordKeepHint:'Type to change (leave blank to keep)', avPasswordPlaceholder:'Password', avNameRequired:'Please enter a name.',
+    toastAccountVaultSaved:'Account entry saved.', toastAccountVaultDeleted:'Account entry deleted.', confirmDeleteAccountVault:'Are you sure you want to delete this account entry?', avDecryptError:'Could not decrypt.', avShow:'Show', avHide:'Hide', avStandaloneTag:'Standalone',
     statMigrationTotal:'Total Candidates', migrationStatusCertain:'Certain', migrationStatusWaitlist:'Waitlisted', migrationStatusUncertain:'Uncertain',
     subMigrationActive:'Candidates', subMigrationFailed:'Failed', statMigrationFailedTotal:'Total Failed',
     markFailedTitle:'Mark as Failed (No Slot Available)', confirmMarkFailed:'Mark this candidate as unable to migrate due to insufficient slots? They will move to the "Failed" tab.',
@@ -435,6 +448,12 @@ ebParticipationWord:'Participation', ebFootnote:'If you\'re under 50%, consider 
     thVideoThumb:'Bild', thVideoTitle:'Titel', moveUp:'Nach oben', moveDown:'Nach unten',
     processLeadTitle:'Als Kandidat bearbeiten', confirmDismissLead:'Diese Anfrage wirklich ablehnen/löschen?', migrationLeadLabel:'Migrationsantrag',
     toastLeadDismissed:'Anfrage gelöscht.', leadViewPending:'Ausstehend', leadViewRejected:'Abgelehnt', rejectLeadTitle:'In Abgelehnt verschieben', restoreLeadTitle:'Zu Ausstehend zurücksetzen', confirmRejectLead:'Diesen Antrag in Abgelehnt verschieben?', confirmDeleteLeadPermanently:'Diesen Antrag endgültig löschen? (Wiederherstellung über das Aktivitätsprotokoll möglich)', toastLeadRejected:'Antrag in Abgelehnt verschoben.', toastLeadRestored:'Antrag zu Ausstehend zurückgesetzt.', engagementWinnersTitle:'Gewinner', engagementWinnersFirst:'1. Platz', engagementWinnersSecond:'2. Platz', engagementWinnersPick:'— Auswählen —', engagementWinnersSame:'1. und 2. müssen verschiedene Spieler sein.', engagementWinnersMissing:'Bitte beide Gewinner auswählen.', engagementWinnersConfirm:'Periode schließen',
+    tabAccountVault:'🔐 Konten-Tresor', avDesc:'Informationen für den Prozess der Kontoübergabe/-besitz. Nur Admins können dies sehen.', avAddBtn:'+ Konto hinzufügen',
+    thAvGameEmail:'Spiel-E-Mail', thAvGamePassword:'Spiel-Passwort', thAvEmailAccess:'E-Mail-Zugriff', thAvRecoveryEmail:'Wiederherstellungs-E-Mail', thAvRecoveryPassword:'Wiederherstellungs-Passwort', thAvNote:'Notiz',
+    emptyAvTitle:'Noch keine Einträge', emptyAvDesc:'Mit "+ Konto hinzufügen" den ersten Eintrag erstellen.',
+    lblAvMember:'Verknüpftes Mitglied (optional)', lblAvName:'Name', lblAvGameEmail:'E-Mail des Spielkontos', lblAvGamePassword:'Passwort des Spielkontos', lblAvHasEmailAccess:'Hat Zugriff auf die Wiederherstellungs-E-Mail', lblAvRecoveryEmail:'Wiederherstellungs-E-Mail', lblAvRecoveryPassword:'Passwort der Wiederherstellungs-E-Mail', lblAvNote:'Notiz',
+    avNoMemberOption:'— Eigenständig —', avEditTitle:'Konto bearbeiten', avAddTitle:'Konto hinzufügen', avPasswordKeepHint:'Zum Ändern eingeben (leer lassen = unverändert)', avPasswordPlaceholder:'Passwort', avNameRequired:'Bitte einen Namen eingeben.',
+    toastAccountVaultSaved:'Kontoeintrag gespeichert.', toastAccountVaultDeleted:'Kontoeintrag gelöscht.', confirmDeleteAccountVault:'Diesen Kontoeintrag wirklich löschen?', avDecryptError:'Entschlüsselung fehlgeschlagen.', avShow:'Anzeigen', avHide:'Verbergen', avStandaloneTag:'Eigenständig',
     statMigrationTotal:'Kandidaten gesamt', migrationStatusCertain:'Sicher', migrationStatusWaitlist:'Warteliste', migrationStatusUncertain:'Unsicher',
     subMigrationActive:'Kandidaten', subMigrationFailed:'Gescheitert', statMigrationFailedTotal:'Gescheitert gesamt',
     markFailedTitle:'Als gescheitert markieren (kein Platz frei)', confirmMarkFailed:'Diesen Kandidaten als "konnte wegen Platzmangel nicht migrieren" markieren? Er wird in den Tab "Gescheitert" verschoben.',
@@ -561,6 +580,12 @@ ebParticipationWord:'Teilnahme', ebFootnote:'Bist du unter 50%, nimm an mehr Eve
     thVideoThumb:'Imagen', thVideoTitle:'Título', moveUp:'Subir', moveDown:'Bajar',
     processLeadTitle:'Procesar como Candidato', confirmDismissLead:'¿Seguro que quieres rechazar/eliminar esta solicitud?', migrationLeadLabel:'Solicitud de Migración',
     toastLeadDismissed:'Solicitud eliminada.', leadViewPending:'Pendientes', leadViewRejected:'Rechazados', rejectLeadTitle:'Mover a rechazados', restoreLeadTitle:'Restaurar a pendientes', confirmRejectLead:'¿Mover esta solicitud a rechazados?', confirmDeleteLeadPermanently:'¿Eliminar esta solicitud permanentemente? (Se puede restaurar desde el registro de actividad)', toastLeadRejected:'Solicitud movida a rechazados.', toastLeadRestored:'Solicitud restaurada a pendientes.', engagementWinnersTitle:'Ganadores', engagementWinnersFirst:'1.er lugar', engagementWinnersSecond:'2.º lugar', engagementWinnersPick:'— Seleccionar —', engagementWinnersSame:'El 1.º y el 2.º deben ser jugadores distintos.', engagementWinnersMissing:'Selecciona a ambos ganadores.', engagementWinnersConfirm:'Cerrar período',
+    tabAccountVault:'🔐 Bóveda de Cuentas', avDesc:'Información guardada para el proceso de traspaso/propiedad de la cuenta del juego. Solo los administradores pueden verla.', avAddBtn:'+ Añadir Cuenta',
+    thAvGameEmail:'Correo del Juego', thAvGamePassword:'Contraseña del Juego', thAvEmailAccess:'Acceso al Correo', thAvRecoveryEmail:'Correo de Recuperación', thAvRecoveryPassword:'Contraseña de Recuperación', thAvNote:'Nota',
+    emptyAvTitle:'Aún no hay registros', emptyAvDesc:'Usa "+ Añadir Cuenta" para crear el primero.',
+    lblAvMember:'Miembro Vinculado (opcional)', lblAvName:'Nombre', lblAvGameEmail:'Correo de la Cuenta del Juego', lblAvGamePassword:'Contraseña de la Cuenta del Juego', lblAvHasEmailAccess:'Tiene acceso al correo de recuperación', lblAvRecoveryEmail:'Correo de Recuperación', lblAvRecoveryPassword:'Contraseña del Correo de Recuperación', lblAvNote:'Nota',
+    avNoMemberOption:'— Independiente —', avEditTitle:'Editar Cuenta', avAddTitle:'Añadir Cuenta', avPasswordKeepHint:'Escribe para cambiar (deja en blanco para mantener)', avPasswordPlaceholder:'Contraseña', avNameRequired:'Por favor ingresa un nombre.',
+    toastAccountVaultSaved:'Registro de cuenta guardado.', toastAccountVaultDeleted:'Registro de cuenta eliminado.', confirmDeleteAccountVault:'¿Seguro que quieres eliminar este registro de cuenta?', avDecryptError:'No se pudo desencriptar.', avShow:'Mostrar', avHide:'Ocultar', avStandaloneTag:'Independiente',
     statMigrationTotal:'Total de candidatos', migrationStatusCertain:'Seguro', migrationStatusWaitlist:'Lista de Espera', migrationStatusUncertain:'Incierto',
     subMigrationActive:'Candidatos', subMigrationFailed:'Fallidos', statMigrationFailedTotal:'Total Fallidos',
     markFailedTitle:'Marcar como Fallido (Sin Cupo)', confirmMarkFailed:'¿Marcar a este candidato como no pudo migrar por falta de cupo? Se moverá a la pestaña "Fallidos".',
@@ -687,6 +712,12 @@ ebParticipationWord:'Participación', ebFootnote:'¡Si estás por debajo del 50%
     thVideoThumb:'Image', thVideoTitle:'Titre', moveUp:'Monter', moveDown:'Descendre',
     processLeadTitle:'Traiter comme Candidat', confirmDismissLead:'Voulez-vous vraiment rejeter/supprimer cette demande ?', migrationLeadLabel:'Candidature de Migration',
     toastLeadDismissed:'Demande supprimée.', leadViewPending:'En attente', leadViewRejected:'Refusés', rejectLeadTitle:'Déplacer vers refusés', restoreLeadTitle:'Remettre en attente', confirmRejectLead:'Déplacer cette candidature vers les refusés ?', confirmDeleteLeadPermanently:'Supprimer définitivement cette candidature ? (restaurable depuis le journal d’activité)', toastLeadRejected:'Candidature déplacée vers les refusés.', toastLeadRestored:'Candidature remise en attente.', engagementWinnersTitle:'Gagnants', engagementWinnersFirst:'1re place', engagementWinnersSecond:'2e place', engagementWinnersPick:'— Choisir —', engagementWinnersSame:'La 1re et la 2e place doivent être des joueurs différents.', engagementWinnersMissing:'Veuillez sélectionner les deux gagnants.', engagementWinnersConfirm:'Clôturer la période',
+    tabAccountVault:'🔐 Coffre des Comptes', avDesc:"Informations conservées pour le processus de transfert/propriété du compte de jeu. Seuls les admins peuvent le voir.", avAddBtn:'+ Ajouter un Compte',
+    thAvGameEmail:'E-mail du Jeu', thAvGamePassword:'Mot de Passe du Jeu', thAvEmailAccess:"Accès à l'E-mail", thAvRecoveryEmail:'E-mail de Récupération', thAvRecoveryPassword:'Mot de Passe de Récupération', thAvNote:'Note',
+    emptyAvTitle:'Aucune entrée pour le moment', emptyAvDesc:'Utilisez "+ Ajouter un Compte" pour créer la première.',
+    lblAvMember:'Membre Lié (optionnel)', lblAvName:'Nom', lblAvGameEmail:'E-mail du Compte de Jeu', lblAvGamePassword:'Mot de Passe du Compte de Jeu', lblAvHasEmailAccess:"A accès à l'e-mail de récupération", lblAvRecoveryEmail:'E-mail de Récupération', lblAvRecoveryPassword:"Mot de Passe de l'E-mail de Récupération", lblAvNote:'Note',
+    avNoMemberOption:'— Indépendant —', avEditTitle:'Modifier le Compte', avAddTitle:'Ajouter un Compte', avPasswordKeepHint:'Tapez pour changer (laissez vide pour conserver)', avPasswordPlaceholder:'Mot de passe', avNameRequired:'Veuillez saisir un nom.',
+    toastAccountVaultSaved:'Entrée de compte enregistrée.', toastAccountVaultDeleted:'Entrée de compte supprimée.', confirmDeleteAccountVault:'Voulez-vous vraiment supprimer cette entrée de compte ?', avDecryptError:'Impossible de déchiffrer.', avShow:'Afficher', avHide:'Masquer', avStandaloneTag:'Indépendant',
     statMigrationTotal:'Total des candidats', migrationStatusCertain:'Certain', migrationStatusWaitlist:"Liste d'Attente", migrationStatusUncertain:'Incertain',
     subMigrationActive:'Candidats', subMigrationFailed:'Échoués', statMigrationFailedTotal:'Total Échoués',
     markFailedTitle:"Marquer comme échoué (pas de place disponible)", confirmMarkFailed:"Marquer ce candidat comme n'ayant pas pu migrer faute de place ? Il sera déplacé vers l'onglet « Échoués ».",
@@ -813,6 +844,12 @@ ebParticipationWord:'Participation', ebFootnote:"Si tu es en dessous de 50%, pen
     thVideoThumb:'Hình ảnh', thVideoTitle:'Tiêu đề', moveUp:'Di chuyển Lên', moveDown:'Di chuyển Xuống',
     processLeadTitle:'Xử lý thành Ứng viên', confirmDismissLead:'Bạn có chắc muốn từ chối/xóa yêu cầu này không?', migrationLeadLabel:'Đơn Di cư',
     toastLeadDismissed:'Đã xóa yêu cầu.', leadViewPending:'Đang chờ', leadViewRejected:'Đã loại', rejectLeadTitle:'Chuyển sang Đã loại', restoreLeadTitle:'Khôi phục về Đang chờ', confirmRejectLead:'Chuyển đơn này sang Đã loại?', confirmDeleteLeadPermanently:'Xóa vĩnh viễn đơn này? (có thể khôi phục từ nhật ký hoạt động)', toastLeadRejected:'Đã chuyển đơn sang Đã loại.', toastLeadRestored:'Đã khôi phục đơn về Đang chờ.', engagementWinnersTitle:'Người thắng', engagementWinnersFirst:'Hạng 1', engagementWinnersSecond:'Hạng 2', engagementWinnersPick:'— Chọn —', engagementWinnersSame:'Hạng 1 và hạng 2 phải là hai người chơi khác nhau.', engagementWinnersMissing:'Vui lòng chọn cả hai người thắng.', engagementWinnersConfirm:'Kết thúc giai đoạn',
+    tabAccountVault:'🔐 Kho Tài khoản', avDesc:'Thông tin lưu cho quá trình chuyển nhượng/sở hữu tài khoản game. Chỉ admin mới xem được.', avAddBtn:'+ Thêm Tài khoản',
+    thAvGameEmail:'Email Game', thAvGamePassword:'Mật khẩu Game', thAvEmailAccess:'Quyền truy cập Email', thAvRecoveryEmail:'Email Khôi phục', thAvRecoveryPassword:'Mật khẩu Khôi phục', thAvNote:'Ghi chú',
+    emptyAvTitle:'Chưa có bản ghi nào', emptyAvDesc:'Dùng "+ Thêm Tài khoản" để tạo bản ghi đầu tiên.',
+    lblAvMember:'Thành viên Liên kết (tùy chọn)', lblAvName:'Tên', lblAvGameEmail:'Email Tài khoản Game', lblAvGamePassword:'Mật khẩu Tài khoản Game', lblAvHasEmailAccess:'Có quyền truy cập email khôi phục', lblAvRecoveryEmail:'Email Khôi phục', lblAvRecoveryPassword:'Mật khẩu Email Khôi phục', lblAvNote:'Ghi chú',
+    avNoMemberOption:'— Độc lập —', avEditTitle:'Sửa Tài khoản', avAddTitle:'Thêm Tài khoản', avPasswordKeepHint:'Nhập để đổi (để trống để giữ nguyên)', avPasswordPlaceholder:'Mật khẩu', avNameRequired:'Vui lòng nhập tên.',
+    toastAccountVaultSaved:'Đã lưu bản ghi tài khoản.', toastAccountVaultDeleted:'Đã xóa bản ghi tài khoản.', confirmDeleteAccountVault:'Bạn có chắc muốn xóa bản ghi tài khoản này không?', avDecryptError:'Không thể giải mã.', avShow:'Hiện', avHide:'Ẩn', avStandaloneTag:'Độc lập',
     statMigrationTotal:'Tổng Ứng viên', migrationStatusCertain:'Chắc chắn', migrationStatusWaitlist:'Danh sách Chờ', migrationStatusUncertain:'Không chắc chắn',
     subMigrationActive:'Ứng viên', subMigrationFailed:'Thất bại', statMigrationFailedTotal:'Tổng Thất bại',
     markFailedTitle:'Đánh dấu Thất bại (Hết Chỗ)', confirmMarkFailed:'Đánh dấu ứng viên này là không thể di chuyển do hết chỗ? Họ sẽ được chuyển sang tab "Thất bại".',
@@ -1093,6 +1130,30 @@ export function applyStaticText() {
   document.getElementById("t_thLeadColor").textContent = t("thColor");
   document.getElementById("t_leadViewPending").textContent = t("leadViewPending");
   document.getElementById("t_leadViewRejected").textContent = t("leadViewRejected");
+  document.getElementById("t_tabAccountVault").textContent = t("tabAccountVault");
+  document.getElementById("t_avDesc").textContent = t("avDesc");
+  document.getElementById("t_avAddBtn").textContent = t("avAddBtn");
+  document.getElementById("t_thAvMember").textContent = t("lbMember");
+  document.getElementById("t_thAvGameId").textContent = t("thId");
+  document.getElementById("t_thAvGameEmail").textContent = t("thAvGameEmail");
+  document.getElementById("t_thAvGamePassword").textContent = t("thAvGamePassword");
+  document.getElementById("t_thAvEmailAccess").textContent = t("thAvEmailAccess");
+  document.getElementById("t_thAvRecoveryEmail").textContent = t("thAvRecoveryEmail");
+  document.getElementById("t_thAvRecoveryPassword").textContent = t("thAvRecoveryPassword");
+  document.getElementById("t_thAvNote").textContent = t("thAvNote");
+  document.getElementById("t_emptyAvTitle").textContent = t("emptyAvTitle");
+  document.getElementById("t_emptyAvDesc").textContent = t("emptyAvDesc");
+  document.getElementById("t_lblAvMember").textContent = t("lblAvMember");
+  document.getElementById("t_lblAvName").textContent = t("lblAvName");
+  document.getElementById("t_lblAvGameId").textContent = t("lblGameId");
+  document.getElementById("t_lblAvGameEmail").textContent = t("lblAvGameEmail");
+  document.getElementById("t_lblAvGamePassword").textContent = t("lblAvGamePassword");
+  document.getElementById("t_lblAvHasEmailAccess").textContent = t("lblAvHasEmailAccess");
+  document.getElementById("t_lblAvRecoveryEmail").textContent = t("lblAvRecoveryEmail");
+  document.getElementById("t_lblAvRecoveryPassword").textContent = t("lblAvRecoveryPassword");
+  document.getElementById("t_lblAvNote").textContent = t("lblAvNote");
+  document.getElementById("t_cancelAv").textContent = t("cancel");
+  document.getElementById("t_saveAv").textContent = t("save");
   document.getElementById("t_lblProspectContact").textContent = t("thLeadContact");
   document.getElementById("t_lblProspectMessage").textContent = t("thLeadMessage");
   document.getElementById("t_tabMigration").textContent = t("tabMigration");

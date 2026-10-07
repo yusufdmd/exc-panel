@@ -706,6 +706,51 @@ export async function getRecentActivity(limit = 50) {
 }
 
 // =====================================================================
+// ACCOUNT_VAULT — "Hesap Kasası": oyun hesabı devir/sahiplik süreci için
+// tutulan hassas bilgiler. Sadece admin okuyabilir/yazabilir (bkz.
+// sql/add_account_vault.sql). Şifre alanları (game_password_enc,
+// recovery_email_password_enc) buraya ulaşmadan ÖNCE zaten şifrelenmiş
+// olmalı (bkz. js/accountVault.js -> encryptVaultFields) — bu dosya
+// düz metin şifre kabul etmez/varsaymaz, sadece ne verilirse onu yazar.
+// =====================================================================
+export async function getAccountVault() {
+  const { data, error } = await supabase
+    .from("account_vault")
+    .select("*")
+    .order("created_at", { ascending: true });
+  if (error) dbError("Hesap kasası alınamadı", error);
+  return data;
+}
+
+export async function createAccountVaultEntry(payload) {
+  const { data, error } = await supabase
+    .from("account_vault")
+    .insert(payload)
+    .select()
+    .single();
+  if (error) dbError("Hesap kaydı eklenemedi", error);
+  return data;
+}
+
+export async function updateAccountVaultEntry(id, payload) {
+  const { data, error } = await supabase
+    .from("account_vault")
+    .update(payload)
+    .eq("id", id)
+    .select()
+    .single();
+  if (error) dbError("Hesap kaydı güncellenemedi", error);
+  return data;
+}
+
+export async function deleteAccountVaultEntry(id) {
+  const { data, error } = await supabase.from("account_vault").delete().eq("id", id).select();
+  if (error) dbError("Hesap kaydı silinemedi", error);
+  if (!data || !data.length) throw new Error("Hesap kaydı silinemedi: veritabanı hiçbir satırı silmedi.");
+  return true;
+}
+
+// =====================================================================
 // REALTIME — Tabloyu canlı dinlemek için (eski 12sn yoklamanın yerine)
 // =====================================================================
 // Kullanım: const unsubscribe = subscribeToTable('members', () => reloadUI());

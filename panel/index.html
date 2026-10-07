@@ -117,6 +117,7 @@
     <div class="tab" data-tab="board" onclick="switchTab('board')" id="t_tabBoard">Puan Sıralaması</div>
     <div class="tab" data-tab="migration" onclick="switchTab('migration')" id="t_tabMigration">Göç</div>
     <div class="tab" data-tab="activity" onclick="switchTab('activity')" id="t_tabActivity">Aktivite</div>
+    <div class="tab" data-tab="accountvault" onclick="switchTab('accountvault')" id="t_tabAccountVault">🔐 Hesap Kasası</div>
   </div>
 
   <div class="tabs" id="siteTabs" style="display:none;">
@@ -440,6 +441,37 @@
     </div>
   </div>
 
+  <!-- ACCOUNT VAULT — sadece admin (bkz. app.js -> renderPanelMode, sql/add_account_vault.sql RLS) -->
+  <div class="panel" id="panel-accountvault">
+    <p style="color:var(--text-muted); font-size:12px; margin-bottom:12px;" id="t_avDesc">Oyun hesabı devir/sahiplik süreci için tutulan bilgiler. Sadece adminler görebilir.</p>
+    <div class="toolbar">
+      <input class="search" id="accountVaultSearch" oninput="renderAccountVault()">
+      <button class="btn-primary" onclick="openAccountVaultModal()" id="t_avAddBtn">+ Hesap Ekle</button>
+    </div>
+    <div class="table-wrap" id="accountVaultTableWrap">
+      <table>
+        <thead>
+          <tr>
+            <th id="t_thAvMember">Üye</th>
+            <th id="t_thAvGameId">ID</th>
+            <th id="t_thAvGameEmail">Oyun E-postası</th>
+            <th id="t_thAvGamePassword">Oyun Şifresi</th>
+            <th id="t_thAvEmailAccess">E-posta Erişimi</th>
+            <th id="t_thAvRecoveryEmail">Kurtarma E-postası</th>
+            <th id="t_thAvRecoveryPassword">Kurtarma Şifresi</th>
+            <th id="t_thAvNote">Not</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="accountVaultRows"></tbody>
+      </table>
+    </div>
+    <div class="empty-state" id="accountVaultEmpty" style="display:none;">
+      <h3 id="t_emptyAvTitle">Henüz kayıt yok</h3>
+      <p id="t_emptyAvDesc">"+ Hesap Ekle" ile ilk kaydı oluştur.</p>
+    </div>
+  </div>
+
   <!-- SITE LINKS -->
   <div class="panel" id="panel-sitelinks">
     <div style="max-width:480px;">
@@ -610,6 +642,50 @@
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closeChangePasswordModal()" id="t_cancelChangePassword">Vazgeç</button>
       <button class="btn-primary" onclick="submitChangePassword()" id="t_submitChangePassword">Değiştir</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hesap Kasası Modalı (ekle/düzenle) — sadece admin -->
+<div class="overlay" id="accountVaultOverlay">
+  <div class="modal">
+    <h2 id="accountVaultModalTitle">Hesap Ekle</h2>
+    <input type="hidden" id="avEditId">
+    <div class="field">
+      <label id="t_lblAvMember">Bağlı Üye (opsiyonel)</label>
+      <select id="avMember" onchange="applyAccountVaultMemberSelection()"></select>
+    </div>
+    <div class="field-row">
+      <div class="field"><label id="t_lblAvName">İsim</label><input id="avName"></div>
+      <div class="field"><label id="t_lblAvGameId">ID Numarası</label><input id="avGameId" inputmode="numeric" maxlength="15"></div>
+    </div>
+    <div class="field">
+      <label id="t_lblAvGameEmail">Oyun Hesabı E-postası</label>
+      <input id="avGameEmail" type="email">
+    </div>
+    <div class="field">
+      <label id="t_lblAvGamePassword">Oyun Hesabı Şifresi</label>
+      <input id="avGamePassword" type="password" autocomplete="new-password">
+    </div>
+    <div class="toggle-row" onclick="document.getElementById('avHasEmailAccess').click()">
+      <input type="checkbox" id="avHasEmailAccess" style="width:16px;height:16px;" onclick="event.stopPropagation()">
+      <span id="t_lblAvHasEmailAccess" style="font-size:13px;">Kurtarma e-postasına erişim var</span>
+    </div>
+    <div class="field">
+      <label id="t_lblAvRecoveryEmail">Kurtarma E-postası</label>
+      <input id="avRecoveryEmail" type="email">
+    </div>
+    <div class="field">
+      <label id="t_lblAvRecoveryPassword">Kurtarma E-postası Şifresi</label>
+      <input id="avRecoveryPassword" type="password" autocomplete="new-password">
+    </div>
+    <div class="field">
+      <label id="t_lblAvNote">Not</label>
+      <textarea id="avNote" rows="2"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeAccountVaultModal()" id="t_cancelAv">Vazgeç</button>
+      <button class="btn-primary" onclick="saveAccountVault()" id="t_saveAv">Kaydet</button>
     </div>
   </div>
 </div>
