@@ -56,6 +56,7 @@ export const state = {
   pendingProspectApprovalId: null, // "Onayla" ile üye ekleme ekranına gidilirken hangi göç adayının dönüştürüldüğünü hatırlar (bkz. members.js -> saveMember)
   migrationLeads: [], // genel tanıtım sitesindeki formdan gelen, henüz işlenmemiş ham başvurular
   accountVault: [], // "Hesap Kasası" — sadece admin; viewer oturumunda hiç çekilmez (bkz. app.js -> loadAll)
+  canAccessVault: false, // admin olmaktan AYRI bir izin — varsayılan kapalı (bkz. auth.js -> applySession)
   nameSuggestions: [], // üyelerden gelen, henüz onaylanmamış isim değişikliği önerileri (bkz. members.js -> renderNameSuggestions)
   pendingLeadProcessingId: null, // "İşle" ile aday ekleme formuna gidilirken hangi başvurunun dönüştürüldüğünü hatırlar (bkz. migration.js -> saveProspect)
   siteLinks: { discordUrl: "", youtubeUrl: "", instagramUrl: "" }, // genel tanıtım sitesindeki Discord/YouTube/Instagram linkleri (bkz. siteLinks.js)

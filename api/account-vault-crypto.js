@@ -22,20 +22,26 @@ const crypto = require("crypto");
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://sbzctjpthorlypfrqgte.supabase.co";
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "sb_publishable_FNxETjiXZ4tiWqzgyR0vng_vKxGGSp9";
 
-async function verifyAdmin(token) {
+/**
+ * Admin olmak TEK BAŞINA yetmez — "Hesap Kasası" erişimi ayrı, varsayılan
+ * kapalı bir izindir (bkz. sql/add_account_vault_access_control.sql).
+ * İkisi de RPC ile, token bazında ayrı ayrı doğrulanır.
+ */
+async function verifyVaultAdmin(token) {
   if (!token) return false;
-  const roleRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/current_user_role`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${token}`
-    },
-    body: "{}"
-  });
-  if (!roleRes.ok) return false;
+  const headers = {
+    "Content-Type": "application/json",
+    apikey: SUPABASE_ANON_KEY,
+    Authorization: `Bearer ${token}`
+  };
+  const [roleRes, vaultRes] = await Promise.all([
+    fetch(`${SUPABASE_URL}/rest/v1/rpc/current_user_role`, { method: "POST", headers, body: "{}" }),
+    fetch(`${SUPABASE_URL}/rest/v1/rpc/current_user_can_access_vault`, { method: "POST", headers, body: "{}" })
+  ]);
+  if (!roleRes.ok || !vaultRes.ok) return false;
   const role = await roleRes.json().catch(() => null);
-  return role === "admin";
+  const canAccessVault = await vaultRes.json().catch(() => null);
+  return role === "admin" && canAccessVault === true;
 }
 
 function getKey() {
@@ -79,7 +85,7 @@ module.exports = async (req, res) => {
   try {
     const authHeader = req.headers.authorization || "";
     const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
-    const isAdmin = await verifyAdmin(token);
+    const isAdmin = await verifyVaultAdmin(token);
     if (!isAdmin) {
       res.status(403).json({ error: "Bu işlem için yönetici oturumu gerekli." });
       return;

@@ -105,7 +105,7 @@ async function loadAll(silent) {
       restricted ? Promise.resolve([]) : getNameSuggestions(),
       getSiteLinks(), getNews(), getFeaturedVideos(),
       restricted ? Promise.resolve([]) : getRecentActivity(200),
-      restricted ? Promise.resolve([]) : getAccountVault(),
+      restricted || !state.canAccessVault ? Promise.resolve([]) : getAccountVault(),
       getSetting("engagementBoardTiers", null)
     ]);
 
@@ -231,7 +231,7 @@ function renderPanelMode() {
   const accountVaultTab = document.querySelector('#dataTabs .tab[data-tab="accountvault"]');
   if (migrationTab) migrationTab.style.display = restricted ? "none" : "";
   if (activityTab) activityTab.style.display = restricted ? "none" : "";
-  if (accountVaultTab) accountVaultTab.style.display = restricted ? "none" : "";
+  if (accountVaultTab) accountVaultTab.style.display = (restricted || !state.canAccessVault) ? "none" : "";
   // Üye rolü üye listesinde sadece "Aktif Üyeler"i görür — eski/göç eden üye
   // alt sekmeleri de gizlenir (bkz. members.js -> setMemberView'daki eşleşen koruma).
   const oldMembersTab = document.querySelector('.subtab[data-mv="old"]');

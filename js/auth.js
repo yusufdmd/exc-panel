@@ -23,7 +23,7 @@
 import { supabase } from "./supabase.js";
 import { ADMIN_LOGIN_DOMAIN } from "./config.js";
 import { state, t, showToast, updateAdminUI, reloadAllData } from "./ui.js";
-import { getCurrentUserRole } from "./database.js";
+import { getCurrentUserRole, getCurrentUserCanAccessVault } from "./database.js";
 
 // Panel, oturum doğrulanana kadar (admin ya da üye) hiçbir veri yüklemez/
 // göstermez (bkz. updateGateVisibility) — gerçek erişim sınırı RLS'te,
@@ -56,9 +56,12 @@ async function applySession(session) {
     const role = await getCurrentUserRole();
     state.isAdmin = role === "admin";
     state.isMember = !state.isAdmin;
+    // "Hesap Kasası" admin olmaktan AYRI bir izin — viewer için hiç sorulmaz.
+    state.canAccessVault = state.isAdmin ? await getCurrentUserCanAccessVault() : false;
   } else {
     state.isAdmin = false;
     state.isMember = false;
+    state.canAccessVault = false;
   }
   updateAdminUI();
   updateGateVisibility();

@@ -69,6 +69,21 @@ export async function getCurrentUserRole() {
   return data;
 }
 
+/**
+ * "Hesap Kasası"na erişim, admin/viewer ayrımından AYRI bir izin — admin
+ * olmak yetmez, `users` tablosunda can_access_vault=true olması gerekir
+ * (bkz. sql/add_account_vault_access_control.sql). Hata/belirsizlik
+ * durumunda güvenli taraf: erişim YOK (false) döner.
+ */
+export async function getCurrentUserCanAccessVault() {
+  const { data, error } = await supabase.rpc("current_user_can_access_vault");
+  if (error) {
+    console.error("[EXC Paneli][DB] Kasa erişimi alınamadı:", error);
+    return false;
+  }
+  return !!data;
+}
+
 export async function getMember(id) {
   const { data, error } = await supabase
     .from("members")

@@ -3,9 +3,11 @@
 // =====================================================================
 // "Hesap Kasası" — oyun hesabı devir/sahiplik süreci için tutulan hassas
 // bilgiler (oyun hesabı e-postası/şifresi, kurtarma e-postası/şifresi).
-// SADECE ADMİN görebilir — bkz. sql/add_account_vault.sql (RLS) ve
-// app.js -> renderPanelMode (viewer için sekme hiç gösterilmez, zaten
-// loadAll de bu veriyi viewer oturumunda hiç çekmez).
+// Admin olmak YETMEZ — ayrıca `state.canAccessVault` (bkz. sql/
+// add_account_vault_access_control.sql, auth.js -> applySession) true
+// olmalı; varsayılan KAPALI, tek tek açılır. Her yazma/okuma fonksiyonu
+// bunu kendi başına da kontrol eder (sadece butonun gizli olmasına
+// güvenilmez) — bkz. auth.js -> submitChangePassword'daki aynı desen.
 //
 // Şifre alanları veritabanına HİÇBİR ZAMAN düz metin yazılmaz — kaydetmeden
 // önce api/account-vault-crypto.js'e (sadece admin, sunucu tarafı bir
@@ -61,6 +63,7 @@ function revealKey(id, field) {
 }
 
 export async function toggleAccountVaultReveal(id, field) {
+  if (!state.canAccessVault) return;
   const key = revealKey(id, field);
   if (revealed[key] != null) {
     delete revealed[key];
@@ -138,6 +141,7 @@ function buildAccountVaultMemberOptions(selectedMemberId) {
 }
 
 export function openAccountVaultModal(id) {
+  if (!state.canAccessVault) return;
   buildAccountVaultMemberOptions(id ? null : null);
   document.getElementById("avEditId").value = id || "";
   document.getElementById("avGamePassword").value = "";
@@ -180,6 +184,7 @@ export function applyAccountVaultMemberSelection() {
 }
 
 export async function saveAccountVault() {
+  if (!state.canAccessVault) return;
   const editId = document.getElementById("avEditId").value;
   const memberId = document.getElementById("avMember").value || null;
   const name = document.getElementById("avName").value.trim();
@@ -229,6 +234,7 @@ export async function saveAccountVault() {
 }
 
 export async function deleteAccountVaultEntry(id) {
+  if (!state.canAccessVault) return;
   if (!confirm(t("confirmDeleteAccountVault"))) return;
   const target = state.accountVault.find((e) => e.id === id);
   try {
