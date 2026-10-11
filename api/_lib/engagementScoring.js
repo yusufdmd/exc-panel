@@ -101,15 +101,4 @@ function buildEngagementBuckets(period, members, stores, tiers) {
   return buckets;
 }
 
-/** TANI AMAÇLI: bir üyenin 5 kategorideki applicable/attended dökümünü döner (bkz. send-engagement-board.js ?debug=). */
-function debugMemberBreakdown(member, period, stores) {
-  return {
-    svs: categoryStat(stores.svs.entries, member, periodWeeks(stores.svs.weeks, period), isSvsPoint),
-    ss: categoryStat(stores.ss.entries, member, periodWeeks(stores.ss.weeks, period), isSsPoint),
-    kod: categoryStat(stores.kod.entries, member, periodWeeks(stores.kod.weeks, period), isKodPoint),
-    gvg: categoryStat(stores.gvg.entries, member, periodWeeks(stores.gvg.weeks, period), isGvgPoint),
-    kodgvg: categoryStat(stores.kodgvg.entries, member, periodWeeks(stores.kodgvg.weeks, period), isGvgPoint)
-  };
-}
-
-module.exports = { buildEngagementBuckets, activeMembers, debugMemberBreakdown };
+module.exports = { buildEngagementBuckets, activeMembers };

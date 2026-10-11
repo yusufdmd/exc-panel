@@ -25,7 +25,7 @@
 // senkron bir ERR_REQUIRE_ESM fırlatıp fonksiyonu try/catch'e bile ulaşmadan çökertir.
 // Bu yüzden ikisi de aşağıda, handler içinde dinamik import() ile yükleniyor.
 const { postToDiscord } = require("./_lib/discord");
-const { buildEngagementBuckets, debugMemberBreakdown } = require("./_lib/engagementScoring");
+const { buildEngagementBuckets } = require("./_lib/engagementScoring");
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://sbzctjpthorlypfrqgte.supabase.co";
 
@@ -36,6 +36,33 @@ async function sbFetch(path) {
   });
   if (!res.ok) throw new Error(`Supabase ${path} -> HTTP ${res.status}: ${(await res.text().catch(() => "")).slice(0, 300)}`);
   return res.json();
+}
+
+/**
+ * PostgREST, limit/offset belirtilmezse bir sorguda VARSAYILAN olarak sadece
+ * ilk 1000 satırı döner (bkz. Supabase proje ayarı "db-max-rows") - üye/hafta/
+ * kayıt tabloları 1000'i aştığında sbFetch() sessizce son satırları atlardı
+ * (bkz. commit mesajı - canlı testte böyle bir kayıp yakalandı). Bu yüzden
+ * members ve her etkinlik türünün weeks/records tabloları HER ZAMAN bu
+ * sayfalanan fonksiyonla, tamamı bitene kadar çekilmeli.
+ */
+async function sbFetchAll(path) {
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const pageSize = 1000;
+  const sep = path.includes("?") ? "&" : "?";
+  let offset = 0;
+  let all = [];
+  for (;;) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}${sep}limit=${pageSize}&offset=${offset}`, {
+      headers: { apikey: key, Authorization: `Bearer ${key}` }
+    });
+    if (!res.ok) throw new Error(`Supabase ${path} -> HTTP ${res.status}: ${(await res.text().catch(() => "")).slice(0, 300)}`);
+    const page = await res.json();
+    all = all.concat(page);
+    if (page.length < pageSize) break;
+    offset += pageSize;
+  }
+  return all;
 }
 
 function mapMember(row) {
@@ -52,8 +79,8 @@ function mapEntry(type, row) {
 
 async function loadEventStore(type) {
   const [weeks, records] = await Promise.all([
-    sbFetch(`${type}_weeks?select=id,week_date`),
-    sbFetch(`${type}_records?select=*`)
+    sbFetchAll(`${type}_weeks?select=id,week_date`),
+    sbFetchAll(`${type}_records?select=*`)
   ]);
   return { weeks: weeks.map(mapWeek), entries: records.map((r) => mapEntry(type, r)) };
 }
@@ -117,7 +144,7 @@ module.exports = async (req, res) => {
 
     const [periods, membersRaw, tiersSetting] = await Promise.all([
       sbFetch("engagement_periods?end_date=is.null&select=*&limit=1"),
-      sbFetch("members?select=id,name,rank,is_old,is_migrated,joined_at,user_changed_at"),
+      sbFetchAll("members?select=id,name,rank,is_old,is_migrated,joined_at,user_changed_at"),
       sbFetch("settings?key=eq.engagementBoardTiers&select=value")
     ]);
 
@@ -136,35 +163,6 @@ module.exports = async (req, res) => {
       : [70, 50, 30];
 
     const periodApp = { startDate: period.start_date, endDate: period.end_date || null, results: period.results || null };
-
-    // GEÇİCİ TANI ARACI: ?debug=<üye adı> ile çağrılırsa, Discord'a hiçbir şey
-    // göndermeden sadece o üyenin 5 kategorideki applicable/attended dökümünü
-    // JSON olarak döner - panelden farklı sonuç çıkan bir üyeyi teşhis etmek için.
-    if (req.query && req.query.debug) {
-      const needle = String(req.query.debug).toLowerCase();
-      const match = members.find((m) => m.name.toLowerCase() === needle) || members.find((m) => m.name.toLowerCase().includes(needle));
-      if (!match) { res.status(404).json({ error: "member not found", query: req.query.debug }); return; }
-      const [rawSsRecords, rawSsWeeksRecent] = await Promise.all([
-        sbFetch(`ss_records?member_id=eq.${match.id}&select=*`),
-        sbFetch(`ss_weeks?select=*&order=week_date.desc&limit=6`)
-      ]);
-      const countRes = await fetch(`${SUPABASE_URL}/rest/v1/ss_records?select=id`, {
-        headers: { apikey: process.env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`, Prefer: "count=exact" }
-      });
-      res.status(200).json({
-        member: { id: match.id, name: match.name, isOld: match.isOld, isMigrated: match.isMigrated, joinedAt: match.joinedAt, userChangedAt: match.userChangedAt },
-        period: periodApp,
-        breakdown: debugMemberBreakdown(match, periodApp, { svs, gvg, ss, kod, kodgvg }),
-        ssWeeksInPeriod: ss.weeks.filter((w) => w.date >= periodApp.startDate),
-        ssEntriesInMemoryCount: ss.entries.length,
-        ssRecordsTotalCountHeader: countRes.headers.get("content-range"),
-        ssEntriesInMemoryForMember: ss.entries.filter((e) => e.memberId === match.id),
-        rawSsRecordsForMember: rawSsRecords,
-        rawSsWeeksRecent: rawSsWeeksRecent
-      });
-      return;
-    }
-
     const buckets = buildEngagementBuckets(periodApp, members, { svs, gvg, ss, kod, kodgvg }, tiers);
 
     const dateRange = `${period.start_date} – ongoing`;
