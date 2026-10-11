@@ -18,19 +18,31 @@
  * ise (ör. {embeds:[...]}) olduğu gibi gönderilir. `webhookUrl` verilmezse
  * varsayılan DISCORD_WEBHOOK_URL kullanılır — farklı bir kanala (ör. göç
  * bildirimleri) göndermek isteyen çağıranlar kendi env var'ını geçirir.
+ *
+ * `file` verilirse (ör. {buffer, filename, contentType}) mesaj, Discord'un
+ * webhook multipart/form-data biçimiyle bir ek dosya (ör. PNG görsel) olarak
+ * gönderilir — bkz. api/send-engagement-board.js.
  */
-async function postToDiscord(payload, webhookUrl) {
+async function postToDiscord(payload, webhookUrl, file) {
   const url = webhookUrl || process.env.DISCORD_WEBHOOK_URL;
   if (!url) {
     return { ok: false, detail: "Discord webhook URL is not set on the server." };
   }
   const body = typeof payload === "string" ? { content: payload } : payload;
   try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body)
-    });
+    let res;
+    if (file) {
+      const form = new FormData();
+      form.append("payload_json", JSON.stringify(body));
+      form.append("files[0]", new Blob([file.buffer], { type: file.contentType || "image/png" }), file.filename || "image.png");
+      res = await fetch(url, { method: "POST", body: form });
+    } else {
+      res = await fetch(url, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body)
+      });
+    }
     if (!res.ok) {
       const errBody = await res.text().catch(() => "");
       return { ok: false, detail: `Discord responded ${res.status}: ${errBody.slice(0, 300)}` };

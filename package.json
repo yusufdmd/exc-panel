@@ -5,5 +5,12 @@
   "description": "EXC Paneli - uye, rutbe, guc & kamp seviyesi, etkinlik takip paneli (Supabase destekli, statik site).",
   "scripts": {
     "dev": "npx serve . -l 3000"
+  },
+  "engines": {
+    "node": "24.x"
+  },
+  "dependencies": {
+    "puppeteer-core": "25.13.0",
+    "@sparticuz/chromium": "153.0.0"
   }
 }
