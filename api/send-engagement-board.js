@@ -144,14 +144,17 @@ module.exports = async (req, res) => {
       const needle = String(req.query.debug).toLowerCase();
       const match = members.find((m) => m.name.toLowerCase() === needle) || members.find((m) => m.name.toLowerCase().includes(needle));
       if (!match) { res.status(404).json({ error: "member not found", query: req.query.debug }); return; }
+      const [rawSsRecords, rawSsWeeksRecent] = await Promise.all([
+        sbFetch(`ss_records?member_id=eq.${match.id}&select=*`),
+        sbFetch(`ss_weeks?select=*&order=week_date.desc&limit=6`)
+      ]);
       res.status(200).json({
         member: { id: match.id, name: match.name, isOld: match.isOld, isMigrated: match.isMigrated, joinedAt: match.joinedAt, userChangedAt: match.userChangedAt },
         period: periodApp,
         breakdown: debugMemberBreakdown(match, periodApp, { svs, gvg, ss, kod, kodgvg }),
         ssWeeksInPeriod: ss.weeks.filter((w) => w.date >= periodApp.startDate),
-        ssEntriesForMember: ss.entries.filter((e) => e.memberId === match.id),
-        allSsWeeksSample: ss.weeks.slice(0, 5),
-        allSsEntriesSample: ss.entries.slice(0, 3)
+        rawSsRecordsForMember: rawSsRecords,
+        rawSsWeeksRecent: rawSsWeeksRecent
       });
       return;
     }
