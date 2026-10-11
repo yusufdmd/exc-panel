@@ -108,11 +108,13 @@ function buildBoardHtml(buckets, titleLine, subtitleLine) {
     .members { padding:12px 10px; display:flex; flex-direction:column; gap:6px; min-height:40px; }
     .m { font-size:13px; text-align:center; padding:5px 6px; border-radius:7px; background:rgba(255,255,255,0.05); color:#E6E9EF; }
     .empty { font-size:13px; text-align:center; color:#5A6272; }
+    .footnote { color:#8B94A3; font-size:12px; margin-top:16px; text-align:center; }
   </style></head><body>
     <div id="board">
       <div class="title">${escapeHtmlLite(titleLine)}</div>
       <div class="subtitle">${escapeHtmlLite(subtitleLine)}</div>
       <div class="row">${columns}</div>
+      <div class="footnote">Bilgiler sürekli güncellenmektedir. Bir yanlışlık olduğunu düşünüyorsanız lütfen bir R4 ile iletişime geçin.</div>
     </div>
   </body></html>`;
 }
@@ -163,27 +165,6 @@ module.exports = async (req, res) => {
       : [70, 50, 30];
 
     const periodApp = { startDate: period.start_date, endDate: period.end_date || null, results: period.results || null };
-
-    // GEÇİCİ TANI: ?debug=1 ile çağrılırsa hiçbir şey göndermeden JSON döner.
-    if (req.query && req.query.debug) {
-      const counts = {};
-      for (const t of ["svs", "gvg", "ss", "kod", "kodgvg"]) {
-        const r = await fetch(`${SUPABASE_URL}/rest/v1/${t}_records?select=id`, {
-          headers: { apikey: process.env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`, Prefer: "count=exact" }
-        });
-        counts[t] = { contentRange: r.headers.get("content-range"), inMemoryLength: { svs, gvg, ss, kod, kodgvg }[t].entries.length };
-      }
-      const needle = String(req.query.debug).toLowerCase();
-      const match = needle === "1" ? null : (members.find((m) => m.name.toLowerCase() === needle) || members.find((m) => m.name.toLowerCase().includes(needle)));
-      res.status(200).json({
-        now: new Date().toISOString(),
-        period: periodApp,
-        recordCounts: counts,
-        matchedMember: match ? { id: match.id, name: match.name } : null
-      });
-      return;
-    }
-
     const buckets = buildEngagementBuckets(periodApp, members, { svs, gvg, ss, kod, kodgvg }, tiers);
 
     const dateRange = `${period.start_date} – ongoing`;
