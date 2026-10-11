@@ -25,7 +25,7 @@
 // senkron bir ERR_REQUIRE_ESM fırlatıp fonksiyonu try/catch'e bile ulaşmadan çökertir.
 // Bu yüzden ikisi de aşağıda, handler içinde dinamik import() ile yükleniyor.
 const { postToDiscord } = require("./_lib/discord");
-const { buildEngagementBuckets } = require("./_lib/engagementScoring");
+const { buildEngagementBuckets, debugMemberBreakdown } = require("./_lib/engagementScoring");
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://sbzctjpthorlypfrqgte.supabase.co";
 
@@ -136,6 +136,22 @@ module.exports = async (req, res) => {
       : [70, 50, 30];
 
     const periodApp = { startDate: period.start_date, endDate: period.end_date || null, results: period.results || null };
+
+    // GEÇİCİ TANI ARACI: ?debug=<üye adı> ile çağrılırsa, Discord'a hiçbir şey
+    // göndermeden sadece o üyenin 5 kategorideki applicable/attended dökümünü
+    // JSON olarak döner - panelden farklı sonuç çıkan bir üyeyi teşhis etmek için.
+    if (req.query && req.query.debug) {
+      const needle = String(req.query.debug).toLowerCase();
+      const match = members.find((m) => m.name.toLowerCase() === needle) || members.find((m) => m.name.toLowerCase().includes(needle));
+      if (!match) { res.status(404).json({ error: "member not found", query: req.query.debug }); return; }
+      res.status(200).json({
+        member: { name: match.name, isOld: match.isOld, isMigrated: match.isMigrated, joinedAt: match.joinedAt, userChangedAt: match.userChangedAt },
+        period: periodApp,
+        breakdown: debugMemberBreakdown(match, periodApp, { svs, gvg, ss, kod, kodgvg })
+      });
+      return;
+    }
+
     const buckets = buildEngagementBuckets(periodApp, members, { svs, gvg, ss, kod, kodgvg }, tiers);
 
     const dateRange = `${period.start_date} – ongoing`;
