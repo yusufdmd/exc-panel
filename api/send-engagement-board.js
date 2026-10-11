@@ -20,8 +20,10 @@
 // işlem olan) bu fonksiyonu tetikleyip Discord'a spam atabilirdi.
 // =====================================================================
 
-const chromium = require("@sparticuz/chromium");
-const puppeteer = require("puppeteer-core");
+// @sparticuz/chromium ve puppeteer-core artık SADECE ESM paketleri (package.json'da
+// "type": "module") - bu dosya CommonJS olduğu için require() ile yüklenemiyorlar,
+// senkron bir ERR_REQUIRE_ESM fırlatıp fonksiyonu try/catch'e bile ulaşmadan çökertir.
+// Bu yüzden ikisi de aşağıda, handler içinde dinamik import() ile yükleniyor.
 const { postToDiscord } = require("./_lib/discord");
 const { buildEngagementBuckets } = require("./_lib/engagementScoring");
 
@@ -108,6 +110,11 @@ module.exports = async (req, res) => {
 
   let browser = null;
   try {
+    const [{ default: chromium }, { default: puppeteer }] = await Promise.all([
+      import("@sparticuz/chromium"),
+      import("puppeteer-core")
+    ]);
+
     const [periods, membersRaw, tiersSetting] = await Promise.all([
       sbFetch("engagement_periods?end_date=is.null&select=*&limit=1"),
       sbFetch("members?select=id,name,rank,is_old,is_migrated,joined_at,user_changed_at"),
