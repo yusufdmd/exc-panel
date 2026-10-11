@@ -145,9 +145,13 @@ module.exports = async (req, res) => {
       const match = members.find((m) => m.name.toLowerCase() === needle) || members.find((m) => m.name.toLowerCase().includes(needle));
       if (!match) { res.status(404).json({ error: "member not found", query: req.query.debug }); return; }
       res.status(200).json({
-        member: { name: match.name, isOld: match.isOld, isMigrated: match.isMigrated, joinedAt: match.joinedAt, userChangedAt: match.userChangedAt },
+        member: { id: match.id, name: match.name, isOld: match.isOld, isMigrated: match.isMigrated, joinedAt: match.joinedAt, userChangedAt: match.userChangedAt },
         period: periodApp,
-        breakdown: debugMemberBreakdown(match, periodApp, { svs, gvg, ss, kod, kodgvg })
+        breakdown: debugMemberBreakdown(match, periodApp, { svs, gvg, ss, kod, kodgvg }),
+        ssWeeksInPeriod: ss.weeks.filter((w) => w.date >= periodApp.startDate),
+        ssEntriesForMember: ss.entries.filter((e) => e.memberId === match.id),
+        allSsWeeksSample: ss.weeks.slice(0, 5),
+        allSsEntriesSample: ss.entries.slice(0, 3)
       });
       return;
     }
