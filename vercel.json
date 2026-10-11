@@ -29,6 +29,11 @@
       ]
     }
   ],
+  "functions": {
+    "api/send-engagement-board.js": {
+      "maxDuration": 60
+    }
+  },
   "crons": [
     { "path": "/api/cron-reminder?event=ss1", "schedule": "40 11 * * 5" },
     { "path": "/api/cron-reminder?event=ss2", "schedule": "40 20 * * 5" },
