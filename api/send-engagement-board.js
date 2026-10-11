@@ -148,11 +148,17 @@ module.exports = async (req, res) => {
         sbFetch(`ss_records?member_id=eq.${match.id}&select=*`),
         sbFetch(`ss_weeks?select=*&order=week_date.desc&limit=6`)
       ]);
+      const countRes = await fetch(`${SUPABASE_URL}/rest/v1/ss_records?select=id`, {
+        headers: { apikey: process.env.SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`, Prefer: "count=exact" }
+      });
       res.status(200).json({
         member: { id: match.id, name: match.name, isOld: match.isOld, isMigrated: match.isMigrated, joinedAt: match.joinedAt, userChangedAt: match.userChangedAt },
         period: periodApp,
         breakdown: debugMemberBreakdown(match, periodApp, { svs, gvg, ss, kod, kodgvg }),
         ssWeeksInPeriod: ss.weeks.filter((w) => w.date >= periodApp.startDate),
+        ssEntriesInMemoryCount: ss.entries.length,
+        ssRecordsTotalCountHeader: countRes.headers.get("content-range"),
+        ssEntriesInMemoryForMember: ss.entries.filter((e) => e.memberId === match.id),
         rawSsRecordsForMember: rawSsRecords,
         rawSsWeeksRecent: rawSsWeeksRecent
       });
