@@ -28,7 +28,7 @@ create table if not exists members (
   id                  uuid primary key default gen_random_uuid(),
   name                text, -- göç eden üyelerde bilinmeyebilir, bu yüzden NOT NULL değil
   game_id             text, -- aynı sebeple NOT NULL değil
-  discord_id          text, -- opsiyonel; Discord adı değişse de sabit kalan sayısal ID (bkz. add_member_discord_id.sql)
+  discord_id          text check (discord_id is null or discord_id ~ '^[0-9]{17,20}$'), -- opsiyonel; Discord adı değişse de sabit kalan sayısal ID (bkz. add_member_discord_id.sql)
   rank                text not null check (rank in ('R5','R4','R3','R2','R1')),
   camp_level          text not null default '1',
   power               bigint not null default 0,

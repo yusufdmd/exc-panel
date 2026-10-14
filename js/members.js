@@ -176,7 +176,7 @@ export function renderMembers() {
       <td class="sticky-col">${rowNumHtml(index)}<span class="rank-badge ${rankClass(member.rank)}">${member.rank}<span class="chev">${rankChevrons(member.rank)}</span></span></td>
       <td class="sticky-col" style="left:145px;"><span class="member-name">${escapeHtml(member.name || "—")}</span>${member.isOld ? `<span class="old-tag">OLD${state.memberView === "old" && member.oldSince ? " · " + member.oldSince : ""}</span>` : ""}${member.isMigrated ? `<span class="old-tag">${t("migratedTag")}${member.migratedTo != null ? " · " + member.migratedTo : ""}</span>` : ""}</td>
       <td class="member-id">${escapeHtml(String(member.gameId || "—"))}</td>
-      <td class="member-id">${member.discordId ? `<span style="cursor:copy;" onclick="copyDiscordId('${escapeHtml(member.discordId)}')" title="${t("copyDiscordIdTitle")}">${escapeHtml(member.discordId)}</span>` : "—"}</td>
+      <td class="member-id">${member.discordId ? `<span style="cursor:copy;" data-discord-id="${escapeHtml(member.discordId)}" onclick="copyDiscordId(this.dataset.discordId)" title="${t("copyDiscordIdTitle")}">${escapeHtml(member.discordId)}</span>` : "—"}</td>
       <td class="num-cell" title="${Number(member.power) || 0}">${powerCell}</td>
       <td class="num-cell">${escapeHtml(String(member.campLevel || "-"))}</td>
       <td class="num-cell">${member.teamPower ? `${elementBadge(member.teamElement, 20)} <span style="vertical-align:middle;">${formatPower(member.teamPower)}</span>` : "—"}</td>
