@@ -217,7 +217,7 @@ const DICT = {
     thRank:'Rütbe', thUsername:'Kullanıcı Adı', thId:'ID', thPower:'Güç Seviyesi', powerTotalLabel:'Toplam Güç Seviyesi', thCamp:'Kamp Seviyesi', thTotalPoints:'Toplam Puan',
     emptyMembersTitle:'Henüz üye yok', emptyMembersDesc:'"+ Üye Ekle" ile ilk üyeyi kaydet.',
     memberAddTitle:'Üye Ekle', memberEditTitle:'Üyeyi Düzenle',
-    lblUsername:'Kullanıcı Adı', lblGameId:'ID Numarası', lblRank:'Rütbe', lblPower:'Güç Seviyesi', lblCamp:'Kamp Seviyesi', lblJoinedAt:'Katılma Tarihi', lblOld:'Eski üye (OLD)',
+    lblUsername:'Kullanıcı Adı', lblGameId:'ID Numarası', thDiscordId:"Discord ID", lblDiscordId:"Discord ID (opsiyonel)", invalidDiscordId:"Discord ID 17-20 basamaklı bir sayı olmalıdır (Discord'da: Kullanıcıya sağ tık > Kullanıcı ID'sini Kopyala).", copyDiscordIdTitle:"Kopyalamak için tıkla", toastDiscordIdCopied:"Discord ID kopyalandı", lblRank:'Rütbe', lblPower:'Güç Seviyesi', lblCamp:'Kamp Seviyesi', lblJoinedAt:'Katılma Tarihi', lblOld:'Eski üye (OLD)',
     powerShorthandHint:'Kısayol: sadece milyon kısmını yaz, gerisini biz tamamlarız (ör. 564 → 564.000.000).',
     cancel:'Vazgeç', save:'Kaydet', close:'Kapat',
     toastMemberSaved:'Üye kaydedildi.', toastMemberDeleted:'Üye silindi.', confirmDeleteMember:'Bu üyeyi silmek istediğinize emin misiniz?',
@@ -350,7 +350,7 @@ ebParticipationWord:'Katılım', ebFootnote:'%50\'nin altındaysan daha çok etk
     thRank:'Rank', thUsername:'Username', thId:'ID', thPower:'Power Level', powerTotalLabel:'Total Power Level', thCamp:'Camp Level', thTotalPoints:'Total Points',
     emptyMembersTitle:'No members yet', emptyMembersDesc:'Use "+ Add Member" to add the first one.',
     memberAddTitle:'Add Member', memberEditTitle:'Edit Member',
-    lblUsername:'Username', lblGameId:'ID Number', lblRank:'Rank', lblPower:'Power Level', lblCamp:'Camp Level', lblJoinedAt:'Join Date', lblOld:'Old member (OLD)',
+    lblUsername:'Username', lblGameId:'ID Number', thDiscordId:"Discord ID", lblDiscordId:"Discord ID (optional)", invalidDiscordId:"Discord ID must be a 17-20 digit number (in Discord: right-click the user > Copy User ID).", copyDiscordIdTitle:"Click to copy", toastDiscordIdCopied:"Discord ID copied", lblRank:'Rank', lblPower:'Power Level', lblCamp:'Camp Level', lblJoinedAt:'Join Date', lblOld:'Old member (OLD)',
     powerShorthandHint:"Shortcut: just type the millions part, we'll fill in the rest (e.g. 564 → 564,000,000).",
     cancel:'Cancel', save:'Save', close:'Close',
     toastMemberSaved:'Member saved.', toastMemberDeleted:'Member deleted.', confirmDeleteMember:'Are you sure you want to delete this member?',
@@ -483,7 +483,7 @@ ebParticipationWord:'Participation', ebFootnote:'If you\'re under 50%, consider 
     thRank:'Rang', thUsername:'Benutzername', thId:'ID', thPower:'Machtstufe', powerTotalLabel:'Gesamte Machtstufe', thCamp:'Basisstufe', thTotalPoints:'Gesamtpunkte',
     emptyMembersTitle:'Noch keine Mitglieder', emptyMembersDesc:'Mit "+ Mitglied hinzufügen" das erste anlegen.',
     memberAddTitle:'Mitglied hinzufügen', memberEditTitle:'Mitglied bearbeiten',
-    lblUsername:'Benutzername', lblGameId:'ID-Nummer', lblRank:'Rang', lblPower:'Machtstufe', lblCamp:'Basisstufe', lblJoinedAt:'Beitrittsdatum', lblOld:'Altes Mitglied (OLD)',
+    lblUsername:'Benutzername', lblGameId:'ID-Nummer', thDiscordId:"Discord-ID", lblDiscordId:"Discord-ID (optional)", invalidDiscordId:"Die Discord-ID muss eine 17-20-stellige Zahl sein (in Discord: Rechtsklick auf den Benutzer > Benutzer-ID kopieren).", copyDiscordIdTitle:"Zum Kopieren klicken", toastDiscordIdCopied:"Discord-ID kopiert", lblRank:'Rang', lblPower:'Machtstufe', lblCamp:'Basisstufe', lblJoinedAt:'Beitrittsdatum', lblOld:'Altes Mitglied (OLD)',
     powerShorthandHint:'Abkürzung: gib nur die Millionenzahl ein, den Rest ergänzen wir (z. B. 564 → 564.000.000).',
     cancel:'Abbrechen', save:'Speichern', close:'Schließen',
     toastMemberSaved:'Mitglied gespeichert.', toastMemberDeleted:'Mitglied gelöscht.', confirmDeleteMember:'Dieses Mitglied wirklich löschen?',
@@ -616,7 +616,7 @@ ebParticipationWord:'Teilnahme', ebFootnote:'Bist du unter 50%, nimm an mehr Eve
     thRank:'Rango', thUsername:'Nombre de usuario', thId:'ID', thPower:'Nivel de poder', powerTotalLabel:'Nivel de Poder Total', thCamp:'Nivel de campamento', thTotalPoints:'Puntos totales',
     emptyMembersTitle:'Aún no hay miembros', emptyMembersDesc:'Usa "+ Añadir miembro" para agregar el primero.',
     memberAddTitle:'Añadir miembro', memberEditTitle:'Editar miembro',
-    lblUsername:'Nombre de usuario', lblGameId:'Número de ID', lblRank:'Rango', lblPower:'Nivel de poder', lblCamp:'Nivel de campamento', lblJoinedAt:'Fecha de ingreso', lblOld:'Miembro antiguo (OLD)',
+    lblUsername:'Nombre de usuario', lblGameId:'Número de ID', thDiscordId:"ID de Discord", lblDiscordId:"ID de Discord (opcional)", invalidDiscordId:"El ID de Discord debe ser un número de 17 a 20 dígitos (en Discord: clic derecho en el usuario > Copiar ID de usuario).", copyDiscordIdTitle:"Haz clic para copiar", toastDiscordIdCopied:"ID de Discord copiado", lblRank:'Rango', lblPower:'Nivel de poder', lblCamp:'Nivel de campamento', lblJoinedAt:'Fecha de ingreso', lblOld:'Miembro antiguo (OLD)',
     powerShorthandHint:'Atajo: escribe solo la parte en millones, nosotros completamos el resto (ej. 564 → 564.000.000).',
     cancel:'Cancelar', save:'Guardar', close:'Cerrar',
     toastMemberSaved:'Miembro guardado.', toastMemberDeleted:'Miembro eliminado.', confirmDeleteMember:'¿Seguro que quieres eliminar a este miembro?',
@@ -749,7 +749,7 @@ ebParticipationWord:'Participación', ebFootnote:'¡Si estás por debajo del 50%
     thRank:'Rang', thUsername:"Nom d'utilisateur", thId:'ID', thPower:'Niveau de puissance', powerTotalLabel:'Niveau de Puissance Total', thCamp:'Niveau de camp', thTotalPoints:'Points totaux',
     emptyMembersTitle:'Aucun membre pour le moment', emptyMembersDesc:'Utilisez "+ Ajouter un membre" pour ajouter le premier.',
     memberAddTitle:'Ajouter un membre', memberEditTitle:'Modifier le membre',
-    lblUsername:"Nom d'utilisateur", lblGameId:"Numéro d'ID", lblRank:'Rang', lblPower:'Niveau de puissance', lblCamp:'Niveau de camp', lblJoinedAt:"Date d'adhésion", lblOld:'Ancien membre (OLD)',
+    lblUsername:"Nom d'utilisateur", lblGameId:"Numéro d'ID", thDiscordId:"ID Discord", lblDiscordId:"ID Discord (facultatif)", invalidDiscordId:"L'ID Discord doit être un nombre de 17 à 20 chiffres (dans Discord : clic droit sur l'utilisateur > Copier l'identifiant).", copyDiscordIdTitle:"Cliquer pour copier", toastDiscordIdCopied:"ID Discord copié", lblRank:'Rang', lblPower:'Niveau de puissance', lblCamp:'Niveau de camp', lblJoinedAt:"Date d'adhésion", lblOld:'Ancien membre (OLD)',
     powerShorthandHint:'Raccourci : indiquez juste le nombre de millions, on complète le reste (ex. 564 → 564 000 000).',
     cancel:'Annuler', save:'Enregistrer', close:'Fermer',
     toastMemberSaved:'Membre enregistré.', toastMemberDeleted:'Membre supprimé.', confirmDeleteMember:'Voulez-vous vraiment supprimer ce membre ?',
@@ -882,7 +882,7 @@ ebParticipationWord:'Participation', ebFootnote:"Si tu es en dessous de 50%, pen
     thRank:'Cấp bậc', thUsername:'Tên người dùng', thId:'ID', thPower:'Sức mạnh', powerTotalLabel:'Tổng Sức mạnh', thCamp:'Cấp độ Trại', thTotalPoints:'Tổng Điểm',
     emptyMembersTitle:'Chưa có thành viên nào', emptyMembersDesc:'Dùng "+ Thêm Thành viên" để thêm người đầu tiên.',
     memberAddTitle:'Thêm Thành viên', memberEditTitle:'Sửa Thành viên',
-    lblUsername:'Tên người dùng', lblGameId:'Số ID', lblRank:'Cấp bậc', lblPower:'Sức mạnh', lblCamp:'Cấp độ Trại', lblJoinedAt:'Ngày Gia nhập', lblOld:'Thành viên cũ (OLD)',
+    lblUsername:'Tên người dùng', lblGameId:'Số ID', thDiscordId:"ID Discord", lblDiscordId:"ID Discord (tùy chọn)", invalidDiscordId:"ID Discord phải là một số có 17-20 chữ số (trong Discord: nhấp chuột phải vào người dùng > Sao chép ID người dùng).", copyDiscordIdTitle:"Nhấp để sao chép", toastDiscordIdCopied:"Đã sao chép ID Discord", lblRank:'Cấp bậc', lblPower:'Sức mạnh', lblCamp:'Cấp độ Trại', lblJoinedAt:'Ngày Gia nhập', lblOld:'Thành viên cũ (OLD)',
     powerShorthandHint:'Lối tắt: chỉ cần nhập phần triệu, phần còn lại sẽ tự động điền (vd. 564 → 564.000.000).',
     cancel:'Hủy', save:'Lưu', close:'Đóng',
     toastMemberSaved:'Đã lưu thành viên.', toastMemberDeleted:'Đã xóa thành viên.', confirmDeleteMember:'Bạn có chắc muốn xóa thành viên này không?',
@@ -1023,6 +1023,8 @@ export function applyStaticText() {
   document.getElementById("t_emptyMembersDesc").textContent = t("emptyMembersDesc");
   document.getElementById("t_lblUsername").textContent = t("lblUsername");
   document.getElementById("t_lblGameId").textContent = t("lblGameId");
+  document.getElementById("t_lblDiscordId").textContent = t("lblDiscordId");
+  document.getElementById("t_thDiscordId").textContent = t("thDiscordId");
   document.getElementById("t_lblRank").textContent = t("lblRank");
   document.getElementById("t_lblPower").textContent = t("lblPower");
   document.getElementById("t_lblCamp").textContent = t("lblCamp");

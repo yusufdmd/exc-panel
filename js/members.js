@@ -56,6 +56,7 @@ export function mapMember(row) {
     id: row.id,
     name: row.name,
     gameId: row.game_id,
+    discordId: row.discord_id || null,
     rank: row.rank,
     campLevel: row.camp_level,
     power: row.power,
@@ -126,7 +127,7 @@ export function renderMembers() {
     const matchesView = memberCategory(member) === state.memberView;
     const matchesRank = state.rankFilter === "ALL" || member.rank === state.rankFilter;
     const matchesElement = state.elementFilter === "ALL" || member.teamElement === state.elementFilter;
-    const matchesQuery = !query || (member.name || "").toLowerCase().includes(query) || String(member.gameId || "").toLowerCase().includes(query);
+    const matchesQuery = !query || (member.name || "").toLowerCase().includes(query) || String(member.gameId || "").toLowerCase().includes(query) || String(member.discordId || "").includes(query);
     return matchesView && matchesRank && matchesElement && matchesQuery;
   });
 
@@ -175,6 +176,7 @@ export function renderMembers() {
       <td class="sticky-col">${rowNumHtml(index)}<span class="rank-badge ${rankClass(member.rank)}">${member.rank}<span class="chev">${rankChevrons(member.rank)}</span></span></td>
       <td class="sticky-col" style="left:145px;"><span class="member-name">${escapeHtml(member.name || "—")}</span>${member.isOld ? `<span class="old-tag">OLD${state.memberView === "old" && member.oldSince ? " · " + member.oldSince : ""}</span>` : ""}${member.isMigrated ? `<span class="old-tag">${t("migratedTag")}${member.migratedTo != null ? " · " + member.migratedTo : ""}</span>` : ""}</td>
       <td class="member-id">${escapeHtml(String(member.gameId || "—"))}</td>
+      <td class="member-id">${member.discordId ? `<span style="cursor:copy;" onclick="copyDiscordId('${escapeHtml(member.discordId)}')" title="${t("copyDiscordIdTitle")}">${escapeHtml(member.discordId)}</span>` : "—"}</td>
       <td class="num-cell" title="${Number(member.power) || 0}">${powerCell}</td>
       <td class="num-cell">${escapeHtml(String(member.campLevel || "-"))}</td>
       <td class="num-cell">${member.teamPower ? `${elementBadge(member.teamElement, 20)} <span style="vertical-align:middle;">${formatPower(member.teamPower)}</span>` : "—"}</td>
@@ -191,6 +193,16 @@ export function renderMembers() {
   }).join("");
 }
 registerRenderer(renderMembers);
+
+/** Üye listesindeki Discord ID'ye tıklanınca panoya kopyalar (Discord'da kullanıcı aramak için). */
+export async function copyDiscordId(discordId) {
+  try {
+    await navigator.clipboard.writeText(discordId);
+    showToast(t("toastDiscordIdCopied"));
+  } catch (error) {
+    console.error(error);
+  }
+}
 
 export function setMemberView(view) {
   // Üye (viewer) rolü sadece "Aktif Üyeler"i görebilir (bkz. app.js -> renderPanelMode,
@@ -234,12 +246,12 @@ export function exportMembers() {
   openExportModal(t("exportBtn"), items, (selectedIds) => {
     const list = state.members.filter((m) => selectedIds.includes(memberCategory(m)));
     const rows = [[
-      t("thRank"), t("thUsername"), t("thId"), t("thPower"), t("thCamp"),
+      t("thRank"), t("thUsername"), t("thId"), t("thDiscordId"), t("thPower"), t("thCamp"),
       t("lblTeamPower"), t("lblTeamElement"), t("lblJoinedAt"), t("thListView")
     ]];
     list.forEach((m) => {
       rows.push([
-        m.rank, m.name || "", m.gameId || "", Number(m.power) || 0, m.campLevel || "",
+        m.rank, m.name || "", m.gameId || "", m.discordId || "", Number(m.power) || 0, m.campLevel || "",
         Number(m.teamPower) || 0, m.teamElement ? elementLabel(m.teamElement) : t("elementNone"),
         (m.joinedAt || "").slice(0, 10), listLabel[memberCategory(m)]
       ]);
@@ -399,6 +411,7 @@ export function openMemberModal(id) {
     document.getElementById("memberModalTitle").textContent = t("memberEditTitle");
     document.getElementById("fName").value = member.name || "";
     document.getElementById("fGameId").value = member.gameId || "";
+    document.getElementById("fDiscordId").value = member.discordId || "";
     document.getElementById("fRank").value = member.rank;
     document.getElementById("fPower").value = formatNumberInput(member.power);
     document.getElementById("fCamp").value = member.campLevel;
@@ -414,7 +427,7 @@ export function openMemberModal(id) {
     state.migratedFlag = !!member.isMigrated;
   } else {
     document.getElementById("memberModalTitle").textContent = t("memberAddTitle");
-    ["fName", "fGameId", "fPower", "fMigratedTo", "fTeamPower", "fTeamElement"].forEach((fieldId) => { document.getElementById(fieldId).value = ""; });
+    ["fName", "fGameId", "fDiscordId", "fPower", "fMigratedTo", "fTeamPower", "fTeamElement"].forEach((fieldId) => { document.getElementById(fieldId).value = ""; });
     setElementPickerActive("");
     document.getElementById("fRank").value = "R1";
     document.getElementById("fCamp").value = "1";
@@ -506,6 +519,12 @@ export async function saveMember() {
     return;
   }
   if (!confirmDuplicateGameId(gameId, editId)) return;
+  // Discord ID opsiyoneldir; girildiyse Discord'un sayısal "snowflake" biçiminde (17-20 basamak) olmalı.
+  const discordId = document.getElementById("fDiscordId").value.trim();
+  if (discordId && !/^d{17,20}$/.test(discordId)) {
+    showToast(t("invalidDiscordId"));
+    return;
+  }
 
   const powerRaw = expandPowerShorthand(document.getElementById("fPower").value.trim());
   const teamPowerRaw = expandPowerShorthand(document.getElementById("fTeamPower").value.trim());
@@ -550,7 +569,7 @@ export async function saveMember() {
       }
 
       const row = await updateMember(editId, {
-        name: name || null, game_id: gameId || null, rank, power, camp_level: campLevel,
+        name: name || null, game_id: gameId || null, discord_id: discordId || null, rank, power, camp_level: campLevel,
         team_power: teamPower, team_element: teamElement,
         is_old: state.oldFlag, old_since: oldSince, name_history: nameHistory,
         is_migrated: state.migratedFlag, migrated_to_server: migratedTo,
@@ -579,7 +598,7 @@ export async function saveMember() {
     } else {
       const today = todayStr();
       const row = await createMember({
-        name: name || null, game_id: gameId || null, rank, power, camp_level: campLevel,
+        name: name || null, game_id: gameId || null, discord_id: discordId || null, rank, power, camp_level: campLevel,
         team_power: teamPower, team_element: teamElement,
         is_old: state.oldFlag, old_since: state.oldFlag ? today : null,
         is_migrated: state.migratedFlag, migrated_to_server: migratedTo,
@@ -620,7 +639,7 @@ export async function saveMember() {
 /** Bir üyeyi (app-shape), `createMember`'a doğrudan geri verilebilecek veritabanı satırı şekline çevirir — silme anlık görüntüsü (bkz. deleteMember) ve activity.js -> restoreDeletedMember için. */
 function memberToDbSnapshot(member) {
   return {
-    id: member.id, name: member.name, game_id: member.gameId, rank: member.rank, camp_level: member.campLevel,
+    id: member.id, name: member.name, game_id: member.gameId, discord_id: member.discordId || null, rank: member.rank, camp_level: member.campLevel,
     power: member.power, team_power: member.teamPower, team_element: member.teamElement,
     is_old: member.isOld, old_since: member.oldSince, joined_at: member.joinedAt, user_changed_at: member.userChangedAt,
     name_history: member.nameHistory, is_migrated: member.isMigrated, migrated_to_server: member.migratedTo
