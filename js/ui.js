@@ -58,6 +58,7 @@ export const state = {
   accountVault: [], // "Hesap Kasası" — sadece admin; viewer oturumunda hiç çekilmez (bkz. app.js -> loadAll)
   canAccessVault: false, // admin olmaktan AYRI bir izin — varsayılan kapalı (bkz. auth.js -> applySession)
   nameSuggestions: [], // üyelerden gelen, henüz onaylanmamış isim değişikliği önerileri (bkz. members.js -> renderNameSuggestions)
+  selfReportSubmissions: [], // Discord /katilim-bildir ile gelen, henüz onaylanmamış katılım bildirimleri (bkz. selfReports.js)
   pendingLeadProcessingId: null, // "İşle" ile aday ekleme formuna gidilirken hangi başvurunun dönüştürüldüğünü hatırlar (bkz. migration.js -> saveProspect)
   siteLinks: { discordUrl: "", youtubeUrl: "", instagramUrl: "" }, // genel tanıtım sitesindeki Discord/YouTube/Instagram linkleri (bkz. siteLinks.js)
   news: [], // ana sayfadaki "Haberler" bölümünün içeriği (bkz. news.js)
@@ -278,6 +279,12 @@ ebParticipationWord:'Katılım', ebFootnote:'%50\'nin altındaysan daha çok etk
     confirmApproveNameSuggestion:'Bu ismi onaylayıp üyenin kayıtlı adını değiştirmek istiyor musunuz?', confirmDismissNameSuggestion:'Bu öneriyi reddetmek istediğinize emin misiniz?',
     toastNameSuggestionApproved:'İsim değişikliği onaylandı.', toastNameSuggestionDismissed:'Öneri reddedildi.',
     nameSuggestionMemberGone:'Bu öneriyi yapan üye artık listede yok.',
+    selfReportsHeading:'🖼️ Discord\'dan Kendi Bildirdiği Katılımlar', emptySelfReportsDesc:'Oyuncuların /katilim-bildir komutuyla Discord\'dan kendi gönderdiği katılım kayıtları burada görünecek.',
+    thSelfReportMember:'Üye', thSelfReportEvent:'Etkinlik', thSelfReportSummary:'AI Okuması', thSelfReportDate:'Tarih',
+    selfReportUnmatched:'AI görselde bu üyeyi bulamadı', selfReportViewImage:'Ekran görüntüsünü gör',
+    approveSelfReportTitle:'Onayla ve kaydet', rejectSelfReportTitle:'Reddet',
+    confirmApproveSelfReport:'Bu kaydı onaylayıp ilgili etkinlik tablosuna işlemek istiyor musunuz?', confirmRejectSelfReport:'Bu bildirimi reddetmek istediğinize emin misiniz?',
+    toastSelfReportApproved:'Bildirim onaylandı ve kaydedildi.', toastSelfReportRejected:'Bildirim reddedildi.',
     weekReport:'Hafta Raporu', sortByWeekTitle:'Bu haftaya göre sırala', zoneGreen:'Yeşil Bölge', zoneYellow:'Sarı Bölge', zoneRed:'Kırmızı Bölge',
     weekEditTitle:'Haftayı Düzenle', eventEditTitle:'Etkinliği Düzenle',
     overallReportBtn:'📊 Genel Rapor', overallReport:'Genel Rapor', thWeeks:'Haftalar',
@@ -1223,6 +1230,12 @@ export function applyStaticText() {
   document.getElementById("t_emptyNameSuggestionsDesc").textContent = t("emptyNameSuggestionsDesc");
   document.getElementById("t_thCurrentName2").textContent = t("lblUsername");
   document.getElementById("t_thSuggestedName").textContent = t("thSuggestedName");
+  document.getElementById("t_selfReportsHeading").textContent = t("selfReportsHeading");
+  document.getElementById("t_emptySelfReportsDesc").textContent = t("emptySelfReportsDesc");
+  document.getElementById("t_thSelfReportMember").textContent = t("thSelfReportMember");
+  document.getElementById("t_thSelfReportEvent").textContent = t("thSelfReportEvent");
+  document.getElementById("t_thSelfReportSummary").textContent = t("thSelfReportSummary");
+  document.getElementById("t_thSelfReportDate").textContent = t("thSelfReportDate");
   document.getElementById("t_thNsDate").textContent = t("thWhen");
   document.getElementById("t_siteLinksDesc").textContent = t("siteLinksDesc");
   document.getElementById("t_lblDiscordUrl").textContent = t("lblDiscordUrl");

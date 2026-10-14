@@ -299,6 +299,26 @@ export async function deleteNameSuggestion(id) {
 }
 
 // =====================================================================
+// SELF_REPORT_SUBMISSIONS — Discord "/katilim-bildir" ile gelen, admin
+// onayı bekleyen katılım bildirimleri (bkz. sql/add_self_report_submissions.sql)
+// =====================================================================
+export async function getSelfReportSubmissions() {
+  const { data, error } = await supabase
+    .from("self_report_submissions")
+    .select("*")
+    .eq("status", "pending")
+    .order("created_at", { ascending: true });
+  if (error) dbError("Bildirimler alınamadı", error);
+  return data;
+}
+
+export async function updateSelfReportSubmission(id, payload) {
+  const { error } = await supabase.from("self_report_submissions").update(payload).eq("id", id);
+  if (error) dbError("Bildirim güncellenemedi", error);
+  return true;
+}
+
+// =====================================================================
 // POWER_HISTORY — Güç seviyesi geçmişi
 // =====================================================================
 export async function getPowerHistory(memberId) {

@@ -147,6 +147,27 @@
         </table>
       </div>
     </div>
+    <div class="admin-only" id="selfReportsSection">
+      <h3 style="font-size:13px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); margin-bottom:10px;" id="t_selfReportsHeading">🖼️ Discord'dan Kendi Bildirdiği Katılımlar</h3>
+      <div class="empty-state" id="selfReportsEmpty" style="display:none; padding:24px;">
+        <p id="t_emptySelfReportsDesc">Oyuncuların /katilim-bildir komutuyla Discord'dan kendi gönderdiği katılım kayıtları burada görünecek.</p>
+      </div>
+      <div class="table-wrap" id="selfReportsTableWrap" style="margin-bottom:20px;">
+        <table>
+          <thead>
+            <tr>
+              <th id="t_thSelfReportMember">Üye</th>
+              <th id="t_thSelfReportEvent">Etkinlik</th>
+              <th id="t_thSelfReportSummary">AI Okuması</th>
+              <th id="t_thSelfReportDate">Tarih</th>
+              <th></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="selfReportsRows"></tbody>
+        </table>
+      </div>
+    </div>
     <div class="subtabs">
       <div class="subtab active" data-mv="active" onclick="setMemberView('active')" id="t_subActiveMembers">Aktif Üyeler</div>
       <div class="subtab" data-mv="old" onclick="setMemberView('old')" id="t_subOldMembers">Eski Üyeler (OLD)</div>

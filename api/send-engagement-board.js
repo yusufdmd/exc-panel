@@ -26,44 +26,7 @@
 // Bu yüzden ikisi de aşağıda, handler içinde dinamik import() ile yükleniyor.
 const { postToDiscord } = require("./_lib/discord");
 const { buildEngagementBuckets } = require("./_lib/engagementScoring");
-
-const SUPABASE_URL = process.env.SUPABASE_URL || "https://sbzctjpthorlypfrqgte.supabase.co";
-
-async function sbFetch(path) {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    headers: { apikey: key, Authorization: `Bearer ${key}` }
-  });
-  if (!res.ok) throw new Error(`Supabase ${path} -> HTTP ${res.status}: ${(await res.text().catch(() => "")).slice(0, 300)}`);
-  return res.json();
-}
-
-/**
- * PostgREST, limit/offset belirtilmezse bir sorguda VARSAYILAN olarak sadece
- * ilk 1000 satırı döner (bkz. Supabase proje ayarı "db-max-rows") - üye/hafta/
- * kayıt tabloları 1000'i aştığında sbFetch() sessizce son satırları atlardı
- * (bkz. commit mesajı - canlı testte böyle bir kayıp yakalandı). Bu yüzden
- * members ve her etkinlik türünün weeks/records tabloları HER ZAMAN bu
- * sayfalanan fonksiyonla, tamamı bitene kadar çekilmeli.
- */
-async function sbFetchAll(path) {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const pageSize = 1000;
-  const sep = path.includes("?") ? "&" : "?";
-  let offset = 0;
-  let all = [];
-  for (;;) {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}${sep}limit=${pageSize}&offset=${offset}`, {
-      headers: { apikey: key, Authorization: `Bearer ${key}` }
-    });
-    if (!res.ok) throw new Error(`Supabase ${path} -> HTTP ${res.status}: ${(await res.text().catch(() => "")).slice(0, 300)}`);
-    const page = await res.json();
-    all = all.concat(page);
-    if (page.length < pageSize) break;
-    offset += pageSize;
-  }
-  return all;
-}
+const { sbFetch, sbFetchAll } = require("./_lib/supabaseAdmin");
 
 function mapMember(row) {
   return { id: row.id, name: row.name, rank: row.rank, isOld: !!row.is_old, isMigrated: !!row.is_migrated, joinedAt: row.joined_at, userChangedAt: row.user_changed_at || null };

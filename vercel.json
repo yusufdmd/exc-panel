@@ -32,6 +32,9 @@
   "functions": {
     "api/send-engagement-board.js": {
       "maxDuration": 60
+    },
+    "api/discord-interactions.js": {
+      "maxDuration": 30
     }
   },
   "crons": [
