@@ -39,7 +39,7 @@ const SENSITIVE_TABLES = [
   "kodgvg_weeks", "kodgvg_records",
   "engagement_periods",
   "migration_periods", "migration_prospects", "migration_leads",
-  "name_suggestions", "settings", "users", "activity_logs"
+  "name_suggestions", "settings", "users", "activity_logs", "member_discord_ids"
 ];
 
 /** Tek bir tabloyu anonim olarak sorgular; sızıntı varsa true döner. */

@@ -12,7 +12,7 @@
 // bağımlılık tek yönlüdür, döngü oluşmaz.
 // =====================================================================
 
-import { createMember, updateMember, deleteMember as dbDeleteMember, addPowerHistoryEntry, addTeamPowerHistoryEntry, updateMigrationProspect, createNameSuggestion, deleteNameSuggestion, logActivity } from "./database.js";
+import { createMember, updateMember, deleteMember as dbDeleteMember, setMemberDiscordId, addPowerHistoryEntry, addTeamPowerHistoryEntry, updateMigrationProspect, createNameSuggestion, deleteNameSuggestion, logActivity } from "./database.js";
 import { supabase } from "./supabase.js";
 import { RANK_LIMITS } from "./config.js";
 import {
@@ -56,7 +56,7 @@ export function mapMember(row) {
     id: row.id,
     name: row.name,
     gameId: row.game_id,
-    discordId: row.discord_id || null,
+    discordId: null, // ayrı, admin-only tablodan doldurulur (bkz. app.js -> loadAll, database.js -> getMemberDiscordIds)
     rank: row.rank,
     campLevel: row.camp_level,
     power: row.power,
@@ -176,7 +176,7 @@ export function renderMembers() {
       <td class="sticky-col">${rowNumHtml(index)}<span class="rank-badge ${rankClass(member.rank)}">${member.rank}<span class="chev">${rankChevrons(member.rank)}</span></span></td>
       <td class="sticky-col" style="left:145px;"><span class="member-name">${escapeHtml(member.name || "—")}</span>${member.isOld ? `<span class="old-tag">OLD${state.memberView === "old" && member.oldSince ? " · " + member.oldSince : ""}</span>` : ""}${member.isMigrated ? `<span class="old-tag">${t("migratedTag")}${member.migratedTo != null ? " · " + member.migratedTo : ""}</span>` : ""}</td>
       <td class="member-id">${escapeHtml(String(member.gameId || "—"))}</td>
-      <td class="member-id">${member.discordId ? `<span style="cursor:copy;" data-discord-id="${escapeHtml(member.discordId)}" onclick="copyDiscordId(this.dataset.discordId)" title="${t("copyDiscordIdTitle")}">${escapeHtml(member.discordId)}</span>` : "—"}</td>
+      <td class="member-id admin-only">${member.discordId ? `<span style="cursor:copy;" data-discord-id="${escapeHtml(member.discordId)}" onclick="copyDiscordId(this.dataset.discordId)" title="${t("copyDiscordIdTitle")}">${escapeHtml(member.discordId)}</span>` : "—"}</td>
       <td class="num-cell" title="${Number(member.power) || 0}">${powerCell}</td>
       <td class="num-cell">${escapeHtml(String(member.campLevel || "-"))}</td>
       <td class="num-cell">${member.teamPower ? `${elementBadge(member.teamElement, 20)} <span style="vertical-align:middle;">${formatPower(member.teamPower)}</span>` : "—"}</td>
@@ -365,7 +365,7 @@ export async function approveNameSuggestion(id) {
     }
     const row = await updateMember(member.id, { name: suggestion.suggestedName, name_history: nameHistory });
     const index = state.members.findIndex((m) => m.id === member.id);
-    if (index >= 0) state.members[index] = { ...mapMember(row), powerHistory: state.members[index].powerHistory };
+    if (index >= 0) state.members[index] = { ...mapMember(row), discordId: state.members[index].discordId, powerHistory: state.members[index].powerHistory };
     await deleteNameSuggestion(id);
     state.nameSuggestions = state.nameSuggestions.filter((s) => s.id !== id);
     await logActivity("updated", "member", member.id, { name: suggestion.suggestedName }, state.currentAdminUsername);
@@ -569,12 +569,13 @@ export async function saveMember() {
       }
 
       const row = await updateMember(editId, {
-        name: name || null, game_id: gameId || null, discord_id: discordId || null, rank, power, camp_level: campLevel,
+        name: name || null, game_id: gameId || null, rank, power, camp_level: campLevel,
         team_power: teamPower, team_element: teamElement,
         is_old: state.oldFlag, old_since: oldSince, name_history: nameHistory,
         is_migrated: state.migratedFlag, migrated_to_server: migratedTo,
         user_changed_at: userChangedAt, joined_at: joinedAt
       });
+      if ((discordId || null) !== (previous.discordId || null)) await setMemberDiscordId(editId, discordId || null);
 
       // Değer gerçekten değiştiyse her zaman YENİ bir satır eklenir — aynı gün içinde
       // art arda birden fazla değişiklik olsa bile hiçbiri üzerine yazılmaz/kaybolmaz
@@ -593,12 +594,12 @@ export async function saveMember() {
         teamHistory.push({ date: today, teamPower });
         await addTeamPowerHistoryEntry(editId, today, teamPower);
       }
-      state.members[index] = { ...mapMember(row), powerHistory: history, teamPowerHistory: teamHistory };
+      state.members[index] = { ...mapMember(row), discordId: discordId || null, powerHistory: history, teamPowerHistory: teamHistory };
       await logActivity("updated", "member", editId, { name: name || previous.name || "İsimsiz" }, state.currentAdminUsername);
     } else {
       const today = todayStr();
       const row = await createMember({
-        name: name || null, game_id: gameId || null, discord_id: discordId || null, rank, power, camp_level: campLevel,
+        name: name || null, game_id: gameId || null, rank, power, camp_level: campLevel,
         team_power: teamPower, team_element: teamElement,
         is_old: state.oldFlag, old_since: state.oldFlag ? today : null,
         is_migrated: state.migratedFlag, migrated_to_server: migratedTo,
@@ -606,7 +607,8 @@ export async function saveMember() {
       });
       await addPowerHistoryEntry(row.id, today, power);
       await addTeamPowerHistoryEntry(row.id, today, teamPower);
-      state.members.push({ ...mapMember(row), powerHistory: [{ date: today, power }], teamPowerHistory: [{ date: today, teamPower }] });
+      if (discordId) await setMemberDiscordId(row.id, discordId);
+      state.members.push({ ...mapMember(row), discordId: discordId || null, powerHistory: [{ date: today, power }], teamPowerHistory: [{ date: today, teamPower }] });
       await logActivity("created", "member", row.id, { name: name || "İsimsiz" }, state.currentAdminUsername);
 
       // "Onayla" akışından geldiyse (bkz. migration.js -> approveProspect), üye başarıyla
@@ -639,7 +641,7 @@ export async function saveMember() {
 /** Bir üyeyi (app-shape), `createMember`'a doğrudan geri verilebilecek veritabanı satırı şekline çevirir — silme anlık görüntüsü (bkz. deleteMember) ve activity.js -> restoreDeletedMember için. */
 function memberToDbSnapshot(member) {
   return {
-    id: member.id, name: member.name, game_id: member.gameId, discord_id: member.discordId || null, rank: member.rank, camp_level: member.campLevel,
+    id: member.id, name: member.name, game_id: member.gameId, rank: member.rank, camp_level: member.campLevel,
     power: member.power, team_power: member.teamPower, team_element: member.teamElement,
     is_old: member.isOld, old_since: member.oldSince, joined_at: member.joinedAt, user_changed_at: member.userChangedAt,
     name_history: member.nameHistory, is_migrated: member.isMigrated, migrated_to_server: member.migratedTo
@@ -653,6 +655,7 @@ export async function deleteMember(id) {
   // üyenin ve tüm etkinlik türlerindeki kayıtlarının bir anlık görüntüsü alınır.
   const snapshot = target ? {
     member: memberToDbSnapshot(target),
+    discordId: target.discordId || null,
     powerHistory: target.powerHistory || [],
     teamPowerHistory: target.teamPowerHistory || [],
     entries: {
@@ -692,7 +695,7 @@ export async function restoreMember(id) {
   }
   try {
     const row = await updateMember(id, { is_old: false, old_since: null });
-    state.members[index] = { ...mapMember(row), powerHistory: state.members[index].powerHistory };
+    state.members[index] = { ...mapMember(row), discordId: state.members[index].discordId, powerHistory: state.members[index].powerHistory };
     await logActivity("restored", "member", id, { name: row.name || "İsimsiz" }, state.currentAdminUsername);
     renderAll();
     showToast(t("toastMemberSaved"));
@@ -1132,7 +1135,7 @@ export async function applyPowerDraft() {
         history.push({ date: today, power: newPower });
         await addPowerHistoryEntry(memberId, today, newPower);
       }
-      state.members[index] = { ...mapMember(row), powerHistory: history, teamPowerHistory: previous.teamPowerHistory };
+      state.members[index] = { ...mapMember(row), discordId: previous.discordId || null, powerHistory: history, teamPowerHistory: previous.teamPowerHistory };
       await logActivity("updated", "member", memberId, { name: row.name || "İsimsiz" }, state.currentAdminUsername);
       successCount++;
     } catch (error) {

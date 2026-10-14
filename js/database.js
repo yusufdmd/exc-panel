@@ -121,6 +121,26 @@ export async function deleteMember(id) {
   return true;
 }
 
+/**
+ * Discord ID'ler members'ta değil, SADECE admin'in okuyup yazabildiği ayrı
+ * bir tabloda tutulur — üye (viewer) rolü members'ı okuyabildiği için
+ * (bkz. sql/move_discord_id_to_admin_table.sql).
+ */
+export async function getMemberDiscordIds() {
+  const { data, error } = await supabase.from("member_discord_ids").select("member_id, discord_id");
+  if (error) dbError("Discord ID'ler alınamadı", error);
+  return data;
+}
+
+/** Bir üyenin Discord ID'sini kaydeder; boş (null/"") verilirse kaydı siler. */
+export async function setMemberDiscordId(memberId, discordId) {
+  const { error } = discordId
+    ? await supabase.from("member_discord_ids").upsert({ member_id: memberId, discord_id: discordId }, { onConflict: "member_id" })
+    : await supabase.from("member_discord_ids").delete().eq("member_id", memberId);
+  if (error) dbError("Discord ID kaydedilemedi", error);
+  return true;
+}
+
 // =====================================================================
 // MIGRATION_PERIODS — Göç dönemleri (iki haftalık göç pencereleri)
 // =====================================================================

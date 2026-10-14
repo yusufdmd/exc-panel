@@ -20,7 +20,7 @@
 //     yükleme" aksiyonu yoktur — sadece kim/ne zaman girdi bilgisi tutulur.
 // =====================================================================
 
-import { createMember, createWeek, upsertRecordsBulk, addPowerHistoryEntry, addTeamPowerHistoryEntry, createMigrationProspect, createMigrationLead, createNews, createFeaturedVideo, logActivity } from "./database.js";
+import { createMember, setMemberDiscordId, createWeek, upsertRecordsBulk, addPowerHistoryEntry, addTeamPowerHistoryEntry, createMigrationProspect, createMigrationLead, createNews, createFeaturedVideo, logActivity } from "./database.js";
 import { state, t, showToast, escapeHtml, renderAll, registerRenderer, formatPower, elementLabel, migrationColorLabel, migrationStatusLabel } from "./ui.js";
 import { mapMember } from "./members.js";
 import { mapEngagementPeriod, restoreEngagementPeriodFromSnapshot } from "./engagement.js";
@@ -238,8 +238,13 @@ export async function restoreDeletedMember(activityId) {
   if (!snapshot || !snapshot.member) return;
   if (!confirm(t("confirmRestoreMember"))) return;
   try {
-    const row = await createMember(snapshot.member);
+    // Eski anlık görüntülerde discord_id members satırının içindeydi; artık ayrı
+    // admin-only tabloda tutulduğu için members'a gönderilmeden ayrılır.
+    const { discord_id: legacyDiscordId, ...memberRow } = snapshot.member;
+    const row = await createMember(memberRow);
     const restored = mapMember(row);
+    restored.discordId = snapshot.discordId || legacyDiscordId || null;
+    if (restored.discordId) await setMemberDiscordId(restored.id, restored.discordId);
     restored.powerHistory = snapshot.powerHistory || [];
     restored.teamPowerHistory = snapshot.teamPowerHistory || [];
     state.members.push(restored);

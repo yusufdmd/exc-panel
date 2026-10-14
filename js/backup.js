@@ -10,6 +10,7 @@
 
 import {
   createMember,
+  setMemberDiscordId,
   deleteMember as dbDeleteMember,
   addPowerHistoryEntry,
   createWeek as dbCreateWeek,
@@ -83,11 +84,13 @@ export function importBackup(file) {
       const memberIdMap = {};
       for (const member of newMembers) {
         const row = await createMember({
-          name: member.name, game_id: member.gameId, discord_id: /^\d{17,20}$/.test(String(member.discordId || "")) ? String(member.discordId) : null, rank: member.rank, power: Number(member.power) || 0,
+          name: member.name, game_id: member.gameId, rank: member.rank, power: Number(member.power) || 0,
           camp_level: member.campLevel, is_old: !!member.isOld, old_since: member.oldSince || null,
           joined_at: member.joinedAt || new Date().toISOString()
         });
         memberIdMap[member.id] = row.id;
+        // Geçersiz bir Discord ID geri yüklemeyi yarıda kesmesin diye sessizce atlanır.
+        if (/^\d{17,20}$/.test(String(member.discordId || ""))) await setMemberDiscordId(row.id, String(member.discordId));
         const history = Array.isArray(member.powerHistory) && member.powerHistory.length
           ? member.powerHistory
           : [{ date: (member.joinedAt || todayStr()).slice(0, 10), power: Number(member.power) || 0 }];

@@ -16,7 +16,7 @@
 // o dosyalar hiç çalıştırılmaz ve tabloları hiç çizilmez.
 // =====================================================================
 
-import { getMembers, getAllPowerHistory, getAllTeamPowerHistory, getEngagementPeriods, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, getNameSuggestions, getSiteLinks, getNews, getFeaturedVideos, getRecentActivity, getAccountVault, getSetting, subscribeToTables } from "./database.js";
+import { getMembers, getMemberDiscordIds, getAllPowerHistory, getAllTeamPowerHistory, getEngagementPeriods, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, getNameSuggestions, getSiteLinks, getNews, getFeaturedVideos, getRecentActivity, getAccountVault, getSetting, subscribeToTables } from "./database.js";
 import { POLL_INTERVAL_MS } from "./config.js";
 import { state, t, showToast, buildLangSwitch, applyStaticText, initLangFromStorage, persistLanguage, initThemeFromStorage, toggleTheme, renderAll, registerDataLoader, registerRenderer, liveFormatNumberInput, expandPowerShorthandInput, initPowerShorthandMode, setEventWeekSort } from "./ui.js";
 import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember, openHistoryModal, closeHistoryModal, copyDiscordId, setMemberView, setRankFilter, setElementFilter, setSort, exportMembers, mapNameSuggestion, openNameSuggestModal, closeNameSuggestModal, submitNameSuggestion, approveNameSuggestion, dismissNameSuggestion, handlePowerScreenshot, removePowerUnmatchedItem, discardPowerDraft, applyPowerDraft, acceptSuspiciousPower, rejectSuspiciousPower } from "./members.js";
@@ -90,7 +90,7 @@ async function loadAll(silent) {
       kodgvgWeeksRes, kodgvgRecordsRes,
       otherWeeksRes, otherRecordsRes,
       migrationPeriodsRes, migrationRes, migrationLeadsRes, nameSuggestionsRes, siteLinksRes, newsRes, videosRes, activityRes,
-      accountVaultRes, engagementBoardTiersRes
+      accountVaultRes, engagementBoardTiersRes, memberDiscordIdsRes
     ] = await Promise.allSettled([
       getMembers(), getAllPowerHistory(), getAllTeamPowerHistory(), getEngagementPeriods(),
       getWeeks("svs"), getAllRecords("svs"),
@@ -106,7 +106,8 @@ async function loadAll(silent) {
       getSiteLinks(), getNews(), getFeaturedVideos(),
       restricted ? Promise.resolve([]) : getRecentActivity(200),
       restricted || !state.canAccessVault ? Promise.resolve([]) : getAccountVault(),
-      getSetting("engagementBoardTiers", null)
+      getSetting("engagementBoardTiers", null),
+      restricted ? Promise.resolve([]) : getMemberDiscordIds()
     ]);
 
     const historyByMember = {};
@@ -119,8 +120,11 @@ async function loadAll(silent) {
       if (!teamHistoryByMember[entry.member_id]) teamHistoryByMember[entry.member_id] = [];
       teamHistoryByMember[entry.member_id].push({ date: entry.history_date, teamPower: entry.team_power });
     });
+    const discordIdByMember = {};
+    settledList(memberDiscordIdsRes).forEach((entry) => { discordIdByMember[entry.member_id] = entry.discord_id; });
     const nextMembers = settledList(membersRes).map((row) => {
       const member = mapMember(row);
+      member.discordId = discordIdByMember[row.id] || null;
       member.powerHistory = (historyByMember[row.id] || []).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
       member.teamPowerHistory = (teamHistoryByMember[row.id] || []).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
       return member;
@@ -176,7 +180,7 @@ setInterval(() => loadAll(true), POLL_INTERVAL_MS);
 
 let realtimeReloadTimer = null;
 subscribeToTables(
-  ["members", "power_history", "team_power_history", "engagement_periods", "gvg_weeks", "gvg_records", "svs_weeks", "svs_records", "ss_weeks", "ss_records", "kod_weeks", "kod_records", "kodgvg_weeks", "kodgvg_records", "other_weeks", "other_records", "migration_periods", "migration_prospects", "migration_leads", "name_suggestions", "site_links", "news", "featured_videos", "activity_logs", "account_vault"],
+  ["members", "power_history", "team_power_history", "engagement_periods", "gvg_weeks", "gvg_records", "svs_weeks", "svs_records", "ss_weeks", "ss_records", "kod_weeks", "kod_records", "kodgvg_weeks", "kodgvg_records", "other_weeks", "other_records", "migration_periods", "migration_prospects", "migration_leads", "name_suggestions", "site_links", "news", "featured_videos", "activity_logs", "account_vault", "member_discord_ids"],
   () => {
     clearTimeout(realtimeReloadTimer);
     realtimeReloadTimer = setTimeout(() => loadAll(true), REALTIME_RELOAD_DEBOUNCE_MS);
