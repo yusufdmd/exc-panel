@@ -521,7 +521,7 @@ export async function saveMember() {
   if (!confirmDuplicateGameId(gameId, editId)) return;
   // Discord ID opsiyoneldir; girildiyse Discord'un sayısal "snowflake" biçiminde (17-20 basamak) olmalı.
   const discordId = document.getElementById("fDiscordId").value.trim();
-  if (discordId && !/^d{17,20}$/.test(discordId)) {
+  if (discordId && !/^\d{17,20}$/.test(discordId)) {
     showToast(t("invalidDiscordId"));
     return;
   }
