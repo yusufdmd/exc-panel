@@ -20,6 +20,31 @@ function dbError(context, error) {
   throw new Error(`${context}: ${error?.message || "Bilinmeyen veritabanı hatası"}`);
 }
 
+/**
+ * Supabase (PostgREST), limit/range belirtilmezse bir sorguda VARSAYILAN
+ * olarak sadece ilk 1000 satırı döner (bkz. Supabase proje ayarı
+ * "db-max-rows") - tablolar büyüdükçe (ör. ss_records şu an 1000'i aşmış
+ * durumda) bu sessizce son satırları atlar. `buildQuery` İSTİKRARLI bir
+ * sıralama (.order(...)) içermeli - sıralama olmadan art arda gelen
+ * sayfalar arasında Postgres aynı satırları tekrar ya da hiç döndürmeme
+ * garantisi vermez. api/_lib/supabaseAdmin.js -> sbFetchAll ile AYNI
+ * mantık, bu tarafı da aynı hataya karşı korur (bkz. commit geçmişi -
+ * katılım panosunda bu yüzden gerçek bir veri kaybı yaşandı).
+ */
+async function fetchAllPages(buildQuery, context) {
+  const pageSize = 1000;
+  let all = [];
+  let offset = 0;
+  for (;;) {
+    const { data, error } = await buildQuery().range(offset, offset + pageSize - 1);
+    if (error) dbError(context, error);
+    all = all.concat(data);
+    if (data.length < pageSize) break;
+    offset += pageSize;
+  }
+  return all;
+}
+
 function weeksTable(type) {
   if (!EVENT_TYPES.includes(type)) throw new Error(`Bilinmeyen etkinlik türü: ${type}`);
   return `${type}_weeks`;
@@ -33,12 +58,10 @@ function recordsTable(type) {
 // MEMBERS — Üyeler
 // =====================================================================
 export async function getMembers() {
-  const { data, error } = await supabase
-    .from("members")
-    .select("*")
-    .order("created_at", { ascending: true });
-  if (error) dbError("Üyeler alınamadı", error);
-  return data;
+  return fetchAllPages(
+    () => supabase.from("members").select("*").order("created_at", { ascending: true }),
+    "Üyeler alınamadı"
+  );
 }
 
 /**
@@ -127,9 +150,10 @@ export async function deleteMember(id) {
  * (bkz. sql/move_discord_id_to_admin_table.sql).
  */
 export async function getMemberDiscordIds() {
-  const { data, error } = await supabase.from("member_discord_ids").select("member_id, discord_id");
-  if (error) dbError("Discord ID'ler alınamadı", error);
-  return data;
+  return fetchAllPages(
+    () => supabase.from("member_discord_ids").select("member_id, discord_id").order("member_id", { ascending: true }),
+    "Discord ID'ler alınamadı"
+  );
 }
 
 /** Bir üyenin Discord ID'sini kaydeder; boş (null/"") verilirse kaydı siler. */
@@ -187,13 +211,11 @@ export async function deleteMigrationPeriod(id) {
 // MIGRATION_PROSPECTS — Göç sekmesi (bize katılmak isteyen adaylar)
 // =====================================================================
 export async function getMigrationProspects() {
-  const { data, error } = await supabase
-    .from("migration_prospects")
-    .select("*")
-    .order("created_at", { ascending: true })
-    .order("id", { ascending: true }); // aynı anda toplu eklenen (aynı created_at'li) satırlar arasında kararlı sıra için
-  if (error) dbError("Göç adayları alınamadı", error);
-  return data;
+  return fetchAllPages(
+    // aynı anda toplu eklenen (aynı created_at'li) satırlar arasında kararlı sıra için ikinci .order()
+    () => supabase.from("migration_prospects").select("*").order("created_at", { ascending: true }).order("id", { ascending: true }),
+    "Göç adayları alınamadı"
+  );
 }
 
 export async function createMigrationProspect(payload) {
@@ -230,13 +252,11 @@ export async function deleteMigrationProspect(id) {
 // politikası); getMigrationLeads/deleteMigrationLead admin oturumu gerektirir.
 // =====================================================================
 export async function getMigrationLeads() {
-  const { data, error } = await supabase
-    .from("migration_leads")
-    .select("*")
-    .order("created_at", { ascending: false })
-    .order("id", { ascending: false }); // aynı anda gelen satırlar arasında kararlı sıra için
-  if (error) dbError("Göç başvuruları alınamadı", error);
-  return data;
+  return fetchAllPages(
+    // aynı anda gelen satırlar arasında kararlı sıra için ikinci .order()
+    () => supabase.from("migration_leads").select("*").order("created_at", { ascending: false }).order("id", { ascending: false }),
+    "Göç başvuruları alınamadı"
+  );
 }
 
 /**
@@ -333,14 +353,11 @@ export async function getPowerHistory(memberId) {
 }
 
 export async function getAllPowerHistory() {
-  const { data, error } = await supabase
-    .from("power_history")
-    .select("*")
-    .order("history_date", { ascending: true })
-    .order("member_id", { ascending: true }) // aynı tarihli satırlar arasında kararlı sıra için (bkz. getAllRecords yorumu)
-    .order("created_at", { ascending: true }); // aynı üye+günde birden fazla kayıt düşebildiği için gerçek kronolojik sıra
-  if (error) dbError("Güç geçmişi alınamadı", error);
-  return data;
+  return fetchAllPages(
+    // 2. .order(): aynı tarihli satırlar arasında kararlı sıra (bkz. getAllRecords yorumu). 3. .order(): aynı üye+günde birden fazla kayıt düşebildiği için gerçek kronolojik sıra.
+    () => supabase.from("power_history").select("*").order("history_date", { ascending: true }).order("member_id", { ascending: true }).order("created_at", { ascending: true }),
+    "Güç geçmişi alınamadı"
+  );
 }
 
 // Her çağrı yeni bir satır ekler (artık günde tek kayıtla sınırlı değil — bkz.
@@ -361,14 +378,10 @@ export async function addPowerHistoryEntry(memberId, historyDate, power) {
 // TEAM_POWER_HISTORY — "1. Takım Gücü" geçmişi (power_history ile birebir aynı desen)
 // =====================================================================
 export async function getAllTeamPowerHistory() {
-  const { data, error } = await supabase
-    .from("team_power_history")
-    .select("*")
-    .order("history_date", { ascending: true })
-    .order("member_id", { ascending: true }) // aynı tarihli satırlar arasında kararlı sıra için (bkz. getAllRecords yorumu)
-    .order("created_at", { ascending: true }); // aynı üye+günde birden fazla kayıt düşebildiği için gerçek kronolojik sıra
-  if (error) dbError("Takım gücü geçmişi alınamadı", error);
-  return data;
+  return fetchAllPages(
+    () => supabase.from("team_power_history").select("*").order("history_date", { ascending: true }).order("member_id", { ascending: true }).order("created_at", { ascending: true }),
+    "Takım gücü geçmişi alınamadı"
+  );
 }
 
 // Her çağrı yeni bir satır ekler — bkz. addPowerHistoryEntry, birebir aynı mantık.
@@ -389,13 +402,10 @@ export async function addTeamPowerHistoryEntry(memberId, historyDate, teamPower)
 // Tarihi girilmemiş haftalar sona düşer; aynı tarihli (veya tarihsiz) haftalar
 // arasında ise eklenme sırası (created_at) korunur.
 export async function getWeeks(type) {
-  const { data, error } = await supabase
-    .from(weeksTable(type))
-    .select("*")
-    .order("week_date", { ascending: true, nullsFirst: false })
-    .order("created_at", { ascending: true });
-  if (error) dbError(`${type.toUpperCase()} haftaları alınamadı`, error);
-  return data;
+  return fetchAllPages(
+    () => supabase.from(weeksTable(type)).select("*").order("week_date", { ascending: true, nullsFirst: false }).order("created_at", { ascending: true }),
+    `${type.toUpperCase()} haftaları alınamadı`
+  );
 }
 
 export async function createWeek(type, payload) {
@@ -450,13 +460,10 @@ export async function getRecordsForWeek(type, weekId) {
  * UNIQUE kısıtına göre her satır için tekil bir sıralama anahtarı sağlar.
  */
 export async function getAllRecords(type) {
-  const { data, error } = await supabase
-    .from(recordsTable(type))
-    .select("*")
-    .order("week_id", { ascending: true })
-    .order("member_id", { ascending: true });
-  if (error) dbError(`${type.toUpperCase()} kayıtları alınamadı`, error);
-  return data;
+  return fetchAllPages(
+    () => supabase.from(recordsTable(type)).select("*").order("week_id", { ascending: true }).order("member_id", { ascending: true }),
+    `${type.toUpperCase()} kayıtları alınamadı`
+  );
 }
 
 // payload: { week_id, member_id, ...alanlar }  — (week_id, member_id) eşleşirse günceller.
