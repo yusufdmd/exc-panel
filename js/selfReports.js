@@ -31,12 +31,15 @@ export function mapSelfReportSubmission(row) {
   };
 }
 
-/** AI'nin okuduğu veriyi admin için kısa, okunur bir özete çevirir. */
+/** AI'nin okuduğu veriyi admin için kısa, okunur bir özete çevirir — mevcut etkinlik tablolarındaki AYNI çeviri anahtarlarını kullanır. */
 function summarizeExtracted(eventType, extracted) {
   if (!extracted) return "—";
-  if (eventType === "gvg" || eventType === "kodgvg") return `${Number(extracted.points) || 0} puan`;
-  if (eventType === "kod" || eventType === "svs") return extracted.status === "joined" ? "Katıldı" : "Katılmadı";
-  if (eventType === "ss") return `${extracted.attended ? "Katıldı" : "Katılmadı"}${extracted.group ? ` (${escapeHtml(extracted.group)} grubu)` : ""}`;
+  if (eventType === "gvg" || eventType === "kodgvg") return `${Number(extracted.points) || 0} ${t("thPointsCol")}`;
+  if (eventType === "kod" || eventType === "svs") return extracted.status === "joined" ? t("legendJoined") : t("legendNotJoined");
+  if (eventType === "ss") {
+    const groupLabel = extracted.group === "A" ? t("groupA") : extracted.group === "B" ? t("groupB") : "";
+    return `${extracted.attended ? t("legendJoined") : t("legendNotJoined")}${groupLabel ? ` (${groupLabel})` : ""}`;
+  }
   return "—";
 }
 
