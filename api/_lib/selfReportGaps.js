@@ -46,7 +46,12 @@ async function findMissingMembers(type) {
     sbFetchAll("members?select=id,name,is_old,is_migrated,joined_at,user_changed_at"),
     sbFetchAll("member_discord_ids?select=member_id,discord_id"),
     sbFetchAll(`${type}_records?week_id=eq.${week.id}&select=${recordSelect}`),
-    sbFetchAll(`self_report_submissions?event_type=eq.${type}&week_id=eq.${week.id}&status=in.(pending,approved)&select=member_id`)
+    // SADECE "pending" - "approved" olmuş bir bildirim ZATEN gerçek bir kayıt
+    // yazmış olmalı (bkz. js/selfReports.js -> approveSelfReportSubmission),
+    // o yüzden gerçek kapsamı yukarıdaki realRecords belirler. "approved"ı da
+    // buraya dahil etmek, onay gerçek tabloya yazmayı başaramadığında (canlı
+    // testte tam olarak bu yaşandı) bu taramanın hatayı GİZLEMESİNE yol açardı.
+    sbFetchAll(`self_report_submissions?event_type=eq.${type}&week_id=eq.${week.id}&status=eq.pending&select=member_id`)
   ]);
 
   const discordByMember = new Map(discordLinks.map((d) => [d.member_id, d.discord_id]));
