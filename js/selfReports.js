@@ -11,7 +11,7 @@
 // =====================================================================
 
 import { updateSelfReportSubmission, upsertRecord, logActivity } from "./database.js";
-import { entryToDbPayload } from "./events.js";
+import { entryToDbPayload, mapEntry } from "./events.js";
 import { state, t, escapeHtml, showToast, registerRenderer, renderAll } from "./ui.js";
 
 const EVENT_LABELS = { svs: "SVS", ss: "Sandstorm (SS)", kod: "King of Desert (KoD)", gvg: "GVG", kodgvg: "KoD-GVG" };
@@ -70,18 +70,36 @@ function renderSelfReports() {
   }).join("");
 }
 
-/** Bir bildirimi onaylar: AI'nin okuduğu veriyi ilgili {type}_records tablosuna işler, bildirimi "approved" işaretler. */
+/**
+ * Bir bildirimi onaylar: AI'nin okuduğu veriyi ilgili {type}_records tablosuna
+ * işler, bildirimi "approved" işaretler. Onaydan ÖNCE o (hafta, üye) için
+ * NE vardıysa (hiç kayıt yoksa null) aktivite logunun details.snapshot'ına
+ * yazılır — "Aktivite" sekmesindeki ↺ ile bu TEK yazma geri alınabilsin diye
+ * (bkz. activity.js -> restoreSelfReportApproval).
+ */
 export async function approveSelfReportSubmission(id) {
   const sub = state.selfReportSubmissions.find((s) => s.id === id);
   if (!sub || sub.aiUnmatched || !sub.aiExtracted || !sub.weekId) return;
   if (!confirm(t("confirmApproveSelfReport"))) return;
   try {
+    const store = state[sub.eventType];
+    const previousEntry = store ? store.entries.find((e) => e.weekId === sub.weekId && e.memberId === sub.memberId) || null : null;
+    const week = store ? store.weeks.find((w) => w.id === sub.weekId) : null;
+    const member = state.members.find((m) => m.id === sub.memberId);
+
     const entry = { ...sub.aiExtracted, weekId: sub.weekId };
     const payload = entryToDbPayload(sub.eventType, entry, sub.memberId);
-    await upsertRecord(sub.eventType, payload);
+    const row = await upsertRecord(sub.eventType, payload);
+    const mapped = mapEntry(sub.eventType, row);
+    const index = store.entries.findIndex((e) => e.weekId === sub.weekId && e.memberId === sub.memberId);
+    if (index >= 0) store.entries[index] = mapped; else store.entries.push(mapped);
+
     await updateSelfReportSubmission(id, { status: "approved", reviewed_by: state.currentAdminUsername || null, reviewed_at: new Date().toISOString() });
     state.selfReportSubmissions = state.selfReportSubmissions.filter((s) => s.id !== id);
-    await logActivity("approved", "self_report", id, { eventType: sub.eventType, memberId: sub.memberId }, state.currentAdminUsername);
+    await logActivity("approved", "self_report", id, {
+      name: `${member ? member.name : "—"} — ${EVENT_LABELS[sub.eventType] || sub.eventType}${week ? ` (${week.date})` : ""}`,
+      snapshot: { type: sub.eventType, weekId: sub.weekId, memberId: sub.memberId, submissionId: sub.id, previousEntry }
+    }, state.currentAdminUsername);
     renderAll();
     showToast(t("toastSelfReportApproved"));
   } catch (error) {

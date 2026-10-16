@@ -20,7 +20,7 @@
 //     yükleme" aksiyonu yoktur — sadece kim/ne zaman girdi bilgisi tutulur.
 // =====================================================================
 
-import { createMember, setMemberDiscordId, createWeek, upsertRecordsBulk, addPowerHistoryEntry, addTeamPowerHistoryEntry, createMigrationProspect, createMigrationLead, createNews, createFeaturedVideo, logActivity } from "./database.js";
+import { createMember, setMemberDiscordId, createWeek, upsertRecord, upsertRecordsBulk, deleteRecord, addPowerHistoryEntry, addTeamPowerHistoryEntry, createMigrationProspect, createMigrationLead, createNews, createFeaturedVideo, getSelfReportSubmissions, updateSelfReportSubmission, logActivity } from "./database.js";
 import { state, t, showToast, escapeHtml, renderAll, registerRenderer, formatPower, elementLabel, migrationColorLabel, migrationStatusLabel } from "./ui.js";
 import { mapMember } from "./members.js";
 import { mapEngagementPeriod, restoreEngagementPeriodFromSnapshot } from "./engagement.js";
@@ -28,6 +28,7 @@ import { mapWeek, mapEntry, storeFor, entryToDbPayload, eventTypeLabel } from ".
 import { mapProspect, mapLead } from "./migration.js";
 import { mapNewsItem } from "./news.js";
 import { mapVideoItem } from "./videos.js";
+import { mapSelfReportSubmission } from "./selfReports.js";
 
 /** Supabase'ten dönen ham aktivite satırını uygulamanın kullandığı şekle çevirir. */
 export function mapActivity(row) {
@@ -42,10 +43,10 @@ export function mapActivity(row) {
   };
 }
 
-const ACTION_LABEL_KEY = { created: "actionCreated", updated: "actionUpdated", deleted: "actionDeleted", purged: "actionDeleted", restored: "actionRestored" };
-const ACTION_CLASS = { created: "pill-green", updated: "pill-blue", deleted: "pill-red", purged: "pill-red", restored: "pill-yellow" };
+const ACTION_LABEL_KEY = { created: "actionCreated", updated: "actionUpdated", deleted: "actionDeleted", purged: "actionDeleted", restored: "actionRestored", approved: "actionApproved" };
+const ACTION_CLASS = { created: "pill-green", updated: "pill-blue", deleted: "pill-red", purged: "pill-red", restored: "pill-yellow", approved: "pill-green" };
 
-const SIMPLE_ENTITY_LABEL_KEY = { member: "lbMember", migration_prospect: "tabMigration", migration_lead: "migrationLeadLabel", news: "tabNews", featured_video: "tabVideos", engagement_period: "subEngagement" };
+const SIMPLE_ENTITY_LABEL_KEY = { member: "lbMember", migration_prospect: "tabMigration", migration_lead: "migrationLeadLabel", news: "tabNews", featured_video: "tabVideos", engagement_period: "subEngagement", self_report: "selfReportEntityLabel" };
 
 /** Aktivite tablosundaki "Tür" sütunu için, entity_type değerini kısa okunur bir etikete çevirir. */
 function entityTypeLabel(entityType) {
@@ -66,27 +67,44 @@ const SIMPLE_RESTORE = {
   engagement_period: { create: restoreEngagementPeriodFromSnapshot, map: mapEngagementPeriod, list: "engagementPeriods" }
 };
 
+/**
+ * Bir aktivite kaydı için "↺ Geri Al" düğmesinin gösterilip gösterilmeyeceğini
+ * ve hangi fonksiyonu çağıracağını belirler. İki ayrı durum var:
+ *   - "deleted" + snapshot: üye/hafta/basit bir kaydın tamamen geri getirilmesi.
+ *   - "approved" self_report: bir self-report onayının yazdığı TEK kaydın
+ *     (ve varsa önceki değerinin) geri alınması (bkz. restoreSelfReportApproval).
+ */
+function restoreInfoFor(entry) {
+  const hasSnapshot = entry.details && entry.details.snapshot;
+  if (entry.action === "approved" && entry.entityType === "self_report" && hasSnapshot) {
+    return { can: true, fn: "restoreSelfReportApproval", args: `('${entry.id}')` };
+  }
+  if (entry.action !== "deleted" || !hasSnapshot) return { can: false };
+  const isMember = entry.entityType === "member";
+  const isWeek = /_week$/.test(entry.entityType || "");
+  const isSimple = !!SIMPLE_RESTORE[entry.entityType];
+  if (!isMember && !isWeek && !isSimple) return { can: false };
+  const fn = isMember ? "restoreDeletedMember" : isWeek ? "restoreDeletedWeek" : "restoreDeletedSimple";
+  const args = isSimple ? `('${entry.id}','${entry.entityType}')` : `('${entry.id}')`;
+  return { can: true, fn, args };
+}
+
 export function renderActivity() {
   const rowsEl = document.getElementById("activityRows");
   if (!rowsEl) return;
   const list = state.activityLog;
   document.getElementById("activityEmpty").style.display = list.length ? "none" : "block";
   rowsEl.innerHTML = list.map((entry) => {
-    const hasSnapshot = entry.action === "deleted" && entry.details && entry.details.snapshot;
-    const isMember = entry.entityType === "member";
-    const isWeek = /_week$/.test(entry.entityType || "");
-    const isSimple = !!SIMPLE_RESTORE[entry.entityType];
-    const canRestore = hasSnapshot && (isMember || isWeek || isSimple);
-    const restoreFn = isMember ? "restoreDeletedMember" : isWeek ? "restoreDeletedWeek" : "restoreDeletedSimple";
-    const restoreArgs = isSimple ? `('${entry.id}','${entry.entityType}')` : `('${entry.id}')`;
-    const restoreBtn = canRestore
-      ? `<button class="icon-btn admin-only" onclick="${restoreFn}${restoreArgs}" title="${t("restoreActionTitle")}">↺</button>`
+    const hasDetails = !!(entry.details && entry.details.snapshot);
+    const restoreInfo = restoreInfoFor(entry);
+    const restoreBtn = restoreInfo.can
+      ? `<button class="icon-btn admin-only" onclick="${restoreInfo.fn}${restoreInfo.args}" title="${t("restoreActionTitle")}">↺</button>`
       : "";
     // Bu tablonun verisi (state.activityLog) zaten SADECE admin oturumunda
     // çekiliyor (bkz. app.js -> loadAll, "restricted" kontrolü) — üye
     // (viewer) hesabında bu dizi hep boş kalır, o yüzden burada ayrıca bir
     // admin-only sarmalayıcıya gerek yok.
-    const nameCell = hasSnapshot
+    const nameCell = hasDetails
       ? `<span style="cursor:pointer; text-decoration:underline dotted; color:var(--cyan-ink);" onclick="showActivityDetails('${entry.id}')" title="${t("activityDetailsTitle")}">${escapeHtml(entry.entityName || "—")}</span>`
       : escapeHtml(entry.entityName || "—");
     return `<tr>
@@ -198,26 +216,30 @@ function snapshotDetailHtml(entry) {
   if (entry.entityType === "news") return renderFieldMapDetails(snapshot, NEWS_DETAIL_FIELDS);
   if (entry.entityType === "featured_video") return renderFieldMapDetails(snapshot, VIDEO_DETAIL_FIELDS);
 
+  if (entry.entityType === "self_report") {
+    const week = (storeFor(snapshot.type).weeks || []).find((w) => w.id === snapshot.weekId);
+    const rows = [
+      [t("thSelfReportEvent"), eventTypeLabel(snapshot.type)],
+      [t("thWeeks"), week ? `${week.label || ""} ${week.date ? "· " + week.date : ""}`.trim() : "—"],
+      [t("selfReportPreviousValue"), snapshot.previousEntry ? formatWeekEntryValue(snapshot.type, snapshot.previousEntry) : t("selfReportNoPreviousValue")]
+    ];
+    return renderDetailTable(rows);
+  }
+
   return `<pre style="white-space:pre-wrap; font-size:12px; color:var(--text-muted);">${escapeHtml(JSON.stringify(snapshot, null, 2))}</pre>`;
 }
 
 export function showActivityDetails(activityId) {
   const entry = state.activityLog.find((e) => e.id === activityId);
   if (!entry) return;
-  const isMember = entry.entityType === "member";
-  const isWeek = /_week$/.test(entry.entityType || "");
-  const isSimple = !!SIMPLE_RESTORE[entry.entityType];
-  const hasSnapshot = entry.action === "deleted" && entry.details && entry.details.snapshot;
-  const canRestore = hasSnapshot && (isMember || isWeek || isSimple);
-  const restoreFn = isMember ? "restoreDeletedMember" : isWeek ? "restoreDeletedWeek" : "restoreDeletedSimple";
-  const restoreArgs = isSimple ? `('${entry.id}','${entry.entityType}')` : `('${entry.id}')`;
+  const restoreInfo = restoreInfoFor(entry);
 
   document.getElementById("activityDetailsTitleText").textContent = entry.entityName || "—";
   document.getElementById("activityDetailsBody").innerHTML = snapshotDetailHtml(entry);
   const restoreBtn = document.getElementById("activityDetailsRestoreBtn");
-  restoreBtn.style.display = canRestore ? "" : "none";
+  restoreBtn.style.display = restoreInfo.can ? "" : "none";
   restoreBtn.textContent = "↺ " + t("restoreActionTitle");
-  restoreBtn.setAttribute("onclick", canRestore ? `${restoreFn}${restoreArgs}; closeActivityDetails();` : "");
+  restoreBtn.setAttribute("onclick", restoreInfo.can ? `${restoreInfo.fn}${restoreInfo.args}; closeActivityDetails();` : "");
   document.getElementById("activityDetailsOverlay").classList.add("active");
 }
 
@@ -322,6 +344,47 @@ export async function restoreDeletedSimple(activityId, entityType) {
     await logActivity("restored", entityType, row.id, { name: row.name || row.title || row.url || row.start_date || "İsimsiz" }, state.currentAdminUsername);
     renderAll();
     showToast(t("toastGenericRestored"));
+  } catch (error) {
+    console.error(error);
+    showToast("Error");
+  }
+}
+
+/**
+ * Admin — bir self-report onayının {type}_records tablosuna yazdığı TEK
+ * kaydı geri alır: onaydan önce orada bir değer vardıysa onu geri yazar,
+ * yoksa (ilk kez o hafta/üye için kayıt oluşturulmuşsa) kaydı tamamen siler.
+ * Bildirim de tekrar bekleyen kuyruğa ("pending") düşürülür — admin isterse
+ * farklı bir hafta/üyeyle tekrar değerlendirebilsin diye (bkz. selfReports.js).
+ */
+export async function restoreSelfReportApproval(activityId) {
+  const entry = state.activityLog.find((e) => e.id === activityId);
+  const snapshot = entry && entry.details && entry.details.snapshot;
+  if (!snapshot) return;
+  if (!confirm(t("confirmRestoreSelfReport"))) return;
+  try {
+    const { type, weekId, memberId, submissionId, previousEntry } = snapshot;
+    const store = storeFor(type);
+    if (previousEntry) {
+      const payload = entryToDbPayload(type, previousEntry, memberId);
+      const row = await upsertRecord(type, payload);
+      const mapped = mapEntry(type, row);
+      const index = store.entries.findIndex((e) => e.weekId === weekId && e.memberId === memberId);
+      if (index >= 0) store.entries[index] = mapped; else store.entries.push(mapped);
+    } else {
+      await deleteRecord(type, weekId, memberId);
+      store.entries = store.entries.filter((e) => !(e.weekId === weekId && e.memberId === memberId));
+    }
+
+    if (submissionId) {
+      await updateSelfReportSubmission(submissionId, { status: "pending", reviewed_by: null, reviewed_at: null }).catch(() => {});
+      const rows = await getSelfReportSubmissions().catch(() => null);
+      if (rows) state.selfReportSubmissions = rows.map(mapSelfReportSubmission);
+    }
+
+    await logActivity("restored", "self_report", activityId, { name: entry.entityName || "—" }, state.currentAdminUsername);
+    renderAll();
+    showToast(t("toastSelfReportRestored"));
   } catch (error) {
     console.error(error);
     showToast("Error");

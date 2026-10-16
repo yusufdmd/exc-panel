@@ -487,6 +487,15 @@ export async function deleteRecordsForWeek(type, weekId) {
   return true;
 }
 
+// Tek bir (hafta, üye) kaydını siler — bir self-report onayını geri almak için
+// (bkz. activity.js -> restoreSelfReportApproval): onaydan ÖNCE orada hiç
+// kayıt yoktuysa geri alma işlemi upsert değil, silme olmalı.
+export async function deleteRecord(type, weekId, memberId) {
+  const { error } = await supabase.from(recordsTable(type)).delete().eq("week_id", weekId).eq("member_id", memberId);
+  if (error) dbError(`${type.toUpperCase()} kaydı silinemedi`, error);
+  return true;
+}
+
 export async function deleteRecordsForMember(type, memberId) {
   const { error } = await supabase.from(recordsTable(type)).delete().eq("member_id", memberId);
   if (error) dbError(`${type.toUpperCase()} kayıtları silinemedi`, error);

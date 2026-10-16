@@ -37,7 +37,7 @@ import { closeExportModal, toggleExportAll, confirmExport } from "./exportCsv.js
 import { mapSiteLinks, populateSiteLinksForm, saveSiteLinks } from "./siteLinks.js";
 import { mapNewsItem, openNewsModal, closeNewsModal, saveNews, deleteNews } from "./news.js";
 import { mapVideoItem, openVideoModal, closeVideoModal, saveVideo, deleteVideo, moveVideo } from "./videos.js";
-import { mapActivity, restoreDeletedMember, restoreDeletedWeek, restoreDeletedSimple, showActivityDetails, closeActivityDetails } from "./activity.js";
+import { mapActivity, restoreDeletedMember, restoreDeletedWeek, restoreDeletedSimple, restoreSelfReportApproval, showActivityDetails, closeActivityDetails } from "./activity.js";
 import { mapSelfReportSubmission, approveSelfReportSubmission, rejectSelfReportSubmission } from "./selfReports.js";
 import { doLogin, doLogout, openChangePasswordModal, closeChangePasswordModal, submitChangePassword } from "./auth.js";
 import {
@@ -316,7 +316,7 @@ Object.assign(window, {
   openVideoModal, closeVideoModal, saveVideo, deleteVideo, moveVideo,
   selectPanelMode, backToChooser,
   doLogin, doLogout, toggleTheme, openChangePasswordModal, closeChangePasswordModal, submitChangePassword,
-  restoreDeletedMember, restoreDeletedWeek, restoreDeletedSimple, showActivityDetails, closeActivityDetails,
+  restoreDeletedMember, restoreDeletedWeek, restoreDeletedSimple, restoreSelfReportApproval, showActivityDetails, closeActivityDetails,
   renderAccountVault, openAccountVaultModal, closeAccountVaultModal, applyAccountVaultMemberSelection,
   saveAccountVault, deleteAccountVaultEntry, toggleAccountVaultReveal
 });
