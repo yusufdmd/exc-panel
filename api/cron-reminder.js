@@ -122,14 +122,6 @@ module.exports = async (req, res) => {
   if (selfReportType && process.env.DISCORD_BOT_TOKEN) {
     try {
       const { week, missing } = await findMissingMembers(selfReportType);
-      if (req.query && req.query.debug) {
-        const { sbFetchAll } = require("./_lib/supabaseAdmin");
-        const discordLinks = await sbFetchAll("member_discord_ids?select=member_id,discord_id");
-        const members = await sbFetchAll("members?select=id,name");
-        const linkedNames = discordLinks.map((d) => ({ discordId: d.discord_id, name: (members.find((m) => m.id === d.member_id) || {}).name || "?" }));
-        res.status(200).json({ week, missingCount: missing.length, missingNames: missing.map((m) => m.name), linkedNames });
-        return;
-      }
       if (week && missing.length) {
         const label = EVENT_LABELS[selfReportType] || selfReportType;
         const dmText = `⏰ Looks like you haven't reported your ${label} participation yet. Use \`/report-participation\` in the server to send a screenshot!`;
