@@ -1,7 +1,7 @@
 // =====================================================================
 // EXC PANELİ — api/discord-register-commands.js
 // =====================================================================
-// Discord'a "/katilim-bildir" slash komutunu kaydeder. TEK SEFERLİK bir
+// Discord'a "/report-participation" slash komutunu kaydeder. TEK SEFERLİK bir
 // kurulum adımıdır (komut tanımı değişmediği sürece tekrar çağırmaya
 // gerek yok) - normalde kimse tetiklemesin diye CRON_SECRET ile korunur
 // (bkz. api/cron-reminder.js'teki aynı desen). Guild-scoped kayıt
@@ -11,13 +11,13 @@
 
 const COMMANDS = [
   {
-    name: "katilim-bildir",
-    description: "Bu haftaki etkinlik katılımını ekran görüntüsüyle bildir",
+    name: "report-participation",
+    description: "Report this week's event participation with a screenshot",
     type: 1, // CHAT_INPUT
     options: [
       {
-        name: "etkinlik",
-        description: "Hangi etkinlik için bildiriyorsun",
+        name: "event",
+        description: "Which event you're reporting for",
         type: 3, // STRING
         required: true,
         choices: [
@@ -29,8 +29,8 @@ const COMMANDS = [
         ]
       },
       {
-        name: "gorsel",
-        description: "Sonuç ekran görüntün",
+        name: "screenshot",
+        description: "Your result screenshot",
         type: 11, // ATTACHMENT
         required: true
       }

@@ -58,7 +58,7 @@ export const state = {
   accountVault: [], // "Hesap Kasası" — sadece admin; viewer oturumunda hiç çekilmez (bkz. app.js -> loadAll)
   canAccessVault: false, // admin olmaktan AYRI bir izin — varsayılan kapalı (bkz. auth.js -> applySession)
   nameSuggestions: [], // üyelerden gelen, henüz onaylanmamış isim değişikliği önerileri (bkz. members.js -> renderNameSuggestions)
-  selfReportSubmissions: [], // Discord /katilim-bildir ile gelen, henüz onaylanmamış katılım bildirimleri (bkz. selfReports.js)
+  selfReportSubmissions: [], // Discord /report-participation ile gelen, henüz onaylanmamış katılım bildirimleri (bkz. selfReports.js)
   pendingLeadProcessingId: null, // "İşle" ile aday ekleme formuna gidilirken hangi başvurunun dönüştürüldüğünü hatırlar (bkz. migration.js -> saveProspect)
   siteLinks: { discordUrl: "", youtubeUrl: "", instagramUrl: "" }, // genel tanıtım sitesindeki Discord/YouTube/Instagram linkleri (bkz. siteLinks.js)
   news: [], // ana sayfadaki "Haberler" bölümünün içeriği (bkz. news.js)
@@ -279,7 +279,7 @@ ebParticipationWord:'Katılım', ebFootnote:'%50\'nin altındaysan daha çok etk
     confirmApproveNameSuggestion:'Bu ismi onaylayıp üyenin kayıtlı adını değiştirmek istiyor musunuz?', confirmDismissNameSuggestion:'Bu öneriyi reddetmek istediğinize emin misiniz?',
     toastNameSuggestionApproved:'İsim değişikliği onaylandı.', toastNameSuggestionDismissed:'Öneri reddedildi.',
     nameSuggestionMemberGone:'Bu öneriyi yapan üye artık listede yok.',
-    selfReportsHeading:'🖼️ Discord\'dan Kendi Bildirdiği Katılımlar', emptySelfReportsDesc:'Oyuncuların /katilim-bildir komutuyla Discord\'dan kendi gönderdiği katılım kayıtları burada görünecek.',
+    selfReportsHeading:'🖼️ Discord\'dan Kendi Bildirdiği Katılımlar', emptySelfReportsDesc:'Oyuncuların /report-participation komutuyla Discord\'dan kendi gönderdiği katılım kayıtları burada görünecek.',
     thSelfReportMember:'Üye', thSelfReportEvent:'Etkinlik', thSelfReportSummary:'AI Okuması', thSelfReportDate:'Tarih',
     selfReportUnmatched:'AI görselde bu üyeyi bulamadı', selfReportViewImage:'Ekran görüntüsünü gör',
     approveSelfReportTitle:'Onayla ve kaydet', rejectSelfReportTitle:'Reddet',

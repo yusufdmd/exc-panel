@@ -1,7 +1,7 @@
 // =====================================================================
 // EXC PANELİ — selfReports.js
 // =====================================================================
-// Discord'daki "/katilim-bildir" slash komutuyla oyuncuların kendi
+// Discord'daki "/report-participation" slash komutuyla oyuncuların kendi
 // gönderdiği, bir AI'nin okuyup admin onayı bekleyen katılım kayıtları
 // (bkz. sql/add_self_report_submissions.sql, api/discord-interactions.js).
 // Onaylanan bir kayıt, admin panelindeki toplu girişle AYNI yazma

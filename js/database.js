@@ -299,7 +299,7 @@ export async function deleteNameSuggestion(id) {
 }
 
 // =====================================================================
-// SELF_REPORT_SUBMISSIONS — Discord "/katilim-bildir" ile gelen, admin
+// SELF_REPORT_SUBMISSIONS — Discord "/report-participation" ile gelen, admin
 // onayı bekleyen katılım bildirimleri (bkz. sql/add_self_report_submissions.sql)
 // =====================================================================
 export async function getSelfReportSubmissions() {

@@ -1,7 +1,7 @@
 -- =====================================================================
 -- EXC PANELİ — add_self_report_submissions.sql
 -- =====================================================================
--- Discord'daki "/katilim-bildir" slash komutuyla oyuncuların kendi
+-- Discord'daki "/report-participation" slash komutuyla oyuncuların kendi
 -- ekran görüntülerini yüklemesiyle oluşan, bir AI'nin okuyup bir
 -- admin/R4'ün onayını beklediği kayıtları tutar. Supabase Dashboard >
 -- SQL Editor'de bir kere çalıştırın (panel kodunun yeni sürümünden

@@ -8,7 +8,7 @@
 // bunun yerine Discord'un webhook tabanlı Interactions modeli kullanılır,
 // tıpkı diğer tüm Vercel fonksiyonlarımız gibi.
 //
-// Şu an tek komut: "/katilim-bildir" — bir oyuncu kendi ekran görüntüsünü
+// Şu an tek komut: "/report-participation" — bir oyuncu kendi ekran görüntüsünü
 // ekleyerek haftalık etkinlik katılımını bildirir. Akış:
 //   1) Komutu çalıştıran kişinin Discord ID'si member_discord_ids'te
 //      aranır (bkz. sql/move_discord_id_to_admin_table.sql - admin, üye
@@ -84,8 +84,8 @@ async function patchOriginalMessage(interactionToken, content) {
 
 async function handleKatilimBildir(interaction, member) {
   const options = optionsToMap(interaction.data.options);
-  const type = options.etkinlik;
-  const attachmentId = options.gorsel;
+  const type = options.event;
+  const attachmentId = options.screenshot;
   const attachment = interaction.data.resolved?.attachments?.[attachmentId];
   const interactionToken = interaction.token;
 
@@ -128,7 +128,7 @@ async function handleKatilimBildir(interaction, member) {
       : "😕 Görselde senin verini net olarak bulamadım. Görseli kontrol edip tekrar dener misin, ya da bir yöneticiyle iletişime geç.";
     await patchOriginalMessage(interactionToken, message);
   } catch (error) {
-    console.error("[discord-interactions] /katilim-bildir işlenirken hata:", error);
+    console.error("[discord-interactions] /report-participation işlenirken hata:", error);
     await patchOriginalMessage(interactionToken, "⚠️ Beklenmeyen bir hata oluştu, lütfen tekrar dener misin? Sorun devam ederse bir yöneticiye bildir.");
   }
 }
@@ -161,7 +161,7 @@ const handler = async (req, res) => {
     return;
   }
 
-  if (interaction.type === InteractionType.APPLICATION_COMMAND && interaction.data?.name === "katilim-bildir") {
+  if (interaction.type === InteractionType.APPLICATION_COMMAND && interaction.data?.name === "report-participation") {
     const discordUserId = interaction.member?.user?.id || interaction.user?.id;
     const rows = discordUserId && /^\d{17,20}$/.test(discordUserId)
       ? await sbFetch(`member_discord_ids?discord_id=eq.${discordUserId}&select=member_id,members(id,name,game_id,is_old,is_migrated)`).catch(() => [])
