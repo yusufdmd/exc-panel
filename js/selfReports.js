@@ -147,12 +147,23 @@ export async function rejectSelfReportSubmission(id) {
  * dilde olduğu için elle senkron tutulan birer kopya, bkz.
  * engagementScoring.js'teki NOT.
  */
+// SVS/KoD/Diğer'de bir hafta açıldığında her üyeye status="unknown" ile
+// GERÇEK bir veritabanı satırı oluşuyor (bkz. events.js -> renderEntryRows,
+// "statusUnknown" seçeneği) - bu "veri girilmedi" demek, "satır var" demek
+// değil. GVG/KoD-GVG/SS'de böyle bir sentinel yok (varsayılan 0 puan/
+// katılmadı, gerçek "0"dan ayırt edilemiyor), o yüzden onlarda herhangi bir
+// satırın varlığı "veri girilmiş" sayılmaya devam ediyor - bilinen bir sınır.
+function hasRealData(type, entry) {
+  if (type === "svs" || type === "kod" || type === "other") return entry.status && entry.status !== "unknown";
+  return true;
+}
+
 function computeMissingForType(type) {
   const store = state[type];
   if (!store || !store.weeks.length) return { week: null, missing: [] };
   const week = [...store.weeks].sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0];
   const coveredMemberIds = new Set([
-    ...store.entries.filter((e) => e.weekId === week.id).map((e) => e.memberId),
+    ...store.entries.filter((e) => e.weekId === week.id && hasRealData(type, e)).map((e) => e.memberId),
     ...state.selfReportSubmissions.filter((s) => s.eventType === type && s.weekId === week.id).map((s) => s.memberId)
   ]);
   const missing = state.members
