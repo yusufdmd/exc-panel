@@ -136,4 +136,47 @@ export async function rejectSelfReportSubmission(id) {
   }
 }
 
+/**
+ * Bir etkinlik türü için "bu haftanın en güncel haftasında" aktif + Discord'u
+ * bağlı, ama ne elle bir kaydı NE DE bekleyen/onaylanmış bir self-report'u
+ * olan üyeleri bulur. Tamamen tarayıcıda, zaten yüklü state'ten hesaplanır —
+ * sunucu tarafındaki AYNI tanım için bkz. api/_lib/selfReportGaps.js (günlük
+ * hatırlatma DM'i onu kullanır) - ikisi ayrı dilde olduğu için elle senkron
+ * tutulan birer kopya, bkz. engagementScoring.js'teki NOT.
+ */
+function computeMissingForType(type) {
+  const store = state[type];
+  if (!store || !store.weeks.length) return { week: null, missing: [] };
+  const week = [...store.weeks].sort((a, b) => (b.date || "").localeCompare(a.date || ""))[0];
+  const coveredMemberIds = new Set([
+    ...store.entries.filter((e) => e.weekId === week.id).map((e) => e.memberId),
+    ...state.selfReportSubmissions.filter((s) => s.eventType === type && s.weekId === week.id).map((s) => s.memberId)
+  ]);
+  const missing = state.members
+    .filter((m) => !m.isOld && !m.isMigrated)
+    .filter((m) => m.discordId)
+    .filter((m) => !coveredMemberIds.has(m.id))
+    .map((m) => m.name);
+  return { week, missing };
+}
+
+function renderSelfReportGaps() {
+  const wrap = document.getElementById("selfReportGapsRows");
+  if (!wrap) return;
+  const rows = Object.keys(EVENT_LABELS).map((type) => {
+    const { week, missing } = computeMissingForType(type);
+    return { type, week, missing };
+  }).filter((r) => r.week);
+  wrap.innerHTML = rows.map((r) => `
+    <tr>
+      <td>${escapeHtml(EVENT_LABELS[r.type])}</td>
+      <td>${escapeHtml(r.week.date || "—")}</td>
+      <td>${r.missing.length
+        ? r.missing.map((name) => `<span class="cell-pill pill-red" style="margin:1px;">${escapeHtml(name)}</span>`).join("")
+        : `<span style="color:var(--text-muted);">${t("selfReportGapsNone")}</span>`}</td>
+    </tr>
+  `).join("");
+}
+
 registerRenderer(renderSelfReports);
+registerRenderer(renderSelfReportGaps);

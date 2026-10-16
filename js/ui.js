@@ -288,6 +288,8 @@ ebParticipationWord:'Katılım', ebFootnote:'%50\'nin altındaysan daha çok etk
     actionApproved:'Onaylandı', selfReportEntityLabel:'Kendi Bildirimi',
     confirmRestoreSelfReport:'Bu onayı geri almak istiyor musunuz? Etkinlik tablosundaki ilgili kayıt, onaydan önceki haline döndürülecek (ya da hiç yoksa silinecek) ve bildirim tekrar bekleyen kuyruğa düşecek.',
     toastSelfReportRestored:'Onay geri alındı.', selfReportPreviousValue:'Onaydan önceki değer', selfReportNoPreviousValue:'Yoktu (yeni kayıt oluşturulmuştu)',
+    selfReportGapsHeading:'📋 Bu Hafta Eksik Olanlar', selfReportGapsDesc:'Aktif ve Discord\'u bağlı olup bu haftanın verisini (elle ya da Discord\'dan) hiç göndermemiş üyeler.', selfReportGapsNone:'Eksik yok 🎉',
+    thSelfReportGapEvent:'Etkinlik', thSelfReportGapWeek:'Hafta', thSelfReportGapMembers:'Eksik Üyeler',
     weekReport:'Hafta Raporu', sortByWeekTitle:'Bu haftaya göre sırala', zoneGreen:'Yeşil Bölge', zoneYellow:'Sarı Bölge', zoneRed:'Kırmızı Bölge',
     weekEditTitle:'Haftayı Düzenle', eventEditTitle:'Etkinliği Düzenle',
     overallReportBtn:'📊 Genel Rapor', overallReport:'Genel Rapor', thWeeks:'Haftalar',
@@ -1239,6 +1241,11 @@ export function applyStaticText() {
   document.getElementById("t_thSelfReportEvent").textContent = t("thSelfReportEvent");
   document.getElementById("t_thSelfReportSummary").textContent = t("thSelfReportSummary");
   document.getElementById("t_thSelfReportDate").textContent = t("thSelfReportDate");
+  document.getElementById("t_selfReportGapsHeading").textContent = t("selfReportGapsHeading");
+  document.getElementById("t_selfReportGapsDesc").textContent = t("selfReportGapsDesc");
+  document.getElementById("t_thSelfReportGapEvent").textContent = t("thSelfReportGapEvent");
+  document.getElementById("t_thSelfReportGapWeek").textContent = t("thSelfReportGapWeek");
+  document.getElementById("t_thSelfReportGapMembers").textContent = t("thSelfReportGapMembers");
   document.getElementById("t_thNsDate").textContent = t("thWhen");
   document.getElementById("t_siteLinksDesc").textContent = t("siteLinksDesc");
   document.getElementById("t_lblDiscordUrl").textContent = t("lblDiscordUrl");

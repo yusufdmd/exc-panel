@@ -41,8 +41,7 @@ const { verifyKey, InteractionType, InteractionResponseType, InteractionResponse
 const { waitUntil } = require("@vercel/functions");
 const { sbFetch, sbWrite } = require("./_lib/supabaseAdmin");
 const { readScreenshots } = require("./_lib/screenshotAi");
-
-const EVENT_LABELS = { svs: "SVS", ss: "Sandstorm (SS)", kod: "King of Desert (KoD)", gvg: "GVG", kodgvg: "KoD-GVG" };
+const { EVENT_LABELS } = require("./_lib/eventTypes");
 
 function readRawBody(req) {
   return new Promise((resolve, reject) => {

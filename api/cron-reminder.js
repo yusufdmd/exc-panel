@@ -26,6 +26,15 @@
 // =====================================================================
 
 const { postToDiscord } = require("./_lib/discord");
+const { sendDirectMessage } = require("./_lib/discordBot");
+const { findMissingMembers } = require("./_lib/selfReportGaps");
+const { EVENT_LABELS } = require("./_lib/eventTypes");
+
+// Her cron tetiklemesi (ör. "ss1"/"ss2" aynı SS haftasının iki ayrı anı),
+// kendi self-report etkinlik türüne (svs/ss/kod/gvg/kodgvg) eşlenir —
+// bu, o tetiklemede kimlerin hâlâ Discord'dan katılım bildirmediğine
+// bakıp onlara AYRICA bir DM atmak için kullanılır (bkz. dosya sonu).
+const SELF_REPORT_TYPE = { ss1: "ss", ss2: "ss", svs: "svs", kod: "kod", gvg1: "gvg", gvg2: "gvg", kodgvg1: "kodgvg", kodgvg2: "kodgvg" };
 
 // İngilizce — lonca içi ortak iletişim dili Türkçe değil İngilizce (bkz. kullanıcı talebi).
 const MESSAGES = {
@@ -95,5 +104,30 @@ module.exports = async (req, res) => {
   }
 
   const { ok, detail } = await postToDiscord(message);
-  res.status(ok ? 200 : 502).json({ ok, detail });
+
+  // Kanal hatırlatmasından SONRA, o etkinlik türü için hâlâ Discord'dan
+  // katılım bildirmemiş (ve Discord'u bağlı) üyelere ayrıca bir DM
+  // gönderilir. Bu adım başarısız olsa bile ana hatırlatma (yukarıdaki
+  // kanal mesajı) etkilenmesin diye ayrı try/catch'te, sessizce loglanır.
+  let selfReportDm = null;
+  const selfReportType = SELF_REPORT_TYPE[event];
+  if (selfReportType && process.env.DISCORD_BOT_TOKEN) {
+    try {
+      const { week, missing } = await findMissingMembers(selfReportType);
+      if (week && missing.length) {
+        const label = EVENT_LABELS[selfReportType] || selfReportType;
+        const dmText = `⏰ Looks like you haven't reported your ${label} participation yet. Use \`/report-participation\` in the server to send a screenshot!`;
+        const results = await Promise.allSettled(missing.map((m) => sendDirectMessage(m.discordId, dmText)));
+        const failed = results.filter((r) => r.status === "rejected");
+        failed.forEach((r) => console.error("[cron-reminder] self-report DM hatası:", r.reason));
+        selfReportDm = { attempted: missing.length, failed: failed.length };
+      } else {
+        selfReportDm = { attempted: 0, failed: 0 };
+      }
+    } catch (error) {
+      console.error("[cron-reminder] self-report eksik üye taraması hatası:", error);
+    }
+  }
+
+  res.status(ok ? 200 : 502).json({ ok, detail, selfReportDm });
 };

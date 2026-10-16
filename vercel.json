@@ -35,6 +35,9 @@
     },
     "api/discord-interactions.js": {
       "maxDuration": 60
+    },
+    "api/cron-reminder.js": {
+      "maxDuration": 30
     }
   },
   "crons": [
