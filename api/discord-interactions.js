@@ -16,9 +16,11 @@
 //   2) Eşleşme yoksa anında bir hata mesajıyla (ephemeral) biter.
 //   3) Eşleşme varsa Discord'a "düşünüyorum" (deferred) yanıtı hemen
 //      dönülür (Discord'un 3 saniyelik zorunlu yanıt süresi burada
-//      karşılanır) - fonksiyon ise AYNI invocation içinde çalışmaya
-//      devam eder (Vercel Node fonksiyonlarında res.json() çağrısı
-//      işlemi sonlandırmaz, bu modül dönene kadar kod çalışır).
+//      karşılanır) - asıl iş (görsel indirme + AI + DB yazma) ise
+//      @vercel/functions'ın waitUntil()'ıyla AÇIKÇA kaydedilip yanıt
+//      gönderildikten SONRA da devam etmesi sağlanır (canlı testte
+//      görüldü: Vercel res.json() sonrası fonksiyonu dondurabiliyor,
+//      sadece await ile devam ettirmeye güvenmek yetmiyor).
 //   4) Ekli görsel indirilip api/_lib/screenshotAi.js (admin panelindeki
 //      "AI ile Doldur" ile AYNI, paylaşılan Gemini mantığı) ile okunur.
 //   5) Sonuç self_report_submissions'a "pending" olarak yazılır - BURADA
@@ -36,6 +38,7 @@
 // =====================================================================
 
 const { verifyKey, InteractionType, InteractionResponseType, InteractionResponseFlags } = require("discord-interactions");
+const { waitUntil } = require("@vercel/functions");
 const { sbFetch, sbWrite } = require("./_lib/supabaseAdmin");
 const { readScreenshots } = require("./_lib/screenshotAi");
 
@@ -196,14 +199,17 @@ const handler = async (req, res) => {
       return;
     }
 
-    // Discord'un 3 saniyelik yanıt sınırı burada karşılanıyor; asıl işlem
-    // (görsel indirme + AI + DB yazma) bu yanıt dönüldükten SONRA, aynı
-    // fonksiyon invocation'ı içinde devam ediyor (bkz. dosya başı NOT).
+    // Discord'un 3 saniyelik yanıt sınırı burada karşılanıyor. Asıl işlem
+    // (görsel indirme + AI + DB yazma) yanıt dönüldükten SONRA devam etmesi
+    // gerekiyor - canlı testte görüldü ki Vercel, res.json() sonrası
+    // fonksiyonu DONDURUYOR (await ile devam ettirmek yetmiyor), bu yüzden
+    // @vercel/functions'ın waitUntil()'ı ile işi AÇIKÇA kaydediyoruz; bu,
+    // o promise bitene kadar invocation'ı canlı tutuyor.
+    waitUntil(handleKatilimBildir(interaction, member));
     res.status(200).json({
       type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
       data: { flags: InteractionResponseFlags.EPHEMERAL }
     });
-    await handleKatilimBildir(interaction, member);
     return;
   }
 

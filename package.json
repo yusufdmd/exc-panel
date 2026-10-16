@@ -12,6 +12,7 @@
   "dependencies": {
     "puppeteer-core": "25.13.0",
     "@sparticuz/chromium": "153.0.0",
-    "discord-interactions": "4.4.0"
+    "discord-interactions": "4.4.0",
+    "@vercel/functions": "3.10.1"
   }
 }
