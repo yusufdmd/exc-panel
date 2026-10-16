@@ -12,7 +12,7 @@
 
 import { updateSelfReportSubmission, upsertRecord, logActivity } from "./database.js";
 import { entryToDbPayload, mapEntry } from "./events.js";
-import { state, t, escapeHtml, showToast, registerRenderer, renderAll } from "./ui.js";
+import { state, t, escapeHtml, showToast, registerRenderer, renderAll, isExempt } from "./ui.js";
 
 const EVENT_LABELS = { svs: "SVS", ss: "Sandstorm (SS)", kod: "King of Desert (KoD)", gvg: "GVG", kodgvg: "KoD-GVG" };
 
@@ -157,6 +157,7 @@ function computeMissingForType(type) {
   ]);
   const missing = state.members
     .filter((m) => !m.isOld && !m.isMigrated)
+    .filter((m) => !isExempt(m, week)) // haftadan önce katılmış/hesabı devralmışsa bu haftadan muaf (bkz. ui.js -> isExempt, engagement.js'teki AYNI kural)
     .filter((m) => !coveredMemberIds.has(m.id))
     .map((m) => ({ name: m.name, hasDiscord: !!m.discordId }));
   return { week, missing };

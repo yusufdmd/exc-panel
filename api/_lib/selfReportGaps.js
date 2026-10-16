@@ -12,6 +12,20 @@
 
 const { sbFetchAll, sbFetch } = require("./supabaseAdmin");
 
+/**
+ * Bir üye, verilen haftada henüz loncaya katılmamış (veya hesabı henüz
+ * devralmamış) olması nedeniyle o haftadan muaf mı? js/ui.js -> isExempt
+ * ile AYNI kural, sunucu tarafında (CommonJS) elle tutulan kopyası -
+ * yoksa yeni katılan bir üyeye kendisinden ÖNCEKİ haftalar için de
+ * yanlışlıkla hatırlatma DM'i gider.
+ */
+function isExempt(member, week) {
+  if (!week || !week.date || !member) return false;
+  const threshold = member.user_changed_at || member.joined_at;
+  if (!threshold) return false;
+  return week.date < String(threshold).slice(0, 10);
+}
+
 /** `{ week, missing: [{ memberId, name, discordId }] }` döner - aktif haftaya hiç ulaşılamıyorsa week=null, missing=[]. */
 async function findMissingMembers(type) {
   const weeks = await sbFetch(`${type}_weeks?select=id,week_date&order=week_date.desc&limit=1`);
@@ -19,7 +33,7 @@ async function findMissingMembers(type) {
   if (!week) return { week: null, missing: [] };
 
   const [members, discordLinks, records, submissions] = await Promise.all([
-    sbFetchAll("members?select=id,name,is_old,is_migrated"),
+    sbFetchAll("members?select=id,name,is_old,is_migrated,joined_at,user_changed_at"),
     sbFetchAll("member_discord_ids?select=member_id,discord_id"),
     sbFetchAll(`${type}_records?week_id=eq.${week.id}&select=member_id`),
     sbFetchAll(`self_report_submissions?event_type=eq.${type}&week_id=eq.${week.id}&status=in.(pending,approved)&select=member_id`)
@@ -30,6 +44,7 @@ async function findMissingMembers(type) {
 
   const missing = members
     .filter((m) => !m.is_old && !m.is_migrated)
+    .filter((m) => !isExempt(m, week))
     .filter((m) => discordByMember.has(m.id))
     .filter((m) => !coveredMemberIds.has(m.id))
     .map((m) => ({ memberId: m.id, name: m.name, discordId: discordByMember.get(m.id) }));
