@@ -92,18 +92,26 @@ module.exports = async (req, res) => {
     return;
   }
 
-  if (PAUSED_EVENTS.has(event)) {
-    res.status(200).json({ ok: true, skipped: true, reason: "paused (KOD/GVG data not being processed right now)" });
-    return;
-  }
+  // TEST AMAÇLI: ?dmOnly=1 ile çağrılırsa kanala GERÇEK hatırlatma mesajı
+  // atılmaz (ve pasif/haftaaşırı kontrolleri atlanır) - sadece aşağıdaki
+  // self-report DM taraması çalışır. Şu an Discord'u bağlı tek kişi test
+  // eden admin olduğu için bu DM sadece ona gidiyor.
+  const dmOnly = req.query && req.query.dmOnly;
+  let ok = true, detail = null;
+  if (!dmOnly) {
+    if (PAUSED_EVENTS.has(event)) {
+      res.status(200).json({ ok: true, skipped: true, reason: "paused (KOD/GVG data not being processed right now)" });
+      return;
+    }
 
-  const anchor = BIWEEKLY_ANCHORS[event];
-  if (anchor && !isActiveBiweek(anchor)) {
-    res.status(200).json({ ok: true, skipped: true, reason: "off week (biweekly schedule)" });
-    return;
-  }
+    const anchor = BIWEEKLY_ANCHORS[event];
+    if (anchor && !isActiveBiweek(anchor)) {
+      res.status(200).json({ ok: true, skipped: true, reason: "off week (biweekly schedule)" });
+      return;
+    }
 
-  const { ok, detail } = await postToDiscord(message);
+    ({ ok, detail } = await postToDiscord(message));
+  }
 
   // Kanal hatırlatmasından SONRA, o etkinlik türü için hâlâ Discord'dan
   // katılım bildirmemiş (ve Discord'u bağlı) üyelere ayrıca bir DM
