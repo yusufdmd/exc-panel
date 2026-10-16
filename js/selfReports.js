@@ -183,10 +183,11 @@ function renderSelfReportGaps() {
   }).filter((r) => r.week);
   wrap.innerHTML = rows.map((r) => `
     <tr>
-      <td>${escapeHtml(EVENT_LABELS[r.type])}</td>
-      <td>${escapeHtml(r.week.date || "—")}</td>
+      <td style="white-space:nowrap; vertical-align:top;">${escapeHtml(EVENT_LABELS[r.type])}</td>
+      <td style="white-space:nowrap; vertical-align:top;">${escapeHtml(r.week.date || "—")}</td>
       <td>${r.missing.length
-        ? r.missing.map((m) => `<span class="cell-pill pill-red" style="margin:1px;" title="${m.hasDiscord ? "" : t("selfReportGapNoDiscord")}">${escapeHtml(m.name)}${m.hasDiscord ? "" : " 🔗"}</span>`).join("")
+        ? `<div style="margin-bottom:4px; font-weight:600; color:var(--danger-ink,#E5484D);">${r.missing.length} ${t("selfReportGapCount")}</div>
+           <div style="display:flex; flex-wrap:wrap; gap:4px; max-width:900px;">${r.missing.map((m) => `<span class="cell-pill pill-red" title="${m.hasDiscord ? "" : t("selfReportGapNoDiscord")}">${escapeHtml(m.name)}${m.hasDiscord ? "" : " 🔗"}</span>`).join("")}</div>`
         : `<span style="color:var(--text-muted);">${t("selfReportGapsNone")}</span>`}</td>
     </tr>
   `).join("");
