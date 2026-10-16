@@ -137,12 +137,15 @@ export async function rejectSelfReportSubmission(id) {
 }
 
 /**
- * Bir etkinlik türü için "bu haftanın en güncel haftasında" aktif + Discord'u
- * bağlı, ama ne elle bir kaydı NE DE bekleyen/onaylanmış bir self-report'u
- * olan üyeleri bulur. Tamamen tarayıcıda, zaten yüklü state'ten hesaplanır —
- * sunucu tarafındaki AYNI tanım için bkz. api/_lib/selfReportGaps.js (günlük
- * hatırlatma DM'i onu kullanır) - ikisi ayrı dilde olduğu için elle senkron
- * tutulan birer kopya, bkz. engagementScoring.js'teki NOT.
+ * Bir etkinlik türü için "bu haftanın en güncel haftasında" ne elle bir
+ * kaydı NE DE bekleyen/onaylanmış bir self-report'u olan TÜM aktif üyeleri
+ * bulur (Discord'u bağlı olsun olmasın — bağlı olmayanlar Discord'dan kendi
+ * bildiremez ama yine de "eksik" sayılırlar, sadece elle girilmeleri gerekir).
+ * Tamamen tarayıcıda, zaten yüklü state'ten hesaplanır — sunucu tarafındaki
+ * BENZER (ama sadece Discord'u bağlı olanları tarayan, çünkü DM atmak için
+ * Discord ID şart) tanım için bkz. api/_lib/selfReportGaps.js - ikisi ayrı
+ * dilde olduğu için elle senkron tutulan birer kopya, bkz.
+ * engagementScoring.js'teki NOT.
  */
 function computeMissingForType(type) {
   const store = state[type];
@@ -154,9 +157,8 @@ function computeMissingForType(type) {
   ]);
   const missing = state.members
     .filter((m) => !m.isOld && !m.isMigrated)
-    .filter((m) => m.discordId)
     .filter((m) => !coveredMemberIds.has(m.id))
-    .map((m) => m.name);
+    .map((m) => ({ name: m.name, hasDiscord: !!m.discordId }));
   return { week, missing };
 }
 
@@ -172,7 +174,7 @@ function renderSelfReportGaps() {
       <td>${escapeHtml(EVENT_LABELS[r.type])}</td>
       <td>${escapeHtml(r.week.date || "—")}</td>
       <td>${r.missing.length
-        ? r.missing.map((name) => `<span class="cell-pill pill-red" style="margin:1px;">${escapeHtml(name)}</span>`).join("")
+        ? r.missing.map((m) => `<span class="cell-pill pill-red" style="margin:1px;" title="${m.hasDiscord ? "" : t("selfReportGapNoDiscord")}">${escapeHtml(m.name)}${m.hasDiscord ? "" : " 🔗"}</span>`).join("")
         : `<span style="color:var(--text-muted);">${t("selfReportGapsNone")}</span>`}</td>
     </tr>
   `).join("");
