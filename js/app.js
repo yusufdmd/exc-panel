@@ -290,10 +290,6 @@ function setLang(lang) {
 // =====================================================================
 // GLOBAL BAĞLAMA (module scope -> HTML'deki inline onclick/onchange)
 // =====================================================================
-// GEÇİCİ TANI: tarayıcı konsolundan state'i incelemek için (bkz. selfReports.js
-// "eksik" hesaplamasındaki bir sapmayı araştırmak). Sonra kaldırılacak.
-window.__debugState = state;
-
 Object.assign(window, {
   exportBackup, importBackup, manualRefresh, liveFormatNumberInput, expandPowerShorthandInput, initPowerShorthandMode, setEventWeekSort,
   switchTab, switchSub, setMemberView, setRankFilter, setElementFilter, setSort, renderMembers,
