@@ -281,7 +281,7 @@ ebParticipationWord:'Katılım', ebFootnote:'%50\'nin altındaysan daha çok etk
     nameSuggestionMemberGone:'Bu öneriyi yapan üye artık listede yok.',
     selfReportsHeading:'🖼️ Discord\'dan Kendi Bildirdiği Katılımlar', emptySelfReportsDesc:'Oyuncuların /report-participation komutuyla Discord\'dan kendi gönderdiği katılım kayıtları burada görünecek.',
     thSelfReportMember:'Üye', thSelfReportEvent:'Etkinlik', thSelfReportSummary:'AI Okuması', thSelfReportDate:'Tarih',
-    selfReportUnmatched:'AI görselde bu üyeyi bulamadı', selfReportViewImage:'Ekran görüntüsünü gör',
+    selfReportUnmatched:'AI görselde bu üyeyi bulamadı', selfReportViewImage:'Ekran görüntüsünü gör', selfReportNoWeek:'hafta bulunamadı',
     approveSelfReportTitle:'Onayla ve kaydet', rejectSelfReportTitle:'Reddet',
     confirmApproveSelfReport:'Bu kaydı onaylayıp ilgili etkinlik tablosuna işlemek istiyor musunuz?', confirmRejectSelfReport:'Bu bildirimi reddetmek istediğinize emin misiniz?',
     toastSelfReportApproved:'Bildirim onaylandı ve kaydedildi.', toastSelfReportRejected:'Bildirim reddedildi.',

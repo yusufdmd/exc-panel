@@ -49,15 +49,17 @@ function renderSelfReports() {
   document.getElementById("selfReportsRows").innerHTML = state.selfReportSubmissions.map((sub) => {
     const member = state.members.find((m) => m.id === sub.memberId);
     const memberName = member ? member.name : "—";
+    const weekStore = state[sub.eventType];
+    const week = weekStore ? weekStore.weeks.find((w) => w.id === sub.weekId) : null;
     return `
     <tr>
       <td><span class="member-name">${escapeHtml(memberName)}</span></td>
-      <td>${escapeHtml(EVENT_LABELS[sub.eventType] || sub.eventType)}</td>
+      <td>${escapeHtml(EVENT_LABELS[sub.eventType] || sub.eventType)}${week ? ` <span style="color:var(--text-muted);">(${escapeHtml(week.date)})</span>` : ` <span style="color:var(--danger-ink,#E5484D);">(${t("selfReportNoWeek")})</span>`}</td>
       <td>${sub.aiUnmatched ? `<span style="color:var(--danger-ink,#E5484D);">${t("selfReportUnmatched")}</span>` : escapeHtml(summarizeExtracted(sub.eventType, sub.aiExtracted))}</td>
       <td>${escapeHtml((sub.createdAt || "").slice(0, 16).replace("T", " "))}</td>
       <td><a href="${escapeHtml(sub.imageUrl)}" target="_blank" rel="noopener" title="${t("selfReportViewImage")}">🖼️</a></td>
       <td><div class="row-actions">
-        ${sub.aiUnmatched ? "" : `<button class="icon-btn" onclick="approveSelfReportSubmission('${sub.id}')" title="${t("approveSelfReportTitle")}">✅</button>`}
+        ${sub.aiUnmatched || !sub.weekId ? "" : `<button class="icon-btn" onclick="approveSelfReportSubmission('${sub.id}')" title="${t("approveSelfReportTitle")}">✅</button>`}
         <button class="icon-btn danger" onclick="rejectSelfReportSubmission('${sub.id}')" title="${t("rejectSelfReportTitle")}">✕</button>
       </div></td>
     </tr>
@@ -68,7 +70,7 @@ function renderSelfReports() {
 /** Bir bildirimi onaylar: AI'nin okuduğu veriyi ilgili {type}_records tablosuna işler, bildirimi "approved" işaretler. */
 export async function approveSelfReportSubmission(id) {
   const sub = state.selfReportSubmissions.find((s) => s.id === id);
-  if (!sub || sub.aiUnmatched || !sub.aiExtracted) return;
+  if (!sub || sub.aiUnmatched || !sub.aiExtracted || !sub.weekId) return;
   if (!confirm(t("confirmApproveSelfReport"))) return;
   try {
     const entry = { ...sub.aiExtracted, weekId: sub.weekId };
