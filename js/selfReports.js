@@ -53,16 +53,24 @@ function renderSelfReports() {
     const member = state.members.find((m) => m.id === sub.memberId);
     const memberName = member ? member.name : "—";
     const weekStore = state[sub.eventType];
-    const week = weekStore ? weekStore.weeks.find((w) => w.id === sub.weekId) : null;
+    // En güncel hafta en üstte seçili gelir - bilerek sub.weekId (gönderim anındaki
+    // "o anki en güncel hafta") değil, HER RENDER'DA yeniden hesaplanan gerçek en
+    // güncel hafta: admin bir bildirimi onaylamadan önce yeni bir hafta eklerse,
+    // açılır liste otomatik olarak o yeni haftayı varsayılan gösterir (istendiği gibi
+    // "ekran görüntüleri biriksin, hafta eklenince oraya gitsin").
+    const sortedWeeks = weekStore ? [...weekStore.weeks].sort((a, b) => (b.date || "").localeCompare(a.date || "")) : [];
+    const weekSelect = sortedWeeks.length
+      ? `<select id="selfReportWeek_${sub.id}" style="font-size:12px; padding:2px 4px;">${sortedWeeks.map((w) => `<option value="${escapeHtml(w.id)}">${escapeHtml(w.date || "—")}</option>`).join("")}</select>`
+      : `<span style="color:var(--danger-ink,#E5484D);">(${t("selfReportNoWeek")})</span>`;
     return `
     <tr>
       <td><span class="member-name">${escapeHtml(memberName)}</span></td>
-      <td>${escapeHtml(EVENT_LABELS[sub.eventType] || sub.eventType)}${week ? ` <span style="color:var(--text-muted);">(${escapeHtml(week.date)})</span>` : ` <span style="color:var(--danger-ink,#E5484D);">(${t("selfReportNoWeek")})</span>`}</td>
+      <td>${escapeHtml(EVENT_LABELS[sub.eventType] || sub.eventType)} ${weekSelect}</td>
       <td>${sub.aiUnmatched ? `<span style="color:var(--danger-ink,#E5484D);">${t("selfReportUnmatched")}</span>` : escapeHtml(summarizeExtracted(sub.eventType, sub.aiExtracted))}</td>
       <td>${escapeHtml((sub.createdAt || "").slice(0, 16).replace("T", " "))}</td>
       <td><a href="${escapeHtml(sub.imageUrl)}" target="_blank" rel="noopener" title="${t("selfReportViewImage")}">🖼️</a></td>
       <td><div class="row-actions">
-        ${sub.aiUnmatched || !sub.weekId ? "" : `<button class="icon-btn" onclick="approveSelfReportSubmission('${sub.id}')" title="${t("approveSelfReportTitle")}">✅</button>`}
+        ${sub.aiUnmatched || !sortedWeeks.length ? "" : `<button class="icon-btn" onclick="approveSelfReportSubmission('${sub.id}')" title="${t("approveSelfReportTitle")}">✅</button>`}
         <button class="icon-btn danger" onclick="rejectSelfReportSubmission('${sub.id}')" title="${t("rejectSelfReportTitle")}">✕</button>
       </div></td>
     </tr>
@@ -79,26 +87,32 @@ function renderSelfReports() {
  */
 export async function approveSelfReportSubmission(id) {
   const sub = state.selfReportSubmissions.find((s) => s.id === id);
-  if (!sub || sub.aiUnmatched || !sub.aiExtracted || !sub.weekId) return;
+  if (!sub || sub.aiUnmatched || !sub.aiExtracted) return;
+  // Hangi haftaya yazılacağı, gönderim anında kaydedilen sub.weekId değil,
+  // admin'in o an panelde gördüğü açılır listeden SEÇTİĞİ hafta (bkz.
+  // renderSelfReports - varsayılan olarak en güncel hafta seçili gelir).
+  const weekSelect = document.getElementById(`selfReportWeek_${id}`);
+  const weekId = weekSelect ? weekSelect.value : null;
+  if (!weekId) return;
   if (!confirm(t("confirmApproveSelfReport"))) return;
   try {
     const store = state[sub.eventType];
-    const previousEntry = store ? store.entries.find((e) => e.weekId === sub.weekId && e.memberId === sub.memberId) || null : null;
-    const week = store ? store.weeks.find((w) => w.id === sub.weekId) : null;
+    const previousEntry = store ? store.entries.find((e) => e.weekId === weekId && e.memberId === sub.memberId) || null : null;
+    const week = store ? store.weeks.find((w) => w.id === weekId) : null;
     const member = state.members.find((m) => m.id === sub.memberId);
 
-    const entry = { ...sub.aiExtracted, weekId: sub.weekId };
+    const entry = { ...sub.aiExtracted, weekId };
     const payload = entryToDbPayload(sub.eventType, entry, sub.memberId);
     const row = await upsertRecord(sub.eventType, payload);
     const mapped = mapEntry(sub.eventType, row);
-    const index = store.entries.findIndex((e) => e.weekId === sub.weekId && e.memberId === sub.memberId);
+    const index = store.entries.findIndex((e) => e.weekId === weekId && e.memberId === sub.memberId);
     if (index >= 0) store.entries[index] = mapped; else store.entries.push(mapped);
 
-    await updateSelfReportSubmission(id, { status: "approved", reviewed_by: state.currentAdminUsername || null, reviewed_at: new Date().toISOString() });
+    await updateSelfReportSubmission(id, { status: "approved", week_id: weekId, reviewed_by: state.currentAdminUsername || null, reviewed_at: new Date().toISOString() });
     state.selfReportSubmissions = state.selfReportSubmissions.filter((s) => s.id !== id);
     await logActivity("approved", "self_report", id, {
       name: `${member ? member.name : "—"} — ${EVENT_LABELS[sub.eventType] || sub.eventType}${week ? ` (${week.date})` : ""}`,
-      snapshot: { type: sub.eventType, weekId: sub.weekId, memberId: sub.memberId, submissionId: sub.id, previousEntry }
+      snapshot: { type: sub.eventType, weekId, memberId: sub.memberId, submissionId: sub.id, previousEntry }
     }, state.currentAdminUsername);
     renderAll();
     showToast(t("toastSelfReportApproved"));
