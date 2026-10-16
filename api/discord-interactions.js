@@ -75,11 +75,19 @@ function summarizeExtracted(type, extracted) {
 
 async function patchOriginalMessage(interactionToken, content) {
   const url = `https://discord.com/api/v10/webhooks/${process.env.DISCORD_APPLICATION_ID}/${interactionToken}/messages/@original`;
-  await fetch(url, {
-    method: "PATCH",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ content })
-  }).catch((error) => console.error("[discord-interactions] Takip mesajı güncellenemedi:", error));
+  try {
+    const res = await fetch(url, {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ content })
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      console.error(`[discord-interactions] Takip mesajı güncellenemedi: HTTP ${res.status} ${body.slice(0, 500)}`);
+    }
+  } catch (error) {
+    console.error("[discord-interactions] Takip mesajı güncellenemedi (network):", error);
+  }
 }
 
 async function handleKatilimBildir(interaction, member) {
@@ -94,6 +102,11 @@ async function handleKatilimBildir(interaction, member) {
       await patchOriginalMessage(interactionToken, "⚠️ İstek eksik görünüyor, lütfen tekrar dener misin?");
       return;
     }
+
+    // TANI: Gemini/DB adımlarına girmeden hemen bir "işleniyor" mesajı
+    // dener - bu bile görünmüyorsa sorun patchOriginalMessage/token/app-id
+    // tarafında, görünüp sonrası gelmiyorsa sorun Gemini/DB tarafında demektir.
+    await patchOriginalMessage(interactionToken, "⏳ Görsel okunuyor, birazdan sonucu paylaşacağım...");
 
     const imgRes = await fetch(attachment.url);
     if (!imgRes.ok) {
