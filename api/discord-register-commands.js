@@ -32,11 +32,11 @@ const COMMANDS = [
         description: "Which event you're reporting for",
         type: 3, // STRING
         required: true,
+        // Sadece 3 etkinlik için kendi kendine bildirim isteniyor (kullanıcı talebi) -
+        // SS ve GVG kasıtlı olarak yok.
         choices: [
           { name: "SVS", value: "svs" },
-          { name: "Sandstorm (SS)", value: "ss" },
-          { name: "King of Desert (KoD)", value: "kod" },
-          { name: "GVG", value: "gvg" },
+          { name: "KOD - SVS (King of Desert)", value: "kod" },
           { name: "KoD-GVG", value: "kodgvg" }
         ]
       },

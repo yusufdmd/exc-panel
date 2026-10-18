@@ -15,6 +15,14 @@ import { entryToDbPayload, mapEntry } from "./events.js";
 import { state, t, escapeHtml, showToast, registerRenderer, renderAll, isExempt } from "./ui.js";
 
 const EVENT_LABELS = { svs: "SVS", ss: "Sandstorm (SS)", kod: "King of Desert (KoD)", gvg: "GVG", kodgvg: "KoD-GVG" };
+// Discord'dan kendi kendine bildirim SADECE bu 3 etkinlik için var (kullanıcı
+// talebi, bkz. api/discord-register-commands.js'teki komut seçenekleri) -
+// "Bu Hafta Eksik Olanlar" listesi de aynı 3'le sınırlı, aksi halde SS/GVG
+// için "eksik" gösterip aslında Discord'dan bildirilemeyen bir şeyi işaret
+// etmiş olurduk. EVENT_LABELS'ın kendisi 5 türü de tutmaya devam ediyor -
+// bu kısıtlamadan ÖNCE gelmiş eski ss/gvg bildirimleri hâlâ doğru etiketle
+// gösterilebilsin diye (bkz. renderSelfReports).
+const SELF_REPORTABLE_TYPES = ["svs", "kod", "kodgvg"];
 
 export function mapSelfReportSubmission(row) {
   return {
@@ -177,7 +185,7 @@ function computeMissingForType(type) {
 function renderSelfReportGaps() {
   const wrap = document.getElementById("selfReportGapsRows");
   if (!wrap) return;
-  const rows = Object.keys(EVENT_LABELS).map((type) => {
+  const rows = SELF_REPORTABLE_TYPES.map((type) => {
     const { week, missing } = computeMissingForType(type);
     return { type, week, missing };
   }).filter((r) => r.week);

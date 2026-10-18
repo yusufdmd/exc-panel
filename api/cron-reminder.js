@@ -30,11 +30,15 @@ const { sendDirectMessage } = require("./_lib/discordBot");
 const { findMissingMembers } = require("./_lib/selfReportGaps");
 const { EVENT_LABELS } = require("./_lib/eventTypes");
 
-// Her cron tetiklemesi (ör. "ss1"/"ss2" aynı SS haftasının iki ayrı anı),
-// kendi self-report etkinlik türüne (svs/ss/kod/gvg/kodgvg) eşlenir —
-// bu, o tetiklemede kimlerin hâlâ Discord'dan katılım bildirmediğine
-// bakıp onlara AYRICA bir DM atmak için kullanılır (bkz. dosya sonu).
-const SELF_REPORT_TYPE = { ss1: "ss", ss2: "ss", svs: "svs", kod: "kod", gvg1: "gvg", gvg2: "gvg", kodgvg1: "kodgvg", kodgvg2: "kodgvg" };
+// Her cron tetiklemesi, kendi self-report etkinlik türüne eşlenir — bu, o
+// tetiklemede kimlerin hâlâ Discord'dan katılım bildirmediğine bakıp
+// onlara AYRICA bir DM atmak için kullanılır (bkz. dosya sonu). SADECE 3
+// etkinlik için kendi kendine bildirim var (kullanıcı talebi) - ss1/ss2/
+// gvg1/gvg2 kasıtlı olarak burada YOK, o yüzden bu DM taraması onlar için
+// hiç çalışmaz (kanal hatırlatması yine normal şekilde gider, sadece
+// self-report DM eklenmez) - bkz. api/discord-register-commands.js'teki
+// komut seçenekleri, aynı 3 türle sınırlı.
+const SELF_REPORT_TYPE = { svs: "svs", kod: "kod", kodgvg1: "kodgvg", kodgvg2: "kodgvg" };
 
 // İngilizce — lonca içi ortak iletişim dili Türkçe değil İngilizce (bkz. kullanıcı talebi).
 const MESSAGES = {
