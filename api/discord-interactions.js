@@ -42,6 +42,7 @@ const { waitUntil } = require("@vercel/functions");
 const { sbFetch, sbWrite } = require("./_lib/supabaseAdmin");
 const { readScreenshots } = require("./_lib/screenshotAi");
 const { EVENT_LABELS } = require("./_lib/eventTypes");
+const { messagesFor } = require("./_lib/botMessages");
 
 function readRawBody(req) {
   return new Promise((resolve, reject) => {
@@ -58,21 +59,21 @@ function optionsToMap(options) {
   return map;
 }
 
-/** AI'nin okuduğu tek bir sonucu, oyuncuya gösterilecek kısa bir Türkçe özete çevirir. */
-function summarizeExtracted(type, extracted) {
+/** AI'nin okuduğu tek bir sonucu, oyuncuya gösterilecek kısa bir özete çevirir — kendi Discord dilinde (bkz. api/_lib/botMessages.js). */
+function summarizeExtracted(type, extracted, msg) {
   const label = EVENT_LABELS[type] || type;
   if (type === "gvg" || type === "kodgvg") {
-    return `✅ ${label} için kaydın alındı: **${Number(extracted.points) || 0} puan**. Bir yöneticinin onayını bekliyor.`;
+    return `${msg.recorded(label)}: **${Number(extracted.points) || 0}**. ${msg.pendingApproval}`;
   }
   if (type === "kod" || type === "svs") {
-    const status = extracted.status === "joined" ? "katıldın" : "katılmadın";
-    return `✅ ${label} için kaydın alındı: **${status}**. Bir yöneticinin onayını bekliyor.`;
+    const status = extracted.status === "joined" ? msg.joined : msg.notJoined;
+    return `${msg.recorded(label)}: **${status}**. ${msg.pendingApproval}`;
   }
   if (type === "ss") {
-    const status = extracted.attended ? "katıldın" : "katılmadın";
-    return `✅ ${label} için kaydın alındı: **${status}** (${extracted.group || "grup yok"}). Bir yöneticinin onayını bekliyor.`;
+    const status = extracted.attended ? msg.joined : msg.notJoined;
+    return `${msg.recorded(label)}: **${status}** (${extracted.group || msg.noGroup}). ${msg.pendingApproval}`;
   }
-  return `✅ ${label} için kaydın alındı. Bir yöneticinin onayını bekliyor.`;
+  return `${msg.recorded(label)}. ${msg.pendingApproval}`;
 }
 
 async function patchOriginalMessage(interactionToken, content) {
@@ -98,21 +99,22 @@ async function handleKatilimBildir(interaction, member) {
   const attachmentId = options.screenshot;
   const attachment = interaction.data.resolved?.attachments?.[attachmentId];
   const interactionToken = interaction.token;
+  const msg = messagesFor(interaction);
 
   try {
     if (!EVENT_LABELS[type] || !attachment) {
-      await patchOriginalMessage(interactionToken, "⚠️ İstek eksik görünüyor, lütfen tekrar dener misin?");
+      await patchOriginalMessage(interactionToken, msg.incomplete);
       return;
     }
 
     // TANI: Gemini/DB adımlarına girmeden hemen bir "işleniyor" mesajı
     // dener - bu bile görünmüyorsa sorun patchOriginalMessage/token/app-id
     // tarafında, görünüp sonrası gelmiyorsa sorun Gemini/DB tarafında demektir.
-    await patchOriginalMessage(interactionToken, "⏳ Görsel okunuyor, birazdan sonucu paylaşacağım...");
+    await patchOriginalMessage(interactionToken, msg.processing);
 
     const imgRes = await fetch(attachment.url);
     if (!imgRes.ok) {
-      await patchOriginalMessage(interactionToken, "⚠️ Görsel indirilemedi, lütfen tekrar dener misin?");
+      await patchOriginalMessage(interactionToken, msg.downloadFailed);
       return;
     }
     const imgBuffer = Buffer.from(await imgRes.arrayBuffer());
@@ -138,13 +140,11 @@ async function handleKatilimBildir(interaction, member) {
       }
     });
 
-    const message = extracted
-      ? summarizeExtracted(type, extracted)
-      : "😕 Görselde senin verini net olarak bulamadım. Görseli kontrol edip tekrar dener misin, ya da bir yöneticiyle iletişime geç.";
+    const message = extracted ? summarizeExtracted(type, extracted, msg) : msg.unmatched;
     await patchOriginalMessage(interactionToken, message);
   } catch (error) {
     console.error("[discord-interactions] /report-participation işlenirken hata:", error);
-    await patchOriginalMessage(interactionToken, "⚠️ Beklenmeyen bir hata oluştu, lütfen tekrar dener misin? Sorun devam ederse bir yöneticiye bildir.");
+    await patchOriginalMessage(interactionToken, msg.unexpectedError);
   }
 }
 
@@ -177,6 +177,7 @@ const handler = async (req, res) => {
   }
 
   if (interaction.type === InteractionType.APPLICATION_COMMAND && interaction.data?.name === "report-participation") {
+    const msg = messagesFor(interaction);
     const discordUserId = interaction.member?.user?.id || interaction.user?.id;
     const rows = discordUserId && /^\d{17,20}$/.test(discordUserId)
       ? await sbFetch(`member_discord_ids?discord_id=eq.${discordUserId}&select=member_id,members(id,name,game_id,is_old,is_migrated)`).catch(() => [])
@@ -186,14 +187,14 @@ const handler = async (req, res) => {
     if (!member) {
       res.status(200).json({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: { content: "Discord hesabın henüz profiline kayıtlı değil. Bir yöneticiyle iletişime geçip bağlatabilirsin.", flags: InteractionResponseFlags.EPHEMERAL }
+        data: { content: msg.notLinked, flags: InteractionResponseFlags.EPHEMERAL }
       });
       return;
     }
     if (member.is_old || member.is_migrated) {
       res.status(200).json({
         type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-        data: { content: "Profilin aktif üye listesinde görünmüyor, bu yüzden katılım bildiremezsin. Yanlış olduğunu düşünüyorsan bir yöneticiyle konuş.", flags: InteractionResponseFlags.EPHEMERAL }
+        data: { content: msg.notActive, flags: InteractionResponseFlags.EPHEMERAL }
       });
       return;
     }
