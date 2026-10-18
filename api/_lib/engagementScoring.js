@@ -22,11 +22,10 @@ const GVG_GREEN_THRESHOLD = 43500000; // bkz. js/config.js -> GVG_THRESHOLDS.gre
 const isSvsPoint = (e) => !!e && e.status === "joined";
 const isKodPoint = (e) => !!e && e.status === "joined";
 const isGvgPoint = (e) => !!e && (Number(e.points) || 0) >= GVG_GREEN_THRESHOLD;
-const isSsPoint = (e) => {
-  if (!e) return false;
-  if (!e.group) return !!(e.appliedSlot1 || e.appliedSlot2 || e.appliedSlot3);
-  return !!e.attended;
-};
+// SS: sadece etkinlik listesine alınan (gruba atanmış) üyeler için o hafta sayılır
+// (katıldı 1/1, katılmadı 0/1); listede olmayanlar için hafta hesaba hiç girmez.
+const isSsPoint = (e) => !!e && !!e.group && !!e.attended;
+const isSsApplicable = (e) => !!e && !!e.group;
 
 function isExempt(member, week) {
   if (!week || !week.date || !member) return false;
@@ -44,13 +43,14 @@ function periodWeeks(weeks, period) {
   return weeks.filter((w) => w.date && w.date >= period.startDate && (!period.endDate || w.date <= period.endDate));
 }
 
-function categoryStat(entries, member, weeks, isPoint) {
+function categoryStat(entries, member, weeks, isPoint, isApplicable) {
   let attended = 0;
   let applicable = 0;
   weeks.forEach((week) => {
     if (isExempt(member, week)) return;
-    applicable++;
     const entry = entries.find((e) => e.memberId === member.id && e.weekId === week.id);
+    if (isApplicable && !isApplicable(entry)) return;
+    applicable++;
     if (isPoint(entry)) attended++;
   });
   return { attended, applicable };
@@ -59,7 +59,7 @@ function categoryStat(entries, member, weeks, isPoint) {
 /** `stores` = { svs: {weeks, entries}, ss: {...}, kod: {...}, gvg: {...}, kodgvg: {...} } (bkz. mapEventStore). */
 function computeEngagementRow(member, period, stores) {
   const svs = categoryStat(stores.svs.entries, member, periodWeeks(stores.svs.weeks, period), isSvsPoint);
-  const ss = categoryStat(stores.ss.entries, member, periodWeeks(stores.ss.weeks, period), isSsPoint);
+  const ss = categoryStat(stores.ss.entries, member, periodWeeks(stores.ss.weeks, period), isSsPoint, isSsApplicable);
   const kod = categoryStat(stores.kod.entries, member, periodWeeks(stores.kod.weeks, period), isKodPoint);
   const gvg = categoryStat(stores.gvg.entries, member, periodWeeks(stores.gvg.weeks, period), isGvgPoint);
   const kodgvg = categoryStat(stores.kodgvg.entries, member, periodWeeks(stores.kodgvg.weeks, period), isGvgPoint);

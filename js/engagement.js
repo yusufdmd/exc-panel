@@ -36,12 +36,14 @@ import { GVG_THRESHOLDS } from "./config.js";
 const isSvsPoint = (e) => !!e && e.status === "joined";
 const isKodPoint = (e) => !!e && e.status === "joined";
 const isGvgPoint = (e) => !!e && (Number(e.points) || 0) >= GVG_THRESHOLDS.green;
-/** SS: seçilmediyse (kontenjan) sadece BAŞVURMUŞ olmak yeterli; seçildiyse fiilen KATILMIŞ olmak gerekir. Her iki yol da aynı 1 puanı verir — hiç başvurmamak ya da seçilip gelmemek 0 puandır. */
-const isSsPoint = (e) => {
-  if (!e) return false;
-  if (!e.group) return !!(e.appliedSlot1 || e.appliedSlot2 || e.appliedSlot3);
-  return !!e.attended;
-};
+/**
+ * SS: sadece etkinlik listesine alınan (bir gruba atanmış) üyeler için o hafta
+ * değerlendirilir — katıldıysa 1/1, katılmadıysa 0/1. Listeye alınmayanlar
+ * (sadece başvuru yapmış ya da hiç kaydı olmayan) için o SS haftası hesaba
+ * HİÇ girmez: ne puan alır ne de paydaya eklenir (bkz. isSsApplicable).
+ */
+const isSsPoint = (e) => !!e && !!e.group && !!e.attended;
+const isSsApplicable = (e) => !!e && !!e.group;
 
 /** Supabase dönem satırını uygulama şekline çevirir. */
 export function mapEngagementPeriod(row) {
@@ -69,14 +71,18 @@ function periodWeeks(store, period) {
   return store.weeks.filter((w) => w.date && w.date >= period.startDate && (!period.endDate || w.date <= period.endDate));
 }
 
-/** Verilen haftalar içinde, üyenin muaf olmadığı hafta sayısı (payda) ve `isPoint` şartını sağladığı hafta sayısı (pay). */
-function categoryStat(store, member, weeks, isPoint) {
+/**
+ * Verilen haftalar içinde, üyenin muaf olmadığı hafta sayısı (payda) ve `isPoint` şartını sağladığı hafta sayısı (pay).
+ * `isApplicable` verilirse, kaydı bu şartı sağlamayan haftalar da (SS'de listeye alınmamak gibi) paydaya hiç eklenmez.
+ */
+function categoryStat(store, member, weeks, isPoint, isApplicable) {
   let attended = 0;
   let applicable = 0;
   weeks.forEach((week) => {
     if (isExempt(member, week)) return;
-    applicable++;
     const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === week.id);
+    if (isApplicable && !isApplicable(entry)) return;
+    applicable++;
     if (isPoint(entry)) attended++;
   });
   return { attended, applicable };
@@ -84,7 +90,7 @@ function categoryStat(store, member, weeks, isPoint) {
 
 function computeEngagementRow(member, period) {
   const svs = categoryStat(state.svs, member, periodWeeks(state.svs, period), isSvsPoint);
-  const ss = categoryStat(state.ss, member, periodWeeks(state.ss, period), isSsPoint);
+  const ss = categoryStat(state.ss, member, periodWeeks(state.ss, period), isSsPoint, isSsApplicable);
   const kod = categoryStat(state.kod, member, periodWeeks(state.kod, period), isKodPoint);
   const gvg = categoryStat(state.gvg, member, periodWeeks(state.gvg, period), isGvgPoint);
   const kodgvg = categoryStat(state.kodgvg, member, periodWeeks(state.kodgvg, period), isGvgPoint);
@@ -370,11 +376,11 @@ export async function deleteEngagementPeriod() {
 }
 
 /** Bir kategori için, dönemdeki her haftayı ayrı bir renkli işaret (chip) olarak üretir — hafta bazında kim kaçırmış görmek için. */
-function periodWeekChips(store, member, weeks, isPoint) {
+function periodWeekChips(store, member, weeks, isPoint, isApplicable) {
   if (!weeks.length) return `<span style="color:var(--text-dim); font-size:12px;">—</span>`;
   return weeks.map((week) => {
-    const exempt = isExempt(member, week);
     const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === week.id);
+    const exempt = isExempt(member, week) || (isApplicable && !isApplicable(entry)); // sayılmayan hafta da gri "—" görünür
     const earned = !exempt && isPoint(entry);
     const cls = exempt ? "pill-gray" : earned ? "pill-green" : "pill-red";
     const mark = exempt ? "—" : earned ? "✓" : "✕";
@@ -560,7 +566,7 @@ export function openEngagementReportModal() {
             <td class="member-name">${escapeHtml(row.member.name)}</td>
             <td class="num-cell" style="font-weight:700; color:var(--cyan-ink);">${row.total}</td>
             <td>${periodWeekChips(state.svs, row.member, svsWeeks, isSvsPoint)}</td>
-            <td>${periodWeekChips(state.ss, row.member, ssWeeks, isSsPoint)}</td>
+            <td>${periodWeekChips(state.ss, row.member, ssWeeks, isSsPoint, isSsApplicable)}</td>
             <td>${periodWeekChips(state.kod, row.member, kodWeeks, isKodPoint)}</td>
             <td>${periodWeekChips(state.gvg, row.member, gvgWeeks, isGvgPoint)}</td>
             <td>${periodWeekChips(state.kodgvg, row.member, kodGvgWeeks, isGvgPoint)}</td>
