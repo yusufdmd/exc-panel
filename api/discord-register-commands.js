@@ -1,12 +1,22 @@
 // =====================================================================
 // EXC PANELİ — api/discord-register-commands.js
 // =====================================================================
-// Discord'a "/report-participation" slash komutunu kaydeder. TEK SEFERLİK bir
-// kurulum adımıdır (komut tanımı değişmediği sürece tekrar çağırmaya
-// gerek yok) - normalde kimse tetiklemesin diye CRON_SECRET ile korunur
-// (bkz. api/cron-reminder.js'teki aynı desen). Guild-scoped kayıt
-// kullanılır (global kayıttaki ~1 saatlik yayılma gecikmesi olmadan
-// anında görünür).
+// Discord'a "/report-participation" slash komutunu GLOBAL olarak kaydeder
+// (hem sunucuda hem botla DM'de kullanılabilsin diye - guild-scoped
+// komutlar DM'de hiç çalışmaz, bkz. Discord docs: "Guild commands don't
+// support the BOT_DM interaction context"). TEK SEFERLİK bir kurulum
+// adımıdır (komut tanımı değişmediği sürece tekrar çağırmaya gerek yok) -
+// normalde kimse tetiklemesin diye CRON_SECRET ile korunur (bkz.
+// api/cron-reminder.js'teki aynı desen).
+//
+// Global kayıt, guild-scoped'un aksine anında değil ~1 saate kadar sürede
+// yayılabilir - ilk kayıttan sonra komutun Discord'da görünmesi gecikebilir.
+//
+// integration_types: [0,1] = hem sunucuya hem kullanıcıya kurulabilir.
+// contexts: [0,1,2] = sunucu kanalı (GUILD) + botla DM (BOT_DM) + diğer
+// özel kanallar (PRIVATE_CHANNEL) - üçü de açık. Discord Developer Portal'da
+// "Installation" sayfasındaki "User Install" + "Guild Install" önkoşulu
+// zaten işaretli olmalı (bkz. commit geçmişi).
 // =====================================================================
 
 const COMMANDS = [
@@ -14,6 +24,8 @@ const COMMANDS = [
     name: "report-participation",
     description: "Report this week's event participation with a screenshot",
     type: 1, // CHAT_INPUT
+    integration_types: [0, 1],
+    contexts: [0, 1, 2],
     options: [
       {
         name: "event",
@@ -54,8 +66,23 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const url = `https://discord.com/api/v10/applications/${DISCORD_APPLICATION_ID}/guilds/${DISCORD_GUILD_ID}/commands`;
-    const discordRes = await fetch(url, {
+    // Eski guild-scoped kaydı temizle (boş dizi = "bu sunucuda hiç komut yok") -
+    // aksi halde aynı isimde hem guild hem global komut birden görünüp kafa
+    // karıştırabilirdi.
+    const guildUrl = `https://discord.com/api/v10/applications/${DISCORD_APPLICATION_ID}/guilds/${DISCORD_GUILD_ID}/commands`;
+    const guildRes = await fetch(guildUrl, {
+      method: "PUT",
+      headers: { Authorization: `Bot ${DISCORD_BOT_TOKEN}`, "Content-Type": "application/json" },
+      body: JSON.stringify([])
+    });
+    if (!guildRes.ok) {
+      const body = await guildRes.json().catch(() => null);
+      res.status(502).json({ error: `Discord HTTP ${guildRes.status} (eski guild komutu silinemedi)`, detail: body });
+      return;
+    }
+
+    const globalUrl = `https://discord.com/api/v10/applications/${DISCORD_APPLICATION_ID}/commands`;
+    const discordRes = await fetch(globalUrl, {
       method: "PUT",
       headers: {
         Authorization: `Bot ${DISCORD_BOT_TOKEN}`,
@@ -68,7 +95,7 @@ module.exports = async (req, res) => {
       res.status(502).json({ error: `Discord HTTP ${discordRes.status}`, detail: body });
       return;
     }
-    res.status(200).json({ ok: true, registered: Array.isArray(body) ? body.map((c) => c.name) : body });
+    res.status(200).json({ ok: true, registered: Array.isArray(body) ? body.map((c) => c.name) : body, note: "Global kayıt yayılması ~1 saate kadar sürebilir." });
   } catch (error) {
     console.error("[discord-register-commands] Beklenmeyen hata:", error);
     res.status(500).json({ error: "Beklenmeyen bir hata oluştu: " + (error && error.message ? error.message : String(error)) });
