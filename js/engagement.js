@@ -25,7 +25,7 @@
 //     (bkz. state.gvg / state.kodgvg), sadece kural aynıdır.
 // =====================================================================
 
-import { createEngagementPeriod as dbCreateEngagementPeriod, closeEngagementPeriod as dbCloseEngagementPeriod, deleteEngagementPeriod as dbDeleteEngagementPeriod, restoreEngagementPeriod as dbRestoreEngagementPeriod, setSetting as dbSetSetting, logActivity } from "./database.js";
+import { createEngagementPeriod as dbCreateEngagementPeriod, closeEngagementPeriod as dbCloseEngagementPeriod, deleteEngagementPeriod as dbDeleteEngagementPeriod, restoreEngagementPeriod as dbRestoreEngagementPeriod, getEngagementPeriods, setSetting as dbSetSetting, logActivity } from "./database.js";
 import { state, t, escapeHtml, rankClass, rowNumHtml, isExempt, showToast, todayStr, formatRatio, RANK_ORDER, registerRenderer } from "./ui.js";
 import { activeMembers } from "./members.js";
 import { GVG_THRESHOLDS } from "./config.js";
@@ -365,7 +365,14 @@ export async function deleteEngagementPeriod() {
       name: periodOptionLabel(period),
       snapshot: { id: period.id, seq: period.seq || null, start_date: period.startDate, end_date: period.endDate || null, results: period.results || null }
     }, state.currentAdminUsername);
+    // Veritabanı silmeden sonra kalan dönemleri boşluksuz yeniden numaralar
+    // (bkz. sql/renumber_engagement_periods.sql) — yeni numaraları hemen göstermek için tekrar çekilir.
     state.engagementPeriods = state.engagementPeriods.filter((p) => p.id !== period.id);
+    try {
+      state.engagementPeriods = (await getEngagementPeriods()).map(mapEngagementPeriod);
+    } catch (refreshError) {
+      console.error(refreshError); // silme başarılı; numaralar realtime/yoklama ile yine güncellenir
+    }
     if (state.engagementSelectedPeriodId === period.id) state.engagementSelectedPeriodId = null;
     renderEngagement();
     showToast(t("toastEngagementPeriodDeleted"));
