@@ -68,10 +68,16 @@ module.exports = async (req, res) => {
     const label = EVENT_LABELS[type] || type;
     const dmText = `⏰ Looks like you haven't reported your ${label} participation yet. Use \`/report-participation\` in the server (or here in DM) to send a screenshot!`;
     const results = await Promise.allSettled(missing.map((m) => sendDirectMessage(m.discordId, dmText)));
-    const failed = results.filter((r) => r.status === "rejected");
-    failed.forEach((r) => console.error("[send-self-report-reminder] DM hatası:", r.reason));
+    // Her hata, hangi üye için olduğuyla birlikte admin'e dönülür - sadece
+    // başarısızlık SAYISI değil, SEBEBİ de panelde görünsün diye (ör.
+    // "kullanıcı sunucu üyelerinden DM kabul etmiyor" gibi Discord'un kendi
+    // hata mesajı).
+    const failures = results
+      .map((r, i) => (r.status === "rejected" ? { name: missing[i].name, error: (r.reason && r.reason.message) || String(r.reason) } : null))
+      .filter(Boolean);
+    failures.forEach((f) => console.error(`[send-self-report-reminder] DM hatası (${f.name}):`, f.error));
 
-    res.status(200).json({ ok: true, attempted: missing.length, failed: failed.length });
+    res.status(200).json({ ok: true, attempted: missing.length, failed: failures.length, failures });
   } catch (error) {
     console.error("[send-self-report-reminder] Beklenmeyen hata:", error);
     res.status(500).json({ error: "Beklenmeyen bir hata oluştu: " + (error && error.message ? error.message : String(error)) });

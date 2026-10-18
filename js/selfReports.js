@@ -226,6 +226,10 @@ export async function sendSelfReportReminder(type) {
       return;
     }
     showToast(`${t("toastReminderSent")} (${body.attempted - body.failed}/${body.attempted})`);
+    if (body.failed && Array.isArray(body.failures)) {
+      console.error("[selfReports] Gönderilemeyen hatırlatmalar:", body.failures);
+      alert(body.failures.map((f) => `${f.name}: ${f.error}`).join("\n"));
+    }
   } catch (error) {
     console.error(error);
     showToast("Error");
