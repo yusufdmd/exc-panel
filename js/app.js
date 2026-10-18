@@ -38,7 +38,7 @@ import { mapSiteLinks, populateSiteLinksForm, saveSiteLinks } from "./siteLinks.
 import { mapNewsItem, openNewsModal, closeNewsModal, saveNews, deleteNews } from "./news.js";
 import { mapVideoItem, openVideoModal, closeVideoModal, saveVideo, deleteVideo, moveVideo } from "./videos.js";
 import { mapActivity, restoreDeletedMember, restoreDeletedWeek, restoreDeletedSimple, restoreSelfReportApproval, showActivityDetails, closeActivityDetails } from "./activity.js";
-import { mapSelfReportSubmission, approveSelfReportSubmission, rejectSelfReportSubmission } from "./selfReports.js";
+import { mapSelfReportSubmission, approveSelfReportSubmission, rejectSelfReportSubmission, sendSelfReportReminder } from "./selfReports.js";
 import { doLogin, doLogout, openChangePasswordModal, closeChangePasswordModal, submitChangePassword } from "./auth.js";
 import {
   mapAccountVaultEntry, renderAccountVault, openAccountVaultModal, closeAccountVaultModal,
@@ -296,7 +296,7 @@ Object.assign(window, {
   openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember, exportMembers,
   handlePowerScreenshot, removePowerUnmatchedItem, discardPowerDraft, applyPowerDraft, acceptSuspiciousPower, rejectSuspiciousPower,
   openNameSuggestModal, closeNameSuggestModal, submitNameSuggestion, approveNameSuggestion, dismissNameSuggestion,
-  approveSelfReportSubmission, rejectSelfReportSubmission,
+  approveSelfReportSubmission, rejectSelfReportSubmission, sendSelfReportReminder,
   openWeekModal, closeWeekModal, saveWeek, deleteWeek,
   openEntryModal, closeEntryModal, saveEntry, renderEntryRows, handleEntryScreenshot, handleSsAppliedScreenshot, removeUnmatchedItem,
   openWeekReportModal, closeWeekReportModal,

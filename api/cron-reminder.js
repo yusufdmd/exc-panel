@@ -26,19 +26,13 @@
 // =====================================================================
 
 const { postToDiscord } = require("./_lib/discord");
-const { sendDirectMessage } = require("./_lib/discordBot");
-const { findMissingMembers } = require("./_lib/selfReportGaps");
-const { EVENT_LABELS } = require("./_lib/eventTypes");
 
-// Her cron tetiklemesi, kendi self-report etkinlik türüne eşlenir — bu, o
-// tetiklemede kimlerin hâlâ Discord'dan katılım bildirmediğine bakıp
-// onlara AYRICA bir DM atmak için kullanılır (bkz. dosya sonu). SADECE 3
-// etkinlik için kendi kendine bildirim var (kullanıcı talebi) - ss1/ss2/
-// gvg1/gvg2 kasıtlı olarak burada YOK, o yüzden bu DM taraması onlar için
-// hiç çalışmaz (kanal hatırlatması yine normal şekilde gider, sadece
-// self-report DM eklenmez) - bkz. api/discord-register-commands.js'teki
-// komut seçenekleri, aynı 3 türle sınırlı.
-const SELF_REPORT_TYPE = { svs: "svs", kod: "kod", kodgvg1: "kodgvg", kodgvg2: "kodgvg" };
+// Discord'dan kendi kendine katılım bildirme hatırlatma DM'i artık BURADA
+// otomatik gönderilmiyor - admin panelden ("Bu Hafta Eksik Olanlar" ->
+// "Hatırlat" butonu, bkz. api/send-self-report-reminder.js) elle tetikliyor.
+// Saat/kural konusunda liderlikten dönüş beklendiği için otomatik gönderim
+// bilerek kaldırıldı (kullanıcı talebi) - bu dosya artık sadece ORİJİNAL
+// kanal hatırlatmalarını (SVS başladı vb.) gönderiyor.
 
 // İngilizce — lonca içi ortak iletişim dili Türkçe değil İngilizce (bkz. kullanıcı talebi).
 const MESSAGES = {
@@ -96,50 +90,17 @@ module.exports = async (req, res) => {
     return;
   }
 
-  // TEST AMAÇLI: ?dmOnly=1 ile çağrılırsa kanala GERÇEK hatırlatma mesajı
-  // atılmaz (ve pasif/haftaaşırı kontrolleri atlanır) - sadece aşağıdaki
-  // self-report DM taraması çalışır. Şu an Discord'u bağlı tek kişi test
-  // eden admin olduğu için bu DM sadece ona gidiyor.
-  const dmOnly = req.query && req.query.dmOnly;
-  let ok = true, detail = null;
-  if (!dmOnly) {
-    if (PAUSED_EVENTS.has(event)) {
-      res.status(200).json({ ok: true, skipped: true, reason: "paused (KOD/GVG data not being processed right now)" });
-      return;
-    }
-
-    const anchor = BIWEEKLY_ANCHORS[event];
-    if (anchor && !isActiveBiweek(anchor)) {
-      res.status(200).json({ ok: true, skipped: true, reason: "off week (biweekly schedule)" });
-      return;
-    }
-
-    ({ ok, detail } = await postToDiscord(message));
+  if (PAUSED_EVENTS.has(event)) {
+    res.status(200).json({ ok: true, skipped: true, reason: "paused (KOD/GVG data not being processed right now)" });
+    return;
   }
 
-  // Kanal hatırlatmasından SONRA, o etkinlik türü için hâlâ Discord'dan
-  // katılım bildirmemiş (ve Discord'u bağlı) üyelere ayrıca bir DM
-  // gönderilir. Bu adım başarısız olsa bile ana hatırlatma (yukarıdaki
-  // kanal mesajı) etkilenmesin diye ayrı try/catch'te, sessizce loglanır.
-  let selfReportDm = null;
-  const selfReportType = SELF_REPORT_TYPE[event];
-  if (selfReportType && process.env.DISCORD_BOT_TOKEN) {
-    try {
-      const { week, missing } = await findMissingMembers(selfReportType);
-      if (week && missing.length) {
-        const label = EVENT_LABELS[selfReportType] || selfReportType;
-        const dmText = `⏰ Looks like you haven't reported your ${label} participation yet. Use \`/report-participation\` in the server to send a screenshot!`;
-        const results = await Promise.allSettled(missing.map((m) => sendDirectMessage(m.discordId, dmText)));
-        const failed = results.filter((r) => r.status === "rejected");
-        failed.forEach((r) => console.error("[cron-reminder] self-report DM hatası:", r.reason));
-        selfReportDm = { attempted: missing.length, failed: failed.length };
-      } else {
-        selfReportDm = { attempted: 0, failed: 0 };
-      }
-    } catch (error) {
-      console.error("[cron-reminder] self-report eksik üye taraması hatası:", error);
-    }
+  const anchor = BIWEEKLY_ANCHORS[event];
+  if (anchor && !isActiveBiweek(anchor)) {
+    res.status(200).json({ ok: true, skipped: true, reason: "off week (biweekly schedule)" });
+    return;
   }
 
-  res.status(ok ? 200 : 502).json({ ok, detail, selfReportDm });
+  const { ok, detail } = await postToDiscord(message);
+  res.status(ok ? 200 : 502).json({ ok, detail });
 };

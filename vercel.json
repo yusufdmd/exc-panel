@@ -38,6 +38,9 @@
     },
     "api/cron-reminder.js": {
       "maxDuration": 30
+    },
+    "api/send-self-report-reminder.js": {
+      "maxDuration": 30
     }
   },
   "crons": [

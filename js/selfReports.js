@@ -13,6 +13,7 @@
 import { updateSelfReportSubmission, upsertRecord, logActivity } from "./database.js";
 import { entryToDbPayload, mapEntry } from "./events.js";
 import { state, t, escapeHtml, showToast, registerRenderer, renderAll, isExempt } from "./ui.js";
+import { supabase } from "./supabase.js";
 
 const EVENT_LABELS = { svs: "SVS", ss: "Sandstorm (SS)", kod: "King of Desert (KoD)", gvg: "GVG", kodgvg: "KoD-GVG" };
 // Discord'dan kendi kendine bildirim SADECE bu 3 etkinlik için var (kullanıcı
@@ -189,7 +190,9 @@ function renderSelfReportGaps() {
     const { week, missing } = computeMissingForType(type);
     return { type, week, missing };
   }).filter((r) => r.week);
-  wrap.innerHTML = rows.map((r) => `
+  wrap.innerHTML = rows.map((r) => {
+    const dmEligible = r.missing.filter((m) => m.hasDiscord).length;
+    return `
     <tr>
       <td style="white-space:nowrap; vertical-align:top;">${escapeHtml(EVENT_LABELS[r.type])}</td>
       <td style="white-space:nowrap; vertical-align:top;">${escapeHtml(r.week.date || "—")}</td>
@@ -197,8 +200,36 @@ function renderSelfReportGaps() {
         ? `<div style="margin-bottom:4px; font-weight:600; color:var(--danger-ink,#E5484D);">${r.missing.length} ${t("selfReportGapCount")}</div>
            <div style="display:flex; flex-wrap:wrap; gap:4px; max-width:900px;">${r.missing.map((m) => `<span class="cell-pill pill-red" title="${m.hasDiscord ? "" : t("selfReportGapNoDiscord")}">${escapeHtml(m.name)}${m.hasDiscord ? "" : " 🔗"}</span>`).join("")}</div>`
         : `<span style="color:var(--text-muted);">${t("selfReportGapsNone")}</span>`}</td>
+      <td style="vertical-align:top;">${dmEligible
+        ? `<button class="btn-ghost" onclick="sendSelfReportReminder('${r.type}')" title="${t("sendReminderTitle")}">📨 ${t("sendReminderBtn")} (${dmEligible})</button>`
+        : ""}</td>
     </tr>
-  `).join("");
+  `;
+  }).join("");
+}
+
+/** Admin — bu etkinlik türü için hâlâ eksik + Discord'u bağlı üyelere elle bir hatırlatma DM'i gönderir (bkz. api/send-self-report-reminder.js). */
+export async function sendSelfReportReminder(type) {
+  if (!confirm(t("confirmSendReminder"))) return;
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData && sessionData.session ? sessionData.session.access_token : "";
+    const res = await fetch("/api/send-self-report-reminder", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+      body: JSON.stringify({ type })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok || !body.ok) {
+      console.error(body);
+      showToast("Error");
+      return;
+    }
+    showToast(`${t("toastReminderSent")} (${body.attempted - body.failed}/${body.attempted})`);
+  } catch (error) {
+    console.error(error);
+    showToast("Error");
+  }
 }
 
 registerRenderer(renderSelfReports);
