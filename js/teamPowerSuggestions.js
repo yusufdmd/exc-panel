@@ -74,7 +74,7 @@ export async function approveTeamPowerSuggestion(id) {
 
     await updateTeamPowerSuggestion(id, { status: "approved", reviewed_by: state.currentAdminUsername || null, reviewed_at: new Date().toISOString() });
     state.teamPowerSuggestions = state.teamPowerSuggestions.filter((s) => s.id !== id);
-    await logActivity("updated", "member", member.id, { name: member.name || "İsimsiz" }, state.currentAdminUsername);
+    await logActivity("approved", "team_power_suggestion", id, { name: `${member.name || "İsimsiz"} — ${formatPower(sub.teamPower)} (${elementLabel(sub.teamElement)})` }, state.currentAdminUsername);
     renderAll();
     showToast(t("toastSelfReportApproved"));
   } catch (error) {
@@ -85,10 +85,15 @@ export async function approveTeamPowerSuggestion(id) {
 
 /** Bir öneriyi reddeder — hiçbir üye verisine dokunulmaz, sadece durumu "rejected" olur (hesap verebilirlik için silinmez). */
 export async function rejectTeamPowerSuggestion(id) {
+  const sub = state.teamPowerSuggestions.find((s) => s.id === id);
   if (!confirm(t("confirmRejectSelfReport"))) return;
   try {
+    const member = sub ? state.members.find((m) => m.id === sub.memberId) : null;
     await updateTeamPowerSuggestion(id, { status: "rejected", reviewed_by: state.currentAdminUsername || null, reviewed_at: new Date().toISOString() });
     state.teamPowerSuggestions = state.teamPowerSuggestions.filter((s) => s.id !== id);
+    if (sub) {
+      await logActivity("rejected", "team_power_suggestion", id, { name: `${member ? member.name : "—"} — ${formatPower(sub.teamPower)} (${elementLabel(sub.teamElement)})` }, state.currentAdminUsername);
+    }
     renderAll();
     showToast(t("toastSelfReportRejected"));
   } catch (error) {

@@ -368,7 +368,7 @@ export async function approveNameSuggestion(id) {
     if (index >= 0) state.members[index] = { ...mapMember(row), discordId: state.members[index].discordId, powerHistory: state.members[index].powerHistory };
     await deleteNameSuggestion(id);
     state.nameSuggestions = state.nameSuggestions.filter((s) => s.id !== id);
-    await logActivity("updated", "member", member.id, { name: suggestion.suggestedName }, state.currentAdminUsername);
+    await logActivity("approved", "name_suggestion", id, { name: `${member.name || "İsimsiz"} — ${suggestion.suggestedName}` }, state.currentAdminUsername);
     renderAll();
     showToast(t("toastNameSuggestionApproved"));
   } catch (error) {
@@ -379,10 +379,15 @@ export async function approveNameSuggestion(id) {
 
 /** Bir isim önerisini reddeder — üyenin adı değişmez, öneri sadece kuyruktan silinir. */
 export async function dismissNameSuggestion(id) {
+  const suggestion = state.nameSuggestions.find((s) => s.id === id);
   if (!confirm(t("confirmDismissNameSuggestion"))) return;
   try {
+    const member = suggestion ? state.members.find((m) => m.id === suggestion.memberId) : null;
     await deleteNameSuggestion(id);
     state.nameSuggestions = state.nameSuggestions.filter((s) => s.id !== id);
+    if (suggestion) {
+      await logActivity("rejected", "name_suggestion", id, { name: `${member ? member.name : "—"} — ${suggestion.suggestedName}` }, state.currentAdminUsername);
+    }
     renderAll();
     showToast(t("toastNameSuggestionDismissed"));
   } catch (error) {
