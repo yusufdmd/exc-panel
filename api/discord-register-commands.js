@@ -63,6 +63,21 @@ const COMMANDS = [
         max_length: 50
       }
     ]
+  },
+  {
+    name: "suggest-team-power",
+    description: "Report your Team 1 power & element with a screenshot",
+    type: 1, // CHAT_INPUT
+    integration_types: [0, 1],
+    contexts: [0, 1, 2],
+    options: [
+      {
+        name: "screenshot",
+        description: "Your Team 1 (1. Ekip) screen",
+        type: 11, // ATTACHMENT
+        required: true
+      }
+    ]
   }
 ];
 

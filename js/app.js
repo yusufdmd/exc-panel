@@ -16,7 +16,7 @@
 // o dosyalar hiç çalıştırılmaz ve tabloları hiç çizilmez.
 // =====================================================================
 
-import { getMembers, getMemberDiscordIds, getAllPowerHistory, getAllTeamPowerHistory, getEngagementPeriods, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, getNameSuggestions, getSelfReportSubmissions, getSiteLinks, getNews, getFeaturedVideos, getRecentActivity, getAccountVault, getSetting, subscribeToTables } from "./database.js";
+import { getMembers, getMemberDiscordIds, getAllPowerHistory, getAllTeamPowerHistory, getEngagementPeriods, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, getNameSuggestions, getSelfReportSubmissions, getTeamPowerSuggestions, getSiteLinks, getNews, getFeaturedVideos, getRecentActivity, getAccountVault, getSetting, subscribeToTables } from "./database.js";
 import { POLL_INTERVAL_MS } from "./config.js";
 import { state, t, showToast, buildLangSwitch, applyStaticText, initLangFromStorage, persistLanguage, initThemeFromStorage, toggleTheme, renderAll, registerDataLoader, registerRenderer, liveFormatNumberInput, expandPowerShorthandInput, initPowerShorthandMode, setEventWeekSort } from "./ui.js";
 import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember, openHistoryModal, closeHistoryModal, copyDiscordId, setMemberView, setRankFilter, setElementFilter, setSort, exportMembers, mapNameSuggestion, openNameSuggestModal, closeNameSuggestModal, submitNameSuggestion, approveNameSuggestion, dismissNameSuggestion, handlePowerScreenshot, removePowerUnmatchedItem, discardPowerDraft, applyPowerDraft, acceptSuspiciousPower, rejectSuspiciousPower } from "./members.js";
@@ -39,6 +39,7 @@ import { mapNewsItem, openNewsModal, closeNewsModal, saveNews, deleteNews } from
 import { mapVideoItem, openVideoModal, closeVideoModal, saveVideo, deleteVideo, moveVideo } from "./videos.js";
 import { mapActivity, restoreDeletedMember, restoreDeletedWeek, restoreDeletedSimple, restoreSelfReportApproval, showActivityDetails, closeActivityDetails } from "./activity.js";
 import { mapSelfReportSubmission, approveSelfReportSubmission, rejectSelfReportSubmission, sendSelfReportReminder } from "./selfReports.js";
+import { mapTeamPowerSuggestion, approveTeamPowerSuggestion, rejectTeamPowerSuggestion } from "./teamPowerSuggestions.js";
 import { doLogin, doLogout, openChangePasswordModal, closeChangePasswordModal, submitChangePassword } from "./auth.js";
 import {
   mapAccountVaultEntry, renderAccountVault, openAccountVaultModal, closeAccountVaultModal,
@@ -90,7 +91,7 @@ async function loadAll(silent) {
       kodWeeksRes, kodRecordsRes,
       kodgvgWeeksRes, kodgvgRecordsRes,
       otherWeeksRes, otherRecordsRes,
-      migrationPeriodsRes, migrationRes, migrationLeadsRes, nameSuggestionsRes, selfReportSubmissionsRes, siteLinksRes, newsRes, videosRes, activityRes,
+      migrationPeriodsRes, migrationRes, migrationLeadsRes, nameSuggestionsRes, selfReportSubmissionsRes, teamPowerSuggestionsRes, siteLinksRes, newsRes, videosRes, activityRes,
       accountVaultRes, engagementBoardTiersRes, memberDiscordIdsRes
     ] = await Promise.allSettled([
       getMembers(), getAllPowerHistory(), getAllTeamPowerHistory(), getEngagementPeriods(),
@@ -105,6 +106,7 @@ async function loadAll(silent) {
       restricted ? Promise.resolve([]) : getMigrationLeads(),
       restricted ? Promise.resolve([]) : getNameSuggestions(),
       restricted ? Promise.resolve([]) : getSelfReportSubmissions(),
+      restricted ? Promise.resolve([]) : getTeamPowerSuggestions(),
       getSiteLinks(), getNews(), getFeaturedVideos(),
       restricted ? Promise.resolve([]) : getRecentActivity(200),
       restricted || !state.canAccessVault ? Promise.resolve([]) : getAccountVault(),
@@ -146,6 +148,7 @@ async function loadAll(silent) {
       migrationLeads: settledList(migrationLeadsRes).map(mapLead),
       nameSuggestions: settledList(nameSuggestionsRes).map(mapNameSuggestion),
       selfReportSubmissions: settledList(selfReportSubmissionsRes).map(mapSelfReportSubmission),
+      teamPowerSuggestions: settledList(teamPowerSuggestionsRes).map(mapTeamPowerSuggestion),
       siteLinks: mapSiteLinks(siteLinksRes.status === "fulfilled" ? siteLinksRes.value : null),
       news: settledList(newsRes).map(mapNewsItem),
       featuredVideos: settledList(videosRes).map(mapVideoItem),
@@ -183,7 +186,7 @@ setInterval(() => loadAll(true), POLL_INTERVAL_MS);
 
 let realtimeReloadTimer = null;
 subscribeToTables(
-  ["members", "power_history", "team_power_history", "engagement_periods", "gvg_weeks", "gvg_records", "svs_weeks", "svs_records", "ss_weeks", "ss_records", "kod_weeks", "kod_records", "kodgvg_weeks", "kodgvg_records", "other_weeks", "other_records", "migration_periods", "migration_prospects", "migration_leads", "name_suggestions", "site_links", "news", "featured_videos", "activity_logs", "account_vault", "member_discord_ids", "self_report_submissions"],
+  ["members", "power_history", "team_power_history", "engagement_periods", "gvg_weeks", "gvg_records", "svs_weeks", "svs_records", "ss_weeks", "ss_records", "kod_weeks", "kod_records", "kodgvg_weeks", "kodgvg_records", "other_weeks", "other_records", "migration_periods", "migration_prospects", "migration_leads", "name_suggestions", "site_links", "news", "featured_videos", "activity_logs", "account_vault", "member_discord_ids", "self_report_submissions", "team_power_suggestions"],
   () => {
     clearTimeout(realtimeReloadTimer);
     realtimeReloadTimer = setTimeout(() => loadAll(true), REALTIME_RELOAD_DEBOUNCE_MS);
@@ -297,6 +300,7 @@ Object.assign(window, {
   handlePowerScreenshot, removePowerUnmatchedItem, discardPowerDraft, applyPowerDraft, acceptSuspiciousPower, rejectSuspiciousPower,
   openNameSuggestModal, closeNameSuggestModal, submitNameSuggestion, approveNameSuggestion, dismissNameSuggestion,
   approveSelfReportSubmission, rejectSelfReportSubmission, sendSelfReportReminder,
+  approveTeamPowerSuggestion, rejectTeamPowerSuggestion,
   openWeekModal, closeWeekModal, saveWeek, deleteWeek,
   openEntryModal, closeEntryModal, saveEntry, renderEntryRows, handleEntryScreenshot, handleSsAppliedScreenshot, removeUnmatchedItem,
   openWeekReportModal, closeWeekReportModal,

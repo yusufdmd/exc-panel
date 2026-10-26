@@ -42,7 +42,7 @@
 const { verifyKey, InteractionType, InteractionResponseType, InteractionResponseFlags } = require("discord-interactions");
 const { waitUntil } = require("@vercel/functions");
 const { sbFetch, sbWrite } = require("./_lib/supabaseAdmin");
-const { readScreenshots } = require("./_lib/screenshotAi");
+const { readScreenshots, readTeamPower } = require("./_lib/screenshotAi");
 const { EVENT_LABELS } = require("./_lib/eventTypes");
 const { messagesFor } = require("./_lib/botMessages");
 
@@ -190,6 +190,57 @@ async function handleSuggestName(interaction, member) {
   }
 }
 
+/**
+ * "/suggest-team-power" — bir "1. Ekip" ekran görüntüsünden takım gücü +
+ * elementini okuyup team_power_suggestions'a "pending" yazar. AI çağrısı
+ * olduğu için handleKatilimBildir ile AYNI deferred + waitUntil deseni
+ * kullanılır (bkz. dosya başı NOT). Roster eşleştirme gerekmiyor (her zaman
+ * gönderenin KENDİ takımı), bu yüzden screenshotAi.js'teki ayrı, daha basit
+ * readTeamPower() fonksiyonunu kullanır.
+ */
+async function handleSuggestTeamPower(interaction, member) {
+  const options = optionsToMap(interaction.data.options);
+  const attachmentId = options.screenshot;
+  const attachment = interaction.data.resolved?.attachments?.[attachmentId];
+  const interactionToken = interaction.token;
+  const msg = messagesFor(interaction);
+
+  try {
+    if (!attachment) {
+      await patchOriginalMessage(interactionToken, msg.incomplete);
+      return;
+    }
+
+    await patchOriginalMessage(interactionToken, msg.processing);
+
+    const imgRes = await fetch(attachment.url);
+    if (!imgRes.ok) {
+      await patchOriginalMessage(interactionToken, msg.downloadFailed);
+      return;
+    }
+    const imgBuffer = Buffer.from(await imgRes.arrayBuffer());
+    const dataUrl = `data:${attachment.content_type || "image/png"};base64,${imgBuffer.toString("base64")}`;
+
+    const { teamPower, teamElement } = await readTeamPower({ images: [dataUrl], geminiApiKey: process.env.GEMINI_API_KEY });
+
+    await sbWrite("team_power_suggestions", {
+      method: "POST",
+      body: {
+        member_id: member.id,
+        discord_id: interaction.member?.user?.id || interaction.user?.id,
+        team_power: teamPower,
+        team_element: teamElement,
+        image_url: attachment.url
+      }
+    });
+
+    await patchOriginalMessage(interactionToken, msg.teamPowerReceived(teamPower, msg.elements[teamElement]));
+  } catch (error) {
+    console.error("[discord-interactions] /suggest-team-power işlenirken hata:", error);
+    await patchOriginalMessage(interactionToken, msg.unexpectedError);
+  }
+}
+
 const handler = async (req, res) => {
   if (req.method !== "POST") {
     res.status(405).end();
@@ -268,6 +319,33 @@ const handler = async (req, res) => {
 
     const data = await handleSuggestName(interaction, member);
     res.status(200).json({ type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE, data });
+    return;
+  }
+
+  if (interaction.type === InteractionType.APPLICATION_COMMAND && interaction.data?.name === "suggest-team-power") {
+    const msg = messagesFor(interaction);
+    const { member } = await lookupMember(interaction);
+
+    if (!member) {
+      res.status(200).json({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: { content: msg.notLinked, flags: InteractionResponseFlags.EPHEMERAL }
+      });
+      return;
+    }
+    if (member.is_old || member.is_migrated) {
+      res.status(200).json({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: { content: msg.notActive, flags: InteractionResponseFlags.EPHEMERAL }
+      });
+      return;
+    }
+
+    waitUntil(handleSuggestTeamPower(interaction, member));
+    res.status(200).json({
+      type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
+      data: { flags: InteractionResponseFlags.EPHEMERAL }
+    });
     return;
   }
 

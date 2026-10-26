@@ -25,7 +25,9 @@ const MESSAGES = {
     recorded: (label) => `✅ ${label} için kaydın alındı`,
     pendingApproval: "Bir yöneticinin onayını bekliyor.",
     nameSuggestionReceived: (name) => `✅ "${name}" önerin alındı. Bir yöneticinin onayını bekliyor.`,
-    nameSuggestionSameAsCurrent: "Bu zaten senin kayıtlı adın."
+    nameSuggestionSameAsCurrent: "Bu zaten senin kayıtlı adın.",
+    elements: { water: "Su", fire: "Ateş", earth: "Toprak", electric: "Elektrik" },
+    teamPowerReceived: (power, el) => `✅ 1. Takım gücün alındı: **${power.toLocaleString("tr-TR")}** (${el}). Bir yöneticinin onayını bekliyor.`
   },
   en: {
     incomplete: "⚠️ Your request looks incomplete, could you try again?",
@@ -39,7 +41,9 @@ const MESSAGES = {
     recorded: (label) => `✅ Your ${label} record was received`,
     pendingApproval: "Waiting for a manager's approval.",
     nameSuggestionReceived: (name) => `✅ Your suggestion "${name}" was received. Waiting for a manager's approval.`,
-    nameSuggestionSameAsCurrent: "That's already your current name."
+    nameSuggestionSameAsCurrent: "That's already your current name.",
+    elements: { water: "Water", fire: "Fire", earth: "Earth", electric: "Electric" },
+    teamPowerReceived: (power, el) => `✅ Your Team 1 power was received: **${power.toLocaleString("en-US")}** (${el}). Waiting for a manager's approval.`
   },
   de: {
     incomplete: "⚠️ Deine Anfrage scheint unvollständig zu sein, kannst du es noch einmal versuchen?",
@@ -53,7 +57,9 @@ const MESSAGES = {
     recorded: (label) => `✅ Dein ${label}-Eintrag wurde erfasst`,
     pendingApproval: "Wartet auf die Genehmigung eines Managers.",
     nameSuggestionReceived: (name) => `✅ Dein Vorschlag "${name}" wurde erfasst. Wartet auf die Genehmigung eines Managers.`,
-    nameSuggestionSameAsCurrent: "Das ist bereits dein aktueller Name."
+    nameSuggestionSameAsCurrent: "Das ist bereits dein aktueller Name.",
+    elements: { water: "Wasser", fire: "Feuer", earth: "Erde", electric: "Elektro" },
+    teamPowerReceived: (power, el) => `✅ Deine Team-1-Stärke wurde erfasst: **${power.toLocaleString("de-DE")}** (${el}). Wartet auf die Genehmigung eines Managers.`
   },
   es: {
     incomplete: "⚠️ Tu solicitud parece incompleta, ¿puedes intentarlo de nuevo?",
@@ -67,7 +73,9 @@ const MESSAGES = {
     recorded: (label) => `✅ Tu registro de ${label} fue recibido`,
     pendingApproval: "Esperando la aprobación de un administrador.",
     nameSuggestionReceived: (name) => `✅ Tu sugerencia "${name}" fue recibida. Esperando la aprobación de un administrador.`,
-    nameSuggestionSameAsCurrent: "Ese ya es tu nombre actual."
+    nameSuggestionSameAsCurrent: "Ese ya es tu nombre actual.",
+    elements: { water: "Agua", fire: "Fuego", earth: "Tierra", electric: "Eléctrico" },
+    teamPowerReceived: (power, el) => `✅ Se recibió la potencia de tu Equipo 1: **${power.toLocaleString("es-ES")}** (${el}). Esperando la aprobación de un administrador.`
   },
   fr: {
     incomplete: "⚠️ Ta demande semble incomplète, peux-tu réessayer ?",
@@ -81,7 +89,9 @@ const MESSAGES = {
     recorded: (label) => `✅ Ton enregistrement ${label} a été reçu`,
     pendingApproval: "En attente de l'approbation d'un responsable.",
     nameSuggestionReceived: (name) => `✅ Ta suggestion "${name}" a été reçue. En attente de l'approbation d'un responsable.`,
-    nameSuggestionSameAsCurrent: "C'est déjà ton nom actuel."
+    nameSuggestionSameAsCurrent: "C'est déjà ton nom actuel.",
+    elements: { water: "Eau", fire: "Feu", earth: "Terre", electric: "Électrique" },
+    teamPowerReceived: (power, el) => `✅ La puissance de ton Équipe 1 a été reçue : **${power.toLocaleString("fr-FR")}** (${el}). En attente de l'approbation d'un responsable.`
   },
   vi: {
     incomplete: "⚠️ Yêu cầu của bạn có vẻ chưa đầy đủ, bạn có thể thử lại không?",
@@ -95,7 +105,9 @@ const MESSAGES = {
     recorded: (label) => `✅ Đã ghi nhận ${label} của bạn`,
     pendingApproval: "Đang chờ quản trị viên phê duyệt.",
     nameSuggestionReceived: (name) => `✅ Đã nhận đề xuất "${name}" của bạn. Đang chờ quản trị viên phê duyệt.`,
-    nameSuggestionSameAsCurrent: "Đó đã là tên hiện tại của bạn rồi."
+    nameSuggestionSameAsCurrent: "Đó đã là tên hiện tại của bạn rồi.",
+    elements: { water: "Thủy", fire: "Hỏa", earth: "Thổ", electric: "Điện" },
+    teamPowerReceived: (power, el) => `✅ Đã nhận sức mạnh Đội 1 của bạn: **${power.toLocaleString("vi-VN")}** (${el}). Đang chờ quản trị viên phê duyệt.`
   }
 };
 

@@ -147,6 +147,27 @@
         </table>
       </div>
     </div>
+    <div class="admin-only" id="teamPowerSuggestionsSection">
+      <h3 style="font-size:13px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); margin-bottom:10px;" id="t_teamPowerSuggestionsHeading">💪 Discord'dan Takım Gücü Önerileri</h3>
+      <div class="empty-state" id="teamPowerSuggestionsEmpty" style="display:none; padding:24px;">
+        <p id="t_emptyTeamPowerSuggestionsDesc">Oyuncuların /suggest-team-power komutuyla Discord'dan kendi gönderdiği 1. Takım gücü/element önerileri burada görünecek.</p>
+      </div>
+      <div class="table-wrap" id="teamPowerSuggestionsTableWrap" style="margin-bottom:20px;">
+        <table>
+          <thead>
+            <tr>
+              <th id="t_thTeamPowerMember">Üye</th>
+              <th id="t_thTeamPowerElement">Element</th>
+              <th id="t_thTeamPowerValue">Takım Gücü</th>
+              <th id="t_thTeamPowerDate">Tarih</th>
+              <th></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="teamPowerSuggestionsRows"></tbody>
+        </table>
+      </div>
+    </div>
     <div class="subtabs">
       <div class="subtab active" data-mv="active" onclick="setMemberView('active')" id="t_subActiveMembers">Aktif Üyeler</div>
       <div class="subtab" data-mv="old" onclick="setMemberView('old')" id="t_subOldMembers">Eski Üyeler (OLD)</div>

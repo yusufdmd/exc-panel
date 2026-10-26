@@ -339,6 +339,26 @@ export async function updateSelfReportSubmission(id, payload) {
 }
 
 // =====================================================================
+// TEAM_POWER_SUGGESTIONS — Discord "/suggest-team-power" ile gelen, admin
+// onayı bekleyen 1. Takım gücü + element önerileri (bkz. sql/add_team_power_suggestions.sql)
+// =====================================================================
+export async function getTeamPowerSuggestions() {
+  const { data, error } = await supabase
+    .from("team_power_suggestions")
+    .select("*")
+    .eq("status", "pending")
+    .order("created_at", { ascending: true });
+  if (error) dbError("Takım gücü önerileri alınamadı", error);
+  return data;
+}
+
+export async function updateTeamPowerSuggestion(id, payload) {
+  const { error } = await supabase.from("team_power_suggestions").update(payload).eq("id", id);
+  if (error) dbError("Takım gücü önerisi güncellenemedi", error);
+  return true;
+}
+
+// =====================================================================
 // POWER_HISTORY — Güç seviyesi geçmişi
 // =====================================================================
 export async function getPowerHistory(memberId) {

@@ -59,6 +59,7 @@ export const state = {
   canAccessVault: false, // admin olmaktan AYRI bir izin — varsayılan kapalı (bkz. auth.js -> applySession)
   nameSuggestions: [], // üyelerden gelen, henüz onaylanmamış isim değişikliği önerileri (bkz. members.js -> renderNameSuggestions)
   selfReportSubmissions: [], // Discord /report-participation ile gelen, henüz onaylanmamış katılım bildirimleri (bkz. selfReports.js)
+  teamPowerSuggestions: [], // Discord /suggest-team-power ile gelen, henüz onaylanmamış takım gücü+element önerileri (bkz. teamPowerSuggestions.js)
   pendingLeadProcessingId: null, // "İşle" ile aday ekleme formuna gidilirken hangi başvurunun dönüştürüldüğünü hatırlar (bkz. migration.js -> saveProspect)
   siteLinks: { discordUrl: "", youtubeUrl: "", instagramUrl: "" }, // genel tanıtım sitesindeki Discord/YouTube/Instagram linkleri (bkz. siteLinks.js)
   news: [], // ana sayfadaki "Haberler" bölümünün içeriği (bkz. news.js)
@@ -293,6 +294,8 @@ ebParticipationWord:'Katılım', ebFootnote:'%50\'nin altındaysan daha çok etk
     confirmSendReminder:'Discord\'u bağlı, bu hafta eksik olan herkese şimdi bir hatırlatma DM\'i gönderilsin mi?',
     toastReminderSent:'Hatırlatma gönderildi',
     thSelfReportGapEvent:'Etkinlik', thSelfReportGapWeek:'Hafta', thSelfReportGapMembers:'Eksik Üyeler',
+    teamPowerSuggestionsHeading:'💪 Discord\'dan Takım Gücü Önerileri', emptyTeamPowerSuggestionsDesc:'Oyuncuların /suggest-team-power komutuyla Discord\'dan kendi gönderdiği 1. Takım gücü/element önerileri burada görünecek.',
+    thTeamPowerMember:'Üye', thTeamPowerElement:'Element', thTeamPowerValue:'Takım Gücü', thTeamPowerDate:'Tarih',
     weekReport:'Hafta Raporu', sortByWeekTitle:'Bu haftaya göre sırala', zoneGreen:'Yeşil Bölge', zoneYellow:'Sarı Bölge', zoneRed:'Kırmızı Bölge',
     weekEditTitle:'Haftayı Düzenle', eventEditTitle:'Etkinliği Düzenle',
     overallReportBtn:'📊 Genel Rapor', overallReport:'Genel Rapor', thWeeks:'Haftalar',
@@ -1249,6 +1252,12 @@ export function applyStaticText() {
   document.getElementById("t_thSelfReportGapEvent").textContent = t("thSelfReportGapEvent");
   document.getElementById("t_thSelfReportGapWeek").textContent = t("thSelfReportGapWeek");
   document.getElementById("t_thSelfReportGapMembers").textContent = t("thSelfReportGapMembers");
+  document.getElementById("t_teamPowerSuggestionsHeading").textContent = t("teamPowerSuggestionsHeading");
+  document.getElementById("t_emptyTeamPowerSuggestionsDesc").textContent = t("emptyTeamPowerSuggestionsDesc");
+  document.getElementById("t_thTeamPowerMember").textContent = t("thTeamPowerMember");
+  document.getElementById("t_thTeamPowerElement").textContent = t("thTeamPowerElement");
+  document.getElementById("t_thTeamPowerValue").textContent = t("thTeamPowerValue");
+  document.getElementById("t_thTeamPowerDate").textContent = t("thTeamPowerDate");
   document.getElementById("t_thNsDate").textContent = t("thWhen");
   document.getElementById("t_siteLinksDesc").textContent = t("siteLinksDesc");
   document.getElementById("t_lblDiscordUrl").textContent = t("lblDiscordUrl");
