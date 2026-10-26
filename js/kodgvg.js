@@ -36,7 +36,7 @@ export function renderKodGvg() {
     <tr>
       <td class="sticky-col">${rowNumHtml(index)}<span class="rank-badge ${rankClass(member.rank)}" style="font-size:11px;padding:2px 8px;">${member.rank}</span></td>
       <td class="sticky-col" style="left:105px;">${escapeHtml(member.name)}</td>
-      ${state.kodgvg.weeks.map((week) => cellInfoHtml(gvgCellInfo(state.kodgvg, member, week))).join("")}
+      ${state.kodgvg.weeks.map((week) => cellInfoHtml(gvgCellInfo(state.kodgvg, member, week, "kodgvg"))).join("")}
     </tr>
   `).join("");
 }

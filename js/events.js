@@ -68,7 +68,7 @@ export function entryToDbPayload(type, entry, memberId) {
 /** Etkinlik türüne karşılık gelen hücre-bilgisi fonksiyonunu döndürür (tablolardakiyle BİREBİR aynı metin — bkz. gvg.js/svs.js/ss.js/kod.js render fonksiyonları). */
 function cellInfoFor(type) {
   if (type === "svs" || type === "other") return svsOtherCellInfo;
-  if (type === "gvg" || type === "kodgvg") return gvgCellInfo;
+  if (type === "gvg" || type === "kodgvg") return (store, member, week) => gvgCellInfo(store, member, week, type);
   if (type === "ss") return ssCellInfo;
   return svsOtherCellInfo; // kod
 }
@@ -728,12 +728,12 @@ function buildSsReportHtml(store, week, members) {
 }
 
 /** GVG/KOD-GVG türü haftalık rapor: puana göre (bölge içinde en yüksek önce) yeşil/sarı/kırmızı bölge listeleri. */
-function buildGvgReportHtml(store, week, members) {
+function buildGvgReportHtml(store, week, members, type) {
   const zones = { "pill-green": [], "pill-yellow": [], "pill-red": [] };
   members.forEach((member) => {
     const entry = memberEntryFor(store, member.id, week.id);
     const points = entry ? (Number(entry.points) || 0) : 0;
-    zones[gvgColorClass(points)].push({ name: member.name, points });
+    zones[gvgColorClass(points, type)].push({ name: member.name, points });
   });
   const toLabels = (list) => list.sort((a, b) => b.points - a.points).map((m) => m.name + " (" + formatPower(m.points) + ")");
   return reportSection(t("zoneGreen"), "var(--success-ink)", toLabels(zones["pill-green"]))
@@ -749,7 +749,7 @@ export function openWeekReportModal(type, weekId) {
   document.getElementById("weekReportTitle").textContent = week.label;
   const members = filteredSortedMembers();
   const bodyHtml = type === "ss" ? buildSsReportHtml(store, week, members)
-    : (type === "gvg" || type === "kodgvg") ? buildGvgReportHtml(store, week, members)
+    : (type === "gvg" || type === "kodgvg") ? buildGvgReportHtml(store, week, members, type)
     : buildStatusReportHtml(type, store, week, members);
   document.getElementById("weekReportBody").innerHTML = bodyHtml;
   document.getElementById("weekReportOverlay").classList.add("active");
@@ -786,9 +786,9 @@ function buildOverallReportRow(type, store, member) {
 }
 
 /** GVG için üye başına özet satırı üretir: katılım oranı yerine toplam puan anlamlıdır. */
-function buildOverallReportRowGvg(store, member) {
+function buildOverallReportRowGvg(store, member, type) {
   const total = sumGvgPoints(store, member.id);
-  const chips = store.weeks.map((week) => overallReportChip(week, gvgCellInfo(store, member, week))).join("");
+  const chips = store.weeks.map((week) => overallReportChip(week, gvgCellInfo(store, member, week, type))).join("");
   return { member, sortValue: total, summaryHtml: `<span style="color:var(--cyan-ink); font-weight:700;">${formatPower(total)}</span>`, chips };
 }
 
@@ -829,7 +829,7 @@ function renderOverallReport() {
 
   const members = filteredSortedMembers();
   const rows = sortOverallReportRows(
-    members.map((member) => (type === "gvg" || type === "kodgvg") ? buildOverallReportRowGvg(store, member) : buildOverallReportRow(type, store, member))
+    members.map((member) => (type === "gvg" || type === "kodgvg") ? buildOverallReportRowGvg(store, member, type) : buildOverallReportRow(type, store, member))
   );
   const valueHeaderKey = type === "gvg" ? "lbGvgTotal" : type === "kodgvg" ? "lbKodGvgTotal" : type === "ss" ? "lbSsRatio" : type === "kod" ? "lbKodRatio" : type === "svs" ? "lbSvsRatio" : "lbOtherRatio";
 

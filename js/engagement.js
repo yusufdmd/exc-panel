@@ -19,10 +19,11 @@
 //     iki yoldan biriyle kazanılır: (a) seçilmediyse (kontenjan dolu)
 //     sadece BAŞVURMUŞ olmak yeterli, (b) seçildiyse fiilen KATILMIŞ
 //     olmak gerekir. Hiç başvurmamak, ya da seçilip gelmemek 0 puandır.
-//   - GVG / KOD - GVG: puan, "9 sandık" karşılığı olan mevcut Yeşil Bölge
-//     eşiğine (bkz. config.js -> GVG_THRESHOLDS.green) ulaşmışsa 1 puan —
-//     ikisi birbirinden tamamen ayrı haftalar/kayıtlar olarak tutulur
-//     (bkz. state.gvg / state.kodgvg), sadece kural aynıdır.
+//   - GVG / KOD - GVG: puan, "9 sandık" karşılığı olan kendi Yeşil Bölge
+//     eşiğine (bkz. config.js -> GVG_THRESHOLDS.gvg.green / .kodgvg.green —
+//     GVG 6 gün, KOD-GVG 7 gün üzerinden hesaplandığı için eşikleri FARKLI)
+//     ulaşmışsa 1 puan — ikisi birbirinden tamamen ayrı haftalar/kayıtlar
+//     olarak tutulur (bkz. state.gvg / state.kodgvg).
 // =====================================================================
 
 import { createEngagementPeriod as dbCreateEngagementPeriod, closeEngagementPeriod as dbCloseEngagementPeriod, deleteEngagementPeriod as dbDeleteEngagementPeriod, restoreEngagementPeriod as dbRestoreEngagementPeriod, getEngagementPeriods, setSetting as dbSetSetting, logActivity } from "./database.js";
@@ -35,7 +36,8 @@ import { GVG_THRESHOLDS } from "./config.js";
 // sapma riski olmasın diye.
 const isSvsPoint = (e) => !!e && e.status === "joined";
 const isKodPoint = (e) => !!e && e.status === "joined";
-const isGvgPoint = (e) => !!e && (Number(e.points) || 0) >= GVG_THRESHOLDS.green;
+const isGvgPoint = (e) => !!e && (Number(e.points) || 0) >= GVG_THRESHOLDS.gvg.green;
+const isKodGvgPoint = (e) => !!e && (Number(e.points) || 0) >= GVG_THRESHOLDS.kodgvg.green;
 /**
  * SS: sadece etkinlik listesine alınan (bir gruba atanmış) üyeler için o hafta
  * değerlendirilir — katıldıysa 1/1, katılmadıysa 0/1. Listeye alınmayanlar
@@ -93,7 +95,7 @@ function computeEngagementRow(member, period) {
   const ss = categoryStat(state.ss, member, periodWeeks(state.ss, period), isSsPoint, isSsApplicable);
   const kod = categoryStat(state.kod, member, periodWeeks(state.kod, period), isKodPoint);
   const gvg = categoryStat(state.gvg, member, periodWeeks(state.gvg, period), isGvgPoint);
-  const kodgvg = categoryStat(state.kodgvg, member, periodWeeks(state.kodgvg, period), isGvgPoint);
+  const kodgvg = categoryStat(state.kodgvg, member, periodWeeks(state.kodgvg, period), isKodGvgPoint);
   return {
     // Sadece görüntüleme/eşleştirme için gereken küçük bir anlık görüntü —
     // dönem kapanıp dondurulduğunda bu haliyle kalıcı olarak saklanır,
@@ -576,7 +578,7 @@ export function openEngagementReportModal() {
             <td>${periodWeekChips(state.ss, row.member, ssWeeks, isSsPoint, isSsApplicable)}</td>
             <td>${periodWeekChips(state.kod, row.member, kodWeeks, isKodPoint)}</td>
             <td>${periodWeekChips(state.gvg, row.member, gvgWeeks, isGvgPoint)}</td>
-            <td>${periodWeekChips(state.kodgvg, row.member, kodGvgWeeks, isGvgPoint)}</td>
+            <td>${periodWeekChips(state.kodgvg, row.member, kodGvgWeeks, isKodGvgPoint)}</td>
           </tr>
         `).join("")}
       </tbody>

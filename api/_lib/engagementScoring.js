@@ -17,11 +17,13 @@
 // — aksi halde Discord'a giden rapor, panelin kendi gösterdiğinden sapar.
 // =====================================================================
 
-const GVG_GREEN_THRESHOLD = 43500000; // bkz. js/config.js -> GVG_THRESHOLDS.green
+const GVG_GREEN_THRESHOLD = 43500000; // bkz. js/config.js -> GVG_THRESHOLDS.gvg.green (6 gün x 7.250.000)
+const KODGVG_GREEN_THRESHOLD = 50750000; // bkz. js/config.js -> GVG_THRESHOLDS.kodgvg.green (7 gün x 7.250.000)
 
 const isSvsPoint = (e) => !!e && e.status === "joined";
 const isKodPoint = (e) => !!e && e.status === "joined";
 const isGvgPoint = (e) => !!e && (Number(e.points) || 0) >= GVG_GREEN_THRESHOLD;
+const isKodGvgPoint = (e) => !!e && (Number(e.points) || 0) >= KODGVG_GREEN_THRESHOLD;
 // SS: sadece etkinlik listesine alınan (gruba atanmış) üyeler için o hafta sayılır
 // (katıldı 1/1, katılmadı 0/1); listede olmayanlar için hafta hesaba hiç girmez.
 const isSsPoint = (e) => !!e && !!e.group && !!e.attended;
@@ -62,7 +64,7 @@ function computeEngagementRow(member, period, stores) {
   const ss = categoryStat(stores.ss.entries, member, periodWeeks(stores.ss.weeks, period), isSsPoint, isSsApplicable);
   const kod = categoryStat(stores.kod.entries, member, periodWeeks(stores.kod.weeks, period), isKodPoint);
   const gvg = categoryStat(stores.gvg.entries, member, periodWeeks(stores.gvg.weeks, period), isGvgPoint);
-  const kodgvg = categoryStat(stores.kodgvg.entries, member, periodWeeks(stores.kodgvg.weeks, period), isGvgPoint);
+  const kodgvg = categoryStat(stores.kodgvg.entries, member, periodWeeks(stores.kodgvg.weeks, period), isKodGvgPoint);
   return {
     member: { id: member.id, name: member.name, rank: member.rank },
     total: svs.attended + ss.attended + kod.attended + gvg.attended + kodgvg.attended,

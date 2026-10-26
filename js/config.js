@@ -22,11 +22,19 @@ export const RANKS = ["R5", "R4", "R3", "R2", "R1"];
 export const RANK_LIMITS = { R5: 1, R4: 8 };
 
 // ---------------------------------------------------------------------
-// GVG haftalık puan renklendirme eşikleri.
+// GVG / KOD-GVG haftalık puan renklendirme eşikleri. İkisi ayrı eşik
+// kullanır çünkü GVG 6 gün, KOD-GVG 7 gün üzerinden hesaplanıyor — ikisi
+// de aynı günlük 7.250.000 puan oranına dayanır (6x ve 7x).
 // ---------------------------------------------------------------------
 export const GVG_THRESHOLDS = {
-  green: 43500000,   // puan >= bu değer  -> yeşil
-  yellow: 13200000   // puan >= bu değer (yeşilin altı) -> sarı, altı -> kırmızı
+  gvg: {
+    green: 43500000,   // 7.250.000 x 6 gün — puan >= bu değer -> yeşil
+    yellow: 13200000   // puan >= bu değer (yeşilin altı) -> sarı, altı -> kırmızı
+  },
+  kodgvg: {
+    green: 50750000,   // 7.250.000 x 7 gün
+    yellow: 15400000   // gvg.yellow ile aynı oranda (x 7/6) büyütülmüş
+  }
 };
 
 // ---------------------------------------------------------------------

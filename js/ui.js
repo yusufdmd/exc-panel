@@ -1477,10 +1477,11 @@ export function migrationStatusLabel(status) {
 }
 
 /** GVG haftalık puanına göre hücre rengi sınıfını döndürür (config.js'teki eşiklere göre). */
-export function gvgColorClass(points) {
+export function gvgColorClass(points, type = "gvg") {
   const value = Number(points) || 0;
-  if (value >= GVG_THRESHOLDS.green) return "pill-green";
-  if (value >= GVG_THRESHOLDS.yellow) return "pill-yellow";
+  const thresholds = GVG_THRESHOLDS[type] || GVG_THRESHOLDS.gvg;
+  if (value >= thresholds.green) return "pill-green";
+  if (value >= thresholds.yellow) return "pill-yellow";
   return "pill-red";
 }
 
@@ -1668,11 +1669,11 @@ export function svsOtherCellInfo(store, member, week) {
 // Bir hafta için hiç kayıt girilmemişse ve üye o hafta henüz katılmamışsa
 // (bkz. isExempt) muaf sayılır (diğer etkinlik türleriyle aynı kural).
 // Katılmış olup kayıt girilmemişse 0 puan girilmiş gibi işlem görür.
-export function gvgCellInfo(store, member, week) {
+export function gvgCellInfo(store, member, week, type = "gvg") {
   const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === week.id);
   if (!entry && isExempt(member, week)) return { cls: "pill-gray", text: t("exemptLabel") };
   const points = entry ? (Number(entry.points) || 0) : 0;
-  return { cls: gvgColorClass(points), text: String(points) };
+  return { cls: gvgColorClass(points, type), text: String(points) };
 }
 
 /** SS türü bir hücrenin (üye × hafta) rengini ve metnini hesaplar. */
