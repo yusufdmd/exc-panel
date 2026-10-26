@@ -23,7 +23,9 @@ const MESSAGES = {
     notActive: "Profilin aktif üye listesinde görünmüyor, bu yüzden katılım bildiremezsin. Yanlış olduğunu düşünüyorsan bir yöneticiyle konuş.",
     joined: "katıldın", notJoined: "katılmadın", noGroup: "grup yok",
     recorded: (label) => `✅ ${label} için kaydın alındı`,
-    pendingApproval: "Bir yöneticinin onayını bekliyor."
+    pendingApproval: "Bir yöneticinin onayını bekliyor.",
+    nameSuggestionReceived: (name) => `✅ "${name}" önerin alındı. Bir yöneticinin onayını bekliyor.`,
+    nameSuggestionSameAsCurrent: "Bu zaten senin kayıtlı adın."
   },
   en: {
     incomplete: "⚠️ Your request looks incomplete, could you try again?",
@@ -35,7 +37,9 @@ const MESSAGES = {
     notActive: "Your profile isn't on the active member list, so you can't report participation. If that's wrong, talk to a manager.",
     joined: "joined", notJoined: "didn't join", noGroup: "no group",
     recorded: (label) => `✅ Your ${label} record was received`,
-    pendingApproval: "Waiting for a manager's approval."
+    pendingApproval: "Waiting for a manager's approval.",
+    nameSuggestionReceived: (name) => `✅ Your suggestion "${name}" was received. Waiting for a manager's approval.`,
+    nameSuggestionSameAsCurrent: "That's already your current name."
   },
   de: {
     incomplete: "⚠️ Deine Anfrage scheint unvollständig zu sein, kannst du es noch einmal versuchen?",
@@ -47,7 +51,9 @@ const MESSAGES = {
     notActive: "Dein Profil steht nicht auf der Liste der aktiven Mitglieder, daher kannst du keine Teilnahme melden. Falls das falsch ist, sprich mit einem Manager.",
     joined: "teilgenommen", notJoined: "nicht teilgenommen", noGroup: "keine Gruppe",
     recorded: (label) => `✅ Dein ${label}-Eintrag wurde erfasst`,
-    pendingApproval: "Wartet auf die Genehmigung eines Managers."
+    pendingApproval: "Wartet auf die Genehmigung eines Managers.",
+    nameSuggestionReceived: (name) => `✅ Dein Vorschlag "${name}" wurde erfasst. Wartet auf die Genehmigung eines Managers.`,
+    nameSuggestionSameAsCurrent: "Das ist bereits dein aktueller Name."
   },
   es: {
     incomplete: "⚠️ Tu solicitud parece incompleta, ¿puedes intentarlo de nuevo?",
@@ -59,7 +65,9 @@ const MESSAGES = {
     notActive: "Tu perfil no está en la lista de miembros activos, por lo que no puedes reportar participación. Si esto es un error, habla con un administrador.",
     joined: "participaste", notJoined: "no participaste", noGroup: "sin grupo",
     recorded: (label) => `✅ Tu registro de ${label} fue recibido`,
-    pendingApproval: "Esperando la aprobación de un administrador."
+    pendingApproval: "Esperando la aprobación de un administrador.",
+    nameSuggestionReceived: (name) => `✅ Tu sugerencia "${name}" fue recibida. Esperando la aprobación de un administrador.`,
+    nameSuggestionSameAsCurrent: "Ese ya es tu nombre actual."
   },
   fr: {
     incomplete: "⚠️ Ta demande semble incomplète, peux-tu réessayer ?",
@@ -71,7 +79,9 @@ const MESSAGES = {
     notActive: "Ton profil n'apparaît pas dans la liste des membres actifs, tu ne peux donc pas signaler ta participation. Si c'est une erreur, parles-en à un responsable.",
     joined: "participé", notJoined: "pas participé", noGroup: "pas de groupe",
     recorded: (label) => `✅ Ton enregistrement ${label} a été reçu`,
-    pendingApproval: "En attente de l'approbation d'un responsable."
+    pendingApproval: "En attente de l'approbation d'un responsable.",
+    nameSuggestionReceived: (name) => `✅ Ta suggestion "${name}" a été reçue. En attente de l'approbation d'un responsable.`,
+    nameSuggestionSameAsCurrent: "C'est déjà ton nom actuel."
   },
   vi: {
     incomplete: "⚠️ Yêu cầu của bạn có vẻ chưa đầy đủ, bạn có thể thử lại không?",
@@ -83,7 +93,9 @@ const MESSAGES = {
     notActive: "Hồ sơ của bạn không có trong danh sách thành viên hoạt động, vì vậy bạn không thể báo cáo tham gia. Nếu điều này sai, hãy nói chuyện với quản trị viên.",
     joined: "đã tham gia", notJoined: "chưa tham gia", noGroup: "không có nhóm",
     recorded: (label) => `✅ Đã ghi nhận ${label} của bạn`,
-    pendingApproval: "Đang chờ quản trị viên phê duyệt."
+    pendingApproval: "Đang chờ quản trị viên phê duyệt.",
+    nameSuggestionReceived: (name) => `✅ Đã nhận đề xuất "${name}" của bạn. Đang chờ quản trị viên phê duyệt.`,
+    nameSuggestionSameAsCurrent: "Đó đã là tên hiện tại của bạn rồi."
   }
 };
 

@@ -8,8 +8,10 @@
 // bunun yerine Discord'un webhook tabanlı Interactions modeli kullanılır,
 // tıpkı diğer tüm Vercel fonksiyonlarımız gibi.
 //
-// Şu an tek komut: "/report-participation" — bir oyuncu kendi ekran görüntüsünü
-// ekleyerek haftalık etkinlik katılımını bildirir. Akış:
+// İki komut var: "/report-participation" — bir oyuncu kendi ekran görüntüsünü
+// ekleyerek haftalık etkinlik katılımını bildirir, "/suggest-name" — bir
+// isim değişikliği önerir (panildeki aynı özelliğin Discord karşılığı,
+// bkz. handleSuggestName). "/report-participation" akışı:
 //   1) Komutu çalıştıran kişinin Discord ID'si member_discord_ids'te
 //      aranır (bkz. sql/move_discord_id_to_admin_table.sql - admin, üye
 //      düzenleme formundan elle giriyor; burada SADECE okunuyor).
@@ -74,6 +76,15 @@ function summarizeExtracted(type, extracted, msg) {
     return `${msg.recorded(label)}: **${status}** (${extracted.group || msg.noGroup}). ${msg.pendingApproval}`;
   }
   return `${msg.recorded(label)}. ${msg.pendingApproval}`;
+}
+
+/** Komutu çalıştıran kişinin Discord ID'siyle member_discord_ids'te üyesini bulur - her iki komut da kullanır. */
+async function lookupMember(interaction) {
+  const discordUserId = interaction.member?.user?.id || interaction.user?.id;
+  const rows = discordUserId && /^\d{17,20}$/.test(discordUserId)
+    ? await sbFetch(`member_discord_ids?discord_id=eq.${discordUserId}&select=member_id,members(id,name,game_id,is_old,is_migrated)`).catch(() => [])
+    : [];
+  return { discordUserId, member: rows[0]?.members || null };
 }
 
 async function patchOriginalMessage(interactionToken, content) {
@@ -148,6 +159,37 @@ async function handleKatilimBildir(interaction, member) {
   }
 }
 
+/**
+ * "/suggest-name" — panildeki "✏️ İsim Değişikliği Öner" formunun Discord
+ * karşılığı. AI/ekran görüntüsü yok, sadece metin — bu yüzden deferred
+ * yanıta gerek yok, direkt (type 4) cevap dönülür. Kaydedilen satır,
+ * panildeki AYNI "İsim Önerileri" onay kuyruğunda (name_suggestions) görünür,
+ * kaynağı (panel mi Discord mu) ayırt edilmez - onay akışı zaten ortak.
+ */
+async function handleSuggestName(interaction, member) {
+  const msg = messagesFor(interaction);
+  const options = optionsToMap(interaction.data.options);
+  const suggestedName = (options.name || "").trim();
+
+  if (!suggestedName) {
+    return { content: msg.incomplete, flags: InteractionResponseFlags.EPHEMERAL };
+  }
+  if (suggestedName === member.name) {
+    return { content: msg.nameSuggestionSameAsCurrent, flags: InteractionResponseFlags.EPHEMERAL };
+  }
+
+  try {
+    await sbWrite("name_suggestions", {
+      method: "POST",
+      body: { member_id: member.id, old_name: member.name, suggested_name: suggestedName }
+    });
+    return { content: msg.nameSuggestionReceived(suggestedName), flags: InteractionResponseFlags.EPHEMERAL };
+  } catch (error) {
+    console.error("[discord-interactions] /suggest-name işlenirken hata:", error);
+    return { content: msg.unexpectedError, flags: InteractionResponseFlags.EPHEMERAL };
+  }
+}
+
 const handler = async (req, res) => {
   if (req.method !== "POST") {
     res.status(405).end();
@@ -178,11 +220,7 @@ const handler = async (req, res) => {
 
   if (interaction.type === InteractionType.APPLICATION_COMMAND && interaction.data?.name === "report-participation") {
     const msg = messagesFor(interaction);
-    const discordUserId = interaction.member?.user?.id || interaction.user?.id;
-    const rows = discordUserId && /^\d{17,20}$/.test(discordUserId)
-      ? await sbFetch(`member_discord_ids?discord_id=eq.${discordUserId}&select=member_id,members(id,name,game_id,is_old,is_migrated)`).catch(() => [])
-      : [];
-    const member = rows[0]?.members || null;
+    const { member } = await lookupMember(interaction);
 
     if (!member) {
       res.status(200).json({
@@ -210,6 +248,26 @@ const handler = async (req, res) => {
       type: InteractionResponseType.DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE,
       data: { flags: InteractionResponseFlags.EPHEMERAL }
     });
+    return;
+  }
+
+  if (interaction.type === InteractionType.APPLICATION_COMMAND && interaction.data?.name === "suggest-name") {
+    const msg = messagesFor(interaction);
+    const { member } = await lookupMember(interaction);
+
+    // İsim değişikliği, aktif olmayan (eski/göç etmiş) bir üye için de
+    // anlamlı olabilir (kayıtlı adının düzeltilmesi) - report-participation'ın
+    // aksine aktiflik şartı aranmaz.
+    if (!member) {
+      res.status(200).json({
+        type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+        data: { content: msg.notLinked, flags: InteractionResponseFlags.EPHEMERAL }
+      });
+      return;
+    }
+
+    const data = await handleSuggestName(interaction, member);
+    res.status(200).json({ type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE, data });
     return;
   }
 

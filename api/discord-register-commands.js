@@ -1,8 +1,8 @@
 // =====================================================================
 // EXC PANELİ — api/discord-register-commands.js
 // =====================================================================
-// Discord'a "/report-participation" slash komutunu GLOBAL olarak kaydeder
-// (hem sunucuda hem botla DM'de kullanılabilsin diye - guild-scoped
+// Discord'a "/report-participation" ve "/suggest-name" slash komutlarını
+// GLOBAL olarak kaydeder (hem sunucuda hem botla DM'de kullanılabilsin diye - guild-scoped
 // komutlar DM'de hiç çalışmaz, bkz. Discord docs: "Guild commands don't
 // support the BOT_DM interaction context"). TEK SEFERLİK bir kurulum
 // adımıdır (komut tanımı değişmediği sürece tekrar çağırmaya gerek yok) -
@@ -45,6 +45,22 @@ const COMMANDS = [
         description: "Your result screenshot",
         type: 11, // ATTACHMENT
         required: true
+      }
+    ]
+  },
+  {
+    name: "suggest-name",
+    description: "Suggest a new in-game username for your profile",
+    type: 1, // CHAT_INPUT
+    integration_types: [0, 1],
+    contexts: [0, 1, 2],
+    options: [
+      {
+        name: "name",
+        description: "The username you'd like to switch to",
+        type: 3, // STRING
+        required: true,
+        max_length: 50
       }
     ]
   }
