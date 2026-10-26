@@ -141,19 +141,12 @@ function buildPrompt(type, roster, imageCount) {
 }
 
 /**
- * `images` = base64 data URL dizisi. `geminiApiKey` çağıranın kendi
- * env değişkenini (GEMINI_API_KEY) okuyup geçirmesi beklenir.
- * Başarılı olursa `{ results, unmatched }` (roster id'si doğrulanmış,
- * ss_applied için slot'a çevrilmiş), olmazsa bir Error fırlatır.
+ * Gemini'ye (model-fallback zinciriyle) bir prompt + şema + görsel(ler)
+ * gönderip ayrıştırılmış JSON döner - hem readScreenshots hem readTeamPower
+ * bunu kullanır. `geminiApiKey` çağıranın kendi env değişkenini (GEMINI_API_KEY)
+ * okuyup geçirmesi beklenir.
  */
-async function readScreenshots({ type, roster, images, geminiApiKey }) {
-  if (!Array.isArray(images) || !images.length) throw new Error("Görsel okunamadı.");
-  if (images.length > MAX_IMAGES) throw new Error(`En fazla ${MAX_IMAGES} görsel gönderilebilir.`);
-  const parsedImages = images.map(parseDataUrl);
-  if (parsedImages.some((img) => !img)) throw new Error("Görsel(ler) okunamadı.");
-
-  const responseSchema = buildResponseSchema(type);
-  const promptText = buildPrompt(type, roster, parsedImages.length);
+async function callGemini({ promptText, responseSchema, parsedImages, geminiApiKey }) {
   const geminiBody = JSON.stringify({
     contents: [{
       parts: [
@@ -193,14 +186,29 @@ async function readScreenshots({ type, roster, images, geminiApiKey }) {
 
   const geminiData = await geminiRes.json();
   const rawText = geminiData?.candidates?.[0]?.content?.parts?.[0]?.text;
-  let parsed;
   try {
-    parsed = JSON.parse(rawText);
+    return JSON.parse(rawText);
   } catch {
-    parsed = null;
-  }
-  if (!parsed || !Array.isArray(parsed.results)) {
     console.error("[screenshotAi] Beklenmeyen Gemini yanıtı:", rawText);
+    throw new Error("AI yanıtı ayrıştırılamadı.");
+  }
+}
+
+/**
+ * `images` = base64 data URL dizisi. Başarılı olursa `{ results, unmatched }`
+ * (roster id'si doğrulanmış, ss_applied için slot'a çevrilmiş), olmazsa bir
+ * Error fırlatır.
+ */
+async function readScreenshots({ type, roster, images, geminiApiKey }) {
+  if (!Array.isArray(images) || !images.length) throw new Error("Görsel okunamadı.");
+  if (images.length > MAX_IMAGES) throw new Error(`En fazla ${MAX_IMAGES} görsel gönderilebilir.`);
+  const parsedImages = images.map(parseDataUrl);
+  if (parsedImages.some((img) => !img)) throw new Error("Görsel(ler) okunamadı.");
+
+  const responseSchema = buildResponseSchema(type);
+  const promptText = buildPrompt(type, roster, parsedImages.length);
+  const parsed = await callGemini({ promptText, responseSchema, parsedImages, geminiApiKey });
+  if (!parsed || !Array.isArray(parsed.results)) {
     throw new Error("AI yanıtı ayrıştırılamadı.");
   }
 
@@ -225,4 +233,42 @@ async function readScreenshots({ type, roster, images, geminiApiKey }) {
   return { results, unmatched };
 }
 
-module.exports = { readScreenshots, MAX_IMAGES };
+const TEAM_ELEMENTS = ["water", "fire", "earth", "electric"];
+
+/**
+ * "1. Takım" (1. Ekip) ekran görüntüsünden takım gücünü VE elementini okur.
+ * Roster eşleştirme YOK (readScreenshots'tan farklı olarak) - ekran görüntüsü
+ * her zaman gönderen kişinin KENDİ takımı, başka bir listeyle eşleştirmeye
+ * gerek yok. Element metin olarak yazmıyor, ikon/renkten (su damlası=mavi,
+ * ateş=kırmızı/turuncu alev, toprak=sarı/kahve elmas, elektrik=sarı şimşek)
+ * çıkarılıyor - ekranın alt gezinme çubuğundaki 4 element ikonuyla aynı stil.
+ * Başarılı olursa `{ teamPower, teamElement }` döner, olmazsa Error fırlatır.
+ */
+async function readTeamPower({ images, geminiApiKey }) {
+  if (!Array.isArray(images) || !images.length) throw new Error("Görsel okunamadı.");
+  if (images.length > MAX_IMAGES) throw new Error(`En fazla ${MAX_IMAGES} görsel gönderilebilir.`);
+  const parsedImages = images.map(parseDataUrl);
+  if (parsedImages.some((img) => !img)) throw new Error("Görsel(ler) okunamadı.");
+
+  const responseSchema = {
+    type: "OBJECT",
+    properties: {
+      teamPower: { type: "NUMBER", description: "The team's total power/strength value shown prominently (next to a fist icon), as a full integer - periods/commas in the displayed number are thousand separators, not decimals (e.g. '414.056.829' means 414056829)." },
+      teamElement: { type: "STRING", enum: TEAM_ELEMENTS, description: "This team's element, inferred from the icon style/color shown next to each monster's name on screen (water = blue droplet, fire = red/orange flame, earth = yellow/brown diamond, electric = yellow lightning bolt). The same 4 icons also appear in the bottom navigation bar as a reference." }
+    },
+    required: ["teamPower", "teamElement"]
+  };
+  const promptText = [
+    "You are reading a mobile game's \"Team 1\" / \"1. Ekip\" screen - it shows ONE player's own first team: their total team power (a large number next to a fist icon) and the team's element (shown via icon/color, not text).",
+    "Respond with JSON matching the given schema only."
+  ].join("\n");
+
+  const parsed = await callGemini({ promptText, responseSchema, parsedImages, geminiApiKey });
+  const teamPower = Number(parsed?.teamPower);
+  if (!Number.isFinite(teamPower) || !TEAM_ELEMENTS.includes(parsed?.teamElement)) {
+    throw new Error("AI yanıtı beklenen şekilde değil.");
+  }
+  return { teamPower, teamElement: parsed.teamElement };
+}
+
+module.exports = { readScreenshots, readTeamPower, MAX_IMAGES };
