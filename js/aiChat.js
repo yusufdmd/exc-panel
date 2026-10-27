@@ -67,7 +67,10 @@ function renderAiChat() {
     const isUser = m.role === "user";
     const inner = isImageContent(m.content)
       ? `<img src="${escapeHtml(m.content)}" style="display:block; max-width:100%; border-radius:10px; margin-bottom:6px;">
-         <a href="${escapeHtml(m.content)}" download="exc-gorsel-${m.id}.jpg" style="display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--cyan-ink); text-decoration:none;">⬇️ ${t("aiChatDownloadImage")}</a>`
+         <div style="display:flex; gap:12px;">
+           <a href="${escapeHtml(m.content)}" download="exc-gorsel-${m.id}.jpg" style="display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--cyan-ink); text-decoration:none;">⬇️ ${t("aiChatDownloadImage")}</a>
+           <a href="javascript:void(0)" onclick="useAiChatPrompt('${m.id}')" style="display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--cyan-ink); text-decoration:none;">✏️ ${t("aiChatEditPrompt")}</a>
+         </div>`
       : escapeHtml(m.content);
     return `<div style="display:flex; justify-content:${isUser ? "flex-end" : "flex-start"}; align-items:flex-end; margin-bottom:12px;">
       ${isUser ? "" : avatar("🤖", false)}
@@ -106,6 +109,26 @@ async function getAccessToken() {
 export function setAiChatMode(mode) {
   state.aiChatMode = mode === "image" ? "image" : "text";
   renderAll();
+}
+
+/**
+ * Bir görsel mesajının altındaki "✏️ İstemi Düzenle ve Tekrar Dene" —
+ * gerçek bir piksel-düzenleme DEĞİL, o görseli oluşturan orijinal metni
+ * (hemen öncesindeki kullanıcı mesajı) tekrar giriş kutusuna getirir,
+ * admin birkaç kelime değiştirip tekrar gönderebilir.
+ */
+export function useAiChatPrompt(imageMessageId) {
+  const index = state.aiChatMessages.findIndex((m) => m.id === imageMessageId);
+  if (index < 1) return;
+  const promptMessage = state.aiChatMessages[index - 1];
+  if (!promptMessage || promptMessage.role !== "user") return;
+  state.aiChatMode = "image";
+  renderAll();
+  const input = document.getElementById("aiChatInput");
+  if (input) {
+    input.value = promptMessage.content;
+    input.focus();
+  }
 }
 
 export async function sendAiChatMessage() {
