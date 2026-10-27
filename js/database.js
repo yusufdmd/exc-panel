@@ -371,16 +371,17 @@ export async function getAiChatMessages() {
   );
 }
 
-export async function createAiChatMessage(role, content) {
-  const { data, error } = await supabase.from("ai_chat_messages").insert({ role, content }).select().single();
+export async function createAiChatMessage(role, content, mode) {
+  const { data, error } = await supabase.from("ai_chat_messages").insert({ role, content, mode }).select().single();
   if (error) dbError("Mesaj kaydedilemedi", error);
   return data;
 }
 
-export async function clearAiChatMessages() {
-  // RLS zaten sadece kendi satırlarına izin verdiği için filtresiz bir
-  // delete, o admin'in TÜM geçmişini (ve sadece onunkini) siler.
-  const { error } = await supabase.from("ai_chat_messages").delete().not("id", "is", null);
+// Mode bazlı siliniyor (bkz. sql/add_ai_chat_mode.sql) — Metin ve Görsel
+// ayrı sohbetler sayıldığı için "Geçmişi Temizle" sadece o an açık olan
+// moda ait mesajları siler, diğerini etkilemez.
+export async function clearAiChatMessages(mode) {
+  const { error } = await supabase.from("ai_chat_messages").delete().eq("mode", mode);
   if (error) dbError("Sohbet geçmişi temizlenemedi", error);
   return true;
 }

@@ -16,11 +16,14 @@
 // İki mod var (state.aiChatMode): "text" (Gemini ile sohbet) ve "image"
 // (Cloudflare Workers AI / flux-1-schnell ile görsel üretimi — Gemini'nin
 // görsel üretimi ücretsiz kademede kota vermediği için ayrı bir sağlayıcı
-// kullanılıyor, bkz. api/_lib/cloudflareImage.js). Üretilen görsel,
-// doğrudan `data:image/...;base64,...` olarak content sütununa yazılır —
-// yeni bir dosya depolama sistemi kurmaya gerek kalmasın diye; render
-// sırasında content'in bu önekle başlayıp başlamadığına bakılarak metin
-// mi görsel mi olduğu ayırt edilir (ayrı bir "kind" sütunu yerine).
+// kullanılıyor, bkz. api/_lib/cloudflareImage.js). İkisi TAMAMEN AYRI
+// sohbetler olarak tutulur (bkz. sql/add_ai_chat_mode.sql -> mode sütunu,
+// currentModeMessages()) — mod değiştirmek diğerinin geçmişini göstermez/
+// etkilemez, "Geçmişi Temizle" de sadece o an açık olan modu siler.
+// Üretilen görsel, doğrudan `data:image/...;base64,...` olarak content
+// sütununa yazılır — yeni bir dosya depolama sistemi kurmaya gerek
+// kalmasın diye; render sırasında content'in bu önekle başlayıp
+// başlamadığına bakılarak metin mi görsel mi olduğu ayırt edilir.
 // =====================================================================
 
 import { getAiChatMessages, createAiChatMessage, clearAiChatMessages as apiClearAiChatMessages } from "./database.js";
@@ -34,13 +37,19 @@ function isImageContent(content) {
 }
 
 export function mapAiChatMessage(row) {
-  return { id: row.id, role: row.role, content: row.content, createdAt: row.created_at };
+  return { id: row.id, role: row.role, content: row.content, mode: row.mode, createdAt: row.created_at };
+}
+
+/** O an açık olan moda (Metin/Görsel) ait mesajlar — ikisi ayrı sohbetler olarak tutulur (bkz. sql/add_ai_chat_mode.sql). */
+function currentModeMessages() {
+  return state.aiChatMessages.filter((m) => m.mode === state.aiChatMode);
 }
 
 function renderAiChat() {
   const list = document.getElementById("aiChatMessages");
   if (!list) return;
-  const hasMessages = state.aiChatMessages.length > 0;
+  const messages = currentModeMessages();
+  const hasMessages = messages.length > 0;
 
   const textModeBtn = document.getElementById("aiChatModeText");
   const imageModeBtn = document.getElementById("aiChatModeImage");
@@ -63,7 +72,7 @@ function renderAiChat() {
   const avatar = (emoji, isUser) => `<div style="flex-shrink:0; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px;
     background:${isUser ? "var(--cyan-ink)" : "var(--bg-raised)"}; border:1px solid ${isUser ? "transparent" : "var(--line)"}; margin:${isUser ? "0 0 0 8px" : "0 8px 0 0"};">${emoji}</div>`;
 
-  const bubbles = state.aiChatMessages.map((m) => {
+  const bubbles = messages.map((m) => {
     const isUser = m.role === "user";
     const inner = isImageContent(m.content)
       ? `<img src="${escapeHtml(m.content)}" style="display:block; max-width:100%; border-radius:10px; margin-bottom:6px;">
@@ -135,21 +144,19 @@ export async function sendAiChatMessage() {
   state.aiChatSending = true;
   renderAll();
 
+  const isImageMode = state.aiChatMode === "image";
   try {
-    const userRow = await createAiChatMessage("user", text);
+    const userRow = await createAiChatMessage("user", text, state.aiChatMode);
     state.aiChatMessages.push(mapAiChatMessage(userRow));
     renderAll();
 
     const token = await getAccessToken();
-    const isImageMode = state.aiChatMode === "image";
     const res = await fetch("/api/ai-chat", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
       body: JSON.stringify(isImageMode
         ? { mode: "image", prompt: text }
-        // Görsel mesajlar (büyük data URL'ler) Gemini'ye boşuna bağlam/maliyet
-        // olarak gitmesin diye metin geçmişinden filtrelenir.
-        : { mode: "text", history: state.aiChatMessages.filter((m) => !isImageContent(m.content)).map((m) => ({ role: m.role, content: m.content })) })
+        : { mode: "text", history: currentModeMessages().map((m) => ({ role: m.role, content: m.content })) })
     });
     const body = await res.json().catch(() => ({}));
     const replyContent = isImageMode ? body.image : body.reply;
@@ -158,7 +165,7 @@ export async function sendAiChatMessage() {
       showToast(body.error || "Error");
       return;
     }
-    const assistantRow = await createAiChatMessage("assistant", replyContent);
+    const assistantRow = await createAiChatMessage("assistant", replyContent, state.aiChatMode);
     state.aiChatMessages.push(mapAiChatMessage(assistantRow));
   } catch (error) {
     console.error(error);
@@ -178,11 +185,11 @@ export function handleAiChatInputKeydown(event) {
 }
 
 export async function clearAiChatHistory() {
-  if (!state.aiChatMessages.length) return;
+  if (!currentModeMessages().length) return;
   if (!confirm(t("confirmClearAiChat"))) return;
   try {
-    await apiClearAiChatMessages();
-    state.aiChatMessages = [];
+    await apiClearAiChatMessages(state.aiChatMode);
+    state.aiChatMessages = state.aiChatMessages.filter((m) => m.mode !== state.aiChatMode);
     renderAll();
   } catch (error) {
     console.error(error);
