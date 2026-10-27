@@ -14,7 +14,9 @@ async function generateImage({ prompt, accountId, apiToken }) {
   const res = await fetch(url, {
     method: "POST",
     headers: { Authorization: `Bearer ${apiToken}`, "content-type": "application/json" },
-    body: JSON.stringify({ prompt })
+    // steps: izin verilen azami değer (8) - varsayılan 4'e göre prompt'a biraz
+    // daha sadık sonuç verir (ücretsiz günlük kotamızda hâlâ bolca yer kalıyor).
+    body: JSON.stringify({ prompt, steps: 8 })
   });
   const data = await res.json().catch(() => null);
   if (!res.ok || !data?.success || !data?.result?.image) {
