@@ -271,4 +271,4 @@ async function readTeamPower({ images, geminiApiKey }) {
   return { teamPower, teamElement: parsed.teamElement };
 }
 
-module.exports = { readScreenshots, readTeamPower, MAX_IMAGES };
+module.exports = { readScreenshots, readTeamPower, MAX_IMAGES, GEMINI_MODELS };

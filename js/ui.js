@@ -60,6 +60,8 @@ export const state = {
   nameSuggestions: [], // üyelerden gelen, henüz onaylanmamış isim değişikliği önerileri (bkz. members.js -> renderNameSuggestions)
   selfReportSubmissions: [], // Discord /report-participation ile gelen, henüz onaylanmamış katılım bildirimleri (bkz. selfReports.js)
   teamPowerSuggestions: [], // Discord /suggest-team-power ile gelen, henüz onaylanmamış takım gücü+element önerileri (bkz. teamPowerSuggestions.js)
+  aiChatMessages: [], // "AI Asistan" sekmesi — giriş yapmış admin'in KENDİ Gemini sohbet geçmişi (RLS: author_id = auth.uid(), bkz. aiChat.js)
+  aiChatSending: false, // bir mesaj gönderilip cevap beklenirken true — gönder butonu/alanı bu süre kilitlenir
   pendingLeadProcessingId: null, // "İşle" ile aday ekleme formuna gidilirken hangi başvurunun dönüştürüldüğünü hatırlar (bkz. migration.js -> saveProspect)
   siteLinks: { discordUrl: "", youtubeUrl: "", instagramUrl: "" }, // genel tanıtım sitesindeki Discord/YouTube/Instagram linkleri (bkz. siteLinks.js)
   news: [], // ana sayfadaki "Haberler" bölümünün içeriği (bkz. news.js)
@@ -190,6 +192,9 @@ const DICT = {
     tabAccountVault:'🔐 Hesap Kasası', avDesc:'Oyun hesabı devir/sahiplik süreci için tutulan bilgiler. Sadece adminler görebilir.', avAddBtn:'+ Hesap Ekle',
     thAvGameEmail:'Oyun E-postası', thAvGamePassword:'Oyun Şifresi', thAvEmailAccess:'E-posta Erişimi', thAvRecoveryEmail:'Kurtarma E-postası', thAvRecoveryPassword:'Kurtarma Şifresi', thAvNote:'Not',
     emptyAvTitle:'Henüz kayıt yok', emptyAvDesc:'"+ Hesap Ekle" ile ilk kaydı oluştur.',
+    tabAiChat:'🤖 AI Asistan', aiChatDesc:'Gemini ile serbest sohbet — sadece sen görürsün, diğer adminler göremez.', aiChatInputPlaceholder:'Bir şey sor… (Enter: gönder, Shift+Enter: yeni satır)',
+    aiChatSendBtn:'Gönder', aiChatClearBtn:'Geçmişi Temizle', aiChatThinking:'Yazıyor…', aiChatEmptyTitle:'Henüz mesaj yok', aiChatEmptyDesc:'Aşağıya bir şey yazıp gönder.',
+    confirmClearAiChat:'Sohbet geçmişini tamamen silmek istediğine emin misin? Bu işlem geri alınamaz.',
     lblAvMember:'Bağlı Üye (opsiyonel)', lblAvName:'İsim', lblAvGameEmail:'Oyun Hesabı E-postası', lblAvGamePassword:'Oyun Hesabı Şifresi', lblAvHasEmailAccess:'Kurtarma e-postasına erişim var', lblAvRecoveryEmail:'Kurtarma E-postası', lblAvRecoveryPassword:'Kurtarma E-postası Şifresi', lblAvNote:'Not',
     avNoMemberOption:'— Bağımsız —', avEditTitle:'Hesabı Düzenle', avAddTitle:'Hesap Ekle', avPasswordKeepHint:'Değiştirmek için yazın (boş bırak → aynı kalsın)', avPasswordPlaceholder:'Şifre', avNameRequired:'Lütfen bir isim girin.',
     toastAccountVaultSaved:'Hesap kaydı kaydedildi.', toastAccountVaultDeleted:'Hesap kaydı silindi.', confirmDeleteAccountVault:'Bu hesap kaydını silmek istediğinize emin misiniz?', avDecryptError:'Şifre çözülemedi.', avShow:'Göster', avHide:'Gizle', avStandaloneTag:'Bağımsız',
@@ -340,6 +345,9 @@ ebParticipationWord:'Katılım', ebFootnote:'%50\'nin altındaysan daha çok etk
     tabAccountVault:'🔐 Account Vault', avDesc:'Information kept for the game account handover/ownership process. Only admins can see this.', avAddBtn:'+ Add Account',
     thAvGameEmail:'Game Email', thAvGamePassword:'Game Password', thAvEmailAccess:'Email Access', thAvRecoveryEmail:'Recovery Email', thAvRecoveryPassword:'Recovery Password', thAvNote:'Note',
     emptyAvTitle:'No entries yet', emptyAvDesc:'Use "+ Add Account" to create the first one.',
+    tabAiChat:'🤖 AI Assistant', aiChatDesc:'Free-form chat with Gemini — only you can see this, other admins cannot.', aiChatInputPlaceholder:'Ask something… (Enter: send, Shift+Enter: new line)',
+    aiChatSendBtn:'Send', aiChatClearBtn:'Clear History', aiChatThinking:'Typing…', aiChatEmptyTitle:'No messages yet', aiChatEmptyDesc:'Type something below and send it.',
+    confirmClearAiChat:'Are you sure you want to permanently delete your chat history? This cannot be undone.',
     lblAvMember:'Linked Member (optional)', lblAvName:'Name', lblAvGameEmail:'Game Account Email', lblAvGamePassword:'Game Account Password', lblAvHasEmailAccess:'Has access to the recovery email', lblAvRecoveryEmail:'Recovery Email', lblAvRecoveryPassword:'Recovery Email Password', lblAvNote:'Note',
     avNoMemberOption:'— Standalone —', avEditTitle:'Edit Account', avAddTitle:'Add Account', avPasswordKeepHint:'Type to change (leave blank to keep)', avPasswordPlaceholder:'Password', avNameRequired:'Please enter a name.',
     toastAccountVaultSaved:'Account entry saved.', toastAccountVaultDeleted:'Account entry deleted.', confirmDeleteAccountVault:'Are you sure you want to delete this account entry?', avDecryptError:'Could not decrypt.', avShow:'Show', avHide:'Hide', avStandaloneTag:'Standalone',
@@ -473,6 +481,9 @@ ebParticipationWord:'Participation', ebFootnote:'If you\'re under 50%, consider 
     tabAccountVault:'🔐 Konten-Tresor', avDesc:'Informationen für den Prozess der Kontoübergabe/-besitz. Nur Admins können dies sehen.', avAddBtn:'+ Konto hinzufügen',
     thAvGameEmail:'Spiel-E-Mail', thAvGamePassword:'Spiel-Passwort', thAvEmailAccess:'E-Mail-Zugriff', thAvRecoveryEmail:'Wiederherstellungs-E-Mail', thAvRecoveryPassword:'Wiederherstellungs-Passwort', thAvNote:'Notiz',
     emptyAvTitle:'Noch keine Einträge', emptyAvDesc:'Mit "+ Konto hinzufügen" den ersten Eintrag erstellen.',
+    tabAiChat:'🤖 KI-Assistent', aiChatDesc:'Freies Gespräch mit Gemini — nur du siehst dies, andere Admins nicht.', aiChatInputPlaceholder:'Frag etwas… (Enter: senden, Umschalt+Enter: neue Zeile)',
+    aiChatSendBtn:'Senden', aiChatClearBtn:'Verlauf löschen', aiChatThinking:'Tippt…', aiChatEmptyTitle:'Noch keine Nachrichten', aiChatEmptyDesc:'Schreib unten etwas und sende es.',
+    confirmClearAiChat:'Möchtest du deinen Chatverlauf dauerhaft löschen? Dies kann nicht rückgängig gemacht werden.',
     lblAvMember:'Verknüpftes Mitglied (optional)', lblAvName:'Name', lblAvGameEmail:'E-Mail des Spielkontos', lblAvGamePassword:'Passwort des Spielkontos', lblAvHasEmailAccess:'Hat Zugriff auf die Wiederherstellungs-E-Mail', lblAvRecoveryEmail:'Wiederherstellungs-E-Mail', lblAvRecoveryPassword:'Passwort der Wiederherstellungs-E-Mail', lblAvNote:'Notiz',
     avNoMemberOption:'— Eigenständig —', avEditTitle:'Konto bearbeiten', avAddTitle:'Konto hinzufügen', avPasswordKeepHint:'Zum Ändern eingeben (leer lassen = unverändert)', avPasswordPlaceholder:'Passwort', avNameRequired:'Bitte einen Namen eingeben.',
     toastAccountVaultSaved:'Kontoeintrag gespeichert.', toastAccountVaultDeleted:'Kontoeintrag gelöscht.', confirmDeleteAccountVault:'Diesen Kontoeintrag wirklich löschen?', avDecryptError:'Entschlüsselung fehlgeschlagen.', avShow:'Anzeigen', avHide:'Verbergen', avStandaloneTag:'Eigenständig',
@@ -606,6 +617,9 @@ ebParticipationWord:'Teilnahme', ebFootnote:'Bist du unter 50%, nimm an mehr Eve
     tabAccountVault:'🔐 Bóveda de Cuentas', avDesc:'Información guardada para el proceso de traspaso/propiedad de la cuenta del juego. Solo los administradores pueden verla.', avAddBtn:'+ Añadir Cuenta',
     thAvGameEmail:'Correo del Juego', thAvGamePassword:'Contraseña del Juego', thAvEmailAccess:'Acceso al Correo', thAvRecoveryEmail:'Correo de Recuperación', thAvRecoveryPassword:'Contraseña de Recuperación', thAvNote:'Nota',
     emptyAvTitle:'Aún no hay registros', emptyAvDesc:'Usa "+ Añadir Cuenta" para crear el primero.',
+    tabAiChat:'🤖 Asistente IA', aiChatDesc:'Chat libre con Gemini — solo tú lo ves, otros administradores no.', aiChatInputPlaceholder:'Pregunta algo… (Enter: enviar, Shift+Enter: nueva línea)',
+    aiChatSendBtn:'Enviar', aiChatClearBtn:'Borrar Historial', aiChatThinking:'Escribiendo…', aiChatEmptyTitle:'Aún no hay mensajes', aiChatEmptyDesc:'Escribe algo abajo y envíalo.',
+    confirmClearAiChat:'¿Seguro que quieres borrar permanentemente tu historial de chat? Esto no se puede deshacer.',
     lblAvMember:'Miembro Vinculado (opcional)', lblAvName:'Nombre', lblAvGameEmail:'Correo de la Cuenta del Juego', lblAvGamePassword:'Contraseña de la Cuenta del Juego', lblAvHasEmailAccess:'Tiene acceso al correo de recuperación', lblAvRecoveryEmail:'Correo de Recuperación', lblAvRecoveryPassword:'Contraseña del Correo de Recuperación', lblAvNote:'Nota',
     avNoMemberOption:'— Independiente —', avEditTitle:'Editar Cuenta', avAddTitle:'Añadir Cuenta', avPasswordKeepHint:'Escribe para cambiar (deja en blanco para mantener)', avPasswordPlaceholder:'Contraseña', avNameRequired:'Por favor ingresa un nombre.',
     toastAccountVaultSaved:'Registro de cuenta guardado.', toastAccountVaultDeleted:'Registro de cuenta eliminado.', confirmDeleteAccountVault:'¿Seguro que quieres eliminar este registro de cuenta?', avDecryptError:'No se pudo desencriptar.', avShow:'Mostrar', avHide:'Ocultar', avStandaloneTag:'Independiente',
@@ -739,6 +753,9 @@ ebParticipationWord:'Participación', ebFootnote:'¡Si estás por debajo del 50%
     tabAccountVault:'🔐 Coffre des Comptes', avDesc:"Informations conservées pour le processus de transfert/propriété du compte de jeu. Seuls les admins peuvent le voir.", avAddBtn:'+ Ajouter un Compte',
     thAvGameEmail:'E-mail du Jeu', thAvGamePassword:'Mot de Passe du Jeu', thAvEmailAccess:"Accès à l'E-mail", thAvRecoveryEmail:'E-mail de Récupération', thAvRecoveryPassword:'Mot de Passe de Récupération', thAvNote:'Note',
     emptyAvTitle:'Aucune entrée pour le moment', emptyAvDesc:'Utilisez "+ Ajouter un Compte" pour créer la première.',
+    tabAiChat:'🤖 Assistant IA', aiChatDesc:"Discussion libre avec Gemini — toi seul le vois, pas les autres admins.", aiChatInputPlaceholder:'Demande quelque chose… (Entrée : envoyer, Maj+Entrée : nouvelle ligne)',
+    aiChatSendBtn:'Envoyer', aiChatClearBtn:"Effacer l'historique", aiChatThinking:'Écrit…', aiChatEmptyTitle:'Aucun message pour le moment', aiChatEmptyDesc:'Écris quelque chose ci-dessous et envoie-le.',
+    confirmClearAiChat:"Veux-tu vraiment supprimer définitivement ton historique de discussion ? Cette action est irréversible.",
     lblAvMember:'Membre Lié (optionnel)', lblAvName:'Nom', lblAvGameEmail:'E-mail du Compte de Jeu', lblAvGamePassword:'Mot de Passe du Compte de Jeu', lblAvHasEmailAccess:"A accès à l'e-mail de récupération", lblAvRecoveryEmail:'E-mail de Récupération', lblAvRecoveryPassword:"Mot de Passe de l'E-mail de Récupération", lblAvNote:'Note',
     avNoMemberOption:'— Indépendant —', avEditTitle:'Modifier le Compte', avAddTitle:'Ajouter un Compte', avPasswordKeepHint:'Tapez pour changer (laissez vide pour conserver)', avPasswordPlaceholder:'Mot de passe', avNameRequired:'Veuillez saisir un nom.',
     toastAccountVaultSaved:'Entrée de compte enregistrée.', toastAccountVaultDeleted:'Entrée de compte supprimée.', confirmDeleteAccountVault:'Voulez-vous vraiment supprimer cette entrée de compte ?', avDecryptError:'Impossible de déchiffrer.', avShow:'Afficher', avHide:'Masquer', avStandaloneTag:'Indépendant',
@@ -872,6 +889,9 @@ ebParticipationWord:'Participation', ebFootnote:"Si tu es en dessous de 50%, pen
     tabAccountVault:'🔐 Kho Tài khoản', avDesc:'Thông tin lưu cho quá trình chuyển nhượng/sở hữu tài khoản game. Chỉ admin mới xem được.', avAddBtn:'+ Thêm Tài khoản',
     thAvGameEmail:'Email Game', thAvGamePassword:'Mật khẩu Game', thAvEmailAccess:'Quyền truy cập Email', thAvRecoveryEmail:'Email Khôi phục', thAvRecoveryPassword:'Mật khẩu Khôi phục', thAvNote:'Ghi chú',
     emptyAvTitle:'Chưa có bản ghi nào', emptyAvDesc:'Dùng "+ Thêm Tài khoản" để tạo bản ghi đầu tiên.',
+    tabAiChat:'🤖 Trợ lý AI', aiChatDesc:'Trò chuyện tự do với Gemini — chỉ bạn thấy được, các admin khác không thấy.', aiChatInputPlaceholder:'Hỏi gì đó… (Enter: gửi, Shift+Enter: xuống dòng)',
+    aiChatSendBtn:'Gửi', aiChatClearBtn:'Xóa Lịch sử', aiChatThinking:'Đang gõ…', aiChatEmptyTitle:'Chưa có tin nhắn nào', aiChatEmptyDesc:'Gõ gì đó bên dưới và gửi đi.',
+    confirmClearAiChat:'Bạn có chắc muốn xóa vĩnh viễn lịch sử trò chuyện? Hành động này không thể hoàn tác.',
     lblAvMember:'Thành viên Liên kết (tùy chọn)', lblAvName:'Tên', lblAvGameEmail:'Email Tài khoản Game', lblAvGamePassword:'Mật khẩu Tài khoản Game', lblAvHasEmailAccess:'Có quyền truy cập email khôi phục', lblAvRecoveryEmail:'Email Khôi phục', lblAvRecoveryPassword:'Mật khẩu Email Khôi phục', lblAvNote:'Ghi chú',
     avNoMemberOption:'— Độc lập —', avEditTitle:'Sửa Tài khoản', avAddTitle:'Thêm Tài khoản', avPasswordKeepHint:'Nhập để đổi (để trống để giữ nguyên)', avPasswordPlaceholder:'Mật khẩu', avNameRequired:'Vui lòng nhập tên.',
     toastAccountVaultSaved:'Đã lưu bản ghi tài khoản.', toastAccountVaultDeleted:'Đã xóa bản ghi tài khoản.', confirmDeleteAccountVault:'Bạn có chắc muốn xóa bản ghi tài khoản này không?', avDecryptError:'Không thể giải mã.', avShow:'Hiện', avHide:'Ẩn', avStandaloneTag:'Độc lập',
@@ -1192,6 +1212,13 @@ export function applyStaticText() {
   document.getElementById("t_lblProspectMessage").textContent = t("thLeadMessage");
   document.getElementById("t_tabMigration").textContent = t("tabMigration");
   document.getElementById("t_tabActivity").textContent = t("tabActivity");
+  document.getElementById("t_tabAiChat").textContent = t("tabAiChat");
+  document.getElementById("t_aiChatDesc").textContent = t("aiChatDesc");
+  document.getElementById("t_aiChatClearBtn").textContent = t("aiChatClearBtn");
+  document.getElementById("t_aiChatEmptyTitle").textContent = t("aiChatEmptyTitle");
+  document.getElementById("t_aiChatEmptyDesc").textContent = t("aiChatEmptyDesc");
+  document.getElementById("aiChatInput").placeholder = t("aiChatInputPlaceholder");
+  document.getElementById("aiChatSendBtn").textContent = t("aiChatSendBtn");
   document.getElementById("t_thWhen").textContent = t("thWhen");
   document.getElementById("t_thAdmin").textContent = t("thAdmin");
   document.getElementById("t_thAction").textContent = t("thAction");

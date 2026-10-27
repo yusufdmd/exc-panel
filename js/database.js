@@ -359,6 +359,33 @@ export async function updateTeamPowerSuggestion(id, payload) {
 }
 
 // =====================================================================
+// AI_CHAT_MESSAGES — "AI Asistan" sekmesi, her admin'in KENDİ sohbet
+// geçmişi (bkz. sql/add_ai_chat_messages.sql). RLS zaten author_id'yi
+// auth.uid() ile sınırlıyor, bu yüzden burada ayrıca bir .eq() gerekmez —
+// bir admin başka bir admin'in satırını hiçbir şekilde çekemez/silemez.
+// =====================================================================
+export async function getAiChatMessages() {
+  return fetchAllPages(
+    () => supabase.from("ai_chat_messages").select("*").order("created_at", { ascending: true }),
+    "Sohbet geçmişi alınamadı"
+  );
+}
+
+export async function createAiChatMessage(role, content) {
+  const { data, error } = await supabase.from("ai_chat_messages").insert({ role, content }).select().single();
+  if (error) dbError("Mesaj kaydedilemedi", error);
+  return data;
+}
+
+export async function clearAiChatMessages() {
+  // RLS zaten sadece kendi satırlarına izin verdiği için filtresiz bir
+  // delete, o admin'in TÜM geçmişini (ve sadece onunkini) siler.
+  const { error } = await supabase.from("ai_chat_messages").delete().not("id", "is", null);
+  if (error) dbError("Sohbet geçmişi temizlenemedi", error);
+  return true;
+}
+
+// =====================================================================
 // POWER_HISTORY — Güç seviyesi geçmişi
 // =====================================================================
 export async function getPowerHistory(memberId) {

@@ -118,6 +118,7 @@
     <div class="tab" data-tab="migration" onclick="switchTab('migration')" id="t_tabMigration">Göç</div>
     <div class="tab" data-tab="activity" onclick="switchTab('activity')" id="t_tabActivity">Aktivite</div>
     <div class="tab" data-tab="accountvault" onclick="switchTab('accountvault')" id="t_tabAccountVault">🔐 Hesap Kasası</div>
+    <div class="tab" data-tab="aichat" onclick="switchTab('aichat')" id="t_tabAiChat">🤖 AI Asistan</div>
   </div>
 
   <div class="tabs" id="siteTabs" style="display:none;">
@@ -527,6 +528,24 @@
     <div class="empty-state" id="accountVaultEmpty" style="display:none;">
       <h3 id="t_emptyAvTitle">Henüz kayıt yok</h3>
       <p id="t_emptyAvDesc">"+ Hesap Ekle" ile ilk kaydı oluştur.</p>
+    </div>
+  </div>
+
+  <!-- AI CHAT — sadece admin, her admin'in KENDİ sohbet geçmişi (bkz. app.js -> renderPanelMode, sql/add_ai_chat_messages.sql RLS) -->
+  <div class="panel" id="panel-aichat">
+    <p style="color:var(--text-muted); font-size:12px; margin-bottom:12px;" id="t_aiChatDesc">Gemini ile serbest sohbet — sadece sen görürsün, diğer adminler göremez.</p>
+    <div class="toolbar">
+      <div></div>
+      <button class="icon-btn danger" onclick="clearAiChatHistory()" id="t_aiChatClearBtn">Geçmişi Temizle</button>
+    </div>
+    <div class="table-wrap" id="aiChatMessages" style="padding:16px; display:flex; flex-direction:column;"></div>
+    <div class="empty-state" id="aiChatEmpty" style="display:none;">
+      <h3 id="t_aiChatEmptyTitle">Henüz mesaj yok</h3>
+      <p id="t_aiChatEmptyDesc">Aşağıya bir şey yazıp gönder.</p>
+    </div>
+    <div style="display:flex; gap:8px; margin-top:12px; align-items:flex-end;">
+      <textarea id="aiChatInput" rows="2" style="flex:1; resize:vertical; font-family:inherit; font-size:14px; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--bg-panel); color:var(--text-main);" placeholder="Bir şey sor… (Enter: gönder, Shift+Enter: yeni satır)" onkeydown="handleAiChatInputKeydown(event)"></textarea>
+      <button class="btn-primary" id="aiChatSendBtn" onclick="sendAiChatMessage()">Gönder</button>
     </div>
   </div>
 

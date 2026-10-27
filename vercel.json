@@ -42,6 +42,9 @@
     },
     "api/send-self-report-reminder.js": {
       "maxDuration": 30
+    },
+    "api/ai-chat.js": {
+      "maxDuration": 30
     }
   },
   "crons": [

@@ -16,7 +16,7 @@
 // o dosyalar hiç çalıştırılmaz ve tabloları hiç çizilmez.
 // =====================================================================
 
-import { getMembers, getMemberDiscordIds, getAllPowerHistory, getAllTeamPowerHistory, getEngagementPeriods, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, getNameSuggestions, getSelfReportSubmissions, getTeamPowerSuggestions, getSiteLinks, getNews, getFeaturedVideos, getRecentActivity, getAccountVault, getSetting, subscribeToTables } from "./database.js";
+import { getMembers, getMemberDiscordIds, getAllPowerHistory, getAllTeamPowerHistory, getEngagementPeriods, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, getNameSuggestions, getSelfReportSubmissions, getTeamPowerSuggestions, getAiChatMessages, getSiteLinks, getNews, getFeaturedVideos, getRecentActivity, getAccountVault, getSetting, subscribeToTables } from "./database.js";
 import { POLL_INTERVAL_MS } from "./config.js";
 import { state, t, showToast, buildLangSwitch, applyStaticText, initLangFromStorage, persistLanguage, initThemeFromStorage, toggleTheme, renderAll, registerDataLoader, registerRenderer, liveFormatNumberInput, expandPowerShorthandInput, initPowerShorthandMode, setEventWeekSort } from "./ui.js";
 import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember, openHistoryModal, closeHistoryModal, copyDiscordId, setMemberView, setRankFilter, setElementFilter, setSort, exportMembers, mapNameSuggestion, openNameSuggestModal, closeNameSuggestModal, submitNameSuggestion, approveNameSuggestion, dismissNameSuggestion, handlePowerScreenshot, removePowerUnmatchedItem, discardPowerDraft, applyPowerDraft, acceptSuspiciousPower, rejectSuspiciousPower } from "./members.js";
@@ -40,6 +40,7 @@ import { mapVideoItem, openVideoModal, closeVideoModal, saveVideo, deleteVideo, 
 import { mapActivity, restoreDeletedMember, restoreDeletedWeek, restoreDeletedSimple, restoreSelfReportApproval, showActivityDetails, closeActivityDetails } from "./activity.js";
 import { mapSelfReportSubmission, approveSelfReportSubmission, rejectSelfReportSubmission, sendSelfReportReminder } from "./selfReports.js";
 import { mapTeamPowerSuggestion, approveTeamPowerSuggestion, rejectTeamPowerSuggestion } from "./teamPowerSuggestions.js";
+import { mapAiChatMessage, sendAiChatMessage, clearAiChatHistory, handleAiChatInputKeydown } from "./aiChat.js";
 import { doLogin, doLogout, openChangePasswordModal, closeChangePasswordModal, submitChangePassword } from "./auth.js";
 import {
   mapAccountVaultEntry, renderAccountVault, openAccountVaultModal, closeAccountVaultModal,
@@ -91,7 +92,7 @@ async function loadAll(silent) {
       kodWeeksRes, kodRecordsRes,
       kodgvgWeeksRes, kodgvgRecordsRes,
       otherWeeksRes, otherRecordsRes,
-      migrationPeriodsRes, migrationRes, migrationLeadsRes, nameSuggestionsRes, selfReportSubmissionsRes, teamPowerSuggestionsRes, siteLinksRes, newsRes, videosRes, activityRes,
+      migrationPeriodsRes, migrationRes, migrationLeadsRes, nameSuggestionsRes, selfReportSubmissionsRes, teamPowerSuggestionsRes, aiChatMessagesRes, siteLinksRes, newsRes, videosRes, activityRes,
       accountVaultRes, engagementBoardTiersRes, memberDiscordIdsRes
     ] = await Promise.allSettled([
       getMembers(), getAllPowerHistory(), getAllTeamPowerHistory(), getEngagementPeriods(),
@@ -107,6 +108,7 @@ async function loadAll(silent) {
       restricted ? Promise.resolve([]) : getNameSuggestions(),
       restricted ? Promise.resolve([]) : getSelfReportSubmissions(),
       restricted ? Promise.resolve([]) : getTeamPowerSuggestions(),
+      restricted ? Promise.resolve([]) : getAiChatMessages(),
       getSiteLinks(), getNews(), getFeaturedVideos(),
       restricted ? Promise.resolve([]) : getRecentActivity(200),
       restricted || !state.canAccessVault ? Promise.resolve([]) : getAccountVault(),
@@ -149,6 +151,7 @@ async function loadAll(silent) {
       nameSuggestions: settledList(nameSuggestionsRes).map(mapNameSuggestion),
       selfReportSubmissions: settledList(selfReportSubmissionsRes).map(mapSelfReportSubmission),
       teamPowerSuggestions: settledList(teamPowerSuggestionsRes).map(mapTeamPowerSuggestion),
+      aiChatMessages: settledList(aiChatMessagesRes).map(mapAiChatMessage),
       siteLinks: mapSiteLinks(siteLinksRes.status === "fulfilled" ? siteLinksRes.value : null),
       news: settledList(newsRes).map(mapNewsItem),
       featuredVideos: settledList(videosRes).map(mapVideoItem),
@@ -239,9 +242,11 @@ function renderPanelMode() {
   const migrationTab = document.querySelector('#dataTabs .tab[data-tab="migration"]');
   const activityTab = document.querySelector('#dataTabs .tab[data-tab="activity"]');
   const accountVaultTab = document.querySelector('#dataTabs .tab[data-tab="accountvault"]');
+  const aiChatTab = document.querySelector('#dataTabs .tab[data-tab="aichat"]');
   if (migrationTab) migrationTab.style.display = restricted ? "none" : "";
   if (activityTab) activityTab.style.display = restricted ? "none" : "";
   if (accountVaultTab) accountVaultTab.style.display = (restricted || !state.canAccessVault) ? "none" : "";
+  if (aiChatTab) aiChatTab.style.display = restricted ? "none" : "";
   // Üye rolü üye listesinde sadece "Aktif Üyeler"i görür — eski/göç eden üye
   // alt sekmeleri de gizlenir (bkz. members.js -> setMemberView'daki eşleşen koruma).
   const oldMembersTab = document.querySelector('.subtab[data-mv="old"]');
@@ -301,6 +306,7 @@ Object.assign(window, {
   openNameSuggestModal, closeNameSuggestModal, submitNameSuggestion, approveNameSuggestion, dismissNameSuggestion,
   approveSelfReportSubmission, rejectSelfReportSubmission, sendSelfReportReminder,
   approveTeamPowerSuggestion, rejectTeamPowerSuggestion,
+  sendAiChatMessage, clearAiChatHistory, handleAiChatInputKeydown,
   openWeekModal, closeWeekModal, saveWeek, deleteWeek,
   openEntryModal, closeEntryModal, saveEntry, renderEntryRows, handleEntryScreenshot, handleSsAppliedScreenshot, removeUnmatchedItem,
   openWeekReportModal, closeWeekReportModal,
