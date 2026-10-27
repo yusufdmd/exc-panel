@@ -410,48 +410,71 @@ function periodWeekChips(store, member, weeks, isPoint, isApplicable) {
 // "settings" tablosunda kalıcı — Supabase'in genel anahtar/değer
 // mekanizması, bkz. database.js -> getSetting/setSetting) eşiğe göre,
 // en altta da geri kalan herkes. Varsayılan eşikler 70/50/30.
+//
+// Görünüm, Discord'a otomatik giden görselle AYNI şablondan gelir (bkz.
+// js/engagementBoardTemplate.js — panel/index.html'de klasik <script> ile
+// yüklenir, window.EngagementBoardTemplate). Pano kendi piksel ölçüsünde
+// (1137x1383) çizilip modalın genişliğine transform:scale ile sığdırılır.
 // =====================================================================
-function buildEngagementBoardTiers() {
+const BOARD_BG_URL = "../images/engagement-board-bg.jpg";
+const BOARD_FONT_URL = "../fonts/OpenSans-Bold.ttf";
+
+/** Dönemin satırlarını 5 dilime (100 / t2 / t3 / t4 / altı) ayırır; her dilimde isimler alfabetik. */
+function buildEngagementBoardColumns(period) {
   const [t2, t3, t4] = state.engagementBoardTiers;
-  const suffix = t("ebParticipationWord");
-  return [
-    { min: 100, label: `100% ${suffix}`, color: "var(--gold-ink)" },
-    { min: t2, label: `${t2}%+ ${suffix}`, color: "var(--success-ink)" },
-    { min: t3, label: `${t3}%+ ${suffix}`, color: "var(--warn-ink)" },
-    { min: t4, label: `${t4}%+ ${suffix}`, color: "var(--violet-ink)" },
-    { min: 0, label: `<${t4}% ${suffix}`, color: "var(--danger-ink)" }
-  ];
+  const mins = [100, t2, t3, t4, 0];
+  const columns = mins.map(() => []);
+  getRowsForPeriod(period).filter((row) => row.totalApplicable > 0).forEach((row) => {
+    const pct = (row.total / row.totalApplicable) * 100;
+    const index = mins.findIndex((min) => pct >= min);
+    columns[index === -1 ? mins.length - 1 : index].push(row.member.name || "—");
+  });
+  columns.forEach((names) => names.sort((a, b) => a.localeCompare(b)));
+  return columns;
 }
 
-export function openEngagementBoardModal() {
+/** Panoyu modala (hem genişlik hem yükseklik olarak) tamamı görünecek şekilde sığdırır. */
+function scaleEngagementBoard() {
+  const scaler = document.getElementById("engagementBoardScaler");
+  if (!scaler) return;
+  const { BOARD_WIDTH, BOARD_HEIGHT } = window.EngagementBoardTemplate;
+  const frame = scaler.parentElement;
+  const body = document.getElementById("engagementBoardBody");
+  const maxHeight = parseFloat(getComputedStyle(body).maxHeight) || window.innerHeight * 0.72;
+  const scale = Math.min(1, body.clientWidth / BOARD_WIDTH, maxHeight / BOARD_HEIGHT);
+  scaler.style.transform = `scale(${scale})`;
+  frame.style.width = `${Math.floor(BOARD_WIDTH * scale)}px`;
+  frame.style.height = `${Math.floor(BOARD_HEIGHT * scale)}px`;
+}
+
+export async function openEngagementBoardModal() {
   const period = selectedPeriod();
   if (!period) return;
-  const rows = getRowsForPeriod(period).filter((row) => row.totalApplicable > 0);
-  const buckets = buildEngagementBoardTiers().map((tier) => ({ ...tier, members: [] }));
-  rows.forEach((row) => {
-    const pct = (row.total / row.totalApplicable) * 100;
-    const tier = buckets.find((b) => pct >= b.min) || buckets[buckets.length - 1];
-    tier.members.push(row.member);
-  });
-  buckets.forEach((tier) => tier.members.sort((a, b) => a.name.localeCompare(b.name)));
-
-  document.getElementById("engagementBoardBody").innerHTML = `
-    <div class="engagement-board">
-      ${buckets.map((tier) => `
-        <div class="eb-col" style="--eb-color:${tier.color};">
-          <div class="eb-head">${escapeHtml(tier.label)}<span class="eb-count">${tier.members.length}</span></div>
-          <div class="eb-members">
-            ${tier.members.length
-              ? tier.members.map((m) => `<div class="eb-member">${escapeHtml(m.name)}</div>`).join("")
-              : `<div class="eb-empty">—</div>`}
-          </div>
-        </div>
-      `).join("")}
-    </div>
-    <p class="eb-footnote">${t("ebFootnote")}</p>
-  `;
+  const template = window.EngagementBoardTemplate;
+  if (!template) {
+    showToast("Error");
+    return;
+  }
+  const body = document.getElementById("engagementBoardBody");
+  body.innerHTML = `
+    <div class="eb-frame">
+      <div id="engagementBoardScaler" class="eb-scaler">
+        ${template.buildEngagementBoardMarkup({
+          bgUrl: BOARD_BG_URL,
+          fontUrl: BOARD_FONT_URL,
+          tiers: state.engagementBoardTiers,
+          columns: buildEngagementBoardColumns(period),
+          periodLine: template.formatPeriodLine(period)
+        })}
+      </div>
+    </div>`;
   document.getElementById("engagementBoardOverlay").classList.add("active");
+  scaleEngagementBoard();
+  // İsim sığdırma, gömülü font yüklendikten SONRA ölçülmeli (yoksa yedek fontun genişliğine göre hesaplanır).
+  try { await document.fonts.load('700 16px "EBX Sans"'); } catch (_) { /* font yüklenemedi — yedek fontla devam */ }
+  template.fitEngagementBoardNames(body);
 }
+window.addEventListener("resize", scaleEngagementBoard);
 
 export function closeEngagementBoardModal() {
   document.getElementById("engagementBoardOverlay").classList.remove("active");
@@ -492,42 +515,33 @@ export async function saveEngagementBoardTiers() {
 }
 
 /**
- * Panoyu (başlık + sütunlar) tek bir PNG olarak indirir — panel/index.html'de
- * CDN'den yüklenen html2canvas'ı kullanır. Modaldaki hâliyle hem dikey
- * (uzun üye listeleri) hem yatay (6 sütun modalın genişliğine sığmayıp
- * kaydırma gerektirebiliyor) kırpılma olabileceğinden, html2canvas'ın
- * `onclone` kancasıyla SADECE kendi görünmez kopyasında (gerçek sayfada
- * DEĞİL) tüm yükseklik/genişlik sınırlarını kaldırıp tam hâliyle yakalıyoruz.
+ * Panoyu Discord'a gidenle aynı boyutta (1137x1383, 2x) tek bir JPEG olarak
+ * indirir — panel/index.html'de CDN'den yüklenen html2canvas'ı kullanır.
+ * Modalda pano transform:scale ile küçültülmüş olduğundan, html2canvas'ın
+ * `onclone` kancasıyla SADECE kendi görünmez kopyasında ölçeği ve modalın
+ * yükseklik sınırını kaldırıp panoyu tam boyutuyla yakalıyoruz.
  */
 export async function downloadEngagementBoardImage() {
-  if (typeof html2canvas !== "function") {
+  const board = document.querySelector("#engagementBoardBody .ebx");
+  if (typeof html2canvas !== "function" || !board) {
     showToast("Error");
     return;
   }
-  const capture = document.getElementById("engagementBoardCapture");
   try {
-    const bg = getComputedStyle(document.querySelector("#engagementBoardOverlay .modal")).backgroundColor;
-    const canvas = await html2canvas(capture, {
-      backgroundColor: bg,
+    const canvas = await html2canvas(board, {
       scale: 2,
+      useCORS: true,
+      backgroundColor: null,
       onclone: (clonedDoc) => {
-        const clonedModal = clonedDoc.querySelector("#engagementBoardOverlay .modal");
-        const clonedCapture = clonedDoc.getElementById("engagementBoardCapture");
+        const clonedScaler = clonedDoc.getElementById("engagementBoardScaler");
         const clonedBody = clonedDoc.getElementById("engagementBoardBody");
-        const clonedBoard = clonedDoc.querySelector("#engagementBoardCapture .engagement-board");
-        if (clonedModal) clonedModal.style.maxWidth = "none";
-        // #engagementBoardCapture normalde bloğun tamamını (modalın genişliği
-        // kadar) kaplar — bu da yakalanan görselde 5 sütundan sonra boş bir
-        // alan kalmasına yol açıyordu. width:max-content ile onu da içeriğe
-        // (yani en geniş çocuğu olan .engagement-board'a) sarmalanmış hâle getiriyoruz.
-        if (clonedCapture) clonedCapture.style.width = "max-content";
-        if (clonedBody) { clonedBody.style.maxHeight = "none"; clonedBody.style.overflowY = "visible"; }
-        if (clonedBoard) { clonedBoard.style.overflowX = "visible"; clonedBoard.style.width = "max-content"; }
+        if (clonedScaler) clonedScaler.style.transform = "none";
+        if (clonedBody) { clonedBody.style.maxHeight = "none"; clonedBody.style.overflow = "visible"; }
       }
     });
     const link = document.createElement("a");
-    link.download = t("engagementBoardFileName") + ".png";
-    link.href = canvas.toDataURL("image/png");
+    link.download = t("engagementBoardFileName") + ".jpg";
+    link.href = canvas.toDataURL("image/jpeg", 0.9);
     link.click();
   } catch (error) {
     console.error(error);

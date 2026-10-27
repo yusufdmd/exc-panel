@@ -327,18 +327,11 @@ th.th-team span{ cursor:pointer; }
 .element-opt:hover{ transform:translateY(-2px); }
 .element-opt.active{ border-color:var(--gold-ink); background: rgba(224,166,58,0.1); }
 
-/* "Katılım Panosu" — Engagement Challenge yüzdesine göre üyeleri renkli
-   dilimlere ayıran, ekran görüntüsü alınıp paylaşılmaya uygun pano (bkz.
-   engagement.js -> openEngagementBoardModal). Her sütunun rengi bir
-   inline --eb-color değişkeniyle (JS'te set edilir) belirlenir. */
-.engagement-board{ display:flex; gap:10px; overflow-x:auto; padding-bottom:6px; }
-.eb-col{ flex:1 1 0; min-width:130px; border-radius:14px; border:2px solid var(--eb-color); background: var(--bg-raised); overflow:hidden; display:flex; flex-direction:column; }
-.eb-head{ background: var(--eb-color); color:#14110a; font-family:var(--font-display); font-weight:700; text-align:center; padding:10px 6px; font-size:14px; letter-spacing:0.3px; }
-.eb-head .eb-count{ display:block; font-size:11px; font-weight:600; opacity:0.72; margin-top:2px; }
-.eb-members{ padding:10px 8px; display:flex; flex-direction:column; gap:5px; min-height:36px; }
-.eb-member{ font-size:12.5px; text-align:center; padding:4px 6px; border-radius:7px; background:rgba(255,255,255,0.04); }
-.eb-empty{ text-align:center; color:var(--text-dim); font-size:12px; padding:10px 0; }
-.eb-footnote{ text-align:center; font-size:12px; color:var(--text-dim); margin-top:14px; }
+/* "Katılım Panosu" (bkz. engagement.js -> openEngagementBoardModal): görünüm
+   Discord'a giden görselle ortak şablondan (js/engagementBoardTemplate.js)
+   gelir; burada sadece panoyu modala sığdıran ölçekleme çerçevesi var. */
+.eb-frame{ position:relative; margin:0 auto; overflow:hidden; border-radius:10px; }
+.eb-scaler{ position:absolute; top:0; left:0; transform-origin:top left; }
 
 .part-table{ width:100%; }
 .part-table th{ text-align:left; font-size:11px; color:var(--text-dim); padding:8px; text-transform:uppercase; white-space:nowrap; }

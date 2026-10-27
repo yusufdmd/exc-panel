@@ -27,6 +27,17 @@
 const { postToDiscord } = require("./_lib/discord");
 const { buildEngagementBuckets } = require("./_lib/engagementScoring");
 const { sbFetch, sbFetchAll } = require("./_lib/supabaseAdmin");
+const fs = require("fs");
+const path = require("path");
+// Panelle ORTAK pano şablonu (bkz. js/engagementBoardTemplate.js) — Discord'a giden görsel ile
+// paneldeki "🏆 Katılım Panosu" birebir aynı görünsün diye.
+const boardTemplate = require("../js/engagementBoardTemplate.js");
+
+// Arka plan görseli ve font, sayfaya data: URI olarak gömülür (headless Chromium'un ağdan bir şey
+// çekmesine gerek kalmasın diye). Dosyalar vercel.json -> functions -> includeFiles ile pakete eklenir.
+function dataUri(relPath, mime) {
+  return `data:${mime};base64,${fs.readFileSync(path.join(__dirname, "..", relPath)).toString("base64")}`;
+}
 
 function mapMember(row) {
   return { id: row.id, name: row.name, rank: row.rank, isOld: !!row.is_old, isMigrated: !!row.is_migrated, joinedAt: row.joined_at, userChangedAt: row.user_changed_at || null };
@@ -46,44 +57,6 @@ async function loadEventStore(type) {
     sbFetchAll(`${type}_records?select=*`)
   ]);
   return { weeks: weeks.map(mapWeek), entries: records.map((r) => mapEntry(type, r)) };
-}
-
-/** Dilim kovalarından, tamamen kendi içinde (dış CSS/font'a bağımlı olmadan) bir HTML sayfası üretir. */
-function buildBoardHtml(buckets, titleLine, subtitleLine) {
-  const columns = buckets.map((tier) => `
-    <div class="col" style="--c:${tier.color};">
-      <div class="head">${tier.label}<span class="count">${tier.members.length} ${tier.members.length === 1 ? "member" : "members"}</span></div>
-      <div class="members">
-        ${tier.members.length ? tier.members.map((m) => `<div class="m">${escapeHtmlLite(m.name)}</div>`).join("") : `<div class="empty">—</div>`}
-      </div>
-    </div>`).join("");
-
-  return `<!doctype html><html><head><meta charset="utf-8"><style>
-    * { box-sizing: border-box; }
-    body { margin:0; padding:28px; background:#161B26; font-family: Arial, Helvetica, sans-serif; }
-    #board { width: fit-content; }
-    .title { color:#E6E9EF; font-size:24px; font-weight:800; letter-spacing:0.5px; margin-bottom:2px; }
-    .subtitle { color:#8B94A3; font-size:14px; margin-bottom:18px; }
-    .row { display:flex; gap:12px; align-items:flex-start; }
-    .col { width:220px; border-radius:14px; border:2px solid var(--c); background:#1E2530; overflow:hidden; }
-    .head { background:var(--c); color:#14110a; font-weight:800; text-align:center; padding:12px 8px; font-size:15px; }
-    .head .count { display:block; font-size:12px; font-weight:600; opacity:0.72; margin-top:3px; }
-    .members { padding:12px 10px; display:flex; flex-direction:column; gap:6px; min-height:40px; }
-    .m { font-size:13px; text-align:center; padding:5px 6px; border-radius:7px; background:rgba(255,255,255,0.05); color:#E6E9EF; }
-    .empty { font-size:13px; text-align:center; color:#5A6272; }
-    .footnote { color:#8B94A3; font-size:12px; margin-top:16px; text-align:center; }
-  </style></head><body>
-    <div id="board">
-      <div class="title">${escapeHtmlLite(titleLine)}</div>
-      <div class="subtitle">${escapeHtmlLite(subtitleLine)}</div>
-      <div class="row">${columns}</div>
-      <div class="footnote">Bilgiler sürekli güncellenmektedir. Bir yanlışlık olduğunu düşünüyorsanız lütfen bir R4 ile iletişime geçin.</div>
-    </div>
-  </body></html>`;
-}
-
-function escapeHtmlLite(value) {
-  return String(value == null ? "" : value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
 
 module.exports = async (req, res) => {
@@ -130,19 +103,27 @@ module.exports = async (req, res) => {
     const periodApp = { startDate: period.start_date, endDate: period.end_date || null, results: period.results || null };
     const buckets = buildEngagementBuckets(periodApp, members, { svs, gvg, ss, kod, kodgvg }, tiers);
 
-    const dateRange = `${period.start_date} – ongoing`;
-    const html = buildBoardHtml(buckets, "🏆 Engagement Challenge — Participation", `${period.seq ? `Period ${period.seq} · ` : ""}${dateRange}`);
+    const html = boardTemplate.buildEngagementBoardDocument({
+      bgUrl: dataUri("images/engagement-board-bg.jpg", "image/jpeg"),
+      fontUrl: dataUri("fonts/OpenSans-Bold.ttf", "font/ttf"),
+      tiers,
+      columns: buckets.map((tier) => tier.members.map((m) => m.name)),
+      periodLine: boardTemplate.formatPeriodLine({ seq: period.seq, startDate: period.start_date, endDate: period.end_date })
+    });
 
     browser = await puppeteer.launch({
       args: await puppeteer.defaultArgs({ args: chromium.args, headless: "shell" }),
-      defaultViewport: { width: 1400, height: 1200 },
+      // 2x: isimler ve kodla yazılan başlıklar keskin çıksın (arka plan görseli 1137x1383).
+      defaultViewport: { width: boardTemplate.BOARD_WIDTH, height: boardTemplate.BOARD_HEIGHT, deviceScaleFactor: 2 },
       executablePath: await chromium.executablePath(),
       headless: "shell"
     });
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: "networkidle0" });
-    const el = await page.$("#board");
-    const pngBuffer = await el.screenshot({ type: "png" });
+    await page.setContent(html, { waitUntil: "load" });
+    await page.evaluate(() => document.fonts.ready);
+    await page.evaluate(`(${boardTemplate.fitEngagementBoardNames.toString()})()`);
+    // JPEG: 2x boyutta, fotoğraf benzeri arka planla PNG ~6 MB olurdu; JPEG %90 ~1-1.5 MB.
+    const imageBuffer = await page.screenshot({ type: "jpeg", quality: 90 });
     await browser.close();
     browser = null;
 
@@ -154,7 +135,7 @@ module.exports = async (req, res) => {
     const { ok, detail } = await postToDiscord(
       { content: "" },
       webhookUrl,
-      { buffer: pngBuffer, filename: "engagement-board.png", contentType: "image/png" }
+      { buffer: imageBuffer, filename: "engagement-board.jpg", contentType: "image/jpeg" }
     );
     res.status(ok ? 200 : 502).json({ ok, detail });
   } catch (error) {

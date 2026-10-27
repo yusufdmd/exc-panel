@@ -31,7 +31,8 @@
   ],
   "functions": {
     "api/send-engagement-board.js": {
-      "maxDuration": 60
+      "maxDuration": 60,
+      "includeFiles": "{images/engagement-board-bg.jpg,fonts/OpenSans-Bold.ttf,js/engagementBoardTemplate.js}"
     },
     "api/discord-interactions.js": {
       "maxDuration": 60
