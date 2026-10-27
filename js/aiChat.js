@@ -41,28 +41,45 @@ function renderAiChat() {
   const list = document.getElementById("aiChatMessages");
   if (!list) return;
   const hasMessages = state.aiChatMessages.length > 0;
-  const emptyEl = document.getElementById("aiChatEmpty");
-  if (emptyEl) emptyEl.style.display = hasMessages || state.aiChatSending ? "none" : "block";
 
   const textModeBtn = document.getElementById("aiChatModeText");
   const imageModeBtn = document.getElementById("aiChatModeImage");
   if (textModeBtn) textModeBtn.classList.toggle("active", state.aiChatMode !== "image");
   if (imageModeBtn) imageModeBtn.classList.toggle("active", state.aiChatMode === "image");
 
+  if (!hasMessages && !state.aiChatSending) {
+    list.innerHTML = `<div style="margin:auto; text-align:center; color:var(--text-muted);">
+      <div style="font-size:40px; margin-bottom:10px;">✨🤖</div>
+      <h3 style="font-family:var(--font-display); color:var(--text-primary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">${t("aiChatEmptyTitle")}</h3>
+      <p style="font-size:13px;">${t("aiChatEmptyDesc")}</p>
+    </div>`;
+    const input = document.getElementById("aiChatInput");
+    if (input) input.placeholder = t(state.aiChatMode === "image" ? "aiChatInputPlaceholderImage" : "aiChatInputPlaceholder");
+    const sendBtn = document.getElementById("aiChatSendBtn");
+    if (sendBtn) sendBtn.disabled = false;
+    return;
+  }
+
+  const avatar = (emoji, isUser) => `<div style="flex-shrink:0; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px;
+    background:${isUser ? "var(--cyan-ink)" : "var(--bg-raised)"}; border:1px solid ${isUser ? "transparent" : "var(--line)"}; margin:${isUser ? "0 0 0 8px" : "0 8px 0 0"};">${emoji}</div>`;
+
   const bubbles = state.aiChatMessages.map((m) => {
     const isUser = m.role === "user";
     const inner = isImageContent(m.content)
       ? `<img src="${escapeHtml(m.content)}" style="display:block; max-width:100%; border-radius:10px;">`
       : escapeHtml(m.content);
-    return `<div style="display:flex; justify-content:${isUser ? "flex-end" : "flex-start"}; margin-bottom:10px;">
-      <div style="max-width:75%; padding:10px 14px; border-radius:14px; white-space:pre-wrap; line-height:1.4; font-size:14px;
+    return `<div style="display:flex; justify-content:${isUser ? "flex-end" : "flex-start"}; align-items:flex-end; margin-bottom:12px;">
+      ${isUser ? "" : avatar("🤖", false)}
+      <div style="max-width:72%; padding:10px 14px; border-radius:14px; white-space:pre-wrap; line-height:1.4; font-size:14px; box-shadow:0 1px 3px rgba(0,0,0,0.08);
         background:${isUser ? "var(--cyan-ink)" : "var(--bg-panel)"}; color:${isUser ? "#fff" : "var(--text-main)"};
         border:1px solid ${isUser ? "transparent" : "var(--line)"};">${inner}</div>
+      ${isUser ? avatar("🧑", true) : ""}
     </div>`;
   }).join("");
 
   const pending = state.aiChatSending
-    ? `<div style="display:flex; justify-content:flex-start; margin-bottom:10px;">
+    ? `<div style="display:flex; justify-content:flex-start; align-items:flex-end; margin-bottom:10px;">
+         ${avatar("🤖", false)}
          <div style="padding:10px 14px; border-radius:14px; background:var(--bg-panel); border:1px solid var(--line); color:var(--text-dim); font-size:14px;">${t("aiChatThinking")}</div>
        </div>`
     : "";

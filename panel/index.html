@@ -536,19 +536,15 @@
     <p style="color:var(--text-muted); font-size:12px; margin-bottom:12px;" id="t_aiChatDesc">Gemini ile serbest sohbet — sadece sen görürsün, diğer adminler göremez.</p>
     <div class="toolbar">
       <div class="subtabs">
-        <div class="subtab active" id="aiChatModeText" onclick="setAiChatMode('text')" title="Metin">💬</div>
-        <div class="subtab" id="aiChatModeImage" onclick="setAiChatMode('image')" title="Görsel">🎨</div>
+        <div class="subtab active" id="aiChatModeText" onclick="setAiChatMode('text')">💬 <span id="t_aiChatModeTextLabel">Metin</span></div>
+        <div class="subtab" id="aiChatModeImage" onclick="setAiChatMode('image')">🎨 <span id="t_aiChatModeImageLabel">Görsel</span></div>
       </div>
-      <button class="icon-btn danger" onclick="clearAiChatHistory()" id="t_aiChatClearBtn">Geçmişi Temizle</button>
+      <button class="btn-ghost" onclick="clearAiChatHistory()" id="t_aiChatClearBtn" style="color:var(--danger-ink); border-color:var(--danger-ink);">Geçmişi Temizle</button>
     </div>
-    <div class="table-wrap" id="aiChatMessages" style="padding:16px; display:flex; flex-direction:column;"></div>
-    <div class="empty-state" id="aiChatEmpty" style="display:none;">
-      <h3 id="t_aiChatEmptyTitle">Henüz mesaj yok</h3>
-      <p id="t_aiChatEmptyDesc">Aşağıya bir şey yazıp gönder.</p>
-    </div>
+    <div class="table-wrap" id="aiChatMessages" style="min-height:380px; max-height:55vh; padding:20px; display:flex; flex-direction:column; background:linear-gradient(180deg, var(--bg-panel), var(--bg-raised));"></div>
     <div style="display:flex; gap:8px; margin-top:12px; align-items:flex-end;">
-      <textarea id="aiChatInput" rows="2" style="flex:1; resize:vertical; font-family:inherit; font-size:14px; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--bg-panel); color:var(--text-main);" placeholder="Bir şey sor… (Enter: gönder, Shift+Enter: yeni satır)" onkeydown="handleAiChatInputKeydown(event)"></textarea>
-      <button class="btn-primary" id="aiChatSendBtn" onclick="sendAiChatMessage()">Gönder</button>
+      <textarea id="aiChatInput" rows="2" style="flex:1; resize:vertical; font-family:inherit; font-size:14px; padding:12px 14px; border-radius:12px; border:1px solid var(--line); background:var(--bg-panel); color:var(--text-main);" placeholder="Bir şey sor… (Enter: gönder, Shift+Enter: yeni satır)" onkeydown="handleAiChatInputKeydown(event)"></textarea>
+      <button class="btn-primary" id="aiChatSendBtn" onclick="sendAiChatMessage()" style="padding:12px 22px; font-size:14px;">Gönder</button>
     </div>
   </div>
 
