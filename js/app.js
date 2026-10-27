@@ -40,7 +40,7 @@ import { mapVideoItem, openVideoModal, closeVideoModal, saveVideo, deleteVideo, 
 import { mapActivity, restoreDeletedMember, restoreDeletedWeek, restoreDeletedSimple, restoreSelfReportApproval, showActivityDetails, closeActivityDetails } from "./activity.js";
 import { mapSelfReportSubmission, approveSelfReportSubmission, rejectSelfReportSubmission, sendSelfReportReminder } from "./selfReports.js";
 import { mapTeamPowerSuggestion, approveTeamPowerSuggestion, rejectTeamPowerSuggestion } from "./teamPowerSuggestions.js";
-import { mapAiChatMessage, sendAiChatMessage, clearAiChatHistory, handleAiChatInputKeydown } from "./aiChat.js";
+import { mapAiChatMessage, sendAiChatMessage, clearAiChatHistory, handleAiChatInputKeydown, setAiChatMode } from "./aiChat.js";
 import { doLogin, doLogout, openChangePasswordModal, closeChangePasswordModal, submitChangePassword } from "./auth.js";
 import {
   mapAccountVaultEntry, renderAccountVault, openAccountVaultModal, closeAccountVaultModal,
@@ -306,7 +306,7 @@ Object.assign(window, {
   openNameSuggestModal, closeNameSuggestModal, submitNameSuggestion, approveNameSuggestion, dismissNameSuggestion,
   approveSelfReportSubmission, rejectSelfReportSubmission, sendSelfReportReminder,
   approveTeamPowerSuggestion, rejectTeamPowerSuggestion,
-  sendAiChatMessage, clearAiChatHistory, handleAiChatInputKeydown,
+  sendAiChatMessage, clearAiChatHistory, handleAiChatInputKeydown, setAiChatMode,
   openWeekModal, closeWeekModal, saveWeek, deleteWeek,
   openEntryModal, closeEntryModal, saveEntry, renderEntryRows, handleEntryScreenshot, handleSsAppliedScreenshot, removeUnmatchedItem,
   openWeekReportModal, closeWeekReportModal,

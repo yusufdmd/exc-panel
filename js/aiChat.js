@@ -12,11 +12,26 @@
 // doğrulanarak) yapılır — anahtar (GEMINI_API_KEY) tarayıcıya hiç gitmez.
 // Mesajların veritabanına yazılması ise BURADAN, admin'in kendi Supabase
 // oturumuyla, doğrudan yapılır (diğer admin-only tablolarla aynı desen).
+//
+// İki mod var (state.aiChatMode): "text" (Gemini ile sohbet) ve "image"
+// (Cloudflare Workers AI / flux-1-schnell ile görsel üretimi — Gemini'nin
+// görsel üretimi ücretsiz kademede kota vermediği için ayrı bir sağlayıcı
+// kullanılıyor, bkz. api/_lib/cloudflareImage.js). Üretilen görsel,
+// doğrudan `data:image/...;base64,...` olarak content sütununa yazılır —
+// yeni bir dosya depolama sistemi kurmaya gerek kalmasın diye; render
+// sırasında content'in bu önekle başlayıp başlamadığına bakılarak metin
+// mi görsel mi olduğu ayırt edilir (ayrı bir "kind" sütunu yerine).
 // =====================================================================
 
 import { getAiChatMessages, createAiChatMessage, clearAiChatMessages as apiClearAiChatMessages } from "./database.js";
 import { state, t, escapeHtml, showToast, registerRenderer, renderAll } from "./ui.js";
 import { supabase } from "./supabase.js";
+
+const IMAGE_PREFIX = "data:image/";
+
+function isImageContent(content) {
+  return typeof content === "string" && content.startsWith(IMAGE_PREFIX);
+}
 
 export function mapAiChatMessage(row) {
   return { id: row.id, role: row.role, content: row.content, createdAt: row.created_at };
@@ -29,12 +44,20 @@ function renderAiChat() {
   const emptyEl = document.getElementById("aiChatEmpty");
   if (emptyEl) emptyEl.style.display = hasMessages || state.aiChatSending ? "none" : "block";
 
+  const textModeBtn = document.getElementById("aiChatModeText");
+  const imageModeBtn = document.getElementById("aiChatModeImage");
+  if (textModeBtn) textModeBtn.classList.toggle("active", state.aiChatMode !== "image");
+  if (imageModeBtn) imageModeBtn.classList.toggle("active", state.aiChatMode === "image");
+
   const bubbles = state.aiChatMessages.map((m) => {
     const isUser = m.role === "user";
+    const inner = isImageContent(m.content)
+      ? `<img src="${escapeHtml(m.content)}" style="display:block; max-width:100%; border-radius:10px;">`
+      : escapeHtml(m.content);
     return `<div style="display:flex; justify-content:${isUser ? "flex-end" : "flex-start"}; margin-bottom:10px;">
       <div style="max-width:75%; padding:10px 14px; border-radius:14px; white-space:pre-wrap; line-height:1.4; font-size:14px;
         background:${isUser ? "var(--cyan-ink)" : "var(--bg-panel)"}; color:${isUser ? "#fff" : "var(--text-main)"};
-        border:1px solid ${isUser ? "transparent" : "var(--line)"};">${escapeHtml(m.content)}</div>
+        border:1px solid ${isUser ? "transparent" : "var(--line)"};">${inner}</div>
     </div>`;
   }).join("");
 
@@ -50,13 +73,21 @@ function renderAiChat() {
   const sendBtn = document.getElementById("aiChatSendBtn");
   if (sendBtn) sendBtn.disabled = state.aiChatSending;
   const input = document.getElementById("aiChatInput");
-  if (input) input.disabled = state.aiChatSending;
+  if (input) {
+    input.disabled = state.aiChatSending;
+    input.placeholder = t(state.aiChatMode === "image" ? "aiChatInputPlaceholderImage" : "aiChatInputPlaceholder");
+  }
 }
 registerRenderer(renderAiChat);
 
 async function getAccessToken() {
   const { data } = await supabase.auth.getSession();
   return data && data.session ? data.session.access_token : "";
+}
+
+export function setAiChatMode(mode) {
+  state.aiChatMode = mode === "image" ? "image" : "text";
+  renderAll();
 }
 
 export async function sendAiChatMessage() {
@@ -73,19 +104,24 @@ export async function sendAiChatMessage() {
     renderAll();
 
     const token = await getAccessToken();
-    const history = state.aiChatMessages.map((m) => ({ role: m.role, content: m.content }));
+    const isImageMode = state.aiChatMode === "image";
     const res = await fetch("/api/ai-chat", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
-      body: JSON.stringify({ history })
+      body: JSON.stringify(isImageMode
+        ? { mode: "image", prompt: text }
+        // Görsel mesajlar (büyük data URL'ler) Gemini'ye boşuna bağlam/maliyet
+        // olarak gitmesin diye metin geçmişinden filtrelenir.
+        : { mode: "text", history: state.aiChatMessages.filter((m) => !isImageContent(m.content)).map((m) => ({ role: m.role, content: m.content })) })
     });
     const body = await res.json().catch(() => ({}));
-    if (!res.ok || !body.reply) {
+    const replyContent = isImageMode ? body.image : body.reply;
+    if (!res.ok || !replyContent) {
       console.error(body);
       showToast(body.error || "Error");
       return;
     }
-    const assistantRow = await createAiChatMessage("assistant", body.reply);
+    const assistantRow = await createAiChatMessage("assistant", replyContent);
     state.aiChatMessages.push(mapAiChatMessage(assistantRow));
   } catch (error) {
     console.error(error);

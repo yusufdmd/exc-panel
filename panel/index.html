@@ -535,7 +535,10 @@
   <div class="panel" id="panel-aichat">
     <p style="color:var(--text-muted); font-size:12px; margin-bottom:12px;" id="t_aiChatDesc">Gemini ile serbest sohbet — sadece sen görürsün, diğer adminler göremez.</p>
     <div class="toolbar">
-      <div></div>
+      <div class="subtabs">
+        <div class="subtab active" id="aiChatModeText" onclick="setAiChatMode('text')" title="Metin">💬</div>
+        <div class="subtab" id="aiChatModeImage" onclick="setAiChatMode('image')" title="Görsel">🎨</div>
+      </div>
       <button class="icon-btn danger" onclick="clearAiChatHistory()" id="t_aiChatClearBtn">Geçmişi Temizle</button>
     </div>
     <div class="table-wrap" id="aiChatMessages" style="padding:16px; display:flex; flex-direction:column;"></div>
