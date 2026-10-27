@@ -66,7 +66,8 @@ function renderAiChat() {
   const bubbles = state.aiChatMessages.map((m) => {
     const isUser = m.role === "user";
     const inner = isImageContent(m.content)
-      ? `<img src="${escapeHtml(m.content)}" style="display:block; max-width:100%; border-radius:10px;">`
+      ? `<img src="${escapeHtml(m.content)}" style="display:block; max-width:100%; border-radius:10px; margin-bottom:6px;">
+         <a href="${escapeHtml(m.content)}" download="exc-gorsel-${m.id}.jpg" style="display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--cyan-ink); text-decoration:none;">⬇️ ${t("aiChatDownloadImage")}</a>`
       : escapeHtml(m.content);
     return `<div style="display:flex; justify-content:${isUser ? "flex-end" : "flex-start"}; align-items:flex-end; margin-bottom:12px;">
       ${isUser ? "" : avatar("🤖", false)}
