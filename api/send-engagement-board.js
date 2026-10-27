@@ -1,23 +1,24 @@
 // =====================================================================
 // EXC PANELİ — api/send-engagement-board.js
 // =====================================================================
-// Vercel Cron tarafından haftalık çağrılır (bkz. vercel.json -> crons).
-// Kimse panele giriş yapmadan, Katılım Panosu'nu (aktif dönemin dilim
-// sütunlarını) sunucu tarafında bir "görünmez tarayıcı" (headless Chromium,
-// @sparticuz/chromium + puppeteer-core) ile görsel olarak üretir ve
-// Discord'a bir ek (PNG) olarak gönderir.
+// Panelde "🏆 Katılım Panosu" -> "📣 Discord'a Gönder" ile, ADMİN'in elle
+// tetiklediği bir aksiyon (otomatik/cron DEĞİL — liderlik panoyu, kendi
+// yazdığı metinle, istediği zaman göndermek istedi). Seçili dönemin dilim
+// sütunlarını sunucu tarafında bir "görünmez tarayıcı" (headless Chromium,
+// @sparticuz/chromium + puppeteer-core) ile görsele çevirir ve admin'in
+// metniyle (mesaj gövdesi) birlikte Discord'a ek olarak gönderir. Görsel
+// panelden değil burada üretilir: webhook URL'si tarayıcıya hiç gitmez ve
+// her zaman aynı şablonla (js/engagementBoardTemplate.js) çizilir.
 //
-// Veri, Supabase'in SERVICE ROLE anahtarıyla (RLS'i bypass eder) doğrudan
-// çekilir — bu akışta giriş yapmış bir admin yok, normal anon anahtarla
-// hiçbir şey okunamazdı. SUPABASE_SERVICE_ROLE_KEY bu yüzden bu projedeki
-// EN GÜÇLÜ sır — SADECE bu fonksiyonda kullanılır, asla tarayıcıya gitmez,
-// asla loglanmaz. Puanlama kuralları api/_lib/engagementScoring.js'de,
+// Yetki: panelde oturum açmış ADMİN'in Supabase access token'ı gerekir
+// (bkz. api/send-self-report-reminder.js'teki AYNI verifyAdmin deseni).
+// Veri, Supabase'in SERVICE ROLE anahtarıyla (RLS'i bypass eder) çekilir —
+// SUPABASE_SERVICE_ROLE_KEY bu projedeki EN GÜÇLÜ sır, asla tarayıcıya
+// gitmez, asla loglanmaz. Puanlama kuralları api/_lib/engagementScoring.js'de,
 // js/engagement.js'in bir kopyası olarak tutulur (bkz. o dosyadaki NOT).
 //
-// Güvenlik: CRON_SECRET tanımlıysa (zaten cron-reminder.js'de de olduğu
-// gibi), Vercel'in cron tetiklemelerinde eklediği "Authorization: Bearer
-// <CRON_SECRET>" doğrulanır — aksi halde bu URL'i bilen HERKES (ağır bir
-// işlem olan) bu fonksiyonu tetikleyip Discord'a spam atabilirdi.
+// Etiketleme: metindeki @everyone/@here/rol/kullanıcı etiketleri BİLEREK
+// bildirim gönderir (liderlik kararı) — bkz. allowed_mentions.
 // =====================================================================
 
 // @sparticuz/chromium ve puppeteer-core artık SADECE ESM paketleri (package.json'da
@@ -32,6 +33,23 @@ const path = require("path");
 // Panelle ORTAK pano şablonu (bkz. js/engagementBoardTemplate.js) — Discord'a giden görsel ile
 // paneldeki "🏆 Katılım Panosu" birebir aynı görünsün diye.
 const boardTemplate = require("../js/engagementBoardTemplate.js");
+
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://sbzctjpthorlypfrqgte.supabase.co";
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "sb_publishable_FNxETjiXZ4tiWqzgyR0vng_vKxGGSp9";
+const DISCORD_CONTENT_LIMIT = 2000;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+async function verifyAdmin(token) {
+  if (!token) return false;
+  const roleRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/current_user_role`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${token}` },
+    body: "{}"
+  });
+  if (!roleRes.ok) return false;
+  const role = await roleRes.json().catch(() => null);
+  return role === "admin";
+}
 
 // Arka plan görseli ve font, sayfaya data: URI olarak gömülür (headless Chromium'un ağdan bir şey
 // çekmesine gerek kalmasın diye). Dosyalar vercel.json -> functions -> includeFiles ile pakete eklenir.
@@ -60,16 +78,36 @@ async function loadEventStore(type) {
 }
 
 module.exports = async (req, res) => {
-  if (process.env.CRON_SECRET) {
-    const authHeader = req.headers.authorization || "";
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-      res.status(401).json({ error: "Unauthorized" });
-      return;
-    }
+  if (req.method !== "POST") {
+    res.status(405).json({ error: "Method not allowed" });
+    return;
+  }
+
+  const authHeader = req.headers.authorization || "";
+  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
+  if (!(await verifyAdmin(token).catch(() => false))) {
+    res.status(403).json({ error: "Bu işlem için yönetici oturumu gerekli." });
+    return;
+  }
+
+  const { periodId, message } = req.body || {};
+  if (typeof periodId !== "string" || !UUID_RE.test(periodId)) {
+    res.status(400).json({ error: "Geçersiz dönem." });
+    return;
+  }
+  const content = typeof message === "string" ? message.trim() : "";
+  if (content.length > DISCORD_CONTENT_LIMIT) {
+    res.status(400).json({ error: `Mesaj en fazla ${DISCORD_CONTENT_LIMIT} karakter olabilir.` });
+    return;
   }
 
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
     res.status(500).json({ error: "Sunucuda SUPABASE_SERVICE_ROLE_KEY tanımlı değil." });
+    return;
+  }
+  const webhookUrl = process.env.DISCORD_ENGAGEMENT_BOARD_WEBHOOK_URL;
+  if (!webhookUrl) {
+    res.status(500).json({ error: "Sunucuda DISCORD_ENGAGEMENT_BOARD_WEBHOOK_URL tanımlı değil." });
     return;
   }
 
@@ -81,14 +119,14 @@ module.exports = async (req, res) => {
     ]);
 
     const [periods, membersRaw, tiersSetting] = await Promise.all([
-      sbFetch("engagement_periods?end_date=is.null&select=*&limit=1"),
+      sbFetch(`engagement_periods?id=eq.${periodId}&select=*&limit=1`),
       sbFetchAll("members?select=id,name,rank,is_old,is_migrated,joined_at,user_changed_at"),
       sbFetch("settings?key=eq.engagementBoardTiers&select=value")
     ]);
 
     const period = periods[0];
     if (!period) {
-      res.status(200).json({ ok: true, skipped: true, reason: "no active engagement period" });
+      res.status(404).json({ error: "Dönem bulunamadı." });
       return;
     }
 
@@ -127,13 +165,9 @@ module.exports = async (req, res) => {
     await browser.close();
     browser = null;
 
-    const webhookUrl = process.env.DISCORD_ENGAGEMENT_BOARD_WEBHOOK_URL;
-    if (!webhookUrl) {
-      res.status(500).json({ error: "Sunucuda DISCORD_ENGAGEMENT_BOARD_WEBHOOK_URL tanımlı değil." });
-      return;
-    }
     const { ok, detail } = await postToDiscord(
-      { content: "" },
+      // allowed_mentions: metindeki @everyone/@here, rol ve kullanıcı etiketleri bildirim göndersin (bilinçli karar, bkz. dosya başı).
+      { content, allowed_mentions: { parse: ["everyone", "roles", "users"] } },
       webhookUrl,
       { buffer: imageBuffer, filename: "engagement-board.jpg", contentType: "image/jpeg" }
     );

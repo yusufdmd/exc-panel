@@ -43,8 +43,8 @@ export function mapActivity(row) {
   };
 }
 
-const ACTION_LABEL_KEY = { created: "actionCreated", updated: "actionUpdated", deleted: "actionDeleted", purged: "actionDeleted", restored: "actionRestored", approved: "actionApproved", rejected: "actionRejected" };
-const ACTION_CLASS = { created: "pill-green", updated: "pill-blue", deleted: "pill-red", purged: "pill-red", restored: "pill-yellow", approved: "pill-green", rejected: "pill-red" };
+const ACTION_LABEL_KEY = { created: "actionCreated", updated: "actionUpdated", deleted: "actionDeleted", purged: "actionDeleted", restored: "actionRestored", approved: "actionApproved", rejected: "actionRejected", sent: "actionSent" };
+const ACTION_CLASS = { created: "pill-green", updated: "pill-blue", deleted: "pill-red", purged: "pill-red", restored: "pill-yellow", approved: "pill-green", rejected: "pill-red", sent: "pill-blue" };
 
 const SIMPLE_ENTITY_LABEL_KEY = { member: "lbMember", migration_prospect: "tabMigration", migration_lead: "migrationLeadLabel", news: "tabNews", featured_video: "tabVideos", engagement_period: "subEngagement", self_report: "selfReportEntityLabel", name_suggestion: "nameSuggestionEntityLabel", team_power_suggestion: "teamPowerSuggestionEntityLabel" };
 

@@ -30,6 +30,7 @@ import { createEngagementPeriod as dbCreateEngagementPeriod, closeEngagementPeri
 import { state, t, escapeHtml, rankClass, rowNumHtml, isExempt, showToast, todayStr, formatRatio, RANK_ORDER, registerRenderer } from "./ui.js";
 import { activeMembers } from "./members.js";
 import { GVG_THRESHOLDS } from "./config.js";
+import { supabase } from "./supabase.js";
 
 // Kategori başına "puan sayılır mı" kuralları — hem özet tablo hem de
 // admin-only haftalık rapor AYNI bu fonksiyonları kullanır, birbirinden
@@ -478,6 +479,84 @@ window.addEventListener("resize", scaleEngagementBoard);
 
 export function closeEngagementBoardModal() {
   document.getElementById("engagementBoardOverlay").classList.remove("active");
+}
+
+// =====================================================================
+// "📣 Discord'a Gönder" — admin, seçili dönemin panosunu KENDİ yazdığı
+// metinle (ör. dönem sonu tebrik mesajı) Discord'a elle gönderir. Görsel
+// panelden değil sunucuda üretilir (bkz. api/send-engagement-board.js):
+// webhook URL'si tarayıcıya hiç gelmez, görsel her zaman aynı şablondan çıkar.
+// Otomatik haftalık gönderim bu buton geldiğinde kaldırıldı.
+// =====================================================================
+const DISCORD_CONTENT_LIMIT = 2000;
+let ebSendInFlight = false;
+
+export function openEngagementBoardSend() {
+  const period = selectedPeriod();
+  if (!period) return;
+  document.getElementById("ebSendDesc").textContent = t("ebSendDesc").replace("{period}", periodOptionLabel(period));
+  document.getElementById("ebSendMessage").value = "";
+  updateEngagementBoardSendCounter();
+  setEngagementBoardSending(false);
+  document.getElementById("engagementBoardSendOverlay").classList.add("active");
+  document.getElementById("ebSendMessage").focus();
+}
+
+export function closeEngagementBoardSend() {
+  if (ebSendInFlight) return; // gönderim sürerken pencere kapanıp sonuç kaybolmasın
+  document.getElementById("engagementBoardSendOverlay").classList.remove("active");
+}
+
+export function updateEngagementBoardSendCounter() {
+  const length = document.getElementById("ebSendMessage").value.length;
+  document.getElementById("ebSendCounter").textContent = `${length} / ${DISCORD_CONTENT_LIMIT}`;
+}
+
+function setEngagementBoardSending(sending) {
+  ebSendInFlight = sending;
+  const button = document.getElementById("ebSendSubmit");
+  button.disabled = sending;
+  button.textContent = sending ? t("ebSending") : t("ebSendSubmit");
+}
+
+export async function sendEngagementBoardToDiscord() {
+  if (ebSendInFlight) return;
+  const period = selectedPeriod();
+  if (!period) return;
+  const message = document.getElementById("ebSendMessage").value.trim();
+  if (message.length > DISCORD_CONTENT_LIMIT) return;
+  if (!confirm(t("ebSendConfirm"))) return;
+
+  setEngagementBoardSending(true);
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData && sessionData.session ? sessionData.session.access_token : "";
+    const res = await fetch("/api/send-engagement-board", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+      body: JSON.stringify({ periodId: period.id, message })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok || !body.ok) {
+      console.error("[engagement] Discord'a gönderilemedi:", body);
+      alert((body && (body.error || body.detail)) || "Error");
+      return;
+    }
+    // Mesaj Discord'a ÇIKTI — kayıt düşerse bile "hata" gösterilmez, yoksa admin tekrar basıp ikinci bir mesaj atabilir.
+    try {
+      await logActivity("sent", "engagement_period", period.id, { name: periodOptionLabel(period) }, state.currentAdminUsername);
+    } catch (logError) {
+      console.error(logError);
+    }
+    setEngagementBoardSending(false);
+    closeEngagementBoardSend();
+    showToast(t("toastEbSent"));
+  } catch (error) {
+    console.error(error);
+    showToast("Error");
+  } finally {
+    setEngagementBoardSending(false);
+  }
 }
 
 /** "⚙️" ile açılan, panonun 3 orta dilim eşiğini (100 ve 0 sabit) elle değiştirmeyi sağlayan küçük ayar modalı. */

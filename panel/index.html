@@ -989,7 +989,27 @@
     <div class="modal-actions">
       <button class="icon-btn" onclick="openEngagementBoardSettings()" title="Dilim sınırlarını ayarla" id="t_engagementBoardSettingsBtn">⚙️</button>
       <button class="btn-ghost" onclick="downloadEngagementBoardImage()" id="t_downloadEngagementBoard">📥 Görsel Olarak İndir</button>
+      <button class="btn-primary admin-only" onclick="openEngagementBoardSend()" id="t_ebSendBtn">📣 Discord'a Gönder</button>
       <button class="btn-ghost" onclick="closeEngagementBoardModal()" id="t_close9">Kapat</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="engagementBoardSendOverlay">
+  <div class="modal">
+    <h2 id="t_ebSendTitle">📣 Panoyu Discord'a Gönder</h2>
+    <p id="ebSendDesc" style="color:var(--text-muted); font-size:13px; margin-top:-10px;"></p>
+    <div class="field">
+      <label id="t_ebSendMessageLabel">Mesaj</label>
+      <textarea id="ebSendMessage" rows="7" maxlength="2000" oninput="updateEngagementBoardSendCounter()" style="width:100%; resize:vertical;"></textarea>
+      <div style="display:flex; justify-content:space-between; gap:10px; font-size:12px; color:var(--text-dim); margin-top:4px;">
+        <span id="t_ebSendMentionNote">@everyone / @here yazarsan herkese bildirim gider.</span>
+        <span id="ebSendCounter">0 / 2000</span>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeEngagementBoardSend()" id="t_cancelEbSend">Vazgeç</button>
+      <button class="btn-primary" onclick="sendEngagementBoardToDiscord()" id="ebSendSubmit">Gönder</button>
     </div>
   </div>
 </div>
