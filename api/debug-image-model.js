@@ -2,11 +2,7 @@
 // Kullanıldıktan sonra silinecek.
 const CANDIDATES = [
   "gemini-3-pro-image",
-  "gemini-3-flash-image",
-  "gemini-3.6-flash-image",
-  "gemini-2.5-flash-image",
-  "imagen-4.0-generate-001",
-  "gemini-2.0-flash-preview-image-generation"
+  "gemini-2.5-flash-image"
 ];
 
 module.exports = async (req, res) => {
@@ -36,7 +32,7 @@ module.exports = async (req, res) => {
         const data = JSON.parse(text);
         hasImage = !!data?.candidates?.[0]?.content?.parts?.some((p) => p.inlineData || p.inline_data);
       } catch {}
-      results.push({ model, status: r.status, ok: r.ok, hasImage, bodySnippet: text.slice(0, 300) });
+      results.push({ model, status: r.status, ok: r.ok, hasImage, bodySnippet: text.slice(0, 1200) });
     } catch (error) {
       results.push({ model, error: error.message });
     }
