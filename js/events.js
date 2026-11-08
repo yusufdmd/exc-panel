@@ -177,7 +177,7 @@ export async function deleteWeek(type, weekId) {
 // TOPLU GİRİŞ MODALI (bir haftanın tüm üyeleri, tek seferde)
 // =====================================================================
 export function openEntryModal(type, weekId) {
-  state.entryContext = { type, weekId, aiDraft: null, ssAppliedDraft: null };
+  state.entryContext = { type, weekId, aiDraft: null, ssAppliedDraft: null, localEdits: {} };
   renderUnmatchedBox(null);
   const store = storeFor(type);
   const week = store.weeks.find((w) => w.id === weekId);
@@ -224,9 +224,60 @@ function entryVisibleMembers(query) {
   return list.filter((member) => !isExempt(member, week) || store.entries.some((e) => e.memberId === member.id && e.weekId === weekId));
 }
 
+/**
+ * Arama kutusuna her harf yazıldığında renderEntryRows() tüm satırları
+ * SIFIRDAN kurar (bkz. panel/index.html -> entrySearch) — admin'in o ana
+ * kadar formda elle yaptığı ama henüz "Kaydet"e basmadığı seçimler (SS'de
+ * grup/katıldı, GVG'de puan vb.) DOM'da duruyordu, yeniden kurulan HTML
+ * bunları hiç bilmiyordu ve kayboluyordu. Canlı bir kullanıcı şikayetiyle
+ * bulundu: "arama yaparsam önceki seçimlerim gidiyor, listede kaydırarak
+ * bulursam kalıyor" — tam da bu yüzden. Çözüm: her yeniden kurmadan ÖNCE
+ * formda o an görünen (henüz kaydedilmemiş) değerleri burada bir anlık
+ * görüntüye (entryContext.localEdits) yazıyoruz; renderEntryRows bu anlık
+ * görüntüyü (varsa) entry/aiDraft'tan daha öncelikli okuyor.
+ */
+function captureEntryRowsLocalEdits() {
+  if (!state.entryContext) return;
+  const { type } = state.entryContext;
+  const localEdits = state.entryContext.localEdits || (state.entryContext.localEdits = {});
+  document.querySelectorAll("#entryRows tr").forEach((tr) => {
+    if (type === "svs" || type === "other" || type === "kod") {
+      const ptsInput = tr.querySelector(".pts-input");
+      const statusSelect = tr.querySelector(".status-select");
+      if (!ptsInput || !statusSelect) return;
+      localEdits[ptsInput.dataset.mid] = {
+        status: statusSelect.value,
+        points: ptsInput.value,
+        excused: tr.querySelector(".excused-check").checked
+      };
+    } else if (type === "gvg" || type === "kodgvg") {
+      const ptsInput = tr.querySelector(".pts-input");
+      if (!ptsInput) return;
+      localEdits[ptsInput.dataset.mid] = { points: ptsInput.value, touched: ptsInput.dataset.touched === "1" };
+    } else {
+      // ss
+      const grpSelect = tr.querySelector(".grp-select");
+      if (!grpSelect) return;
+      localEdits[grpSelect.dataset.mid] = {
+        group: grpSelect.value,
+        attendStatus: tr.querySelector(".attend-status-select").value,
+        appliedSlot1: tr.querySelector('.applied-slot-check[data-slot="1"]').checked,
+        appliedSlot2: tr.querySelector('.applied-slot-check[data-slot="2"]').checked,
+        appliedSlot3: tr.querySelector('.applied-slot-check[data-slot="3"]').checked
+      };
+    }
+  });
+}
+
+/** Arama kutusunun oninput'u — yeniden kurmadan önce o anki (kaydedilmemiş) seçimleri saklar (bkz. captureEntryRowsLocalEdits). */
+export function onEntrySearchInput() {
+  captureEntryRowsLocalEdits();
+  renderEntryRows();
+}
+
 export function renderEntryRows() {
   if (!state.entryContext) return;
-  const { type, weekId, aiDraft, ssAppliedDraft } = state.entryContext;
+  const { type, weekId, aiDraft, ssAppliedDraft, localEdits } = state.entryContext;
   const store = storeFor(type);
   const query = (document.getElementById("entrySearch").value || "").toLowerCase().trim();
   const list = entryVisibleMembers(query);
@@ -236,9 +287,10 @@ export function renderEntryRows() {
     rowsEl.innerHTML = list.map((member) => {
       const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === weekId);
       const draft = aiDraft && aiDraft[member.id];
-      const status = draft ? (draft.status || "unknown") : statusOf(entry);
-      const points = draft && draft.points != null ? draft.points : (entry ? entry.points : 0);
-      const excused = draft && draft.excused != null ? !!draft.excused : (entry ? !!entry.excused : false);
+      const local = localEdits && localEdits[member.id];
+      const status = local ? local.status : draft ? (draft.status || "unknown") : statusOf(entry);
+      const points = local ? local.points : (draft && draft.points != null ? draft.points : (entry ? entry.points : 0));
+      const excused = local ? !!local.excused : (draft && draft.excused != null ? !!draft.excused : (entry ? !!entry.excused : false));
       return `<tr>
         <td><select class="status-select" data-mid="${member.id}">
           <option value="joined" ${status === "joined" ? "selected" : ""}>${t("statusYes")}</option>
@@ -255,10 +307,12 @@ export function renderEntryRows() {
     rowsEl.innerHTML = list.map((member) => {
       const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === weekId);
       const draft = aiDraft && aiDraft[member.id];
-      const points = draft && draft.points != null ? draft.points : (entry ? entry.points : 0);
-      // AI'nin okuyup doldurduğu bir değer varsa, admin kaydet'e basarak onu
-      // zaten onaylamış sayılır - "touched" işaretlenir (bkz. saveEntry).
-      const touched = draft && draft.points != null ? ' data-touched="1"' : "";
+      const local = localEdits && localEdits[member.id];
+      const points = local ? local.points : (draft && draft.points != null ? draft.points : (entry ? entry.points : 0));
+      // AI'nin okuyup doldurduğu bir değer VEYA admin'in arama öncesi elle
+      // girdiği bir değer varsa "touched" işaretlenir (bkz. saveEntry).
+      const isTouched = (local && local.touched) || (draft && draft.points != null);
+      const touched = isTouched ? ' data-touched="1"' : "";
       return `<tr>
         <td>${escapeHtml(member.name)}</td>
         <td><span class="rank-badge ${rankClass(member.rank)}" style="font-size:11px;padding:2px 8px;">${member.rank}</span></td>
@@ -269,9 +323,10 @@ export function renderEntryRows() {
     rowsEl.innerHTML = list.map((member) => {
       const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === weekId);
       const draft = aiDraft && aiDraft[member.id];
-      const status = draft ? (draft.status || "unknown") : statusOf(entry);
-      const points = draft && draft.points != null ? draft.points : (entry ? entry.points : 0);
-      const excused = draft && draft.excused != null ? !!draft.excused : (entry ? !!entry.excused : false);
+      const local = localEdits && localEdits[member.id];
+      const status = local ? local.status : draft ? (draft.status || "unknown") : statusOf(entry);
+      const points = local ? local.points : (draft && draft.points != null ? draft.points : (entry ? entry.points : 0));
+      const excused = local ? !!local.excused : (draft && draft.excused != null ? !!draft.excused : (entry ? !!entry.excused : false));
       return `<tr>
         <td><select class="status-select" data-mid="${member.id}">
           <option value="joined" ${status === "joined" ? "selected" : ""}>${t("statusYes")}</option>
@@ -288,14 +343,15 @@ export function renderEntryRows() {
     rowsEl.innerHTML = list.map((member) => {
       const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === weekId);
       const draft = aiDraft && aiDraft[member.id];
-      const group = draft && draft.group != null ? draft.group : (entry ? (entry.group || "") : "");
+      const local = localEdits && localEdits[member.id];
+      const group = local ? local.group : (draft && draft.group != null ? draft.group : (entry ? (entry.group || "") : ""));
       const attended = draft && draft.attended != null ? !!draft.attended : (entry ? !!entry.attended : false);
       const excused = draft && draft.excused != null ? !!draft.excused : (entry ? !!entry.excused : false);
-      const attendStatus = attended ? "joined" : excused ? "excused" : "absent";
+      const attendStatus = local ? local.attendStatus : (attended ? "joined" : excused ? "excused" : "absent");
       const appliedDraft = ssAppliedDraft && ssAppliedDraft[member.id];
-      const appliedSlot1 = appliedDraft && appliedDraft.slot1 != null ? !!appliedDraft.slot1 : (entry ? !!entry.appliedSlot1 : false);
-      const appliedSlot2 = appliedDraft && appliedDraft.slot2 != null ? !!appliedDraft.slot2 : (entry ? !!entry.appliedSlot2 : false);
-      const appliedSlot3 = appliedDraft && appliedDraft.slot3 != null ? !!appliedDraft.slot3 : (entry ? !!entry.appliedSlot3 : false);
+      const appliedSlot1 = local ? !!local.appliedSlot1 : (appliedDraft && appliedDraft.slot1 != null ? !!appliedDraft.slot1 : (entry ? !!entry.appliedSlot1 : false));
+      const appliedSlot2 = local ? !!local.appliedSlot2 : (appliedDraft && appliedDraft.slot2 != null ? !!appliedDraft.slot2 : (entry ? !!entry.appliedSlot2 : false));
+      const appliedSlot3 = local ? !!local.appliedSlot3 : (appliedDraft && appliedDraft.slot3 != null ? !!appliedDraft.slot3 : (entry ? !!entry.appliedSlot3 : false));
       return `<tr>
         <td>${escapeHtml(member.name)}</td>
         <td><span class="rank-badge ${rankClass(member.rank)}" style="font-size:11px;padding:2px 8px;">${member.rank}</span></td>
@@ -361,7 +417,14 @@ function resizeImageToDataUrl(file, maxDim = 1568, quality = 0.85) {
 function applyAiDraft(results) {
   if (!state.entryContext.aiDraft) state.entryContext.aiDraft = {};
   const draft = state.entryContext.aiDraft;
-  (results || []).forEach((r) => { if (r && r.memberId) draft[r.memberId] = r; });
+  const localEdits = state.entryContext.localEdits;
+  (results || []).forEach((r) => {
+    if (!r || !r.memberId) return;
+    draft[r.memberId] = r;
+    // Bu üye için daha önce kaydedilmiş bir "yerel düzenleme" anlık görüntüsü
+    // varsa (bkz. captureEntryRowsLocalEdits), yeni AI sonucunu maskelemesin diye silinir.
+    if (localEdits) delete localEdits[r.memberId];
+  });
   return Object.keys(draft).length;
 }
 
@@ -510,10 +573,12 @@ export async function handleEntryScreenshot(event) {
 function applySsAppliedDraft(results) {
   if (!state.entryContext.ssAppliedDraft) state.entryContext.ssAppliedDraft = {};
   const draft = state.entryContext.ssAppliedDraft;
+  const localEdits = state.entryContext.localEdits;
   (results || []).forEach((r) => {
     if (!r || !r.memberId || !r.slot) return;
     if (!draft[r.memberId]) draft[r.memberId] = {};
     draft[r.memberId]["slot" + r.slot] = true;
+    if (localEdits) delete localEdits[r.memberId];
   });
   return Object.keys(draft).length;
 }

@@ -20,7 +20,7 @@ import { getMembers, getMemberDiscordIds, getAllPowerHistory, getAllTeamPowerHis
 import { POLL_INTERVAL_MS } from "./config.js";
 import { state, t, showToast, buildLangSwitch, applyStaticText, initLangFromStorage, persistLanguage, initThemeFromStorage, toggleTheme, renderAll, registerDataLoader, registerRenderer, liveFormatNumberInput, expandPowerShorthandInput, initPowerShorthandMode, setEventWeekSort } from "./ui.js";
 import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember, openHistoryModal, closeHistoryModal, copyDiscordId, setMemberView, setRankFilter, setElementFilter, setSort, exportMembers, mapNameSuggestion, openNameSuggestModal, closeNameSuggestModal, submitNameSuggestion, approveNameSuggestion, dismissNameSuggestion, handlePowerScreenshot, removePowerUnmatchedItem, discardPowerDraft, applyPowerDraft, acceptSuspiciousPower, rejectSuspiciousPower } from "./members.js";
-import { mapWeek, mapEntry, openWeekModal, closeWeekModal, saveWeek, deleteWeek, openEntryModal, closeEntryModal, renderEntryRows, saveEntry, handleEntryScreenshot, handleSsAppliedScreenshot, removeUnmatchedItem, openWeekReportModal, closeWeekReportModal, openOverallReportModal, closeOverallReportModal, setOverallReportSort, exportEventTable } from "./events.js";
+import { mapWeek, mapEntry, openWeekModal, closeWeekModal, saveWeek, deleteWeek, openEntryModal, closeEntryModal, renderEntryRows, onEntrySearchInput, saveEntry, handleEntryScreenshot, handleSsAppliedScreenshot, removeUnmatchedItem, openWeekReportModal, closeWeekReportModal, openOverallReportModal, closeOverallReportModal, setOverallReportSort, exportEventTable } from "./events.js";
 import { setBoardSort, openParticipationReportModal, closeParticipationReportModal, renderBoard } from "./dashboard.js";
 import { mapEngagementPeriod, setEngagementSort, startNewEngagementPeriod, endEngagementPeriod, closeEngagementWinners, confirmEngagementWinners,deleteEngagementPeriod, selectEngagementPeriod, renderEngagement, openEngagementReportModal, openEngagementBoardModal, closeEngagementBoardModal, downloadEngagementBoardImage, openEngagementBoardSettings, closeEngagementBoardSettings, saveEngagementBoardTiers, openEngagementBoardSend, closeEngagementBoardSend, updateEngagementBoardSendCounter, sendEngagementBoardToDiscord } from "./engagement.js";
 import {
@@ -308,7 +308,7 @@ Object.assign(window, {
   approveTeamPowerSuggestion, rejectTeamPowerSuggestion,
   sendAiChatMessage, clearAiChatHistory, handleAiChatInputKeydown, setAiChatMode, useAiChatPrompt,
   openWeekModal, closeWeekModal, saveWeek, deleteWeek,
-  openEntryModal, closeEntryModal, saveEntry, renderEntryRows, handleEntryScreenshot, handleSsAppliedScreenshot, removeUnmatchedItem,
+  openEntryModal, closeEntryModal, saveEntry, renderEntryRows, onEntrySearchInput, handleEntryScreenshot, handleSsAppliedScreenshot, removeUnmatchedItem,
   openWeekReportModal, closeWeekReportModal,
   openOverallReportModal, closeOverallReportModal, setOverallReportSort, exportEventTable,
   openHistoryModal, closeHistoryModal, copyDiscordId,
