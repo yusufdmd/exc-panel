@@ -159,9 +159,14 @@ export async function rejectSelfReportSubmission(id) {
 // SVS/KoD/Diğer'de bir hafta açıldığında her üyeye status="unknown" ile
 // GERÇEK bir veritabanı satırı oluşuyor (bkz. events.js -> renderEntryRows,
 // "statusUnknown" seçeneği) - bu "veri girilmedi" demek, "satır var" demek
-// değil. GVG/KoD-GVG/SS'de böyle bir sentinel yok (varsayılan 0 puan/
-// katılmadı, gerçek "0"dan ayırt edilemiyor), o yüzden onlarda herhangi bir
-// satırın varlığı "veri girilmiş" sayılmaya devam ediyor - bilinen bir sınır.
+// değil. GVG/KoD-GVG/SS'de böyle bir sentinel yok - bir satırın varlığı hâlâ
+// "veri girilmiş" sayılıyor, bu yüzden GVG/KoD-GVG'nin toplu giriş ekranında
+// (events.js -> saveEntry) admin'in HİÇ dokunmadığı satırlar artık hiç
+// kaydedilmiyor (eskiden varsayılan 0 ile herkes yazılıyordu, bu da "herkes
+// raporlamış" yanlış sonucuna yol açıyordu - canlı bir şikayetle bulundu ve
+// düzeltildi). Yine de bu düzeltme GERİYE DÖNÜK DEĞİL: bu değişiklikten önce
+// yanlışlıkla yazılmış "hayalet" 0 puanlı satırlar veritabanında duruyor
+// olabilir, o haftalar için hâlâ yanlış "kapsanmış" görünebilir.
 function hasRealData(type, entry) {
   if (type === "svs" || type === "kod" || type === "other") return entry.status && entry.status !== "unknown";
   return true;

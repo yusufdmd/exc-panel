@@ -256,10 +256,13 @@ export function renderEntryRows() {
       const entry = store.entries.find((e) => e.memberId === member.id && e.weekId === weekId);
       const draft = aiDraft && aiDraft[member.id];
       const points = draft && draft.points != null ? draft.points : (entry ? entry.points : 0);
+      // AI'nin okuyup doldurduğu bir değer varsa, admin kaydet'e basarak onu
+      // zaten onaylamış sayılır - "touched" işaretlenir (bkz. saveEntry).
+      const touched = draft && draft.points != null ? ' data-touched="1"' : "";
       return `<tr>
         <td>${escapeHtml(member.name)}</td>
         <td><span class="rank-badge ${rankClass(member.rank)}" style="font-size:11px;padding:2px 8px;">${member.rank}</span></td>
-        <td><input type="number" class="pts-input" data-mid="${member.id}" value="${points}"></td>
+        <td><input type="number" class="pts-input" data-mid="${member.id}" value="${points}"${touched} oninput="this.dataset.touched='1'"></td>
       </tr>`;
     }).join("");
   } else if (type === "kod") {
@@ -600,9 +603,22 @@ export async function saveEntry() {
       showToast(t("invalidNumberField"));
       return;
     }
+    // SVS/KoD'un aksine GVG/KoD-GVG'de "henüz girilmedi" (unknown) diye bir
+    // durum YOK — puan kutusu her zaman bir sayı gösterir, varsayılanı 0'dır.
+    // Admin hiç dokunmadığı (ve zaten var olan bir kaydı da olmayan) satırları
+    // da kaydedersek, o üyeler "0 puan aldı" ile "hiç veri girilmedi" arasında
+    // AYIRT EDİLEMEZ hale gelir - bu da selfReports.js'teki "eksik üye" ve
+    // hatırlatma listesini yanlışlıkla "herkes raporlamış" göstermesine yol
+    // açar (canlı bir kullanıcı şikayetiyle doğrulandı). Bu yüzden sadece
+    // admin'in GERÇEKTEN değiştirdiği (veya zaten bir kaydı olan, yani bu bir
+    // güncelleme olan) satırlar kaydedilir - dokunulmamış satırlar hiç
+    // yazılmaz, o üye "eksik" olarak kalmaya devam eder.
     document.querySelectorAll("#entryRows tr").forEach((tr) => {
-      const memberId = tr.querySelector(".pts-input").dataset.mid;
-      const points = Number(tr.querySelector(".pts-input").value) || 0;
+      const input = tr.querySelector(".pts-input");
+      const memberId = input.dataset.mid;
+      const hasExistingEntry = store.entries.some((e) => e.memberId === memberId && e.weekId === weekId);
+      if (!hasExistingEntry && input.dataset.touched !== "1") return;
+      const points = Number(input.value) || 0;
       payloads.push({ week_id: weekId, member_id: memberId, points });
     });
   } else if (type === "kod") {

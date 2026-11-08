@@ -30,9 +30,12 @@ function isExempt(member, week) {
 // GERÇEK bir veritabanı satırı oluşuyor (bkz. js/events.js -> renderEntryRows) -
 // bu "veri girilmedi" demek, "satır var" demek değil; aksi halde kimse hiç
 // DM almazdı çünkü herkesin zaten (boş) bir satırı vardır. GVG/KoD-GVG/SS'de
-// böyle bir sentinel yok, o yüzden onlarda herhangi bir satırın varlığı
-// "veri girilmiş" sayılmaya devam ediyor - bilinen bir sınır (bkz. js/
-// selfReports.js -> hasRealData, tarayıcı tarafındaki AYNI kopya).
+// böyle bir sentinel yok, o yüzden onlarda herhangi bir satırın varlığı hâlâ
+// "veri girilmiş" sayılıyor - ama bu artık güvenli, çünkü js/events.js ->
+// saveEntry GVG/KoD-GVG için admin'in dokunmadığı satırları artık HİÇ
+// yazmıyor (eskiden varsayılan 0 ile herkes yazılıyordu, bkz. js/
+// selfReports.js -> hasRealData'daki AYNI not). Bu düzeltmeden ÖNCE
+// yanlışlıkla yazılmış hayalet 0 puanlı satırlar için hâlâ geçerli değil.
 const STATUS_TYPES = new Set(["svs", "kod", "other"]);
 
 /** `{ week, missing: [{ memberId, name, discordId }] }` döner - aktif haftaya hiç ulaşılamıyorsa week=null, missing=[]. */
