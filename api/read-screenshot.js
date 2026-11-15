@@ -13,19 +13,31 @@
 //
 // Yetki kontrolü: istek, panelde oturum açmış kullanıcının Supabase
 // access token'ını (Authorization: Bearer ...) taşımalı; bu token
-// current_user_role() RPC'si ile doğrulanır ve sadece "admin" rolü
-// kabul edilir (bkz. sql/add_member_role.sql). Anon anahtar tek başına
-// yeterli değildir — herkes tarafından bilinir, bu yüzden gerçek
-// yetkilendirme burada, token bazında yapılır.
+// current_user_role() RPC'si ile doğrulanır (bkz. sql/add_member_role.sql).
+// Anon anahtar tek başına yeterli değildir — herkes tarafından bilinir,
+// bu yüzden gerçek yetkilendirme burada, token bazında yapılır.
+//
+// İki kullanım şekli var:
+//   - admin: toplu giriş modalındaki "AI ile Doldur" - HERHANGİ bir tür,
+//     birden fazla görsel, tam roster.
+//   - viewer (panelin paylaşılan girişi): Etkinlikler sekmesindeki
+//     "📸 Katılımını Bildir" (site üzerinden kendi kendine katılım
+//     bildirme, bkz. js/selfReportUpload.js) - SADECE self-report
+//     edilebilir 3 tür (svs/kod/kodgvg), SADECE tek görsel + tek kişilik
+//     roster (oyuncu kendi adını zaten seçtiği için AI'nin roster'da
+//     isim eşleştirmesi yapmasına hiç gerek yok, sadece değeri okur).
+// Bu kısıt olmasa bir viewer bu uç noktayı herhangi bir tür/roster ile
+// çağırıp admin'e özel AI kotasını kötüye kullanabilirdi.
 // =====================================================================
 
 const { readScreenshots, MAX_IMAGES } = require("./_lib/screenshotAi");
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://sbzctjpthorlypfrqgte.supabase.co";
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "sb_publishable_FNxETjiXZ4tiWqzgyR0vng_vKxGGSp9";
+const SELF_REPORTABLE_TYPES = ["svs", "kod", "kodgvg"];
 
-async function verifyAdmin(token) {
-  if (!token) return false;
+async function verifyRole(token) {
+  if (!token) return null;
   const roleRes = await fetch(`${SUPABASE_URL}/rest/v1/rpc/current_user_role`, {
     method: "POST",
     headers: {
@@ -35,9 +47,9 @@ async function verifyAdmin(token) {
     },
     body: "{}"
   });
-  if (!roleRes.ok) return false;
+  if (!roleRes.ok) return null;
   const role = await roleRes.json().catch(() => null);
-  return role === "admin";
+  return role === "admin" ? "admin" : role === "viewer" ? "viewer" : null;
 }
 
 module.exports = async (req, res) => {
@@ -49,9 +61,9 @@ module.exports = async (req, res) => {
   try {
     const authHeader = req.headers.authorization || "";
     const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
-    const isAdmin = await verifyAdmin(token);
-    if (!isAdmin) {
-      res.status(403).json({ error: "Bu işlem için yönetici oturumu gerekli." });
+    const role = await verifyRole(token);
+    if (!role) {
+      res.status(403).json({ error: "Bu işlem için panel oturumu gerekli." });
       return;
     }
 
@@ -64,6 +76,12 @@ module.exports = async (req, res) => {
     const validTypes = ["gvg", "svs", "ss", "kod", "kodgvg", "other", "power", "ss_applied"];
     if (!validTypes.includes(type)) {
       res.status(400).json({ error: "Geçersiz etkinlik türü." });
+      return;
+    }
+    // viewer (panelin paylaşılan girişi) sadece kendi kendine katılım
+    // bildirme amacıyla, sınırlı şekilde çağırabilir - bkz. dosya başındaki NOT.
+    if (role !== "admin" && (!SELF_REPORTABLE_TYPES.includes(type) || !Array.isArray(roster) || roster.length !== 1)) {
+      res.status(403).json({ error: "Bu işlem için yönetici oturumu gerekli." });
       return;
     }
     if (!Array.isArray(roster) || !roster.length) {

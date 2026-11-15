@@ -38,7 +38,11 @@ import { mapSiteLinks, populateSiteLinksForm, saveSiteLinks } from "./siteLinks.
 import { mapNewsItem, openNewsModal, closeNewsModal, saveNews, deleteNews } from "./news.js";
 import { mapVideoItem, openVideoModal, closeVideoModal, saveVideo, deleteVideo, moveVideo } from "./videos.js";
 import { mapActivity, restoreDeletedMember, restoreDeletedWeek, restoreDeletedSimple, restoreSelfReportApproval, showActivityDetails, closeActivityDetails } from "./activity.js";
-import { mapSelfReportSubmission, approveSelfReportSubmission, rejectSelfReportSubmission, sendSelfReportReminder } from "./selfReports.js";
+import { mapSelfReportSubmission, approveSelfReportSubmission, rejectSelfReportSubmission, sendSelfReportReminder, setSelfReportEditType, setSelfReportEditField } from "./selfReports.js";
+import {
+  openSelfReportUploadModal, closeSelfReportUploadModal, setSelfReportUploadType, setSelfReportUploadMemberQuery,
+  selectSelfReportUploadMember, setSelfReportUploadFile, submitSelfReportUpload
+} from "./selfReportUpload.js";
 import { mapTeamPowerSuggestion, approveTeamPowerSuggestion, rejectTeamPowerSuggestion } from "./teamPowerSuggestions.js";
 import { mapAiChatMessage, sendAiChatMessage, clearAiChatHistory, handleAiChatInputKeydown, setAiChatMode, useAiChatPrompt } from "./aiChat.js";
 import { doLogin, doLogout, openChangePasswordModal, closeChangePasswordModal, submitChangePassword } from "./auth.js";
@@ -304,7 +308,9 @@ Object.assign(window, {
   openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember, exportMembers,
   handlePowerScreenshot, removePowerUnmatchedItem, discardPowerDraft, applyPowerDraft, acceptSuspiciousPower, rejectSuspiciousPower,
   openNameSuggestModal, closeNameSuggestModal, submitNameSuggestion, approveNameSuggestion, dismissNameSuggestion,
-  approveSelfReportSubmission, rejectSelfReportSubmission, sendSelfReportReminder,
+  approveSelfReportSubmission, rejectSelfReportSubmission, sendSelfReportReminder, setSelfReportEditType, setSelfReportEditField,
+  openSelfReportUploadModal, closeSelfReportUploadModal, setSelfReportUploadType, setSelfReportUploadMemberQuery,
+  selectSelfReportUploadMember, setSelfReportUploadFile, submitSelfReportUpload,
   approveTeamPowerSuggestion, rejectTeamPowerSuggestion,
   sendAiChatMessage, clearAiChatHistory, handleAiChatInputKeydown, setAiChatMode, useAiChatPrompt,
   openWeekModal, closeWeekModal, saveWeek, deleteWeek,

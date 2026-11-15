@@ -301,6 +301,9 @@ ebParticipationWord:'Katılım', ebFootnote:'%50\'nin altındaysan daha çok etk
     confirmSendReminder:'Discord\'u bağlı, bu hafta eksik olan herkese şimdi bir hatırlatma DM\'i gönderilsin mi?',
     toastReminderSent:'Hatırlatma gönderildi',
     thSelfReportGapEvent:'Etkinlik', thSelfReportGapWeek:'Hafta', thSelfReportGapMembers:'Eksik Üyeler',
+    selfReportUploadBtn:'📸 Katılımını Bildir', selfReportUploadTitle:'📸 Katılımını Bildir', selfReportUploadDesc:'Etkinliği ve kendi adını seç, ekran görüntünü yükle — AI puanını okuyacak, bir yönetici onayladıktan sonra işlenecek.',
+    lblSelfReportEvent:'Etkinlik', lblSelfReportMember:'Senin adın', lblSelfReportImage:'Ekran Görüntüsü', selfReportUploadSubmitBtn:'Gönder',
+    toastSelfReportUploadSent:'Gönderildi — bir yöneticinin onayını bekliyor.',
     teamPowerSuggestionsHeading:'💪 Discord\'dan Takım Gücü Önerileri', emptyTeamPowerSuggestionsDesc:'Oyuncuların /suggest-team-power komutuyla Discord\'dan kendi gönderdiği 1. Takım gücü/element önerileri burada görünecek.',
     thTeamPowerMember:'Üye', thTeamPowerElement:'Element', thTeamPowerValue:'Takım Gücü', thTeamPowerDate:'Tarih',
     weekReport:'Hafta Raporu', sortByWeekTitle:'Bu haftaya göre sırala', zoneGreen:'Yeşil Bölge', zoneYellow:'Sarı Bölge', zoneRed:'Kırmızı Bölge',
@@ -454,6 +457,9 @@ ebParticipationWord:'Participation', ebFootnote:'If you\'re under 50%, consider 
     confirmSendReminder:'Send a reminder DM right now to everyone with a linked Discord who is missing this week?',
     toastReminderSent:'Reminder sent',
     thSelfReportGapEvent:'Event', thSelfReportGapWeek:'Week', thSelfReportGapMembers:'Missing Members',
+    selfReportUploadBtn:'📸 Report Your Participation', selfReportUploadTitle:'📸 Report Your Participation', selfReportUploadDesc:"Pick the event and your own name, then upload your screenshot — the AI will read your score, and an admin will approve it.",
+    lblSelfReportEvent:'Event', lblSelfReportMember:'Your Name', lblSelfReportImage:'Screenshot', selfReportUploadSubmitBtn:'Send',
+    toastSelfReportUploadSent:'Sent — waiting for an admin to approve it.',
     teamPowerSuggestionsHeading:'💪 Team Power Suggestions from Discord', emptyTeamPowerSuggestionsDesc:'Team 1 power/element suggestions players send themselves from Discord via /suggest-team-power will appear here.',
     thTeamPowerMember:'Member', thTeamPowerElement:'Element', thTeamPowerValue:'Team Power', thTeamPowerDate:'Date',
     weekReport:'Week Report', sortByWeekTitle:'Sort by this week', zoneGreen:'Green Zone', zoneYellow:'Yellow Zone', zoneRed:'Red Zone',
@@ -607,6 +613,9 @@ ebParticipationWord:'Teilnahme', ebFootnote:'Bist du unter 50%, nimm an mehr Eve
     confirmSendReminder:'Jetzt eine Erinnerungs-DM an alle mit verknüpfter Discord-ID senden, die diese Woche fehlen?',
     toastReminderSent:'Erinnerung gesendet',
     thSelfReportGapEvent:'Event', thSelfReportGapWeek:'Woche', thSelfReportGapMembers:'Fehlende Mitglieder',
+    selfReportUploadBtn:'📸 Teilnahme Melden', selfReportUploadTitle:'📸 Teilnahme Melden', selfReportUploadDesc:'Wähle das Event und deinen eigenen Namen, lade dann deinen Screenshot hoch — die KI liest deinen Wert, ein Admin genehmigt ihn.',
+    lblSelfReportEvent:'Event', lblSelfReportMember:'Dein Name', lblSelfReportImage:'Screenshot', selfReportUploadSubmitBtn:'Senden',
+    toastSelfReportUploadSent:'Gesendet — wartet auf die Genehmigung eines Admins.',
     teamPowerSuggestionsHeading:'💪 Teamstärke-Vorschläge von Discord', emptyTeamPowerSuggestionsDesc:'Vorschläge zur 1. Teamstärke/Element, die Spieler selbst über /suggest-team-power von Discord senden, erscheinen hier.',
     thTeamPowerMember:'Mitglied', thTeamPowerElement:'Element', thTeamPowerValue:'Teamstärke', thTeamPowerDate:'Datum',
     weekReport:'Wochenbericht', sortByWeekTitle:'Nach dieser Woche sortieren', zoneGreen:'Grüne Zone', zoneYellow:'Gelbe Zone', zoneRed:'Rote Zone',
@@ -760,6 +769,9 @@ ebParticipationWord:'Participación', ebFootnote:'¡Si estás por debajo del 50%
     confirmSendReminder:'¿Enviar ahora un DM de recordatorio a todos los que tienen Discord vinculado y faltan esta semana?',
     toastReminderSent:'Recordatorio enviado',
     thSelfReportGapEvent:'Evento', thSelfReportGapWeek:'Semana', thSelfReportGapMembers:'Miembros Faltantes',
+    selfReportUploadBtn:'📸 Reportar tu Participación', selfReportUploadTitle:'📸 Reportar tu Participación', selfReportUploadDesc:'Elige el evento y tu propio nombre, luego sube tu captura — la IA leerá tu puntuación, un administrador la aprobará.',
+    lblSelfReportEvent:'Evento', lblSelfReportMember:'Tu Nombre', lblSelfReportImage:'Captura de Pantalla', selfReportUploadSubmitBtn:'Enviar',
+    toastSelfReportUploadSent:'Enviado — esperando la aprobación de un administrador.',
     teamPowerSuggestionsHeading:'💪 Sugerencias de Potencia de Equipo desde Discord', emptyTeamPowerSuggestionsDesc:'Las sugerencias de potencia/elemento del Equipo 1 que los jugadores envían ellos mismos desde Discord con /suggest-team-power aparecerán aquí.',
     thTeamPowerMember:'Miembro', thTeamPowerElement:'Elemento', thTeamPowerValue:'Potencia de Equipo', thTeamPowerDate:'Fecha',
     weekReport:'Informe Semanal', sortByWeekTitle:'Ordenar por esta semana', zoneGreen:'Zona Verde', zoneYellow:'Zona Amarilla', zoneRed:'Zona Roja',
@@ -913,6 +925,9 @@ ebParticipationWord:'Participation', ebFootnote:"Si tu es en dessous de 50%, pen
     confirmSendReminder:'Envoyer maintenant un DM de rappel à tous ceux qui ont un Discord lié et qui manquent cette semaine ?',
     toastReminderSent:'Rappel envoyé',
     thSelfReportGapEvent:'Événement', thSelfReportGapWeek:'Semaine', thSelfReportGapMembers:'Membres Manquants',
+    selfReportUploadBtn:'📸 Signaler ta Participation', selfReportUploadTitle:'📸 Signaler ta Participation', selfReportUploadDesc:"Choisis l'événement et ton propre nom, puis envoie ta capture d'écran — l'IA lira ton score, un admin l'approuvera.",
+    lblSelfReportEvent:'Événement', lblSelfReportMember:'Ton Nom', lblSelfReportImage:"Capture d'écran", selfReportUploadSubmitBtn:'Envoyer',
+    toastSelfReportUploadSent:"Envoyé — en attente de l'approbation d'un admin.",
     teamPowerSuggestionsHeading:"💪 Suggestions de Puissance d'Équipe depuis Discord", emptyTeamPowerSuggestionsDesc:"Les suggestions de puissance/élément de l'Équipe 1 que les joueurs envoient eux-mêmes depuis Discord avec /suggest-team-power apparaîtront ici.",
     thTeamPowerMember:'Membre', thTeamPowerElement:'Élément', thTeamPowerValue:"Puissance d'Équipe", thTeamPowerDate:'Date',
     weekReport:'Rapport Hebdomadaire', sortByWeekTitle:'Trier par cette semaine', zoneGreen:'Zone Verte', zoneYellow:'Zone Jaune', zoneRed:'Zone Rouge',
@@ -1066,6 +1081,9 @@ ebParticipationWord:'Tham gia', ebFootnote:'Nếu bạn dưới 50%, hãy tham g
     confirmSendReminder:'Gửi ngay DM nhắc nhở cho tất cả những người đã liên kết Discord nhưng còn thiếu tuần này?',
     toastReminderSent:'Đã gửi nhắc nhở',
     thSelfReportGapEvent:'Sự kiện', thSelfReportGapWeek:'Tuần', thSelfReportGapMembers:'Thành Viên Còn Thiếu',
+    selfReportUploadBtn:'📸 Báo Cáo Tham Gia', selfReportUploadTitle:'📸 Báo Cáo Tham Gia', selfReportUploadDesc:'Chọn sự kiện và tên của bạn, sau đó tải lên ảnh chụp màn hình — AI sẽ đọc điểm số, admin sẽ duyệt.',
+    lblSelfReportEvent:'Sự kiện', lblSelfReportMember:'Tên của bạn', lblSelfReportImage:'Ảnh chụp màn hình', selfReportUploadSubmitBtn:'Gửi',
+    toastSelfReportUploadSent:'Đã gửi — đang chờ admin duyệt.',
     teamPowerSuggestionsHeading:'💪 Đề Xuất Sức Mạnh Đội từ Discord', emptyTeamPowerSuggestionsDesc:'Các đề xuất sức mạnh/hệ của Đội 1 mà người chơi tự gửi từ Discord bằng /suggest-team-power sẽ hiện ở đây.',
     thTeamPowerMember:'Thành viên', thTeamPowerElement:'Hệ', thTeamPowerValue:'Sức Mạnh Đội', thTeamPowerDate:'Ngày',
     weekReport:'Báo cáo Tuần', sortByWeekTitle:'Sắp xếp theo tuần này', zoneGreen:'Vùng Xanh', zoneYellow:'Vùng Vàng', zoneRed:'Vùng Đỏ',
@@ -1370,6 +1388,13 @@ export function applyStaticText() {
   document.getElementById("t_thSelfReportGapEvent").textContent = t("thSelfReportGapEvent");
   document.getElementById("t_thSelfReportGapWeek").textContent = t("thSelfReportGapWeek");
   document.getElementById("t_thSelfReportGapMembers").textContent = t("thSelfReportGapMembers");
+  document.getElementById("t_selfReportUploadBtn").textContent = t("selfReportUploadBtn");
+  document.getElementById("t_selfReportUploadTitle").textContent = t("selfReportUploadTitle");
+  document.getElementById("t_selfReportUploadDesc").textContent = t("selfReportUploadDesc");
+  document.getElementById("t_lblSelfReportEvent").textContent = t("lblSelfReportEvent");
+  document.getElementById("t_lblSelfReportMember").textContent = t("lblSelfReportMember");
+  document.getElementById("t_lblSelfReportImage").textContent = t("lblSelfReportImage");
+  document.getElementById("t_closeSelfReportUpload").textContent = t("cancel");
   document.getElementById("t_teamPowerSuggestionsHeading").textContent = t("teamPowerSuggestionsHeading");
   document.getElementById("t_emptyTeamPowerSuggestionsDesc").textContent = t("emptyTeamPowerSuggestionsDesc");
   document.getElementById("t_thTeamPowerMember").textContent = t("thTeamPowerMember");

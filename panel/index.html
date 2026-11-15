@@ -227,6 +227,9 @@
 
   <!-- EVENTS -->
   <div class="panel" id="panel-events">
+    <div style="margin-bottom:16px;">
+      <button class="btn-primary" onclick="openSelfReportUploadModal()" id="t_selfReportUploadBtn">📸 Katılımını Bildir</button>
+    </div>
     <div class="admin-only" id="selfReportsSection">
       <h3 style="font-size:13px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text-muted); margin-bottom:10px;" id="t_selfReportsHeading">🖼️ Discord'dan Kendi Bildirdiği Katılımlar</h3>
       <div class="empty-state" id="selfReportsEmpty" style="display:none; padding:24px;">
@@ -960,6 +963,36 @@
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closeEntryModal()" id="t_close1">Kapat</button>
       <button class="btn-primary" onclick="saveEntry()" id="t_save3">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- Self-report upload — panelde giriş yapmış HERKES (admin + viewer) kullanabilir, admin-only değil -->
+<div class="overlay" id="selfReportUploadOverlay">
+  <div class="modal">
+    <h2 id="t_selfReportUploadTitle">📸 Katılımını Bildir</h2>
+    <p class="footnote-note" id="t_selfReportUploadDesc">Etkinliği ve kendi adını seç, ekran görüntünü yükle — AI puanını okuyacak, bir yönetici onayladıktan sonra işlenecek.</p>
+    <div class="field">
+      <label id="t_lblSelfReportEvent">Etkinlik</label>
+      <div class="subtabs" id="selfReportUploadTypeButtons">
+        <div class="subtab active" data-type="svs" onclick="setSelfReportUploadType('svs')">SVS</div>
+        <div class="subtab" data-type="kod" onclick="setSelfReportUploadType('kod')">KOD - SVS</div>
+        <div class="subtab" data-type="kodgvg" onclick="setSelfReportUploadType('kodgvg')">KOD - GVG</div>
+      </div>
+    </div>
+    <div class="field">
+      <label id="t_lblSelfReportMember">Senin adın</label>
+      <input class="search" id="selfReportUploadMemberSearch" oninput="setSelfReportUploadMemberQuery(this.value)">
+      <div id="selfReportUploadMemberResults" style="max-height:160px; overflow-y:auto; margin-top:4px;"></div>
+      <div id="selfReportUploadSelectedMember" style="display:none; margin-top:6px; padding:6px 10px; border-radius:8px; background:var(--bg-raised); font-weight:600;"></div>
+    </div>
+    <div class="field">
+      <label id="t_lblSelfReportImage">Ekran Görüntüsü</label>
+      <input type="file" id="selfReportUploadFile" accept="image/*" onchange="setSelfReportUploadFile(this)">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeSelfReportUploadModal()" id="t_closeSelfReportUpload">Vazgeç</button>
+      <button class="btn-primary" id="selfReportUploadSubmitBtn" onclick="submitSelfReportUpload()" disabled>Gönder</button>
     </div>
   </div>
 </div>

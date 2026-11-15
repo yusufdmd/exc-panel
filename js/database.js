@@ -338,6 +338,24 @@ export async function updateSelfReportSubmission(id, payload) {
   return true;
 }
 
+// Panel üzerinden (Discord'a ek olarak) kendi kendine katılım bildirme —
+// bkz. sql/add_self_report_site_upload.sql. Admin VEYA viewer (paylaşılan
+// giriş) çağırabilir, discord_id hiç gönderilmez (site kaynaklı, null kalır).
+export async function uploadSelfReportImage(file) {
+  const fileExt = (file.name.split(".").pop() || "jpg").toLowerCase();
+  const filePath = `${crypto.randomUUID()}.${fileExt}`;
+  const { error: uploadError } = await supabase.storage.from("self-report-images").upload(filePath, file);
+  if (uploadError) dbError("Ekran görüntüsü yüklenemedi", uploadError);
+  const { data } = supabase.storage.from("self-report-images").getPublicUrl(filePath);
+  return data.publicUrl;
+}
+
+export async function createSelfReportSubmission(payload) {
+  const { error } = await supabase.from("self_report_submissions").insert(payload);
+  if (error) dbError("Bildirim gönderilemedi", error);
+  return true;
+}
+
 // =====================================================================
 // TEAM_POWER_SUGGESTIONS — Discord "/suggest-team-power" ile gelen, admin
 // onayı bekleyen 1. Takım gücü + element önerileri (bkz. sql/add_team_power_suggestions.sql)

@@ -476,7 +476,7 @@ const MAX_SCREENSHOTS = 30;
  * ipucunu (yoksa varsayılan 15sn) bekleyip en fazla 2 kez daha dener —
  * onProgress ile bekleme durumunu buton metnine yansıtabilmek için verilir.
  */
-async function postReadScreenshot(body, token, onProgress) {
+export async function postReadScreenshot(body, token, onProgress) {
   const maxAttempts = 3;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     const res = await fetch("/api/read-screenshot", {

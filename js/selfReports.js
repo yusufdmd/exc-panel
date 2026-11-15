@@ -40,16 +40,37 @@ export function mapSelfReportSubmission(row) {
   };
 }
 
-/** AI'nin okuduğu veriyi admin için kısa, okunur bir özete çevirir — mevcut etkinlik tablolarındaki AYNI çeviri anahtarlarını kullanır. */
-function summarizeExtracted(eventType, extracted) {
-  if (!extracted) return "—";
-  if (eventType === "gvg" || eventType === "kodgvg") return `${Number(extracted.points) || 0} ${t("thPointsCol")}`;
-  if (eventType === "kod" || eventType === "svs") return extracted.status === "joined" ? t("legendJoined") : t("legendNotJoined");
-  if (eventType === "ss") {
-    const groupLabel = extracted.group === "A" ? t("groupA") : extracted.group === "B" ? t("groupB") : "";
-    return `${extracted.attended ? t("legendJoined") : t("legendNotJoined")}${groupLabel ? ` (${groupLabel})` : ""}`;
+// Admin'in onaydan ÖNCE düzeltebileceği taslak değerler - sadece bu
+// tarayıcı sekmesinde yaşayan geçici bir anlık görüntü (state'te DEĞİL,
+// kalıcı/paylaşılan bir şey değil). İlk render'da sub.eventType/
+// aiExtracted'tan türetilir, admin bir alanı değiştirdikçe güncellenir.
+const selfReportEdits = {};
+
+function getSelfReportEdit(sub) {
+  if (!selfReportEdits[sub.id]) {
+    const ex = sub.aiExtracted || {};
+    selfReportEdits[sub.id] = {
+      eventType: sub.eventType,
+      status: ex.status === "absent" ? "absent" : "joined",
+      points: ex.points != null ? Number(ex.points) : 0,
+      excused: !!ex.excused
+    };
   }
-  return "—";
+  return selfReportEdits[sub.id];
+}
+
+export function setSelfReportEditType(id, eventType) {
+  const sub = state.selfReportSubmissions.find((s) => s.id === id);
+  if (!sub) return;
+  getSelfReportEdit(sub).eventType = eventType;
+  renderAll();
+}
+
+export function setSelfReportEditField(id, field, value) {
+  const sub = state.selfReportSubmissions.find((s) => s.id === id);
+  if (!sub) return;
+  const edit = getSelfReportEdit(sub);
+  edit[field] = field === "excused" ? !!value : field === "points" ? value : value;
 }
 
 function renderSelfReports() {
@@ -61,7 +82,8 @@ function renderSelfReports() {
   document.getElementById("selfReportsRows").innerHTML = state.selfReportSubmissions.map((sub) => {
     const member = state.members.find((m) => m.id === sub.memberId);
     const memberName = member ? member.name : "—";
-    const weekStore = state[sub.eventType];
+    const edit = getSelfReportEdit(sub);
+    const weekStore = state[edit.eventType];
     // En güncel hafta en üstte seçili gelir - bilerek sub.weekId (gönderim anındaki
     // "o anki en güncel hafta") değil, HER RENDER'DA yeniden hesaplanan gerçek en
     // güncel hafta: admin bir bildirimi onaylamadan önce yeni bir hafta eklerse,
@@ -71,15 +93,37 @@ function renderSelfReports() {
     const weekSelect = sortedWeeks.length
       ? `<select id="selfReportWeek_${sub.id}" style="font-size:12px; padding:2px 4px;">${sortedWeeks.map((w) => `<option value="${escapeHtml(w.id)}">${escapeHtml(w.date || "—")}</option>`).join("")}</select>`
       : `<span style="color:var(--danger-ink,#E5484D);">(${t("selfReportNoWeek")})</span>`;
+
+    // Admin, onaylamadan ÖNCE hem etkinlik türünü hem AI'nin okuduğu
+    // değeri düzeltebilir (bkz. kullanıcı talebi) - türü değiştirince
+    // hangi alanların gösterileceği de değişir (kodgvg sadece puan,
+    // svs/kod durum+puan+mazeret).
+    const typeSelect = `<select onchange="setSelfReportEditType('${sub.id}', this.value)" style="font-size:12px; padding:2px 4px;">
+      ${SELF_REPORTABLE_TYPES.map((ty) => `<option value="${ty}" ${edit.eventType === ty ? "selected" : ""}>${escapeHtml(EVENT_LABELS[ty])}</option>`).join("")}
+    </select>`;
+
+    const valueEditor = edit.eventType === "kodgvg"
+      ? `<input type="number" value="${escapeHtml(String(edit.points))}" style="width:90px; font-size:12px;" onchange="setSelfReportEditField('${sub.id}','points', this.value)">`
+      : `<div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+           <select onchange="setSelfReportEditField('${sub.id}','status', this.value)" style="font-size:12px;">
+             <option value="joined" ${edit.status === "joined" ? "selected" : ""}>${t("legendJoined")}</option>
+             <option value="absent" ${edit.status === "absent" ? "selected" : ""}>${t("legendNotJoined")}</option>
+           </select>
+           <input type="number" value="${escapeHtml(String(edit.points))}" style="width:70px; font-size:12px;" onchange="setSelfReportEditField('${sub.id}','points', this.value)">
+           <label style="font-size:11px; display:flex; align-items:center; gap:2px;"><input type="checkbox" ${edit.excused ? "checked" : ""} onchange="setSelfReportEditField('${sub.id}','excused', this.checked)">${t("thExcused")}</label>
+         </div>`;
+
+    const unmatchedNote = sub.aiUnmatched ? `<div style="color:var(--danger-ink,#E5484D); font-size:11px; margin-top:2px;">${t("selfReportUnmatched")}</div>` : "";
+
     return `
     <tr>
       <td><span class="member-name">${escapeHtml(memberName)}</span></td>
-      <td>${escapeHtml(EVENT_LABELS[sub.eventType] || sub.eventType)} ${weekSelect}</td>
-      <td>${sub.aiUnmatched ? `<span style="color:var(--danger-ink,#E5484D);">${t("selfReportUnmatched")}</span>` : escapeHtml(summarizeExtracted(sub.eventType, sub.aiExtracted))}</td>
+      <td>${typeSelect} ${weekSelect}</td>
+      <td>${valueEditor}${unmatchedNote}</td>
       <td>${escapeHtml((sub.createdAt || "").slice(0, 16).replace("T", " "))}</td>
       <td><a href="${escapeHtml(sub.imageUrl)}" target="_blank" rel="noopener" title="${t("selfReportViewImage")}">🖼️</a></td>
       <td><div class="row-actions">
-        ${sub.aiUnmatched || !sortedWeeks.length ? "" : `<button class="icon-btn" onclick="approveSelfReportSubmission('${sub.id}')" title="${t("approveSelfReportTitle")}">✅</button>`}
+        ${sortedWeeks.length ? `<button class="icon-btn" onclick="approveSelfReportSubmission('${sub.id}')" title="${t("approveSelfReportTitle")}">✅</button>` : ""}
         <button class="icon-btn danger" onclick="rejectSelfReportSubmission('${sub.id}')" title="${t("rejectSelfReportTitle")}">✕</button>
       </div></td>
     </tr>
@@ -96,7 +140,13 @@ function renderSelfReports() {
  */
 export async function approveSelfReportSubmission(id) {
   const sub = state.selfReportSubmissions.find((s) => s.id === id);
-  if (!sub || sub.aiUnmatched || !sub.aiExtracted) return;
+  if (!sub) return;
+  // Artık sub.aiExtracted'ı DEĞİL, admin'in düzenleme ekranında o an
+  // gördüğü (gerekirse düzelttiği) değerleri kullanıyoruz - bkz.
+  // getSelfReportEdit/setSelfReportEditField. AI hiç okuyamamış olsa
+  // (aiUnmatched) bile admin değerleri elle girip onaylayabilir.
+  const edit = getSelfReportEdit(sub);
+  const eventType = edit.eventType;
   // Hangi haftaya yazılacağı, gönderim anında kaydedilen sub.weekId değil,
   // admin'in o an panelde gördüğü açılır listeden SEÇTİĞİ hafta (bkz.
   // renderSelfReports - varsayılan olarak en güncel hafta seçili gelir).
@@ -105,23 +155,29 @@ export async function approveSelfReportSubmission(id) {
   if (!weekId) return;
   if (!confirm(t("confirmApproveSelfReport"))) return;
   try {
-    const store = state[sub.eventType];
+    const store = state[eventType];
     const previousEntry = store ? store.entries.find((e) => e.weekId === weekId && e.memberId === sub.memberId) || null : null;
     const week = store ? store.weeks.find((w) => w.id === weekId) : null;
     const member = state.members.find((m) => m.id === sub.memberId);
 
-    const entry = { ...sub.aiExtracted, weekId };
-    const payload = entryToDbPayload(sub.eventType, entry, sub.memberId);
-    const row = await upsertRecord(sub.eventType, payload);
-    const mapped = mapEntry(sub.eventType, row);
+    const entry = eventType === "kodgvg"
+      ? { weekId, points: Number(edit.points) || 0 }
+      : { weekId, status: edit.status, points: Number(edit.points) || 0, excused: !!edit.excused };
+    const payload = entryToDbPayload(eventType, entry, sub.memberId);
+    const row = await upsertRecord(eventType, payload);
+    const mapped = mapEntry(eventType, row);
     const index = store.entries.findIndex((e) => e.weekId === weekId && e.memberId === sub.memberId);
     if (index >= 0) store.entries[index] = mapped; else store.entries.push(mapped);
 
-    await updateSelfReportSubmission(id, { status: "approved", week_id: weekId, reviewed_by: state.currentAdminUsername || null, reviewed_at: new Date().toISOString() });
+    await updateSelfReportSubmission(id, {
+      status: "approved", event_type: eventType, week_id: weekId, ai_extracted: entry, ai_unmatched: false,
+      reviewed_by: state.currentAdminUsername || null, reviewed_at: new Date().toISOString()
+    });
     state.selfReportSubmissions = state.selfReportSubmissions.filter((s) => s.id !== id);
+    delete selfReportEdits[id];
     await logActivity("approved", "self_report", id, {
-      name: `${member ? member.name : "—"} — ${EVENT_LABELS[sub.eventType] || sub.eventType}${week ? ` (${week.date})` : ""}`,
-      snapshot: { type: sub.eventType, weekId, memberId: sub.memberId, submissionId: sub.id, previousEntry }
+      name: `${member ? member.name : "—"} — ${EVENT_LABELS[eventType] || eventType}${week ? ` (${week.date})` : ""}`,
+      snapshot: { type: eventType, weekId, memberId: sub.memberId, submissionId: sub.id, previousEntry }
     }, state.currentAdminUsername);
     renderAll();
     showToast(t("toastSelfReportApproved"));
@@ -137,6 +193,7 @@ export async function rejectSelfReportSubmission(id) {
   try {
     await updateSelfReportSubmission(id, { status: "rejected", reviewed_by: state.currentAdminUsername || null, reviewed_at: new Date().toISOString() });
     state.selfReportSubmissions = state.selfReportSubmissions.filter((s) => s.id !== id);
+    delete selfReportEdits[id];
     renderAll();
     showToast(t("toastSelfReportRejected"));
   } catch (error) {
