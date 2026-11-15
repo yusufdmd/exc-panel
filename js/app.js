@@ -38,7 +38,11 @@ import { mapSiteLinks, populateSiteLinksForm, saveSiteLinks } from "./siteLinks.
 import { mapNewsItem, openNewsModal, closeNewsModal, saveNews, deleteNews } from "./news.js";
 import { mapVideoItem, openVideoModal, closeVideoModal, saveVideo, deleteVideo, moveVideo } from "./videos.js";
 import { mapActivity, restoreDeletedMember, restoreDeletedWeek, restoreDeletedSimple, restoreSelfReportApproval, showActivityDetails, closeActivityDetails } from "./activity.js";
-import { mapSelfReportSubmission, approveSelfReportSubmission, rejectSelfReportSubmission, sendSelfReportReminder, setSelfReportEditType, setSelfReportEditField } from "./selfReports.js";
+import {
+  mapSelfReportSubmission, approveSelfReportSubmission, rejectSelfReportSubmission, sendSelfReportReminder,
+  setSelfReportEditType, setSelfReportEditField, openSelfReportReviewModal, closeSelfReportReviewModal,
+  setReviewingEventType, setReviewingField, approveReviewingSelfReportSubmission
+} from "./selfReports.js";
 import {
   openSelfReportUploadModal, closeSelfReportUploadModal, setSelfReportUploadType, setSelfReportUploadMemberQuery,
   selectSelfReportUploadMember, setSelfReportUploadFile, submitSelfReportUpload
@@ -309,6 +313,7 @@ Object.assign(window, {
   handlePowerScreenshot, removePowerUnmatchedItem, discardPowerDraft, applyPowerDraft, acceptSuspiciousPower, rejectSuspiciousPower,
   openNameSuggestModal, closeNameSuggestModal, submitNameSuggestion, approveNameSuggestion, dismissNameSuggestion,
   approveSelfReportSubmission, rejectSelfReportSubmission, sendSelfReportReminder, setSelfReportEditType, setSelfReportEditField,
+  openSelfReportReviewModal, closeSelfReportReviewModal, setReviewingEventType, setReviewingField, approveReviewingSelfReportSubmission,
   openSelfReportUploadModal, closeSelfReportUploadModal, setSelfReportUploadType, setSelfReportUploadMemberQuery,
   selectSelfReportUploadMember, setSelfReportUploadFile, submitSelfReportUpload,
   approveTeamPowerSuggestion, rejectTeamPowerSuggestion,

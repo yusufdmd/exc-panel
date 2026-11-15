@@ -71,6 +71,13 @@ export function setSelfReportEditField(id, field, value) {
   if (!sub) return;
   const edit = getSelfReportEdit(sub);
   edit[field] = field === "excused" ? !!value : field === "points" ? value : value;
+  renderAll();
+}
+
+/** AI'nin (veya admin'in düzelttiği) değeri kısa, okunur bir özete çevirir — satırda, modalı açmadan önce bir fikir versin diye. */
+function summarizeEdit(edit) {
+  if (edit.eventType === "kodgvg") return `${Number(edit.points) || 0} ${t("thPointsCol")}`;
+  return `${edit.status === "joined" ? t("legendJoined") : t("legendNotJoined")}${edit.excused ? " (M)" : ""} · ${Number(edit.points) || 0}p`;
 }
 
 function renderSelfReports() {
@@ -83,53 +90,91 @@ function renderSelfReports() {
     const member = state.members.find((m) => m.id === sub.memberId);
     const memberName = member ? member.name : "—";
     const edit = getSelfReportEdit(sub);
-    const weekStore = state[edit.eventType];
-    // En güncel hafta en üstte seçili gelir - bilerek sub.weekId (gönderim anındaki
-    // "o anki en güncel hafta") değil, HER RENDER'DA yeniden hesaplanan gerçek en
-    // güncel hafta: admin bir bildirimi onaylamadan önce yeni bir hafta eklerse,
-    // açılır liste otomatik olarak o yeni haftayı varsayılan gösterir (istendiği gibi
-    // "ekran görüntüleri biriksin, hafta eklenince oraya gitsin").
-    const sortedWeeks = weekStore ? [...weekStore.weeks].sort((a, b) => (b.date || "").localeCompare(a.date || "")) : [];
-    const weekSelect = sortedWeeks.length
-      ? `<select id="selfReportWeek_${sub.id}" style="font-size:12px; padding:2px 4px;">${sortedWeeks.map((w) => `<option value="${escapeHtml(w.id)}">${escapeHtml(w.date || "—")}</option>`).join("")}</select>`
-      : `<span style="color:var(--danger-ink,#E5484D);">(${t("selfReportNoWeek")})</span>`;
-
-    // Admin, onaylamadan ÖNCE hem etkinlik türünü hem AI'nin okuduğu
-    // değeri düzeltebilir (bkz. kullanıcı talebi) - türü değiştirince
-    // hangi alanların gösterileceği de değişir (kodgvg sadece puan,
-    // svs/kod durum+puan+mazeret).
-    const typeSelect = `<select onchange="setSelfReportEditType('${sub.id}', this.value)" style="font-size:12px; padding:2px 4px;">
-      ${SELF_REPORTABLE_TYPES.map((ty) => `<option value="${ty}" ${edit.eventType === ty ? "selected" : ""}>${escapeHtml(EVENT_LABELS[ty])}</option>`).join("")}
-    </select>`;
-
-    const valueEditor = edit.eventType === "kodgvg"
-      ? `<input type="number" value="${escapeHtml(String(edit.points))}" style="width:90px; font-size:12px;" onchange="setSelfReportEditField('${sub.id}','points', this.value)">`
-      : `<div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-           <select onchange="setSelfReportEditField('${sub.id}','status', this.value)" style="font-size:12px;">
-             <option value="joined" ${edit.status === "joined" ? "selected" : ""}>${t("legendJoined")}</option>
-             <option value="absent" ${edit.status === "absent" ? "selected" : ""}>${t("legendNotJoined")}</option>
-           </select>
-           <input type="number" value="${escapeHtml(String(edit.points))}" style="width:70px; font-size:12px;" onchange="setSelfReportEditField('${sub.id}','points', this.value)">
-           <label style="font-size:11px; display:flex; align-items:center; gap:2px;"><input type="checkbox" ${edit.excused ? "checked" : ""} onchange="setSelfReportEditField('${sub.id}','excused', this.checked)">${t("thExcused")}</label>
-         </div>`;
-
-    const unmatchedNote = sub.aiUnmatched ? `<div style="color:var(--danger-ink,#E5484D); font-size:11px; margin-top:2px;">${t("selfReportUnmatched")}</div>` : "";
-
+    const unmatchedNote = sub.aiUnmatched ? `<div style="color:var(--danger-ink,#E5484D); font-size:11px;">${t("selfReportUnmatched")}</div>` : "";
     return `
     <tr>
       <td><span class="member-name">${escapeHtml(memberName)}</span></td>
-      <td>${typeSelect} ${weekSelect}</td>
-      <td>${valueEditor}${unmatchedNote}</td>
+      <td>${escapeHtml(EVENT_LABELS[edit.eventType] || edit.eventType)}</td>
+      <td>${escapeHtml(summarizeEdit(edit))}${unmatchedNote}</td>
       <td>${escapeHtml((sub.createdAt || "").slice(0, 16).replace("T", " "))}</td>
       <td><a href="${escapeHtml(sub.imageUrl)}" target="_blank" rel="noopener" title="${t("selfReportViewImage")}">🖼️</a></td>
       <td><div class="row-actions">
-        ${sortedWeeks.length ? `<button class="icon-btn" onclick="approveSelfReportSubmission('${sub.id}')" title="${t("approveSelfReportTitle")}">✅</button>` : ""}
+        <button class="icon-btn" onclick="openSelfReportReviewModal('${sub.id}')" title="${t("approveSelfReportTitle")}">✅</button>
         <button class="icon-btn danger" onclick="rejectSelfReportSubmission('${sub.id}')" title="${t("rejectSelfReportTitle")}">✕</button>
       </div></td>
     </tr>
   `;
   }).join("");
 }
+
+// =====================================================================
+// ONAY/DÜZELTME EKRANI — "✅" tıklanınca önce doğrudan onaylamak yerine
+// bir modal açılır (bkz. kullanıcı talebi): admin burada AI'nin okuduğu
+// değeri/etkinlik türünü/haftayı GÖREBİLİR ve isterse değiştirebilir,
+// sonra TEK "Onayla" butonuna basar — hiç dokunmazsa AI'nin okuduğu
+// değerle, dokunursa düzeltilmiş değerle onaylanmış olur.
+// =====================================================================
+let reviewingSubmissionId = null;
+
+export function openSelfReportReviewModal(id) {
+  reviewingSubmissionId = id;
+  document.getElementById("selfReportReviewOverlay").classList.add("active");
+  renderSelfReportReviewModal();
+}
+
+export function closeSelfReportReviewModal() {
+  reviewingSubmissionId = null;
+  document.getElementById("selfReportReviewOverlay").classList.remove("active");
+}
+
+// Modal tek bir statik DOM parçası (her açılışta yeniden kurulmuyor), bu
+// yüzden formdaki alanların onchange'leri doğrudan bir submission id'si
+// TAŞIYAMAZ - o an açık olan reviewingSubmissionId'yi burada okuyan ince
+// sarmalayıcılar kullanılır (bkz. panel/index.html'deki onchange'ler).
+export function setReviewingEventType(eventType) {
+  if (reviewingSubmissionId) setSelfReportEditType(reviewingSubmissionId, eventType);
+}
+export function setReviewingField(field, value) {
+  if (reviewingSubmissionId) setSelfReportEditField(reviewingSubmissionId, field, value);
+}
+
+function renderSelfReportReviewModal() {
+  const overlay = document.getElementById("selfReportReviewOverlay");
+  if (!overlay || !overlay.classList.contains("active") || !reviewingSubmissionId) return;
+  const sub = state.selfReportSubmissions.find((s) => s.id === reviewingSubmissionId);
+  if (!sub) { closeSelfReportReviewModal(); return; }
+
+  const member = state.members.find((m) => m.id === sub.memberId);
+  const edit = getSelfReportEdit(sub);
+  document.getElementById("selfReportReviewMember").textContent = member ? member.name : "—";
+  document.getElementById("selfReportReviewImage").src = sub.imageUrl;
+  const unmatchedEl = document.getElementById("selfReportReviewUnmatched");
+  unmatchedEl.style.display = sub.aiUnmatched ? "block" : "none";
+  unmatchedEl.textContent = sub.aiUnmatched ? t("selfReportUnmatched") : "";
+
+  document.getElementById("selfReportReviewType").innerHTML = SELF_REPORTABLE_TYPES
+    .map((ty) => `<option value="${ty}" ${edit.eventType === ty ? "selected" : ""}>${escapeHtml(EVENT_LABELS[ty])}</option>`).join("");
+
+  const weekStore = state[edit.eventType];
+  // En güncel hafta en üstte seçili gelir - bilerek sub.weekId (gönderim anındaki
+  // "o anki en güncel hafta") değil, HER RENDER'DA yeniden hesaplanan gerçek en
+  // güncel hafta: admin onaylamadan önce yeni bir hafta eklerse, açılır liste
+  // otomatik olarak o yeni haftayı varsayılan gösterir.
+  const sortedWeeks = weekStore ? [...weekStore.weeks].sort((a, b) => (b.date || "").localeCompare(a.date || "")) : [];
+  const weekSelectEl = document.getElementById("selfReportReviewWeek");
+  weekSelectEl.innerHTML = sortedWeeks.map((w) => `<option value="${escapeHtml(w.id)}">${escapeHtml(w.date || "—")}</option>`).join("");
+  document.getElementById("selfReportReviewNoWeek").style.display = sortedWeeks.length ? "none" : "block";
+  weekSelectEl.style.display = sortedWeeks.length ? "" : "none";
+
+  const isKodGvg = edit.eventType === "kodgvg";
+  document.getElementById("selfReportReviewStatusRow").style.display = isKodGvg ? "none" : "flex";
+  document.getElementById("selfReportReviewStatus").value = edit.status;
+  document.getElementById("selfReportReviewExcused").checked = edit.excused;
+  document.getElementById("selfReportReviewPoints").value = edit.points;
+
+  document.getElementById("selfReportReviewApproveBtn").disabled = !sortedWeeks.length;
+}
+registerRenderer(renderSelfReportReviewModal);
 
 /**
  * Bir bildirimi onaylar: AI'nin okuduğu veriyi ilgili {type}_records tablosuna
@@ -138,6 +183,11 @@ function renderSelfReports() {
  * yazılır — "Aktivite" sekmesindeki ↺ ile bu TEK yazma geri alınabilsin diye
  * (bkz. activity.js -> restoreSelfReportApproval).
  */
+/** Onay/düzeltme modalındaki TEK "Onayla" butonu - o an açık olan bildirimi onaylar (bkz. openSelfReportReviewModal). */
+export function approveReviewingSelfReportSubmission() {
+  if (reviewingSubmissionId) approveSelfReportSubmission(reviewingSubmissionId);
+}
+
 export async function approveSelfReportSubmission(id) {
   const sub = state.selfReportSubmissions.find((s) => s.id === id);
   if (!sub) return;
@@ -148,9 +198,9 @@ export async function approveSelfReportSubmission(id) {
   const edit = getSelfReportEdit(sub);
   const eventType = edit.eventType;
   // Hangi haftaya yazılacağı, gönderim anında kaydedilen sub.weekId değil,
-  // admin'in o an panelde gördüğü açılır listeden SEÇTİĞİ hafta (bkz.
-  // renderSelfReports - varsayılan olarak en güncel hafta seçili gelir).
-  const weekSelect = document.getElementById(`selfReportWeek_${id}`);
+  // admin'in modalda o an gördüğü açılır listeden SEÇTİĞİ hafta (bkz.
+  // renderSelfReportReviewModal - varsayılan olarak en güncel hafta seçili gelir).
+  const weekSelect = document.getElementById("selfReportReviewWeek");
   const weekId = weekSelect ? weekSelect.value : null;
   if (!weekId) return;
   if (!confirm(t("confirmApproveSelfReport"))) return;
@@ -175,6 +225,7 @@ export async function approveSelfReportSubmission(id) {
     });
     state.selfReportSubmissions = state.selfReportSubmissions.filter((s) => s.id !== id);
     delete selfReportEdits[id];
+    if (reviewingSubmissionId === id) closeSelfReportReviewModal();
     await logActivity("approved", "self_report", id, {
       name: `${member ? member.name : "—"} — ${EVENT_LABELS[eventType] || eventType}${week ? ` (${week.date})` : ""}`,
       snapshot: { type: eventType, weekId, memberId: sub.memberId, submissionId: sub.id, previousEntry }
@@ -194,6 +245,7 @@ export async function rejectSelfReportSubmission(id) {
     await updateSelfReportSubmission(id, { status: "rejected", reviewed_by: state.currentAdminUsername || null, reviewed_at: new Date().toISOString() });
     state.selfReportSubmissions = state.selfReportSubmissions.filter((s) => s.id !== id);
     delete selfReportEdits[id];
+    if (reviewingSubmissionId === id) closeSelfReportReviewModal();
     renderAll();
     showToast(t("toastSelfReportRejected"));
   } catch (error) {

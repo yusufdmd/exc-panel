@@ -997,6 +997,46 @@
   </div>
 </div>
 
+<!-- Self-report onay/düzeltme ekranı — admin-only, "✅" ile açılır (bkz. selfReports.js) -->
+<div class="overlay" id="selfReportReviewOverlay">
+  <div class="modal">
+    <h2 id="t_selfReportReviewTitle">Katılımı Onayla / Düzelt</h2>
+    <p id="selfReportReviewMember" style="font-weight:700; margin-bottom:8px;"></p>
+    <img id="selfReportReviewImage" style="max-width:100%; max-height:260px; border-radius:8px; display:block; margin-bottom:10px; object-fit:contain; background:var(--bg-raised);">
+    <div id="selfReportReviewUnmatched" style="display:none; color:var(--danger-ink,#E5484D); font-size:13px; margin-bottom:10px;"></div>
+    <div class="field">
+      <label id="t_lblSelfReportEvent2">Etkinlik</label>
+      <select id="selfReportReviewType" onchange="setReviewingEventType(this.value)"></select>
+    </div>
+    <div class="field">
+      <label id="t_lblSelfReportWeek">Hafta</label>
+      <select id="selfReportReviewWeek"></select>
+      <span id="selfReportReviewNoWeek" style="display:none; color:var(--danger-ink,#E5484D); font-size:13px;"></span>
+    </div>
+    <div id="selfReportReviewStatusRow" class="field" style="display:flex; gap:16px; align-items:flex-end;">
+      <div>
+        <label id="t_lblSelfReportStatus">Durum</label>
+        <select id="selfReportReviewStatus" onchange="setReviewingField('status', this.value)">
+          <option value="joined" id="t_selfReportReviewStatusJoined">Katıldı</option>
+          <option value="absent" id="t_selfReportReviewStatusAbsent">Katılmadı</option>
+        </select>
+      </div>
+      <label style="display:flex; align-items:center; gap:4px; margin-bottom:10px;">
+        <input type="checkbox" id="selfReportReviewExcused" onchange="setReviewingField('excused', this.checked)">
+        <span id="t_thExcusedReview">Mazeretli</span>
+      </label>
+    </div>
+    <div class="field">
+      <label id="t_thPointsColReview">Puan</label>
+      <input type="number" id="selfReportReviewPoints" onchange="setReviewingField('points', this.value)">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeSelfReportReviewModal()" id="t_closeSelfReportReview">Vazgeç</button>
+      <button class="btn-primary" id="selfReportReviewApproveBtn" onclick="approveReviewingSelfReportSubmission()">✅ Onayla</button>
+    </div>
+  </div>
+</div>
+
 <!-- Week Report Modal (read-only, no login required) -->
 <div class="overlay" id="weekReportOverlay">
   <div class="modal wide">
