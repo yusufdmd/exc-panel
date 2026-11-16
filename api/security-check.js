@@ -40,7 +40,7 @@ const SENSITIVE_TABLES = [
   "engagement_periods",
   "migration_periods", "migration_prospects", "migration_leads",
   "name_suggestions", "settings", "users", "activity_logs", "member_discord_ids",
-  "account_vault", "self_report_submissions", "team_power_suggestions"
+  "account_vault", "self_report_submissions", "team_power_suggestions", "ai_chat_messages"
 ];
 
 /** Tek bir tabloyu anonim olarak sorgular; sızıntı varsa true döner. */
