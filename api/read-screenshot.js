@@ -17,9 +17,12 @@
 // Anon anahtar tek başına yeterli değildir — herkes tarafından bilinir,
 // bu yüzden gerçek yetkilendirme burada, token bazında yapılır.
 //
-// İki kullanım şekli var:
+// Üç kullanım şekli var:
 //   - admin: toplu giriş modalındaki "AI ile Doldur" - HERHANGİ bir tür,
 //     birden fazla görsel, tam roster.
+//   - admin: Üyeler sayfasındaki "📸 Takım Gücü Ekle" (bkz.
+//     js/teamPowerUpload.js) - type="teamPower", roster YOK, tek görsel -
+//     Discord'daki /suggest-team-power ile AYNI readTeamPower() çağrılır.
 //   - viewer (panelin paylaşılan girişi): Etkinlikler sekmesindeki
 //     "📸 Katılımını Bildir" (site üzerinden kendi kendine katılım
 //     bildirme, bkz. js/selfReportUpload.js) - SADECE self-report
@@ -30,7 +33,7 @@
 // çağırıp admin'e özel AI kotasını kötüye kullanabilirdi.
 // =====================================================================
 
-const { readScreenshots, MAX_IMAGES } = require("./_lib/screenshotAi");
+const { readScreenshots, readTeamPower, MAX_IMAGES } = require("./_lib/screenshotAi");
 
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://sbzctjpthorlypfrqgte.supabase.co";
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "sb_publishable_FNxETjiXZ4tiWqzgyR0vng_vKxGGSp9";
@@ -73,19 +76,17 @@ module.exports = async (req, res) => {
     }
 
     const { type, roster, images } = req.body || {};
-    const validTypes = ["gvg", "svs", "ss", "kod", "kodgvg", "other", "power", "ss_applied"];
+    const validTypes = ["gvg", "svs", "ss", "kod", "kodgvg", "other", "power", "ss_applied", "teamPower"];
     if (!validTypes.includes(type)) {
       res.status(400).json({ error: "Geçersiz etkinlik türü." });
       return;
     }
     // viewer (panelin paylaşılan girişi) sadece kendi kendine katılım
     // bildirme amacıyla, sınırlı şekilde çağırabilir - bkz. dosya başındaki NOT.
+    // "teamPower" SELF_REPORTABLE_TYPES'ta olmadığı için viewer için zaten
+    // burada reddedilir - Üyeler sayfasındaki "📸 Takım Gücü Ekle" admin-only.
     if (role !== "admin" && (!SELF_REPORTABLE_TYPES.includes(type) || !Array.isArray(roster) || roster.length !== 1)) {
       res.status(403).json({ error: "Bu işlem için yönetici oturumu gerekli." });
-      return;
-    }
-    if (!Array.isArray(roster) || !roster.length) {
-      res.status(400).json({ error: "Üye listesi boş." });
       return;
     }
     if (!Array.isArray(images) || !images.length) {
@@ -94,6 +95,21 @@ module.exports = async (req, res) => {
     }
     if (images.length > MAX_IMAGES) {
       res.status(400).json({ error: `En fazla ${MAX_IMAGES} görsel gönderilebilir.` });
+      return;
+    }
+
+    // "teamPower" (Üyeler sayfası -> "📸 Takım Gücü Ekle") bir roster ALMAZ -
+    // Discord'daki /suggest-team-power ile AYNI readTeamPower() çağrılır,
+    // tek görselden sadece {teamPower, teamElement} okunur, isim eşleştirmesi
+    // yapılmaz (admin kim olduğunu zaten kendisi seçmiştir).
+    if (type === "teamPower") {
+      const result = await readTeamPower({ images, geminiApiKey: process.env.GEMINI_API_KEY });
+      res.status(200).json(result);
+      return;
+    }
+
+    if (!Array.isArray(roster) || !roster.length) {
+      res.status(400).json({ error: "Üye listesi boş." });
       return;
     }
 

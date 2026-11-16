@@ -1,0 +1,139 @@
+// =====================================================================
+// EXC PANELİ — teamPowerUpload.js
+// =====================================================================
+// Üyeler sayfasındaki "📸 Takım Gücü Ekle" — Discord'daki
+// /suggest-team-power komutuna ALTERNATİF, admin'in panelden BİZZAT
+// bir üyenin "1. Ekip" ekran görüntüsünü yükleyip takım gücü/element
+// önerisi oluşturmasını sağlar (bkz. sql/add_team_power_suggestions_insert.sql).
+// Admin-only (viewer DEĞİL — bkz. panel/index.html'deki admin-only class
+// ve api/read-screenshot.js'teki "teamPower" tipi için zaten admin şartı).
+//
+// Kullanıcı talebiyle AYNI karardan: AI'nin okuduğu değer doğrudan üyeye
+// YAZILMAZ, Discord'dan gelenle AYNI onay kuyruğuna (💪 Takım Gücü
+// Önerileri, bkz. teamPowerSuggestions.js) düşer — admin yine de
+// onaylar/düzeltir, iki yazma yolu birbirinden sapmaz.
+//
+// AI okuması api/read-screenshot.js üzerinden (type:"teamPower") yapılır —
+// Discord akışındaki AYNI readTeamPower() paylaşılan fonksiyonu kullanılır.
+// =====================================================================
+
+import { uploadSelfReportImage, createTeamPowerSuggestion } from "./database.js";
+import { postReadScreenshot } from "./events.js";
+import { state, t, escapeHtml, showToast, registerRenderer, renderAll } from "./ui.js";
+import { activeMembers } from "./members.js";
+import { supabase } from "./supabase.js";
+
+const uploadState = { memberId: null, file: null, query: "", sending: false };
+
+export function openTeamPowerUploadModal() {
+  uploadState.memberId = null;
+  uploadState.file = null;
+  uploadState.query = "";
+  uploadState.sending = false;
+  const fileInput = document.getElementById("teamPowerUploadFile");
+  if (fileInput) fileInput.value = "";
+  const searchInput = document.getElementById("teamPowerUploadMemberSearch");
+  if (searchInput) searchInput.value = "";
+  document.getElementById("teamPowerUploadOverlay").classList.add("active");
+  renderTeamPowerUploadModal();
+}
+
+export function closeTeamPowerUploadModal() {
+  document.getElementById("teamPowerUploadOverlay").classList.remove("active");
+}
+
+export function setTeamPowerUploadMemberQuery(query) {
+  uploadState.query = query || "";
+  renderTeamPowerUploadModal();
+}
+
+export function selectTeamPowerUploadMember(memberId) {
+  uploadState.memberId = memberId;
+  uploadState.query = "";
+  const searchInput = document.getElementById("teamPowerUploadMemberSearch");
+  if (searchInput) searchInput.value = "";
+  renderTeamPowerUploadModal();
+}
+
+export function setTeamPowerUploadFile(input) {
+  uploadState.file = (input.files && input.files[0]) || null;
+  renderTeamPowerUploadModal();
+}
+
+function renderTeamPowerUploadModal() {
+  const overlay = document.getElementById("teamPowerUploadOverlay");
+  if (!overlay || !overlay.classList.contains("active")) return;
+
+  const query = uploadState.query.trim().toLowerCase();
+  const resultsEl = document.getElementById("teamPowerUploadMemberResults");
+  if (resultsEl) {
+    const matches = query ? activeMembers().filter((m) => (m.name || "").toLowerCase().includes(query)).slice(0, 20) : [];
+    resultsEl.innerHTML = matches.map((m) =>
+      `<div onclick="selectTeamPowerUploadMember('${m.id}')" style="padding:6px 10px; cursor:pointer; border-radius:6px; font-size:13px;" onmouseover="this.style.background='var(--bg-raised)'" onmouseout="this.style.background=''">${escapeHtml(m.name)}</div>`
+    ).join("");
+  }
+
+  const selectedMember = uploadState.memberId ? state.members.find((m) => m.id === uploadState.memberId) : null;
+  const selectedEl = document.getElementById("teamPowerUploadSelectedMember");
+  if (selectedEl) {
+    selectedEl.style.display = selectedMember ? "" : "none";
+    selectedEl.textContent = selectedMember ? `✓ ${selectedMember.name}` : "";
+  }
+
+  const submitBtn = document.getElementById("teamPowerUploadSubmitBtn");
+  if (submitBtn) {
+    submitBtn.disabled = !(uploadState.memberId && uploadState.file) || uploadState.sending;
+    submitBtn.textContent = uploadState.sending ? t("aiFillWorking") : t("selfReportUploadSubmitBtn");
+  }
+}
+registerRenderer(renderTeamPowerUploadModal);
+
+async function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("Dosya okunamadı."));
+    reader.onload = () => resolve(reader.result);
+    reader.readAsDataURL(file);
+  });
+}
+
+async function getAccessToken() {
+  const { data } = await supabase.auth.getSession();
+  return data && data.session ? data.session.access_token : "";
+}
+
+export async function submitTeamPowerUpload() {
+  if (!uploadState.memberId || !uploadState.file || uploadState.sending) return;
+  const member = state.members.find((m) => m.id === uploadState.memberId);
+  if (!member) return;
+  uploadState.sending = true;
+  renderAll();
+
+  try {
+    const dataUrl = await fileToDataUrl(uploadState.file);
+    const token = await getAccessToken();
+    // "teamPower" roster ALMAZ - Discord akışındaki AYNI readTeamPower(),
+    // sadece tek görselden {teamPower, teamElement} okur (bkz. api/read-screenshot.js).
+    const result = await postReadScreenshot({ type: "teamPower", images: [dataUrl] }, token);
+
+    const imageUrl = await uploadSelfReportImage(uploadState.file);
+
+    await createTeamPowerSuggestion({
+      member_id: member.id,
+      discord_id: null,
+      team_power: result.teamPower,
+      team_element: result.teamElement,
+      image_url: imageUrl,
+      status: "pending"
+    });
+
+    closeTeamPowerUploadModal();
+    showToast(t("toastSelfReportUploadSent"));
+  } catch (error) {
+    console.error(error);
+    showToast("Error");
+  } finally {
+    uploadState.sending = false;
+    renderAll();
+  }
+}

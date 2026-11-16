@@ -376,6 +376,15 @@ export async function updateTeamPowerSuggestion(id, payload) {
   return true;
 }
 
+// Üyeler sayfasından (Discord'a ek olarak) admin'in kendisinin ekran
+// görüntüsü yükleyip oluşturduğu öneri — bkz. sql/add_team_power_suggestions_insert.sql,
+// js/teamPowerUpload.js. discord_id hiç gönderilmez, null kalır.
+export async function createTeamPowerSuggestion(payload) {
+  const { error } = await supabase.from("team_power_suggestions").insert(payload);
+  if (error) dbError("Takım gücü önerisi gönderilemedi", error);
+  return true;
+}
+
 // =====================================================================
 // AI_CHAT_MESSAGES — "AI Asistan" sekmesi, her admin'in KENDİ sohbet
 // geçmişi (bkz. sql/add_ai_chat_messages.sql). RLS zaten author_id'yi

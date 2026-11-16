@@ -305,6 +305,7 @@ ebParticipationWord:'Katılım', ebFootnote:'%50\'nin altındaysan daha çok etk
     lblSelfReportEvent:'Etkinlik', lblSelfReportMember:'Senin adın', lblSelfReportImage:'Ekran Görüntüsü', selfReportUploadSubmitBtn:'Gönder',
     toastSelfReportUploadSent:'Gönderildi — bir yöneticinin onayını bekliyor.',
     selfReportReviewTitle:'Katılımı Onayla / Düzelt', lblSelfReportWeek:'Hafta', selfReportReviewApproveBtn:'✅ Onayla',
+    teamPowerUploadBtn:'📸 Takım Gücü Ekle', teamPowerUploadTitle:'📸 Takım Gücü Ekle', teamPowerUploadDesc:'Üyeyi seç, "1. Ekip" ekran görüntüsünü yükle — AI takım gücü/elementini okuyacak, Takım Gücü Önerileri kuyruğuna düşecek.',
     teamPowerSuggestionsHeading:'💪 Discord\'dan Takım Gücü Önerileri', emptyTeamPowerSuggestionsDesc:'Oyuncuların /suggest-team-power komutuyla Discord\'dan kendi gönderdiği 1. Takım gücü/element önerileri burada görünecek.',
     thTeamPowerMember:'Üye', thTeamPowerElement:'Element', thTeamPowerValue:'Takım Gücü', thTeamPowerDate:'Tarih',
     weekReport:'Hafta Raporu', sortByWeekTitle:'Bu haftaya göre sırala', zoneGreen:'Yeşil Bölge', zoneYellow:'Sarı Bölge', zoneRed:'Kırmızı Bölge',
@@ -462,6 +463,7 @@ ebParticipationWord:'Participation', ebFootnote:'If you\'re under 50%, consider 
     lblSelfReportEvent:'Event', lblSelfReportMember:'Your Name', lblSelfReportImage:'Screenshot', selfReportUploadSubmitBtn:'Send',
     toastSelfReportUploadSent:'Sent — waiting for an admin to approve it.',
     selfReportReviewTitle:'Review / Correct Participation', lblSelfReportWeek:'Week', selfReportReviewApproveBtn:'✅ Approve',
+    teamPowerUploadBtn:'📸 Add Team Power', teamPowerUploadTitle:'📸 Add Team Power', teamPowerUploadDesc:'Pick the member, upload their "Team 1" screenshot — the AI will read the team power/element and it will land in the Team Power Suggestions queue.',
     teamPowerSuggestionsHeading:'💪 Team Power Suggestions from Discord', emptyTeamPowerSuggestionsDesc:'Team 1 power/element suggestions players send themselves from Discord via /suggest-team-power will appear here.',
     thTeamPowerMember:'Member', thTeamPowerElement:'Element', thTeamPowerValue:'Team Power', thTeamPowerDate:'Date',
     weekReport:'Week Report', sortByWeekTitle:'Sort by this week', zoneGreen:'Green Zone', zoneYellow:'Yellow Zone', zoneRed:'Red Zone',
@@ -619,6 +621,7 @@ ebParticipationWord:'Teilnahme', ebFootnote:'Bist du unter 50%, nimm an mehr Eve
     lblSelfReportEvent:'Event', lblSelfReportMember:'Dein Name', lblSelfReportImage:'Screenshot', selfReportUploadSubmitBtn:'Senden',
     toastSelfReportUploadSent:'Gesendet — wartet auf die Genehmigung eines Admins.',
     selfReportReviewTitle:'Teilnahme Prüfen / Korrigieren', lblSelfReportWeek:'Woche', selfReportReviewApproveBtn:'✅ Genehmigen',
+    teamPowerUploadBtn:'📸 Teamstärke Hinzufügen', teamPowerUploadTitle:'📸 Teamstärke Hinzufügen', teamPowerUploadDesc:'Wähle das Mitglied, lade den "Team 1"-Screenshot hoch — die KI liest Teamstärke/Element, es landet in der Warteschlange der Teamstärke-Vorschläge.',
     teamPowerSuggestionsHeading:'💪 Teamstärke-Vorschläge von Discord', emptyTeamPowerSuggestionsDesc:'Vorschläge zur 1. Teamstärke/Element, die Spieler selbst über /suggest-team-power von Discord senden, erscheinen hier.',
     thTeamPowerMember:'Mitglied', thTeamPowerElement:'Element', thTeamPowerValue:'Teamstärke', thTeamPowerDate:'Datum',
     weekReport:'Wochenbericht', sortByWeekTitle:'Nach dieser Woche sortieren', zoneGreen:'Grüne Zone', zoneYellow:'Gelbe Zone', zoneRed:'Rote Zone',
@@ -776,6 +779,7 @@ ebParticipationWord:'Participación', ebFootnote:'¡Si estás por debajo del 50%
     lblSelfReportEvent:'Evento', lblSelfReportMember:'Tu Nombre', lblSelfReportImage:'Captura de Pantalla', selfReportUploadSubmitBtn:'Enviar',
     toastSelfReportUploadSent:'Enviado — esperando la aprobación de un administrador.',
     selfReportReviewTitle:'Revisar / Corregir Participación', lblSelfReportWeek:'Semana', selfReportReviewApproveBtn:'✅ Aprobar',
+    teamPowerUploadBtn:'📸 Añadir Potencia de Equipo', teamPowerUploadTitle:'📸 Añadir Potencia de Equipo', teamPowerUploadDesc:'Elige el miembro, sube la captura de su "Equipo 1" — la IA leerá la potencia/elemento del equipo y entrará en la cola de Sugerencias de Potencia de Equipo.',
     teamPowerSuggestionsHeading:'💪 Sugerencias de Potencia de Equipo desde Discord', emptyTeamPowerSuggestionsDesc:'Las sugerencias de potencia/elemento del Equipo 1 que los jugadores envían ellos mismos desde Discord con /suggest-team-power aparecerán aquí.',
     thTeamPowerMember:'Miembro', thTeamPowerElement:'Elemento', thTeamPowerValue:'Potencia de Equipo', thTeamPowerDate:'Fecha',
     weekReport:'Informe Semanal', sortByWeekTitle:'Ordenar por esta semana', zoneGreen:'Zona Verde', zoneYellow:'Zona Amarilla', zoneRed:'Zona Roja',
@@ -933,6 +937,7 @@ ebParticipationWord:'Participation', ebFootnote:"Si tu es en dessous de 50%, pen
     lblSelfReportEvent:'Événement', lblSelfReportMember:'Ton Nom', lblSelfReportImage:"Capture d'écran", selfReportUploadSubmitBtn:'Envoyer',
     toastSelfReportUploadSent:"Envoyé — en attente de l'approbation d'un admin.",
     selfReportReviewTitle:'Vérifier / Corriger la Participation', lblSelfReportWeek:'Semaine', selfReportReviewApproveBtn:'✅ Approuver',
+    teamPowerUploadBtn:"📸 Ajouter la Puissance d'Équipe", teamPowerUploadTitle:"📸 Ajouter la Puissance d'Équipe", teamPowerUploadDesc:"Choisis le membre, envoie la capture de son \"Équipe 1\" — l'IA lira la puissance/élément de l'équipe, qui ira dans la file des Suggestions de Puissance d'Équipe.",
     teamPowerSuggestionsHeading:"💪 Suggestions de Puissance d'Équipe depuis Discord", emptyTeamPowerSuggestionsDesc:"Les suggestions de puissance/élément de l'Équipe 1 que les joueurs envoient eux-mêmes depuis Discord avec /suggest-team-power apparaîtront ici.",
     thTeamPowerMember:'Membre', thTeamPowerElement:'Élément', thTeamPowerValue:"Puissance d'Équipe", thTeamPowerDate:'Date',
     weekReport:'Rapport Hebdomadaire', sortByWeekTitle:'Trier par cette semaine', zoneGreen:'Zone Verte', zoneYellow:'Zone Jaune', zoneRed:'Zone Rouge',
@@ -1090,6 +1095,7 @@ ebParticipationWord:'Tham gia', ebFootnote:'Nếu bạn dưới 50%, hãy tham g
     lblSelfReportEvent:'Sự kiện', lblSelfReportMember:'Tên của bạn', lblSelfReportImage:'Ảnh chụp màn hình', selfReportUploadSubmitBtn:'Gửi',
     toastSelfReportUploadSent:'Đã gửi — đang chờ admin duyệt.',
     selfReportReviewTitle:'Duyệt / Sửa Tham Gia', lblSelfReportWeek:'Tuần', selfReportReviewApproveBtn:'✅ Duyệt',
+    teamPowerUploadBtn:'📸 Thêm Sức Mạnh Đội', teamPowerUploadTitle:'📸 Thêm Sức Mạnh Đội', teamPowerUploadDesc:'Chọn thành viên, tải lên ảnh chụp "Đội 1" — AI sẽ đọc sức mạnh/hệ của đội và đưa vào hàng chờ Đề Xuất Sức Mạnh Đội.',
     teamPowerSuggestionsHeading:'💪 Đề Xuất Sức Mạnh Đội từ Discord', emptyTeamPowerSuggestionsDesc:'Các đề xuất sức mạnh/hệ của Đội 1 mà người chơi tự gửi từ Discord bằng /suggest-team-power sẽ hiện ở đây.',
     thTeamPowerMember:'Thành viên', thTeamPowerElement:'Hệ', thTeamPowerValue:'Sức Mạnh Đội', thTeamPowerDate:'Ngày',
     weekReport:'Báo cáo Tuần', sortByWeekTitle:'Sắp xếp theo tuần này', zoneGreen:'Vùng Xanh', zoneYellow:'Vùng Vàng', zoneRed:'Vùng Đỏ',
@@ -1411,6 +1417,12 @@ export function applyStaticText() {
   document.getElementById("t_thPointsColReview").textContent = t("thPointsCol");
   document.getElementById("t_closeSelfReportReview").textContent = t("cancel");
   document.getElementById("selfReportReviewApproveBtn").textContent = t("selfReportReviewApproveBtn");
+  document.getElementById("t_teamPowerUploadBtn").textContent = t("teamPowerUploadBtn");
+  document.getElementById("t_teamPowerUploadTitle").textContent = t("teamPowerUploadTitle");
+  document.getElementById("t_teamPowerUploadDesc").textContent = t("teamPowerUploadDesc");
+  document.getElementById("t_lblSelfReportMember2").textContent = t("lbMember");
+  document.getElementById("t_lblSelfReportImage2").textContent = t("lblSelfReportImage");
+  document.getElementById("t_closeTeamPowerUpload").textContent = t("cancel");
   document.getElementById("t_teamPowerSuggestionsHeading").textContent = t("teamPowerSuggestionsHeading");
   document.getElementById("t_emptyTeamPowerSuggestionsDesc").textContent = t("emptyTeamPowerSuggestionsDesc");
   document.getElementById("t_thTeamPowerMember").textContent = t("thTeamPowerMember");

@@ -47,6 +47,10 @@ import {
   openSelfReportUploadModal, closeSelfReportUploadModal, setSelfReportUploadType, setSelfReportUploadMemberQuery,
   selectSelfReportUploadMember, setSelfReportUploadFile, submitSelfReportUpload
 } from "./selfReportUpload.js";
+import {
+  openTeamPowerUploadModal, closeTeamPowerUploadModal, setTeamPowerUploadMemberQuery,
+  selectTeamPowerUploadMember, setTeamPowerUploadFile, submitTeamPowerUpload
+} from "./teamPowerUpload.js";
 import { mapTeamPowerSuggestion, approveTeamPowerSuggestion, rejectTeamPowerSuggestion } from "./teamPowerSuggestions.js";
 import { mapAiChatMessage, sendAiChatMessage, clearAiChatHistory, handleAiChatInputKeydown, setAiChatMode, useAiChatPrompt } from "./aiChat.js";
 import { doLogin, doLogout, openChangePasswordModal, closeChangePasswordModal, submitChangePassword } from "./auth.js";
@@ -316,6 +320,8 @@ Object.assign(window, {
   openSelfReportReviewModal, closeSelfReportReviewModal, setReviewingEventType, setReviewingField, approveReviewingSelfReportSubmission,
   openSelfReportUploadModal, closeSelfReportUploadModal, setSelfReportUploadType, setSelfReportUploadMemberQuery,
   selectSelfReportUploadMember, setSelfReportUploadFile, submitSelfReportUpload,
+  openTeamPowerUploadModal, closeTeamPowerUploadModal, setTeamPowerUploadMemberQuery,
+  selectTeamPowerUploadMember, setTeamPowerUploadFile, submitTeamPowerUpload,
   approveTeamPowerSuggestion, rejectTeamPowerSuggestion,
   sendAiChatMessage, clearAiChatHistory, handleAiChatInputKeydown, setAiChatMode, useAiChatPrompt,
   openWeekModal, closeWeekModal, saveWeek, deleteWeek,

@@ -185,6 +185,7 @@
       <button class="btn-ghost admin-only" onclick="exportMembers()" id="t_exportMembers">⬇️ Dışa Aktar</button>
       <input type="file" id="powerScreenshotInput" accept="image/*" multiple style="display:none" onchange="handlePowerScreenshot(event)">
       <button class="btn-ghost admin-only" onclick="document.getElementById('powerScreenshotInput').click()" id="t_powerAiFillBtn">🤖 AI ile Güç Güncelle</button>
+      <button class="btn-ghost admin-only" onclick="openTeamPowerUploadModal()" id="t_teamPowerUploadBtn">📸 Takım Gücü Ekle</button>
       <button class="btn-primary admin-only" onclick="openMemberModal()" id="t_addMember">+ Üye Ekle</button>
     </div>
     <div id="powerUnmatchedBox" style="display:none; margin-bottom:12px; padding:10px 12px; border-radius:8px; background:rgba(232,195,74,0.16); border:1px solid rgba(232,195,74,0.45); font-size:13px;">
@@ -993,6 +994,28 @@
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closeSelfReportUploadModal()" id="t_closeSelfReportUpload">Vazgeç</button>
       <button class="btn-primary" id="selfReportUploadSubmitBtn" onclick="submitSelfReportUpload()" disabled>Gönder</button>
+    </div>
+  </div>
+</div>
+
+<!-- Takım gücü ekle — admin-only (bkz. js/teamPowerUpload.js) -->
+<div class="overlay" id="teamPowerUploadOverlay">
+  <div class="modal">
+    <h2 id="t_teamPowerUploadTitle">📸 Takım Gücü Ekle</h2>
+    <p class="footnote-note" id="t_teamPowerUploadDesc">Üyeyi seç, "1. Ekip" ekran görüntüsünü yükle — AI takım gücü/elementini okuyacak, Takım Gücü Önerileri kuyruğuna düşecek.</p>
+    <div class="field">
+      <label id="t_lblSelfReportMember2">Üye</label>
+      <input class="search" id="teamPowerUploadMemberSearch" oninput="setTeamPowerUploadMemberQuery(this.value)">
+      <div id="teamPowerUploadMemberResults" style="max-height:160px; overflow-y:auto; margin-top:4px;"></div>
+      <div id="teamPowerUploadSelectedMember" style="display:none; margin-top:6px; padding:6px 10px; border-radius:8px; background:var(--bg-raised); font-weight:600;"></div>
+    </div>
+    <div class="field">
+      <label id="t_lblSelfReportImage2">Ekran Görüntüsü</label>
+      <input type="file" id="teamPowerUploadFile" accept="image/*" onchange="setTeamPowerUploadFile(this)">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeTeamPowerUploadModal()" id="t_closeTeamPowerUpload">Vazgeç</button>
+      <button class="btn-primary" id="teamPowerUploadSubmitBtn" onclick="submitTeamPowerUpload()" disabled>Gönder</button>
     </div>
   </div>
 </div>
