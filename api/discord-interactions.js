@@ -230,6 +230,7 @@ async function handleSuggestTeamPower(interaction, member) {
         discord_id: interaction.member?.user?.id || interaction.user?.id,
         team_power: teamPower,
         team_element: teamElement,
+        claimed_element: options.element || null,
         image_url: attachment.url
       }
     });

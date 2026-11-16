@@ -76,6 +76,21 @@ const COMMANDS = [
         description: "Your Team 1 (1. Ekip) screen",
         type: 11, // ATTACHMENT
         required: true
+      },
+      {
+        // Opsiyonel - AI zaten ekran görüntüsünden elementi okuyor, bu
+        // sadece bir çapraz kontrol. İkisi uyuşmazsa admin onay ekranında
+        // bir uyarı görür (bkz. js/teamPowerSuggestions.js).
+        name: "element",
+        description: "Your Team 1's element, if you know it (optional - the AI also reads it from the screenshot)",
+        type: 3, // STRING
+        required: false,
+        choices: [
+          { name: "Water", value: "water" },
+          { name: "Fire", value: "fire" },
+          { name: "Earth", value: "earth" },
+          { name: "Electric", value: "electric" }
+        ]
       }
     ]
   }

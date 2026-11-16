@@ -49,9 +49,13 @@ import {
 } from "./selfReportUpload.js";
 import {
   openTeamPowerUploadModal, closeTeamPowerUploadModal, setTeamPowerUploadMemberQuery,
-  selectTeamPowerUploadMember, setTeamPowerUploadFile, submitTeamPowerUpload
+  selectTeamPowerUploadMember, setTeamPowerUploadFile, submitTeamPowerUpload, setTeamPowerUploadClaimedElement
 } from "./teamPowerUpload.js";
-import { mapTeamPowerSuggestion, approveTeamPowerSuggestion, rejectTeamPowerSuggestion } from "./teamPowerSuggestions.js";
+import {
+  mapTeamPowerSuggestion, approveTeamPowerSuggestion, rejectTeamPowerSuggestion,
+  openTeamPowerReviewModal, closeTeamPowerReviewModal, setReviewingTeamElement, setReviewingTeamPower,
+  approveReviewingTeamPowerSuggestion
+} from "./teamPowerSuggestions.js";
 import { mapAiChatMessage, sendAiChatMessage, clearAiChatHistory, handleAiChatInputKeydown, setAiChatMode, useAiChatPrompt } from "./aiChat.js";
 import { doLogin, doLogout, openChangePasswordModal, closeChangePasswordModal, submitChangePassword } from "./auth.js";
 import {
@@ -321,8 +325,9 @@ Object.assign(window, {
   openSelfReportUploadModal, closeSelfReportUploadModal, setSelfReportUploadType, setSelfReportUploadMemberQuery,
   selectSelfReportUploadMember, setSelfReportUploadFile, submitSelfReportUpload,
   openTeamPowerUploadModal, closeTeamPowerUploadModal, setTeamPowerUploadMemberQuery,
-  selectTeamPowerUploadMember, setTeamPowerUploadFile, submitTeamPowerUpload,
+  selectTeamPowerUploadMember, setTeamPowerUploadFile, submitTeamPowerUpload, setTeamPowerUploadClaimedElement,
   approveTeamPowerSuggestion, rejectTeamPowerSuggestion,
+  openTeamPowerReviewModal, closeTeamPowerReviewModal, setReviewingTeamElement, setReviewingTeamPower, approveReviewingTeamPowerSuggestion,
   sendAiChatMessage, clearAiChatHistory, handleAiChatInputKeydown, setAiChatMode, useAiChatPrompt,
   openWeekModal, closeWeekModal, saveWeek, deleteWeek,
   openEntryModal, closeEntryModal, saveEntry, renderEntryRows, onEntrySearchInput, handleEntryScreenshot, handleSsAppliedScreenshot, removeUnmatchedItem,

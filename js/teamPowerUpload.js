@@ -19,23 +19,46 @@
 
 import { uploadSelfReportImage, createTeamPowerSuggestion } from "./database.js";
 import { postReadScreenshot } from "./events.js";
-import { state, t, escapeHtml, showToast, registerRenderer, renderAll } from "./ui.js";
+import { state, t, escapeHtml, showToast, registerRenderer, renderAll, elementLabel, elementBadge, ELEMENTS } from "./ui.js";
 import { activeMembers } from "./members.js";
 import { supabase } from "./supabase.js";
 
-const uploadState = { memberId: null, file: null, query: "", sending: false };
+// claimedElement: admin biliyorsa kendi beyan ettiği element - AI'nin
+// okuduğuyla (team_element) AYRI saklanır, uyuşmazlık varsa onay
+// ekranında admin'e uyarı olarak gösterilir (bkz. teamPowerSuggestions.js).
+const uploadState = { memberId: null, file: null, query: "", claimedElement: null, sending: false };
 
 export function openTeamPowerUploadModal() {
   uploadState.memberId = null;
   uploadState.file = null;
   uploadState.query = "";
+  uploadState.claimedElement = null;
   uploadState.sending = false;
   const fileInput = document.getElementById("teamPowerUploadFile");
   if (fileInput) fileInput.value = "";
   const searchInput = document.getElementById("teamPowerUploadMemberSearch");
   if (searchInput) searchInput.value = "";
   document.getElementById("teamPowerUploadOverlay").classList.add("active");
+  buildTeamPowerUploadElementPicker();
   renderTeamPowerUploadModal();
+}
+
+/** Element seçicide bir elemente tıklanınca çağrılır; zaten seçiliyse tekrar tıklamak seçimi kaldırır (opsiyonel alan). */
+export function setTeamPowerUploadClaimedElement(element) {
+  uploadState.claimedElement = uploadState.claimedElement === element ? null : element;
+  renderTeamPowerUploadModal();
+}
+
+// KASITLI OLARAK bir renderer DEĞİL - sadece modal açılırken bir kez
+// çağrılır (bkz. teamPowerSuggestions.js'teki AYNI notta açıklanan
+// render-sırası hatası - her renderAll()'da yeniden kurulsaydı,
+// renderTeamPowerUploadModal'ın uyguladığı "active" class'ı silerdi).
+function buildTeamPowerUploadElementPicker() {
+  const container = document.getElementById("teamPowerUploadElementPicker");
+  if (!container) return;
+  container.innerHTML = ELEMENTS.map((el) =>
+    `<div class="element-opt" data-el="${el}" onclick="setTeamPowerUploadClaimedElement('${el}')" title="${elementLabel(el)}">${elementBadge(el, 32)}</div>`
+  ).join("");
 }
 
 export function closeTeamPowerUploadModal() {
@@ -80,6 +103,10 @@ function renderTeamPowerUploadModal() {
     selectedEl.textContent = selectedMember ? `✓ ${selectedMember.name}` : "";
   }
 
+  document.querySelectorAll("#teamPowerUploadElementPicker .element-opt").forEach((el) => {
+    el.classList.toggle("active", el.dataset.el === uploadState.claimedElement);
+  });
+
   const submitBtn = document.getElementById("teamPowerUploadSubmitBtn");
   if (submitBtn) {
     submitBtn.disabled = !(uploadState.memberId && uploadState.file) || uploadState.sending;
@@ -123,6 +150,7 @@ export async function submitTeamPowerUpload() {
       discord_id: null,
       team_power: result.teamPower,
       team_element: result.teamElement,
+      claimed_element: uploadState.claimedElement,
       image_url: imageUrl,
       status: "pending"
     });
