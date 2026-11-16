@@ -17,20 +17,22 @@
 // Anon anahtar tek başına yeterli değildir — herkes tarafından bilinir,
 // bu yüzden gerçek yetkilendirme burada, token bazında yapılır.
 //
-// Üç kullanım şekli var:
+// İki kullanım şekli var:
 //   - admin: toplu giriş modalındaki "AI ile Doldur" - HERHANGİ bir tür,
 //     birden fazla görsel, tam roster.
-//   - admin: Üyeler sayfasındaki "📸 Takım Gücü Ekle" (bkz.
-//     js/teamPowerUpload.js) - type="teamPower", roster YOK, tek görsel -
-//     Discord'daki /suggest-team-power ile AYNI readTeamPower() çağrılır.
-//   - viewer (panelin paylaşılan girişi): Etkinlikler sekmesindeki
-//     "📸 Katılımını Bildir" (site üzerinden kendi kendine katılım
-//     bildirme, bkz. js/selfReportUpload.js) - SADECE self-report
-//     edilebilir 3 tür (svs/kod/kodgvg), SADECE tek görsel + tek kişilik
-//     roster (oyuncu kendi adını zaten seçtiği için AI'nin roster'da
-//     isim eşleştirmesi yapmasına hiç gerek yok, sadece değeri okur).
+//   - viewer (panelin paylaşılan girişi) VEYA admin: Etkinlikler
+//     sekmesindeki "📸 Katılımını Bildir" (bkz. js/selfReportUpload.js -
+//     SADECE self-report edilebilir 3 tür: svs/kod/kodgvg, tek görsel +
+//     tek kişilik roster) VE Üyeler sayfasındaki "📸 Takım Gücü Ekle"
+//     (bkz. js/teamPowerUpload.js - type="teamPower", roster YOK, tek
+//     görsel, Discord'daki /suggest-team-power ile AYNI readTeamPower()
+//     çağrılır). İkisinde de oyuncu/admin kendi/başkasının adını zaten
+//     seçtiği için AI'nin roster'da isim eşleştirmesi yapmasına hiç
+//     gerek yok, sadece değeri okur.
 // Bu kısıt olmasa bir viewer bu uç noktayı herhangi bir tür/roster ile
-// çağırıp admin'e özel AI kotasını kötüye kullanabilirdi.
+// çağırıp admin'e özel AI kotasını kötüye kullanabilirdi - VIEWER_ALLOWED_TYPES
+// dışındaki her şey (gvg/ss/other/power/ss_applied gibi admin'in toplu
+// giriş ekranına özel türler) viewer için kapalı kalır.
 // =====================================================================
 
 const { readScreenshots, readTeamPower, MAX_IMAGES } = require("./_lib/screenshotAi");
@@ -38,6 +40,9 @@ const { readScreenshots, readTeamPower, MAX_IMAGES } = require("./_lib/screensho
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://sbzctjpthorlypfrqgte.supabase.co";
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || "sb_publishable_FNxETjiXZ4tiWqzgyR0vng_vKxGGSp9";
 const SELF_REPORTABLE_TYPES = ["svs", "kod", "kodgvg"];
+// "teamPower" roster almadığı için SELF_REPORTABLE_TYPES'tan ayrı tutulur
+// (aşağıdaki roster uzunluğu kontrolü ona uygulanmaz).
+const VIEWER_ALLOWED_TYPES = [...SELF_REPORTABLE_TYPES, "teamPower"];
 
 async function verifyRole(token) {
   if (!token) return null;
@@ -82,12 +87,16 @@ module.exports = async (req, res) => {
       return;
     }
     // viewer (panelin paylaşılan girişi) sadece kendi kendine katılım
-    // bildirme amacıyla, sınırlı şekilde çağırabilir - bkz. dosya başındaki NOT.
-    // "teamPower" SELF_REPORTABLE_TYPES'ta olmadığı için viewer için zaten
-    // burada reddedilir - Üyeler sayfasındaki "📸 Takım Gücü Ekle" admin-only.
-    if (role !== "admin" && (!SELF_REPORTABLE_TYPES.includes(type) || !Array.isArray(roster) || roster.length !== 1)) {
-      res.status(403).json({ error: "Bu işlem için yönetici oturumu gerekli." });
-      return;
+    // bildirme VE takım gücü önerisi amacıyla, sınırlı şekilde çağırabilir -
+    // bkz. dosya başındaki NOT. "teamPower" roster almadığı için ayrı
+    // koşullanır; diğer VIEWER_ALLOWED_TYPES (svs/kod/kodgvg) tek kişilik
+    // roster gerektirir. Bunların dışındaki her tür viewer için reddedilir.
+    if (role !== "admin") {
+      const rosterOk = type === "teamPower" || (Array.isArray(roster) && roster.length === 1);
+      if (!VIEWER_ALLOWED_TYPES.includes(type) || !rosterOk) {
+        res.status(403).json({ error: "Bu işlem için yönetici oturumu gerekli." });
+        return;
+      }
     }
     if (!Array.isArray(images) || !images.length) {
       res.status(400).json({ error: "Görsel okunamadı." });

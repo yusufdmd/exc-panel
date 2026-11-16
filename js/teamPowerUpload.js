@@ -2,11 +2,13 @@
 // EXC PANELİ — teamPowerUpload.js
 // =====================================================================
 // Üyeler sayfasındaki "📸 Takım Gücü Ekle" — Discord'daki
-// /suggest-team-power komutuna ALTERNATİF, admin'in panelden BİZZAT
-// bir üyenin "1. Ekip" ekran görüntüsünü yükleyip takım gücü/element
-// önerisi oluşturmasını sağlar (bkz. sql/add_team_power_suggestions_insert.sql).
-// Admin-only (viewer DEĞİL — bkz. panel/index.html'deki admin-only class
-// ve api/read-screenshot.js'teki "teamPower" tipi için zaten admin şartı).
+// /suggest-team-power komutuna ALTERNATİF, panelden BİZZAT bir üyenin
+// "1. Ekip" ekran görüntüsünü yükleyip takım gücü/element önerisi
+// oluşturmayı sağlar (bkz. sql/add_team_power_suggestions_viewer_insert.sql).
+// Hem admin hem viewer (loncanın paylaşılan girişi) kullanabilir — oyuncu
+// kendi adını roster'dan seçer (self-report-upload ile AYNI güven modeli,
+// kullanıcı talebi), admin başkası için de kullanabilir. api/read-screenshot.js'teki
+// "teamPower" tipi de aynı şekilde viewer'a açıktır.
 //
 // Kullanıcı talebiyle AYNI karardan: AI'nin okuduğu değer doğrudan üyeye
 // YAZILMAZ, Discord'dan gelenle AYNI onay kuyruğuna (💪 Takım Gücü
