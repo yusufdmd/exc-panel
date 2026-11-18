@@ -385,8 +385,19 @@ export function renderEntryRows() {
 // (bkz. renderEntryRows) — "Kaydet"e basılana kadar hiçbir şey Supabase'e
 // yazılmaz.
 
-/** Seçilen görseli, API'ye göndermeden önce makul bir boyuta küçültüp JPEG data URL'ine çevirir. */
-function resizeImageToDataUrl(file, maxDim = 1568, quality = 0.85) {
+/**
+ * Seçilen görseli, API'ye göndermeden önce makul bir boyuta küçültüp JPEG
+ * data URL'ine çevirir — selfReportUpload.js/teamPowerUpload.js'teki site
+ * yükleme akışlarında da KULLANILIR (bkz. export), sadece bu dosyadaki
+ * admin toplu girişle sınırlı değil. Vercel serverless fonksiyonlarının
+ * istek gövdesi ~4.5MB ile sınırlı - telefon ekran görüntüleri (özellikle
+ * yüksek çözünürlüklü PNG'ler) base64'e çevrildiğinde bu sınırı kolayca
+ * aşabilir ve istemci tarafında "Error" gibi belirsiz bir hataya yol açar;
+ * bu küçültme adımı olmadan ham FileReader çıktısı gönderilirse bu risk
+ * canlıya çıkar (bkz. kullanıcı geri bildirimi: site üzerinden takım gücü
+ * ekran görüntüsü yükleyen oyuncular hata alıyordu).
+ */
+export function resizeImageToDataUrl(file, maxDim = 1568, quality = 0.85) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = () => reject(reader.error);

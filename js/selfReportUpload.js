@@ -21,7 +21,7 @@
 // =====================================================================
 
 import { uploadSelfReportImage, createSelfReportSubmission } from "./database.js";
-import { postReadScreenshot } from "./events.js";
+import { postReadScreenshot, resizeImageToDataUrl } from "./events.js";
 import { state, t, escapeHtml, showToast, registerRenderer, renderAll } from "./ui.js";
 import { activeMembers } from "./members.js";
 import { supabase } from "./supabase.js";
@@ -107,15 +107,6 @@ function renderSelfReportUploadModal() {
 }
 registerRenderer(renderSelfReportUploadModal);
 
-async function fileToDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error("Dosya okunamadı."));
-    reader.onload = () => resolve(reader.result);
-    reader.readAsDataURL(file);
-  });
-}
-
 async function getAccessToken() {
   const { data } = await supabase.auth.getSession();
   return data && data.session ? data.session.access_token : "";
@@ -129,7 +120,7 @@ export async function submitSelfReportUpload() {
   renderAll();
 
   try {
-    const dataUrl = await fileToDataUrl(uploadState.file);
+    const dataUrl = await resizeImageToDataUrl(uploadState.file);
     const token = await getAccessToken();
     // Oyuncu kendi ismini zaten seçti - roster TEK kişilik, AI sadece
     // değeri okur, isim eşleştirmesi yapmaz (bkz. api/read-screenshot.js).
@@ -158,7 +149,7 @@ export async function submitSelfReportUpload() {
     showToast(t("toastSelfReportUploadSent"));
   } catch (error) {
     console.error(error);
-    showToast("Error");
+    showToast(error && error.message ? error.message : "Error");
   } finally {
     uploadState.sending = false;
     renderAll();

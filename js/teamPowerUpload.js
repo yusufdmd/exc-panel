@@ -20,7 +20,7 @@
 // =====================================================================
 
 import { uploadSelfReportImage, createTeamPowerSuggestion } from "./database.js";
-import { postReadScreenshot } from "./events.js";
+import { postReadScreenshot, resizeImageToDataUrl } from "./events.js";
 import { state, t, escapeHtml, showToast, registerRenderer, renderAll, elementLabel, elementBadge, ELEMENTS } from "./ui.js";
 import { activeMembers } from "./members.js";
 import { supabase } from "./supabase.js";
@@ -117,15 +117,6 @@ function renderTeamPowerUploadModal() {
 }
 registerRenderer(renderTeamPowerUploadModal);
 
-async function fileToDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error("Dosya okunamadı."));
-    reader.onload = () => resolve(reader.result);
-    reader.readAsDataURL(file);
-  });
-}
-
 async function getAccessToken() {
   const { data } = await supabase.auth.getSession();
   return data && data.session ? data.session.access_token : "";
@@ -139,7 +130,7 @@ export async function submitTeamPowerUpload() {
   renderAll();
 
   try {
-    const dataUrl = await fileToDataUrl(uploadState.file);
+    const dataUrl = await resizeImageToDataUrl(uploadState.file);
     const token = await getAccessToken();
     // "teamPower" roster ALMAZ - Discord akışındaki AYNI readTeamPower(),
     // sadece tek görselden {teamPower, teamElement} okur (bkz. api/read-screenshot.js).
@@ -161,7 +152,7 @@ export async function submitTeamPowerUpload() {
     showToast(t("toastSelfReportUploadSent"));
   } catch (error) {
     console.error(error);
-    showToast("Error");
+    showToast(error && error.message ? error.message : "Error");
   } finally {
     uploadState.sending = false;
     renderAll();
