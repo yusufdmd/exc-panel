@@ -2033,6 +2033,10 @@ export function setElementPickerActive(element) {
 // değil, ayrı bir çift fonksiyon.
 // =====================================================================
 const BOSS_IMAGE_SRC = { hawk: "../images/boss-hawk.jpg", snake: "../images/boss-snake.jpg" };
+// Oyundaki orijinal (İngilizce) boss adları — özel isim oldukları için
+// dile göre ÇEVRİLMEZ, her dilde aynı kalır (kullanıcı talebi: kısa
+// yerelleştirilmiş adın yanında parantez içinde de görünsün).
+const BOSS_ORIGINAL_NAME = { hawk: "Sky-Held Hawk", snake: "Ophidillain" };
 
 /** Şahin/Yılan boss'u için gerçek oyun görseliyle dairesel bir rozet üretir. */
 export function bossBadge(kind, size) {
@@ -2059,9 +2063,10 @@ export function buildBossPicker(containerId, handlerFnName) {
   container.innerHTML = ["hawk", "snake"].map((kind) => {
     const title = t(kind === "hawk" ? "lblHawkBoss" : "lblSnakeBoss");
     const shortName = t(kind === "hawk" ? "bossShortHawk" : "bossShortSnake");
+    const label = `${shortName} (${BOSS_ORIGINAL_NAME[kind]})`;
     return `<div class="boss-opt" data-boss="${kind}" onclick="${fn}('${containerId}','${kind}')" title="${title}">
       ${bossBadge(kind, 32)}
-      <div class="boss-opt-label">${escapeHtml(shortName)}</div>
+      <div class="boss-opt-label">${escapeHtml(label)}</div>
     </div>`;
   }).join("");
 }
