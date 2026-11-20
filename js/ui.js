@@ -303,6 +303,7 @@ ebParticipationWord:'Katılım', ebFootnote:'%50\'nin altındaysan daha çok etk
     lblClaimedElement:'Element (biliyorsan, opsiyonel)', teamPowerReviewTitle:'Takım Gücünü Onayla / Düzelt',
     teamPowerMismatchShort:'Element uyuşmazlığı ⚠️', teamPowerMismatchWarning:'⚠️ Beyan edilen element {claimed}, ama AI ekran görüntüsünde {ai} görüyor — hangisinin doğru olduğunu kontrol et.',
     lblHawkBoss:"Şahin Boss'u (Sky-Held Hawk)", lblSnakeBoss:"Yılan Boss'u (Ophidillain)", lblBossUnlocks:"Araştırma Boss'ları (opsiyonel)",
+    bossShortHawk:'Şahin', bossShortSnake:'Yılan',
     teamPowerSuggestionsHeading:'💪 Discord\'dan Takım Gücü Önerileri', emptyTeamPowerSuggestionsDesc:'Oyuncuların /suggest-team-power komutuyla Discord\'dan kendi gönderdiği 1. Takım gücü/element önerileri burada görünecek.',
     thTeamPowerMember:'Üye', thTeamPowerElement:'Element', thTeamPowerValue:'Takım Gücü', thTeamPowerDate:'Tarih',
     weekReport:'Hafta Raporu', sortByWeekTitle:'Bu haftaya göre sırala', zoneGreen:'Yeşil Bölge', zoneYellow:'Sarı Bölge', zoneRed:'Kırmızı Bölge',
@@ -461,6 +462,7 @@ ebParticipationWord:'Participation', ebFootnote:'If you\'re under 50%, consider 
     lblClaimedElement:'Element (if you know it, optional)', teamPowerReviewTitle:'Review / Correct Team Power',
     teamPowerMismatchShort:'Element mismatch ⚠️', teamPowerMismatchWarning:'⚠️ The claimed element is {claimed}, but the AI sees {ai} in the screenshot — check which one is right.',
     lblHawkBoss:'Hawk Boss (Sky-Held Hawk)', lblSnakeBoss:'Snake Boss (Ophidillain)', lblBossUnlocks:'Research Bosses (optional)',
+    bossShortHawk:'Hawk', bossShortSnake:'Snake',
     teamPowerSuggestionsHeading:'💪 Team Power Suggestions from Discord', emptyTeamPowerSuggestionsDesc:'Team 1 power/element suggestions players send themselves from Discord via /suggest-team-power will appear here.',
     thTeamPowerMember:'Member', thTeamPowerElement:'Element', thTeamPowerValue:'Team Power', thTeamPowerDate:'Date',
     weekReport:'Week Report', sortByWeekTitle:'Sort by this week', zoneGreen:'Green Zone', zoneYellow:'Yellow Zone', zoneRed:'Red Zone',
@@ -619,6 +621,7 @@ ebParticipationWord:'Teilnahme', ebFootnote:'Bist du unter 50%, nimm an mehr Eve
     lblClaimedElement:'Element (falls bekannt, optional)', teamPowerReviewTitle:'Teamstärke Prüfen / Korrigieren',
     teamPowerMismatchShort:'Element-Konflikt ⚠️', teamPowerMismatchWarning:'⚠️ Angegebenes Element ist {claimed}, aber die KI sieht {ai} im Screenshot — prüfe, welches stimmt.',
     lblHawkBoss:'Falken-Boss (Sky-Held Hawk)', lblSnakeBoss:'Schlangen-Boss (Ophidillain)', lblBossUnlocks:'Forschungs-Bosse (optional)',
+    bossShortHawk:'Falke', bossShortSnake:'Schlange',
     teamPowerSuggestionsHeading:'💪 Teamstärke-Vorschläge von Discord', emptyTeamPowerSuggestionsDesc:'Vorschläge zur 1. Teamstärke/Element, die Spieler selbst über /suggest-team-power von Discord senden, erscheinen hier.',
     thTeamPowerMember:'Mitglied', thTeamPowerElement:'Element', thTeamPowerValue:'Teamstärke', thTeamPowerDate:'Datum',
     weekReport:'Wochenbericht', sortByWeekTitle:'Nach dieser Woche sortieren', zoneGreen:'Grüne Zone', zoneYellow:'Gelbe Zone', zoneRed:'Rote Zone',
@@ -777,6 +780,7 @@ ebParticipationWord:'Participación', ebFootnote:'¡Si estás por debajo del 50%
     lblClaimedElement:'Elemento (si lo sabes, opcional)', teamPowerReviewTitle:'Revisar / Corregir Potencia de Equipo',
     teamPowerMismatchShort:'Discrepancia de elemento ⚠️', teamPowerMismatchWarning:'⚠️ El elemento declarado es {claimed}, pero la IA ve {ai} en la captura — comprueba cuál es correcto.',
     lblHawkBoss:'Jefe Halcón (Sky-Held Hawk)', lblSnakeBoss:'Jefe Serpiente (Ophidillain)', lblBossUnlocks:'Jefes de Investigación (opcional)',
+    bossShortHawk:'Halcón', bossShortSnake:'Serpiente',
     teamPowerSuggestionsHeading:'💪 Sugerencias de Potencia de Equipo desde Discord', emptyTeamPowerSuggestionsDesc:'Las sugerencias de potencia/elemento del Equipo 1 que los jugadores envían ellos mismos desde Discord con /suggest-team-power aparecerán aquí.',
     thTeamPowerMember:'Miembro', thTeamPowerElement:'Elemento', thTeamPowerValue:'Potencia de Equipo', thTeamPowerDate:'Fecha',
     weekReport:'Informe Semanal', sortByWeekTitle:'Ordenar por esta semana', zoneGreen:'Zona Verde', zoneYellow:'Zona Amarilla', zoneRed:'Zona Roja',
@@ -935,6 +939,7 @@ ebParticipationWord:'Participation', ebFootnote:"Si tu es en dessous de 50%, pen
     lblClaimedElement:"Élément (si tu le sais, optionnel)", teamPowerReviewTitle:"Vérifier / Corriger la Puissance d'Équipe",
     teamPowerMismatchShort:"Élément en désaccord ⚠️", teamPowerMismatchWarning:"⚠️ L'élément déclaré est {claimed}, mais l'IA voit {ai} sur la capture — vérifie lequel est correct.",
     lblHawkBoss:"Boss Faucon (Sky-Held Hawk)", lblSnakeBoss:"Boss Serpent (Ophidillain)", lblBossUnlocks:"Boss de Recherche (optionnel)",
+    bossShortHawk:"Faucon", bossShortSnake:"Serpent",
     teamPowerSuggestionsHeading:"💪 Suggestions de Puissance d'Équipe depuis Discord", emptyTeamPowerSuggestionsDesc:"Les suggestions de puissance/élément de l'Équipe 1 que les joueurs envoient eux-mêmes depuis Discord avec /suggest-team-power apparaîtront ici.",
     thTeamPowerMember:'Membre', thTeamPowerElement:'Élément', thTeamPowerValue:"Puissance d'Équipe", thTeamPowerDate:'Date',
     weekReport:'Rapport Hebdomadaire', sortByWeekTitle:'Trier par cette semaine', zoneGreen:'Zone Verte', zoneYellow:'Zone Jaune', zoneRed:'Zone Rouge',
@@ -1093,6 +1098,7 @@ ebParticipationWord:'Tham gia', ebFootnote:'Nếu bạn dưới 50%, hãy tham g
     lblClaimedElement:'Hệ (nếu bạn biết, không bắt buộc)', teamPowerReviewTitle:'Duyệt / Sửa Sức Mạnh Đội',
     teamPowerMismatchShort:'Hệ không khớp ⚠️', teamPowerMismatchWarning:'⚠️ Hệ đã khai báo là {claimed}, nhưng AI thấy {ai} trong ảnh — kiểm tra xem cái nào đúng.',
     lblHawkBoss:'Boss Diều Hâu (Sky-Held Hawk)', lblSnakeBoss:'Boss Rắn (Ophidillain)', lblBossUnlocks:'Boss Nghiên Cứu (không bắt buộc)',
+    bossShortHawk:'Diều Hâu', bossShortSnake:'Rắn',
     teamPowerSuggestionsHeading:'💪 Đề Xuất Sức Mạnh Đội từ Discord', emptyTeamPowerSuggestionsDesc:'Các đề xuất sức mạnh/hệ của Đội 1 mà người chơi tự gửi từ Discord bằng /suggest-team-power sẽ hiện ở đây.',
     thTeamPowerMember:'Thành viên', thTeamPowerElement:'Hệ', thTeamPowerValue:'Sức Mạnh Đội', thTeamPowerDate:'Ngày',
     weekReport:'Báo cáo Tuần', sortByWeekTitle:'Sắp xếp theo tuần này', zoneGreen:'Vùng Xanh', zoneYellow:'Vùng Vàng', zoneRed:'Vùng Đỏ',
@@ -2048,9 +2054,16 @@ export function buildBossPicker(containerId, handlerFnName) {
   const container = document.getElementById(containerId);
   if (!container) return;
   const fn = handlerFnName || "toggleBossOpt";
-  container.innerHTML = ["hawk", "snake"].map((kind) =>
-    `<div class="boss-opt" data-boss="${kind}" onclick="${fn}('${containerId}','${kind}')" title="${t(kind === "hawk" ? "lblHawkBoss" : "lblSnakeBoss")}">${bossBadge(kind, 32)}</div>`
-  ).join("");
+  // İkon soluklaştığında (kapalı durumda) hangi boss olduğu anlaşılmıyordu
+  // (kullanıcı geri bildirimi) — rozetin altına kısa isim eklendi.
+  container.innerHTML = ["hawk", "snake"].map((kind) => {
+    const title = t(kind === "hawk" ? "lblHawkBoss" : "lblSnakeBoss");
+    const shortName = t(kind === "hawk" ? "bossShortHawk" : "bossShortSnake");
+    return `<div class="boss-opt" data-boss="${kind}" onclick="${fn}('${containerId}','${kind}')" title="${title}">
+      ${bossBadge(kind, 32)}
+      <div class="boss-opt-label">${escapeHtml(shortName)}</div>
+    </div>`;
+  }).join("");
 }
 
 /** Bir container'daki Şahin/Yılan toggle'larının aktif (seçili) görünümünü günceller. */
