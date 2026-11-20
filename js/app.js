@@ -18,7 +18,7 @@
 
 import { getMembers, getMemberDiscordIds, getAllPowerHistory, getAllTeamPowerHistory, getEngagementPeriods, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, getNameSuggestions, getSelfReportSubmissions, getTeamPowerSuggestions, getSiteLinks, getNews, getFeaturedVideos, getRecentActivity, getAccountVault, getSetting, subscribeToTables } from "./database.js";
 import { POLL_INTERVAL_MS } from "./config.js";
-import { state, t, showToast, buildLangSwitch, applyStaticText, initLangFromStorage, persistLanguage, initThemeFromStorage, toggleTheme, renderAll, registerDataLoader, registerRenderer, liveFormatNumberInput, expandPowerShorthandInput, initPowerShorthandMode, setEventWeekSort } from "./ui.js";
+import { state, t, showToast, buildLangSwitch, applyStaticText, initLangFromStorage, persistLanguage, initThemeFromStorage, toggleTheme, renderAll, registerDataLoader, registerRenderer, liveFormatNumberInput, expandPowerShorthandInput, initPowerShorthandMode, setEventWeekSort, toggleBossOpt } from "./ui.js";
 import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember, openHistoryModal, closeHistoryModal, copyDiscordId, setMemberView, setRankFilter, setElementFilter, setSort, exportMembers, mapNameSuggestion, openNameSuggestModal, closeNameSuggestModal, submitNameSuggestion, approveNameSuggestion, dismissNameSuggestion, handlePowerScreenshot, removePowerUnmatchedItem, discardPowerDraft, applyPowerDraft, acceptSuspiciousPower, rejectSuspiciousPower } from "./members.js";
 import { mapWeek, mapEntry, openWeekModal, closeWeekModal, saveWeek, deleteWeek, openEntryModal, closeEntryModal, renderEntryRows, onEntrySearchInput, saveEntry, handleEntryScreenshot, handleSsAppliedScreenshot, removeUnmatchedItem, openWeekReportModal, closeWeekReportModal, openOverallReportModal, closeOverallReportModal, setOverallReportSort, exportEventTable } from "./events.js";
 import { setBoardSort, openParticipationReportModal, closeParticipationReportModal, renderBoard } from "./dashboard.js";
@@ -54,7 +54,7 @@ import {
 import {
   mapTeamPowerSuggestion, approveTeamPowerSuggestion, rejectTeamPowerSuggestion,
   openTeamPowerReviewModal, closeTeamPowerReviewModal, setReviewingTeamElement, setReviewingTeamPower,
-  approveReviewingTeamPowerSuggestion, setReviewingHawkBoss, setReviewingSnakeBoss
+  approveReviewingTeamPowerSuggestion, toggleReviewingBossFlag
 } from "./teamPowerSuggestions.js";
 import { doLogin, doLogout, openChangePasswordModal, closeChangePasswordModal, submitChangePassword } from "./auth.js";
 import {
@@ -395,7 +395,7 @@ Object.assign(window, {
   selectTeamPowerUploadMember, setTeamPowerUploadFile, submitTeamPowerUpload, setTeamPowerUploadClaimedElement,
   approveTeamPowerSuggestion, rejectTeamPowerSuggestion,
   openTeamPowerReviewModal, closeTeamPowerReviewModal, setReviewingTeamElement, setReviewingTeamPower, approveReviewingTeamPowerSuggestion,
-  setReviewingHawkBoss, setReviewingSnakeBoss,
+  toggleReviewingBossFlag, toggleBossOpt,
   openWeekModal, closeWeekModal, saveWeek, deleteWeek,
   openEntryModal, closeEntryModal, saveEntry, renderEntryRows, onEntrySearchInput, handleEntryScreenshot, handleSsAppliedScreenshot, removeUnmatchedItem,
   openWeekReportModal, closeWeekReportModal,

@@ -36,6 +36,9 @@ import {
   elementBadge,
   buildElementPicker,
   setElementPickerActive,
+  bossBadge,
+  buildBossPicker,
+  setBossPickerActive,
   renderElementFilter,
   gvgCellInfo,
   ssCellInfo,
@@ -181,7 +184,7 @@ export function renderMembers() {
       <td class="member-id admin-only">${member.discordId ? `<span style="cursor:copy;" data-discord-id="${escapeHtml(member.discordId)}" onclick="copyDiscordId(this.dataset.discordId)" title="${t("copyDiscordIdTitle")}">${escapeHtml(member.discordId)}</span>` : "—"}</td>
       <td class="num-cell" title="${Number(member.power) || 0}">${powerCell}</td>
       <td class="num-cell">${escapeHtml(String(member.campLevel || "-"))}</td>
-      <td class="num-cell">${member.teamPower ? `${elementBadge(member.teamElement, 20)} <span style="vertical-align:middle;">${formatPower(member.teamPower)}</span>${member.hasHawkBoss ? ` <span title="${t("bossBadgeHawkTitle")}">🦅</span>` : ""}${member.hasSnakeBoss ? ` <span title="${t("bossBadgeSnakeTitle")}">🐍</span>` : ""}` : "—"}</td>
+      <td class="num-cell">${member.teamPower ? `${elementBadge(member.teamElement, 20)} <span style="vertical-align:middle;">${formatPower(member.teamPower)}</span>${member.hasHawkBoss ? ` ${bossBadge("hawk", 20)}` : ""}${member.hasSnakeBoss ? ` ${bossBadge("snake", 20)}` : ""}` : "—"}</td>
       <td class="num-cell">${escapeHtml((member.joinedAt || "").slice(0, 10)) || "—"}</td>
       <td><div class="row-actions">
         <button class="icon-btn" onclick="openHistoryModal('${member.id}')" title="${t("powerHistory")}">📈</button>
@@ -412,6 +415,7 @@ export function openMemberModal(id) {
   state.pendingProspectApprovalId = null; // varsayılan: normal ekleme/düzenleme, göç adayı onay akışı değil (bkz. migration.js -> approveProspect)
   buildCampOptions();
   buildElementPicker();
+  buildBossPicker("memberBossPicker");
   document.getElementById("memberEditId").value = id || "";
   if (id) {
     const member = state.members.find((m) => m.id === id);
@@ -425,8 +429,7 @@ export function openMemberModal(id) {
     document.getElementById("fTeamPower").value = formatNumberInput(member.teamPower || "");
     document.getElementById("fTeamElement").value = member.teamElement || "";
     setElementPickerActive(member.teamElement || "");
-    document.getElementById("fHawkBoss").checked = !!member.hasHawkBoss;
-    document.getElementById("fSnakeBoss").checked = !!member.hasSnakeBoss;
+    setBossPickerActive("memberBossPicker", member.hasHawkBoss, member.hasSnakeBoss);
     document.getElementById("fJoinedAt").value = member.joinedAt ? member.joinedAt.slice(0, 10) : "";
     document.getElementById("fMigratedTo").value = member.migratedTo != null ? member.migratedTo : "";
     document.getElementById("fUserChangedAt").value = member.userChangedAt ? member.userChangedAt.slice(0, 10) : "";
@@ -438,8 +441,7 @@ export function openMemberModal(id) {
     document.getElementById("memberModalTitle").textContent = t("memberAddTitle");
     ["fName", "fGameId", "fDiscordId", "fPower", "fMigratedTo", "fTeamPower", "fTeamElement"].forEach((fieldId) => { document.getElementById(fieldId).value = ""; });
     setElementPickerActive("");
-    document.getElementById("fHawkBoss").checked = false;
-    document.getElementById("fSnakeBoss").checked = false;
+    setBossPickerActive("memberBossPicker", false, false);
     document.getElementById("fRank").value = "R1";
     document.getElementById("fCamp").value = "1";
     document.getElementById("fJoinedAt").value = todayStr();
@@ -549,8 +551,8 @@ export async function saveMember() {
   const campLevel = document.getElementById("fCamp").value;
   const teamPower = Number(teamPowerRaw) || 0;
   const teamElement = document.getElementById("fTeamElement").value || null;
-  const hasHawkBoss = document.getElementById("fHawkBoss").checked;
-  const hasSnakeBoss = document.getElementById("fSnakeBoss").checked;
+  const hasHawkBoss = !!document.querySelector('#memberBossPicker [data-boss="hawk"]')?.classList.contains("active");
+  const hasSnakeBoss = !!document.querySelector('#memberBossPicker [data-boss="snake"]')?.classList.contains("active");
   const joinedAt = document.getElementById("fJoinedAt").value || todayStr();
 
   if (!state.oldFlag && !state.migratedFlag) {

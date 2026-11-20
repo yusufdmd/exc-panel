@@ -327,6 +327,24 @@ th.th-team span{ cursor:pointer; }
 .element-opt:hover{ transform:translateY(-2px); }
 .element-opt.active{ border-color:var(--gold-ink); background: rgba(224,166,58,0.1); }
 
+/* Opsiyonel araştırma boss'ları (Şahin/Yılan) rozeti + seçici (bkz. ui.js ->
+   bossBadge/buildBossPicker) - element-opt'tan FARKI: karşılıklı dışlayan tek
+   seçim değil, BAĞIMSIZ iki açma/kapama - bu yüzden "kapalı" durum ayrıca
+   soluklaştırılıp gri tonlanır, aksi halde ikisi de her zaman "seçili" görünür. */
+.boss-badge{
+  display:inline-flex; align-items:center; justify-content:center; border-radius:50%;
+  overflow:hidden; flex-shrink:0; border:1px solid rgba(255,255,255,0.25);
+  filter:grayscale(1) brightness(0.7); opacity:0.5; transition: filter .15s, opacity .15s;
+}
+.boss-badge img{ width:100%; height:100%; object-fit:cover; object-position:50% 13%; display:block; }
+.boss-opt{
+  padding:6px; border-radius:12px; border:2px solid transparent; cursor:pointer; line-height:0;
+  transition: border-color .15s, transform .15s;
+}
+.boss-opt:hover{ transform:translateY(-2px); }
+.boss-opt.active{ border-color:var(--gold-ink); background: rgba(224,166,58,0.1); }
+.boss-opt.active .boss-badge{ filter:none; opacity:1; }
+
 /* "Katılım Panosu" (bkz. engagement.js -> openEngagementBoardModal): görünüm
    Discord'a giden görselle ortak şablondan (js/engagementBoardTemplate.js)
    gelir; burada sadece panoyu modala sığdıran ölçekleme çerçevesi var. */

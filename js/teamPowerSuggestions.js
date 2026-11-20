@@ -20,7 +20,7 @@
 // =====================================================================
 
 import { updateTeamPowerSuggestion, updateMember, addTeamPowerHistoryEntry, logActivity } from "./database.js";
-import { state, t, escapeHtml, showToast, registerRenderer, renderAll, formatPower, elementLabel, elementBadge, todayStr, ELEMENTS } from "./ui.js";
+import { state, t, escapeHtml, showToast, registerRenderer, renderAll, formatPower, elementLabel, elementBadge, todayStr, ELEMENTS, bossBadge, buildBossPicker, setBossPickerActive } from "./ui.js";
 import { mapMember } from "./members.js";
 
 export function mapTeamPowerSuggestion(row) {
@@ -75,7 +75,7 @@ function renderTeamPowerSuggestions() {
     return `
     <tr>
       <td><span class="member-name">${escapeHtml(memberName)}</span></td>
-      <td>${elementBadge(edit.teamElement, 20)} ${escapeHtml(elementLabel(edit.teamElement))}${edit.hawkBoss ? ` <span title="${t("bossBadgeHawkTitle")}">🦅</span>` : ""}${edit.snakeBoss ? ` <span title="${t("bossBadgeSnakeTitle")}">🐍</span>` : ""}</td>
+      <td>${elementBadge(edit.teamElement, 20)} ${escapeHtml(elementLabel(edit.teamElement))}${edit.hawkBoss ? ` ${bossBadge("hawk", 20)}` : ""}${edit.snakeBoss ? ` ${bossBadge("snake", 20)}` : ""}</td>
       <td>${escapeHtml(formatPower(edit.teamPower))}${mismatchNote}</td>
       <td>${escapeHtml((sub.createdAt || "").slice(0, 16).replace("T", " "))}</td>
       <td><a href="${escapeHtml(sub.imageUrl)}" target="_blank" rel="noopener" title="${t("selfReportViewImage")}">🖼️</a></td>
@@ -98,6 +98,7 @@ export function openTeamPowerReviewModal(id) {
   reviewingSuggestionId = id;
   document.getElementById("teamPowerReviewOverlay").classList.add("active");
   buildTeamPowerReviewElementPicker();
+  buildBossPicker("teamPowerReviewBossPicker", "toggleReviewingBossFlag");
   renderTeamPowerReviewModal();
 }
 
@@ -123,6 +124,16 @@ export function setReviewingSnakeBoss(checked) {
   if (reviewingSuggestionId) setTeamPowerEditField(reviewingSuggestionId, "snakeBoss", !!checked);
 }
 
+/** Onay/düzeltme modalındaki boss rozetine tıklanınca çağrılır — mevcut değeri tersine çevirir. */
+export function toggleReviewingBossFlag(containerId, kind) {
+  if (!reviewingSuggestionId) return;
+  const sub = state.teamPowerSuggestions.find((s) => s.id === reviewingSuggestionId);
+  if (!sub) return;
+  const edit = getTeamPowerEdit(sub);
+  if (kind === "hawk") setReviewingHawkBoss(!edit.hawkBoss);
+  else setReviewingSnakeBoss(!edit.snakeBoss);
+}
+
 function renderTeamPowerReviewModal() {
   const overlay = document.getElementById("teamPowerReviewOverlay");
   if (!overlay || !overlay.classList.contains("active") || !reviewingSuggestionId) return;
@@ -134,8 +145,7 @@ function renderTeamPowerReviewModal() {
   document.getElementById("teamPowerReviewMember").textContent = member ? member.name : "—";
   document.getElementById("teamPowerReviewImage").src = sub.imageUrl;
   document.getElementById("teamPowerReviewPoints").value = edit.teamPower;
-  document.getElementById("teamPowerReviewHawkBoss").checked = edit.hawkBoss;
-  document.getElementById("teamPowerReviewSnakeBoss").checked = edit.snakeBoss;
+  setBossPickerActive("teamPowerReviewBossPicker", edit.hawkBoss, edit.snakeBoss);
 
   document.querySelectorAll("#teamPowerReviewElementPicker .element-opt").forEach((el) => {
     el.classList.toggle("active", el.dataset.el === edit.teamElement);

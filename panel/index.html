@@ -638,9 +638,9 @@
         <input type="hidden" id="fTeamElement">
       </div>
     </div>
-    <div class="field-row">
-      <label style="display:flex; align-items:center; gap:6px; font-size:13px; font-weight:400;"><input type="checkbox" id="fHawkBoss"> <span id="t_lblHawkBoss1">Şahin Boss'u (Sky-Held Hawk)</span></label>
-      <label style="display:flex; align-items:center; gap:6px; font-size:13px; font-weight:400;"><input type="checkbox" id="fSnakeBoss"> <span id="t_lblSnakeBoss1">Yılan Boss'u (Ophidillain)</span></label>
+    <div class="field">
+      <label id="t_lblBossUnlocks1">Araştırma Boss'ları (opsiyonel)</label>
+      <div class="element-picker" id="memberBossPicker"></div>
     </div>
     <div class="field">
       <label id="t_lblJoinedAt">Katılma Tarihi</label>
@@ -1003,9 +1003,9 @@
       <label id="t_lblClaimedElement">Element (biliyorsan, opsiyonel)</label>
       <div class="element-picker" id="teamPowerUploadElementPicker"></div>
     </div>
-    <div class="field-row">
-      <label style="display:flex; align-items:center; gap:6px; font-size:13px; font-weight:400;"><input type="checkbox" id="teamPowerUploadHawkBoss"> <span id="t_lblHawkBoss2">Şahin Boss'u (Sky-Held Hawk)</span></label>
-      <label style="display:flex; align-items:center; gap:6px; font-size:13px; font-weight:400;"><input type="checkbox" id="teamPowerUploadSnakeBoss"> <span id="t_lblSnakeBoss2">Yılan Boss'u (Ophidillain)</span></label>
+    <div class="field">
+      <label id="t_lblBossUnlocks2">Araştırma Boss'ları (opsiyonel)</label>
+      <div class="element-picker" id="teamPowerUploadBossPicker"></div>
     </div>
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closeTeamPowerUploadModal()" id="t_closeTeamPowerUpload">Vazgeç</button>
@@ -1029,9 +1029,9 @@
       <label id="t_lblTeamElementReview">1. Takım Elementi</label>
       <div class="element-picker" id="teamPowerReviewElementPicker"></div>
     </div>
-    <div class="field-row">
-      <label style="display:flex; align-items:center; gap:6px; font-size:13px; font-weight:400;"><input type="checkbox" id="teamPowerReviewHawkBoss" onchange="setReviewingHawkBoss(this.checked)"> <span id="t_lblHawkBoss3">Şahin Boss'u (Sky-Held Hawk)</span></label>
-      <label style="display:flex; align-items:center; gap:6px; font-size:13px; font-weight:400;"><input type="checkbox" id="teamPowerReviewSnakeBoss" onchange="setReviewingSnakeBoss(this.checked)"> <span id="t_lblSnakeBoss3">Yılan Boss'u (Ophidillain)</span></label>
+    <div class="field">
+      <label id="t_lblBossUnlocks3">Araştırma Boss'ları (opsiyonel)</label>
+      <div class="element-picker" id="teamPowerReviewBossPicker"></div>
     </div>
     <div class="modal-actions">
       <button class="btn-ghost" onclick="closeTeamPowerReviewModal()" id="t_closeTeamPowerReview">Vazgeç</button>

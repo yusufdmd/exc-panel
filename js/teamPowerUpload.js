@@ -27,7 +27,7 @@
 
 import { uploadSelfReportImage, createTeamPowerSuggestion } from "./database.js";
 import { postReadScreenshot, resizeImageToDataUrl } from "./events.js";
-import { state, t, escapeHtml, showToast, registerRenderer, renderAll, elementLabel, elementBadge, ELEMENTS } from "./ui.js";
+import { state, t, escapeHtml, showToast, registerRenderer, renderAll, elementLabel, elementBadge, ELEMENTS, buildBossPicker, setBossPickerActive } from "./ui.js";
 import { activeMembers } from "./members.js";
 import { supabase } from "./supabase.js";
 
@@ -46,10 +46,10 @@ export function openTeamPowerUploadModal() {
   if (fileInput) fileInput.value = "";
   const searchInput = document.getElementById("teamPowerUploadMemberSearch");
   if (searchInput) searchInput.value = "";
-  document.getElementById("teamPowerUploadHawkBoss").checked = false;
-  document.getElementById("teamPowerUploadSnakeBoss").checked = false;
   document.getElementById("teamPowerUploadOverlay").classList.add("active");
   buildTeamPowerUploadElementPicker();
+  buildBossPicker("teamPowerUploadBossPicker");
+  setBossPickerActive("teamPowerUploadBossPicker", false, false);
   renderTeamPowerUploadModal();
 }
 
@@ -152,8 +152,8 @@ export async function submitTeamPowerUpload() {
       team_power: result.teamPower,
       team_element: result.teamElement,
       claimed_element: uploadState.claimedElement,
-      hawk_boss: document.getElementById("teamPowerUploadHawkBoss").checked,
-      snake_boss: document.getElementById("teamPowerUploadSnakeBoss").checked,
+      hawk_boss: !!document.querySelector('#teamPowerUploadBossPicker [data-boss="hawk"]')?.classList.contains("active"),
+      snake_boss: !!document.querySelector('#teamPowerUploadBossPicker [data-boss="snake"]')?.classList.contains("active"),
       image_url: imageUrl,
       status: "pending"
     });
