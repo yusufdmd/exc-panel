@@ -16,7 +16,7 @@
 // o dosyalar hiç çalıştırılmaz ve tabloları hiç çizilmez.
 // =====================================================================
 
-import { getMembers, getMemberDiscordIds, getAllPowerHistory, getAllTeamPowerHistory, getEngagementPeriods, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, getNameSuggestions, getSelfReportSubmissions, getTeamPowerSuggestions, getAiChatMessages, getSiteLinks, getNews, getFeaturedVideos, getRecentActivity, getAccountVault, getSetting, subscribeToTables } from "./database.js";
+import { getMembers, getMemberDiscordIds, getAllPowerHistory, getAllTeamPowerHistory, getEngagementPeriods, getWeeks, getAllRecords, getMigrationPeriods, getMigrationProspects, getMigrationLeads, getNameSuggestions, getSelfReportSubmissions, getTeamPowerSuggestions, getSiteLinks, getNews, getFeaturedVideos, getRecentActivity, getAccountVault, getSetting, subscribeToTables } from "./database.js";
 import { POLL_INTERVAL_MS } from "./config.js";
 import { state, t, showToast, buildLangSwitch, applyStaticText, initLangFromStorage, persistLanguage, initThemeFromStorage, toggleTheme, renderAll, registerDataLoader, registerRenderer, liveFormatNumberInput, expandPowerShorthandInput, initPowerShorthandMode, setEventWeekSort } from "./ui.js";
 import { mapMember, renderMembers, openMemberModal, closeMemberModal, toggleOld, toggleMigrated, markUserChanged, setTeamElement, saveMember, deleteMember, restoreMember, openHistoryModal, closeHistoryModal, copyDiscordId, setMemberView, setRankFilter, setElementFilter, setSort, exportMembers, mapNameSuggestion, openNameSuggestModal, closeNameSuggestModal, submitNameSuggestion, approveNameSuggestion, dismissNameSuggestion, handlePowerScreenshot, removePowerUnmatchedItem, discardPowerDraft, applyPowerDraft, acceptSuspiciousPower, rejectSuspiciousPower } from "./members.js";
@@ -56,7 +56,6 @@ import {
   openTeamPowerReviewModal, closeTeamPowerReviewModal, setReviewingTeamElement, setReviewingTeamPower,
   approveReviewingTeamPowerSuggestion, setReviewingHawkBoss, setReviewingSnakeBoss
 } from "./teamPowerSuggestions.js";
-import { mapAiChatMessage, sendAiChatMessage, clearAiChatHistory, handleAiChatInputKeydown, setAiChatMode, useAiChatPrompt } from "./aiChat.js";
 import { doLogin, doLogout, openChangePasswordModal, closeChangePasswordModal, submitChangePassword } from "./auth.js";
 import {
   mapAccountVaultEntry, renderAccountVault, openAccountVaultModal, closeAccountVaultModal,
@@ -165,10 +164,6 @@ const SECTION_LOADERS = {
   nameSuggestions: async (restricted) => (restricted ? { nameSuggestions: [] } : { nameSuggestions: (await getNameSuggestions()).map(mapNameSuggestion) }),
   selfReportSubmissions: async (restricted) => (restricted ? { selfReportSubmissions: [] } : { selfReportSubmissions: (await getSelfReportSubmissions()).map(mapSelfReportSubmission) }),
   teamPowerSuggestions: async (restricted) => (restricted ? { teamPowerSuggestions: [] } : { teamPowerSuggestions: (await getTeamPowerSuggestions()).map(mapTeamPowerSuggestion) }),
-  // Realtime'a hiç abone değil (ai_chat_messages tablosu TABLE_TO_SECTION'da yok) -
-  // sadece TAM yüklemelerde tazelenir, AI Asistan sekmesi zaten kendi admin'inin
-  // mesaj gönderme anında state'i elle güncelliyor (bkz. aiChat.js).
-  aiChatMessages: async (restricted) => (restricted ? { aiChatMessages: [] } : { aiChatMessages: (await getAiChatMessages()).map(mapAiChatMessage) }),
   siteLinks: async () => ({ siteLinks: mapSiteLinks(await getSiteLinks().catch(() => null)) }),
   news: async () => ({ news: (await getNews()).map(mapNewsItem) }),
   featuredVideos: async () => ({ featuredVideos: (await getFeaturedVideos()).map(mapVideoItem) }),
@@ -332,11 +327,9 @@ function renderPanelMode() {
   const migrationTab = document.querySelector('#dataTabs .tab[data-tab="migration"]');
   const activityTab = document.querySelector('#dataTabs .tab[data-tab="activity"]');
   const accountVaultTab = document.querySelector('#dataTabs .tab[data-tab="accountvault"]');
-  const aiChatTab = document.querySelector('#dataTabs .tab[data-tab="aichat"]');
   if (migrationTab) migrationTab.style.display = restricted ? "none" : "";
   if (activityTab) activityTab.style.display = restricted ? "none" : "";
   if (accountVaultTab) accountVaultTab.style.display = (restricted || !state.canAccessVault) ? "none" : "";
-  if (aiChatTab) aiChatTab.style.display = restricted ? "none" : "";
   // Üye rolü üye listesinde sadece "Aktif Üyeler"i görür — eski/göç eden üye
   // alt sekmeleri de gizlenir (bkz. members.js -> setMemberView'daki eşleşen koruma).
   const oldMembersTab = document.querySelector('.subtab[data-mv="old"]');
@@ -403,7 +396,6 @@ Object.assign(window, {
   approveTeamPowerSuggestion, rejectTeamPowerSuggestion,
   openTeamPowerReviewModal, closeTeamPowerReviewModal, setReviewingTeamElement, setReviewingTeamPower, approveReviewingTeamPowerSuggestion,
   setReviewingHawkBoss, setReviewingSnakeBoss,
-  sendAiChatMessage, clearAiChatHistory, handleAiChatInputKeydown, setAiChatMode, useAiChatPrompt,
   openWeekModal, closeWeekModal, saveWeek, deleteWeek,
   openEntryModal, closeEntryModal, saveEntry, renderEntryRows, onEntrySearchInput, handleEntryScreenshot, handleSsAppliedScreenshot, removeUnmatchedItem,
   openWeekReportModal, closeWeekReportModal,
