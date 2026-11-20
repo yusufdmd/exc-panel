@@ -71,7 +71,7 @@ import "./kodgvg.js";
 // 400ms'den 2000ms'ye çıkarıldı (2026-11-20, egress düzeltmesiyle birlikte) -
 // toplu kayıt girişleri (ör. 50 üyeye SVS puanı girmek) art arda onlarca
 // realtime olayı üretir; dar bir pencerede bunların çoğu birbirini
-// YAKALAYAMAZ ve her biri ayrı bir tam yeniden yüklemeyi (bkz. loadAll)
+// YAKALAYAMAZ ve her biri ayrı bir yeniden yüklemeyi (bkz. loadAll)
 // tetikler. 2sn, bir admin'in diğerini canlı görmesini fark edilir şekilde
 // yavaşlatmadan, böyle patlamaları tek bir yeniden yüklemede birleştirir.
 const REALTIME_RELOAD_DEBOUNCE_MS = 2000;
@@ -81,63 +81,38 @@ function settledList(result) {
   return result.status === "fulfilled" ? (result.value || []) : [];
 }
 
-// loadAll'ın en son state'e yazdığı verinin JSON anlık görüntüsü — 12 saniyelik
-// yoklama ve her realtime yankısında sunucudan gelen veri BİREBİR AYNIYSA state'e
-// dokunmadan/tabloları yeniden çizmeden çıkmak için (bkz. loadAll). Aksi halde hiçbir
-// şey değişmemiş olsa bile her döngüde tüm tablolar sıfırdan çizilir — bu da kaydırma
-// konumunu/fare vurgusunu sıfırlayıp ekranda "titreme" hissi yaratır.
+// loadAll'ın en son state'e yazdığı TAM verinin JSON anlık görüntüsü — sadece
+// TAM yüklemelerde (scope=null, ör. 5 dakikalık yedek yoklama) kullanılır:
+// sunucudan gelen veri öncekiyle birebir aynıysa state'e dokunmadan/tabloları
+// yeniden çizmeden çıkılır. Kısmi (realtime kaynaklı) yüklemelerde bu kısayola
+// gerek yok — zaten SADECE gerçekten değişen bir tablo olduğunda tetiklenirler.
 let lastDataSnapshot = null;
 
-/**
- * Supabase'ten tüm veriyi (üyeler + dört etkinlik türü) çeker ve state'i günceller.
- * Ne admin ne üye girişi doğrulanmadan (bkz. auth.js -> updateGateVisibility)
- * hiçbir şey çekmez — panel giriş kapısının arkasındayken gereksiz istek
- * atılmasın diye. Üye (viewer) rolü için Göç/Aktivite çağrıları hiç
- * yapılmaz — zaten RLS bunları engeller, boşuna "izin reddedildi" hatası
- * üretmemek için baştan atlanır (bkz. sql/add_member_role.sql).
- */
-async function loadAll(silent) {
-  if (!state.isAdmin && !state.isMember) return;
-  try {
-    // "Bağlanıyor…" metni sadece sessiz OLMAYAN (ilk giriş / elle "Yenile") yüklemelerde
-    // gösterilir. 12 saniyelik arka plan yoklamasında (silent=true) bunu her seferinde
-    // yazıp hemen "Canlı"ya geri döndürmek, iki metnin uzunluğu farklı olduğu için üst
-    // barın o bölümünün genişliğini periyodik olarak değiştirip görünür bir "titreme"
-    // yaratıyordu — bağlantı hiç kopmadığı hâlde.
-    if (!silent) document.getElementById("syncText").textContent = t("syncConnecting");
-    const restricted = state.isMember;
-    const [
-      membersRes, historyRes, teamHistoryRes, engagementPeriodsRes,
-      svsWeeksRes, svsRecordsRes,
-      gvgWeeksRes, gvgRecordsRes,
-      ssWeeksRes, ssRecordsRes,
-      kodWeeksRes, kodRecordsRes,
-      kodgvgWeeksRes, kodgvgRecordsRes,
-      otherWeeksRes, otherRecordsRes,
-      migrationPeriodsRes, migrationRes, migrationLeadsRes, nameSuggestionsRes, selfReportSubmissionsRes, teamPowerSuggestionsRes, aiChatMessagesRes, siteLinksRes, newsRes, videosRes, activityRes,
-      accountVaultRes, engagementBoardTiersRes, memberDiscordIdsRes
-    ] = await Promise.allSettled([
-      getMembers(), getAllPowerHistory(), getAllTeamPowerHistory(), getEngagementPeriods(),
-      getWeeks("svs"), getAllRecords("svs"),
-      getWeeks("gvg"), getAllRecords("gvg"),
-      getWeeks("ss"), getAllRecords("ss"),
-      getWeeks("kod"), getAllRecords("kod"),
-      getWeeks("kodgvg"), getAllRecords("kodgvg"),
-      getWeeks("other"), getAllRecords("other"),
-      restricted ? Promise.resolve([]) : getMigrationPeriods(),
-      restricted ? Promise.resolve([]) : getMigrationProspects(),
-      restricted ? Promise.resolve([]) : getMigrationLeads(),
-      restricted ? Promise.resolve([]) : getNameSuggestions(),
-      restricted ? Promise.resolve([]) : getSelfReportSubmissions(),
-      restricted ? Promise.resolve([]) : getTeamPowerSuggestions(),
-      restricted ? Promise.resolve([]) : getAiChatMessages(),
-      getSiteLinks(), getNews(), getFeaturedVideos(),
-      restricted ? Promise.resolve([]) : getRecentActivity(200),
-      restricted || !state.canAccessVault ? Promise.resolve([]) : getAccountVault(),
-      getSetting("engagementBoardTiers", null),
+// =====================================================================
+// BÖLÜM BAZLI YÜKLEME (2026-11-20, egress mimari düzeltmesi)
+// =====================================================================
+// Önceden `loadAll` HER ZAMAN ~29 sorgunun tamamını (üyeler + 6 etkinlik
+// türünün tüm hafta+kayıtları + göç + aktivite + ... ) birden çekiyordu —
+// hem 12sn'lik yoklamada HEM DE 27 tablodan herhangi birinde TEK bir satır
+// değiştiğinde (realtime). Supabase'in egress kotasını (5GB/ay) aşmasının
+// (8,2GB) ana sebebi buydu (bkz. commit geçmişi). Yoklama aralığı zaten
+// 5 dakikaya çekildi; burada da realtime'ın SADECE DEĞİŞEN tabloya karşılık
+// gelen "bölüm"ü yeniden çekmesi sağlanıyor — ör. sadece `gvg_records`
+// değiştiyse, üyeleri/göçü/haberleri/aktivite logunu yeniden çekmeye hiç
+// gerek yok.
+//
+// Her bölüm, `loadAll`'ın eski tek-blok mantığıyla BİREBİR AYNI veriyi
+// üretir (aynı restricted/canAccessVault korumaları, aynı mapper'lar) —
+// sadece ayrı ayrı çağrılabilir hâle getirildi. `TABLE_TO_SECTION`,
+// gerçek Postgres tablo adını (realtime payload'ının `table` alanı) ilgili
+// bölüme eşler.
+// =====================================================================
+const SECTION_LOADERS = {
+  members: async (restricted) => {
+    const [membersRes, historyRes, teamHistoryRes, memberDiscordIdsRes] = await Promise.allSettled([
+      getMembers(), getAllPowerHistory(), getAllTeamPowerHistory(),
       restricted ? Promise.resolve([]) : getMemberDiscordIds()
     ]);
-
     const historyByMember = {};
     settledList(historyRes).forEach((entry) => {
       if (!historyByMember[entry.member_id]) historyByMember[entry.member_id] = [];
@@ -157,43 +132,128 @@ async function loadAll(silent) {
       member.teamPowerHistory = (teamHistoryByMember[row.id] || []).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
       return member;
     });
+    return { members: nextMembers };
+  },
+  engagementPeriods: async () => ({ engagementPeriods: (await getEngagementPeriods()).map(mapEngagementPeriod) }),
+  svs: async () => {
+    const [weeksRes, recordsRes] = await Promise.allSettled([getWeeks("svs"), getAllRecords("svs")]);
+    return { svs: { weeks: settledList(weeksRes).map(mapWeek), entries: settledList(recordsRes).map((r) => mapEntry("svs", r)) } };
+  },
+  gvg: async () => {
+    const [weeksRes, recordsRes] = await Promise.allSettled([getWeeks("gvg"), getAllRecords("gvg")]);
+    return { gvg: { weeks: settledList(weeksRes).map(mapWeek), entries: settledList(recordsRes).map((r) => mapEntry("gvg", r)) } };
+  },
+  ss: async () => {
+    const [weeksRes, recordsRes] = await Promise.allSettled([getWeeks("ss"), getAllRecords("ss")]);
+    return { ss: { weeks: settledList(weeksRes).map(mapWeek), entries: settledList(recordsRes).map((r) => mapEntry("ss", r)) } };
+  },
+  kod: async () => {
+    const [weeksRes, recordsRes] = await Promise.allSettled([getWeeks("kod"), getAllRecords("kod")]);
+    return { kod: { weeks: settledList(weeksRes).map(mapWeek), entries: settledList(recordsRes).map((r) => mapEntry("kod", r)) } };
+  },
+  kodgvg: async () => {
+    const [weeksRes, recordsRes] = await Promise.allSettled([getWeeks("kodgvg"), getAllRecords("kodgvg")]);
+    return { kodgvg: { weeks: settledList(weeksRes).map(mapWeek), entries: settledList(recordsRes).map((r) => mapEntry("kodgvg", r)) } };
+  },
+  other: async () => {
+    const [weeksRes, recordsRes] = await Promise.allSettled([getWeeks("other"), getAllRecords("other")]);
+    return { other: { weeks: settledList(weeksRes).map(mapWeek), entries: settledList(recordsRes).map((r) => mapEntry("other", r)) } };
+  },
+  migrationPeriods: async (restricted) => (restricted ? { migrationPeriods: [] } : { migrationPeriods: (await getMigrationPeriods()).map(mapPeriod) }),
+  migration: async (restricted) => (restricted ? { migration: [] } : { migration: (await getMigrationProspects()).map(mapProspect) }),
+  migrationLeads: async (restricted) => (restricted ? { migrationLeads: [] } : { migrationLeads: (await getMigrationLeads()).map(mapLead) }),
+  nameSuggestions: async (restricted) => (restricted ? { nameSuggestions: [] } : { nameSuggestions: (await getNameSuggestions()).map(mapNameSuggestion) }),
+  selfReportSubmissions: async (restricted) => (restricted ? { selfReportSubmissions: [] } : { selfReportSubmissions: (await getSelfReportSubmissions()).map(mapSelfReportSubmission) }),
+  teamPowerSuggestions: async (restricted) => (restricted ? { teamPowerSuggestions: [] } : { teamPowerSuggestions: (await getTeamPowerSuggestions()).map(mapTeamPowerSuggestion) }),
+  // Realtime'a hiç abone değil (ai_chat_messages tablosu TABLE_TO_SECTION'da yok) -
+  // sadece TAM yüklemelerde tazelenir, AI Asistan sekmesi zaten kendi admin'inin
+  // mesaj gönderme anında state'i elle güncelliyor (bkz. aiChat.js).
+  aiChatMessages: async (restricted) => (restricted ? { aiChatMessages: [] } : { aiChatMessages: (await getAiChatMessages()).map(mapAiChatMessage) }),
+  siteLinks: async () => ({ siteLinks: mapSiteLinks(await getSiteLinks().catch(() => null)) }),
+  news: async () => ({ news: (await getNews()).map(mapNewsItem) }),
+  featuredVideos: async () => ({ featuredVideos: (await getFeaturedVideos()).map(mapVideoItem) }),
+  activityLog: async (restricted) => (restricted ? { activityLog: [] } : { activityLog: (await getRecentActivity(200)).map(mapActivity) }),
+  accountVault: async (restricted) => ((restricted || !state.canAccessVault) ? { accountVault: [] } : { accountVault: (await getAccountVault()).map(mapAccountVaultEntry) }),
+  // Realtime'a hiç abone değil (settings tablosu TABLE_TO_SECTION'da yok) - sadece TAM yüklemelerde tazelenir.
+  engagementBoardTiers: async () => {
+    const value = await getSetting("engagementBoardTiers", null).catch(() => null);
+    return { engagementBoardTiers: (Array.isArray(value) && value.length === 3 && value.every((n) => Number.isFinite(n))) ? value : state.engagementBoardTiers };
+  }
+};
+const ALL_SECTIONS = Object.keys(SECTION_LOADERS);
 
-    const nextData = {
-      members: nextMembers,
-      engagementPeriods: settledList(engagementPeriodsRes).map(mapEngagementPeriod),
-      svs: { weeks: settledList(svsWeeksRes).map(mapWeek), entries: settledList(svsRecordsRes).map((r) => mapEntry("svs", r)) },
-      gvg: { weeks: settledList(gvgWeeksRes).map(mapWeek), entries: settledList(gvgRecordsRes).map((r) => mapEntry("gvg", r)) },
-      ss: { weeks: settledList(ssWeeksRes).map(mapWeek), entries: settledList(ssRecordsRes).map((r) => mapEntry("ss", r)) },
-      kod: { weeks: settledList(kodWeeksRes).map(mapWeek), entries: settledList(kodRecordsRes).map((r) => mapEntry("kod", r)) },
-      kodgvg: { weeks: settledList(kodgvgWeeksRes).map(mapWeek), entries: settledList(kodgvgRecordsRes).map((r) => mapEntry("kodgvg", r)) },
-      other: { weeks: settledList(otherWeeksRes).map(mapWeek), entries: settledList(otherRecordsRes).map((r) => mapEntry("other", r)) },
-      migrationPeriods: settledList(migrationPeriodsRes).map(mapPeriod),
-      migration: settledList(migrationRes).map(mapProspect),
-      migrationLeads: settledList(migrationLeadsRes).map(mapLead),
-      nameSuggestions: settledList(nameSuggestionsRes).map(mapNameSuggestion),
-      selfReportSubmissions: settledList(selfReportSubmissionsRes).map(mapSelfReportSubmission),
-      teamPowerSuggestions: settledList(teamPowerSuggestionsRes).map(mapTeamPowerSuggestion),
-      aiChatMessages: settledList(aiChatMessagesRes).map(mapAiChatMessage),
-      siteLinks: mapSiteLinks(siteLinksRes.status === "fulfilled" ? siteLinksRes.value : null),
-      news: settledList(newsRes).map(mapNewsItem),
-      featuredVideos: settledList(videosRes).map(mapVideoItem),
-      activityLog: settledList(activityRes).map(mapActivity),
-      accountVault: settledList(accountVaultRes).map(mapAccountVaultEntry),
-      engagementBoardTiers: (() => {
-        const value = engagementBoardTiersRes.status === "fulfilled" ? engagementBoardTiersRes.value : null;
-        return (Array.isArray(value) && value.length === 3 && value.every((n) => Number.isFinite(n)))
-          ? value
-          : state.engagementBoardTiers;
-      })()
-    };
+// Gerçek Postgres tablo adını (realtime payload.table) ilgili bölüme eşler -
+// subscribeToTables'a verilen liste de buradan türetilir, elle senkron
+// tutulan ayrı bir dizi YOKTUR (bkz. aşağıdaki subscribeToTables çağrısı).
+const TABLE_TO_SECTION = {
+  members: "members", power_history: "members", team_power_history: "members", member_discord_ids: "members",
+  engagement_periods: "engagementPeriods",
+  svs_weeks: "svs", svs_records: "svs",
+  gvg_weeks: "gvg", gvg_records: "gvg",
+  ss_weeks: "ss", ss_records: "ss",
+  kod_weeks: "kod", kod_records: "kod",
+  kodgvg_weeks: "kodgvg", kodgvg_records: "kodgvg",
+  other_weeks: "other", other_records: "other",
+  migration_periods: "migrationPeriods",
+  migration_prospects: "migration",
+  migration_leads: "migrationLeads",
+  name_suggestions: "nameSuggestions",
+  self_report_submissions: "selfReportSubmissions",
+  team_power_suggestions: "teamPowerSuggestions",
+  site_links: "siteLinks",
+  news: "news",
+  featured_videos: "featuredVideos",
+  activity_logs: "activityLog",
+  account_vault: "accountVault"
+};
+
+/**
+ * Supabase'ten veriyi çeker ve state'i günceller. `scope` verilmezse (null/undefined)
+ * TÜM bölümler çekilir (ilk giriş, elle "Yenile", 5dk'lık yedek yoklama, yedek
+ * geri yükleme). `scope` bir bölüm adı dizisi/Set'iyse SADECE o bölümler çekilir
+ * (bkz. aşağıdaki realtime aboneliği) — diğer bölümlerin state'teki mevcut
+ * değerlerine HİÇ dokunulmaz.
+ *
+ * Ne admin ne üye girişi doğrulanmadan (bkz. auth.js -> updateGateVisibility)
+ * hiçbir şey çekmez — panel giriş kapısının arkasındayken gereksiz istek
+ * atılmasın diye. Üye (viewer) rolü için Göç/Aktivite çağrıları hiç
+ * yapılmaz — zaten RLS bunları engeller, boşuna "izin reddedildi" hatası
+ * üretmemek için baştan atlanır (bkz. sql/add_member_role.sql).
+ */
+async function loadAll(silent, scope) {
+  if (!state.isAdmin && !state.isMember) return;
+  try {
+    // "Bağlanıyor…" metni sadece sessiz OLMAYAN (ilk giriş / elle "Yenile") yüklemelerde
+    // gösterilir. Arka plan yüklemelerinde (silent=true) bunu her seferinde yazıp hemen
+    // "Canlı"ya geri döndürmek, iki metnin uzunluğu farklı olduğu için üst barın o
+    // bölümünün genişliğini periyodik olarak değiştirip görünür bir "titreme" yaratıyordu
+    // — bağlantı hiç kopmadığı hâlde.
+    if (!silent) document.getElementById("syncText").textContent = t("syncConnecting");
+    const restricted = state.isMember;
+    const sectionsToLoad = scope ? Array.from(scope).filter((name) => SECTION_LOADERS[name]) : ALL_SECTIONS;
+    if (!sectionsToLoad.length) { document.getElementById("syncText").textContent = t("syncLive"); return; }
+
+    const results = await Promise.allSettled(sectionsToLoad.map((name) => SECTION_LOADERS[name](restricted)));
+    const nextDataPartial = {};
+    results.forEach((result, index) => {
+      if (result.status === "fulfilled") Object.assign(nextDataPartial, result.value);
+      else console.error(`[loadAll] "${sectionsToLoad[index]}" bölümü çekilemedi:`, result.reason); // bu bölüm bu turda GÜNCELLENMEZ, state'teki eski değeri korunur
+    });
 
     document.getElementById("syncText").textContent = t("syncLive");
 
-    const snapshot = JSON.stringify(nextData);
-    if (snapshot === lastDataSnapshot) return; // sunucudan gelen veri öncekiyle birebir aynı — yeniden çizmeye gerek yok
-    lastDataSnapshot = snapshot;
+    if (!scope) {
+      // Sadece TAM yüklemede: sunucudan gelen veri öncekiyle birebir aynıysa
+      // state'e dokunmadan/tabloları yeniden çizmeden çık (kaydırma konumu/fare
+      // vurgusu korunsun diye — bkz. lastDataSnapshot yorumu).
+      const snapshot = JSON.stringify(nextDataPartial);
+      if (snapshot === lastDataSnapshot) return;
+      lastDataSnapshot = snapshot;
+    } else {
+      lastDataSnapshot = null; // kısmi güncellemeden sonra tam-karşılaştırma anlık görüntüsü geçersiz - bir sonraki TAM yüklemede yeniden hesaplanır
+    }
 
-    Object.assign(state, nextData);
+    Object.assign(state, nextDataPartial);
     renderAll();
   } catch (error) {
     console.error("load error", error);
@@ -210,11 +270,19 @@ function manualRefresh() {
 setInterval(() => loadAll(true), POLL_INTERVAL_MS);
 
 let realtimeReloadTimer = null;
+let pendingChangedTables = new Set();
 subscribeToTables(
-  ["members", "power_history", "team_power_history", "engagement_periods", "gvg_weeks", "gvg_records", "svs_weeks", "svs_records", "ss_weeks", "ss_records", "kod_weeks", "kod_records", "kodgvg_weeks", "kodgvg_records", "other_weeks", "other_records", "migration_periods", "migration_prospects", "migration_leads", "name_suggestions", "site_links", "news", "featured_videos", "activity_logs", "account_vault", "member_discord_ids", "self_report_submissions", "team_power_suggestions"],
-  () => {
+  Object.keys(TABLE_TO_SECTION),
+  (payload) => {
+    if (payload && payload.table) pendingChangedTables.add(payload.table);
     clearTimeout(realtimeReloadTimer);
-    realtimeReloadTimer = setTimeout(() => loadAll(true), REALTIME_RELOAD_DEBOUNCE_MS);
+    realtimeReloadTimer = setTimeout(() => {
+      const changedTables = pendingChangedTables;
+      pendingChangedTables = new Set();
+      const sections = new Set();
+      changedTables.forEach((table) => { const section = TABLE_TO_SECTION[table]; if (section) sections.add(section); });
+      loadAll(true, sections);
+    }, REALTIME_RELOAD_DEBOUNCE_MS);
   }
 );
 
