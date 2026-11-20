@@ -80,8 +80,19 @@ export const DEFAULT_LANGUAGE = "en";
 
 // ---------------------------------------------------------------------
 // Gerçek zamanlı bağlantı kesilirse devreye giren yedek "yoklama" aralığı (ms).
+//
+// ÖNEMLİ (2026-11-20): Bu SADECE bir yedek olmalı - asıl canlı güncelleme
+// realtime abonelikle geliyor (bkz. app.js -> subscribeToTables). Önceden
+// 12000 (12sn) olarak ayarlıydı, yani açık her panel sekmesi, gerçek bir
+// değişiklik olsun olmasın, günde binlerce kez TÜM veritabanını (~29 ayrı
+// sorgu - üyeler, tüm güç geçmişleri, 6 etkinlik türünün tüm hafta+kayıtları,
+// göç, aktivite logu vb.) baştan çekiyordu. Supabase Free plan egress
+// kotasının (5GB/ay) aşılmasının (8,2GB) ana sebebi buydu - veritabanı
+// sadece ~36MB ve 7 aylık aktif kullanıcı var, yani sorun veri hacmi değil,
+// tekrar sayısıydı. 5 dakikaya çekildi - realtime zaten anlık senkron
+// sağlıyor, bu sadece bağlantı koptuğunda devreye giren bir güvenlik ağı.
 // ---------------------------------------------------------------------
-export const POLL_INTERVAL_MS = 12000;
+export const POLL_INTERVAL_MS = 300000;
 
 // ---------------------------------------------------------------------
 // Admin girişi kullanıcı adı -> email dönüşümü.

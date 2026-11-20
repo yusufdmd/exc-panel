@@ -68,7 +68,13 @@ import "./ss.js";
 import "./kod.js";
 import "./kodgvg.js";
 
-const REALTIME_RELOAD_DEBOUNCE_MS = 400;
+// 400ms'den 2000ms'ye çıkarıldı (2026-11-20, egress düzeltmesiyle birlikte) -
+// toplu kayıt girişleri (ör. 50 üyeye SVS puanı girmek) art arda onlarca
+// realtime olayı üretir; dar bir pencerede bunların çoğu birbirini
+// YAKALAYAMAZ ve her biri ayrı bir tam yeniden yüklemeyi (bkz. loadAll)
+// tetikler. 2sn, bir admin'in diğerini canlı görmesini fark edilir şekilde
+// yavaşlatmadan, böyle patlamaları tek bir yeniden yüklemede birleştirir.
+const REALTIME_RELOAD_DEBOUNCE_MS = 2000;
 
 /** Promise.allSettled sonucundan, başarısız olursa boş dizi döndüren güvenli bir liste çıkarır. */
 function settledList(result) {
