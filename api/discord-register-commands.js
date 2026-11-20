@@ -91,6 +91,21 @@ const COMMANDS = [
           { name: "Earth", value: "earth" },
           { name: "Electric", value: "electric" }
         ]
+      },
+      {
+        // Opsiyonel - araştırma ağacından açılan 2 ek boss (element boss'u
+        // zaten otomatik, ayrıca sorulmuyor). AI okuması YOK (kullanıcı
+        // kararı) - sadece oyuncunun kendi beyanı (bkz. js/teamPowerSuggestions.js).
+        name: "hawk_boss",
+        description: "Do you have the Sky-Held Hawk (attack) boss unlocked?",
+        type: 5, // BOOLEAN
+        required: false
+      },
+      {
+        name: "snake_boss",
+        description: "Do you have the Ophidillain (defense) boss unlocked?",
+        type: 5, // BOOLEAN
+        required: false
       }
     ]
   }

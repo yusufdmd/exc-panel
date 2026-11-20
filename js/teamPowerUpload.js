@@ -17,6 +17,12 @@
 //
 // AI okuması api/read-screenshot.js üzerinden (type:"teamPower") yapılır —
 // Discord akışındaki AYNI readTeamPower() paylaşılan fonksiyonu kullanılır.
+//
+// İki opsiyonel araştırma boss'u (Sky-Held Hawk/saldırı, Ophidillain/
+// savunma) için AI okuması YOK (kullanıcı kararı) — sadece oyuncunun kendi
+// beyanı (checkbox) kaydedilir, team_power/team_element ile AYNI tam-
+// üzerine-yazma deseniyle members.has_hawk_boss/has_snake_boss'a yazılır
+// (bkz. sql/add_team_boss_flags.sql, teamPowerSuggestions.js).
 // =====================================================================
 
 import { uploadSelfReportImage, createTeamPowerSuggestion } from "./database.js";
@@ -40,6 +46,8 @@ export function openTeamPowerUploadModal() {
   if (fileInput) fileInput.value = "";
   const searchInput = document.getElementById("teamPowerUploadMemberSearch");
   if (searchInput) searchInput.value = "";
+  document.getElementById("teamPowerUploadHawkBoss").checked = false;
+  document.getElementById("teamPowerUploadSnakeBoss").checked = false;
   document.getElementById("teamPowerUploadOverlay").classList.add("active");
   buildTeamPowerUploadElementPicker();
   renderTeamPowerUploadModal();
@@ -144,6 +152,8 @@ export async function submitTeamPowerUpload() {
       team_power: result.teamPower,
       team_element: result.teamElement,
       claimed_element: uploadState.claimedElement,
+      hawk_boss: document.getElementById("teamPowerUploadHawkBoss").checked,
+      snake_boss: document.getElementById("teamPowerUploadSnakeBoss").checked,
       image_url: imageUrl,
       status: "pending"
     });

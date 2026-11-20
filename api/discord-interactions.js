@@ -231,6 +231,8 @@ async function handleSuggestTeamPower(interaction, member) {
         team_power: teamPower,
         team_element: teamElement,
         claimed_element: options.element || null,
+        hawk_boss: !!options.hawk_boss,
+        snake_boss: !!options.snake_boss,
         image_url: attachment.url
       }
     });

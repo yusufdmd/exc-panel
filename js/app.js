@@ -54,7 +54,7 @@ import {
 import {
   mapTeamPowerSuggestion, approveTeamPowerSuggestion, rejectTeamPowerSuggestion,
   openTeamPowerReviewModal, closeTeamPowerReviewModal, setReviewingTeamElement, setReviewingTeamPower,
-  approveReviewingTeamPowerSuggestion
+  approveReviewingTeamPowerSuggestion, setReviewingHawkBoss, setReviewingSnakeBoss
 } from "./teamPowerSuggestions.js";
 import { mapAiChatMessage, sendAiChatMessage, clearAiChatHistory, handleAiChatInputKeydown, setAiChatMode, useAiChatPrompt } from "./aiChat.js";
 import { doLogin, doLogout, openChangePasswordModal, closeChangePasswordModal, submitChangePassword } from "./auth.js";
@@ -328,6 +328,7 @@ Object.assign(window, {
   selectTeamPowerUploadMember, setTeamPowerUploadFile, submitTeamPowerUpload, setTeamPowerUploadClaimedElement,
   approveTeamPowerSuggestion, rejectTeamPowerSuggestion,
   openTeamPowerReviewModal, closeTeamPowerReviewModal, setReviewingTeamElement, setReviewingTeamPower, approveReviewingTeamPowerSuggestion,
+  setReviewingHawkBoss, setReviewingSnakeBoss,
   sendAiChatMessage, clearAiChatHistory, handleAiChatInputKeydown, setAiChatMode, useAiChatPrompt,
   openWeekModal, closeWeekModal, saveWeek, deleteWeek,
   openEntryModal, closeEntryModal, saveEntry, renderEntryRows, onEntrySearchInput, handleEntryScreenshot, handleSsAppliedScreenshot, removeUnmatchedItem,

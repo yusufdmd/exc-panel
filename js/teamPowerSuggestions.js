@@ -31,6 +31,8 @@ export function mapTeamPowerSuggestion(row) {
     teamPower: row.team_power,
     teamElement: row.team_element,
     claimedElement: row.claimed_element,
+    hawkBoss: !!row.hawk_boss,
+    snakeBoss: !!row.snake_boss,
     imageUrl: row.image_url,
     status: row.status,
     createdAt: row.created_at
@@ -43,7 +45,7 @@ const teamPowerEdits = {};
 
 function getTeamPowerEdit(sub) {
   if (!teamPowerEdits[sub.id]) {
-    teamPowerEdits[sub.id] = { teamPower: Number(sub.teamPower) || 0, teamElement: sub.teamElement };
+    teamPowerEdits[sub.id] = { teamPower: Number(sub.teamPower) || 0, teamElement: sub.teamElement, hawkBoss: !!sub.hawkBoss, snakeBoss: !!sub.snakeBoss };
   }
   return teamPowerEdits[sub.id];
 }
@@ -73,7 +75,7 @@ function renderTeamPowerSuggestions() {
     return `
     <tr>
       <td><span class="member-name">${escapeHtml(memberName)}</span></td>
-      <td>${elementBadge(edit.teamElement, 20)} ${escapeHtml(elementLabel(edit.teamElement))}</td>
+      <td>${elementBadge(edit.teamElement, 20)} ${escapeHtml(elementLabel(edit.teamElement))}${edit.hawkBoss ? ` <span title="${t("bossBadgeHawkTitle")}">🦅</span>` : ""}${edit.snakeBoss ? ` <span title="${t("bossBadgeSnakeTitle")}">🐍</span>` : ""}</td>
       <td>${escapeHtml(formatPower(edit.teamPower))}${mismatchNote}</td>
       <td>${escapeHtml((sub.createdAt || "").slice(0, 16).replace("T", " "))}</td>
       <td><a href="${escapeHtml(sub.imageUrl)}" target="_blank" rel="noopener" title="${t("selfReportViewImage")}">🖼️</a></td>
@@ -113,6 +115,14 @@ export function setReviewingTeamPower(value) {
   if (reviewingSuggestionId) setTeamPowerEditField(reviewingSuggestionId, "teamPower", Number(value) || 0);
 }
 
+export function setReviewingHawkBoss(checked) {
+  if (reviewingSuggestionId) setTeamPowerEditField(reviewingSuggestionId, "hawkBoss", !!checked);
+}
+
+export function setReviewingSnakeBoss(checked) {
+  if (reviewingSuggestionId) setTeamPowerEditField(reviewingSuggestionId, "snakeBoss", !!checked);
+}
+
 function renderTeamPowerReviewModal() {
   const overlay = document.getElementById("teamPowerReviewOverlay");
   if (!overlay || !overlay.classList.contains("active") || !reviewingSuggestionId) return;
@@ -124,6 +134,8 @@ function renderTeamPowerReviewModal() {
   document.getElementById("teamPowerReviewMember").textContent = member ? member.name : "—";
   document.getElementById("teamPowerReviewImage").src = sub.imageUrl;
   document.getElementById("teamPowerReviewPoints").value = edit.teamPower;
+  document.getElementById("teamPowerReviewHawkBoss").checked = edit.hawkBoss;
+  document.getElementById("teamPowerReviewSnakeBoss").checked = edit.snakeBoss;
 
   document.querySelectorAll("#teamPowerReviewElementPicker .element-opt").forEach((el) => {
     el.classList.toggle("active", el.dataset.el === edit.teamElement);
@@ -171,7 +183,7 @@ export async function approveTeamPowerSuggestion(id) {
   const edit = getTeamPowerEdit(sub);
   if (!confirm(t("confirmApproveSelfReport"))) return;
   try {
-    const row = await updateMember(member.id, { team_power: edit.teamPower, team_element: edit.teamElement });
+    const row = await updateMember(member.id, { team_power: edit.teamPower, team_element: edit.teamElement, has_hawk_boss: edit.hawkBoss, has_snake_boss: edit.snakeBoss });
     const index = state.members.findIndex((m) => m.id === member.id);
     const teamPowerHistory = Array.isArray(member.teamPowerHistory) ? [...member.teamPowerHistory] : [];
     const lastEntry = teamPowerHistory[teamPowerHistory.length - 1];
@@ -184,6 +196,7 @@ export async function approveTeamPowerSuggestion(id) {
 
     await updateTeamPowerSuggestion(id, {
       status: "approved", team_power: edit.teamPower, team_element: edit.teamElement,
+      hawk_boss: edit.hawkBoss, snake_boss: edit.snakeBoss,
       reviewed_by: state.currentAdminUsername || null, reviewed_at: new Date().toISOString()
     });
     state.teamPowerSuggestions = state.teamPowerSuggestions.filter((s) => s.id !== id);

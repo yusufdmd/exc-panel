@@ -62,6 +62,8 @@ export function mapMember(row) {
     power: row.power,
     teamPower: row.team_power || 0,
     teamElement: row.team_element || null,
+    hasHawkBoss: !!row.has_hawk_boss,
+    hasSnakeBoss: !!row.has_snake_boss,
     isOld: row.is_old,
     oldSince: row.old_since,
     joinedAt: row.joined_at,
@@ -179,7 +181,7 @@ export function renderMembers() {
       <td class="member-id admin-only">${member.discordId ? `<span style="cursor:copy;" data-discord-id="${escapeHtml(member.discordId)}" onclick="copyDiscordId(this.dataset.discordId)" title="${t("copyDiscordIdTitle")}">${escapeHtml(member.discordId)}</span>` : "—"}</td>
       <td class="num-cell" title="${Number(member.power) || 0}">${powerCell}</td>
       <td class="num-cell">${escapeHtml(String(member.campLevel || "-"))}</td>
-      <td class="num-cell">${member.teamPower ? `${elementBadge(member.teamElement, 20)} <span style="vertical-align:middle;">${formatPower(member.teamPower)}</span>` : "—"}</td>
+      <td class="num-cell">${member.teamPower ? `${elementBadge(member.teamElement, 20)} <span style="vertical-align:middle;">${formatPower(member.teamPower)}</span>${member.hasHawkBoss ? ` <span title="${t("bossBadgeHawkTitle")}">🦅</span>` : ""}${member.hasSnakeBoss ? ` <span title="${t("bossBadgeSnakeTitle")}">🐍</span>` : ""}` : "—"}</td>
       <td class="num-cell">${escapeHtml((member.joinedAt || "").slice(0, 10)) || "—"}</td>
       <td><div class="row-actions">
         <button class="icon-btn" onclick="openHistoryModal('${member.id}')" title="${t("powerHistory")}">📈</button>
@@ -423,6 +425,8 @@ export function openMemberModal(id) {
     document.getElementById("fTeamPower").value = formatNumberInput(member.teamPower || "");
     document.getElementById("fTeamElement").value = member.teamElement || "";
     setElementPickerActive(member.teamElement || "");
+    document.getElementById("fHawkBoss").checked = !!member.hasHawkBoss;
+    document.getElementById("fSnakeBoss").checked = !!member.hasSnakeBoss;
     document.getElementById("fJoinedAt").value = member.joinedAt ? member.joinedAt.slice(0, 10) : "";
     document.getElementById("fMigratedTo").value = member.migratedTo != null ? member.migratedTo : "";
     document.getElementById("fUserChangedAt").value = member.userChangedAt ? member.userChangedAt.slice(0, 10) : "";
@@ -434,6 +438,8 @@ export function openMemberModal(id) {
     document.getElementById("memberModalTitle").textContent = t("memberAddTitle");
     ["fName", "fGameId", "fDiscordId", "fPower", "fMigratedTo", "fTeamPower", "fTeamElement"].forEach((fieldId) => { document.getElementById(fieldId).value = ""; });
     setElementPickerActive("");
+    document.getElementById("fHawkBoss").checked = false;
+    document.getElementById("fSnakeBoss").checked = false;
     document.getElementById("fRank").value = "R1";
     document.getElementById("fCamp").value = "1";
     document.getElementById("fJoinedAt").value = todayStr();
@@ -543,6 +549,8 @@ export async function saveMember() {
   const campLevel = document.getElementById("fCamp").value;
   const teamPower = Number(teamPowerRaw) || 0;
   const teamElement = document.getElementById("fTeamElement").value || null;
+  const hasHawkBoss = document.getElementById("fHawkBoss").checked;
+  const hasSnakeBoss = document.getElementById("fSnakeBoss").checked;
   const joinedAt = document.getElementById("fJoinedAt").value || todayStr();
 
   if (!state.oldFlag && !state.migratedFlag) {
@@ -576,6 +584,7 @@ export async function saveMember() {
       const row = await updateMember(editId, {
         name: name || null, game_id: gameId || null, rank, power, camp_level: campLevel,
         team_power: teamPower, team_element: teamElement,
+        has_hawk_boss: hasHawkBoss, has_snake_boss: hasSnakeBoss,
         is_old: state.oldFlag, old_since: oldSince, name_history: nameHistory,
         is_migrated: state.migratedFlag, migrated_to_server: migratedTo,
         user_changed_at: userChangedAt, joined_at: joinedAt
@@ -606,6 +615,7 @@ export async function saveMember() {
       const row = await createMember({
         name: name || null, game_id: gameId || null, rank, power, camp_level: campLevel,
         team_power: teamPower, team_element: teamElement,
+        has_hawk_boss: hasHawkBoss, has_snake_boss: hasSnakeBoss,
         is_old: state.oldFlag, old_since: state.oldFlag ? today : null,
         is_migrated: state.migratedFlag, migrated_to_server: migratedTo,
         joined_at: joinedAt
@@ -648,6 +658,7 @@ function memberToDbSnapshot(member) {
   return {
     id: member.id, name: member.name, game_id: member.gameId, rank: member.rank, camp_level: member.campLevel,
     power: member.power, team_power: member.teamPower, team_element: member.teamElement,
+    has_hawk_boss: member.hasHawkBoss, has_snake_boss: member.hasSnakeBoss,
     is_old: member.isOld, old_since: member.oldSince, joined_at: member.joinedAt, user_changed_at: member.userChangedAt,
     name_history: member.nameHistory, is_migrated: member.isMigrated, migrated_to_server: member.migratedTo
   };

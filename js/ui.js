@@ -308,6 +308,8 @@ ebParticipationWord:'Katılım', ebFootnote:'%50\'nin altındaysan daha çok etk
     teamPowerUploadBtn:'📸 Takım Gücü Ekle', teamPowerUploadTitle:'📸 Takım Gücü Ekle', teamPowerUploadDesc:'Üyeyi seç, "1. Ekip" ekran görüntüsünü yükle — AI takım gücü/elementini okuyacak, Takım Gücü Önerileri kuyruğuna düşecek.',
     lblClaimedElement:'Element (biliyorsan, opsiyonel)', teamPowerReviewTitle:'Takım Gücünü Onayla / Düzelt',
     teamPowerMismatchShort:'Element uyuşmazlığı ⚠️', teamPowerMismatchWarning:'⚠️ Beyan edilen element {claimed}, ama AI ekran görüntüsünde {ai} görüyor — hangisinin doğru olduğunu kontrol et.',
+    lblHawkBoss:"Şahin Boss'u (Sky-Held Hawk)", lblSnakeBoss:"Yılan Boss'u (Ophidillain)",
+    bossBadgeHawkTitle:"Şahin Boss'u aktif", bossBadgeSnakeTitle:"Yılan Boss'u aktif",
     teamPowerSuggestionsHeading:'💪 Discord\'dan Takım Gücü Önerileri', emptyTeamPowerSuggestionsDesc:'Oyuncuların /suggest-team-power komutuyla Discord\'dan kendi gönderdiği 1. Takım gücü/element önerileri burada görünecek.',
     thTeamPowerMember:'Üye', thTeamPowerElement:'Element', thTeamPowerValue:'Takım Gücü', thTeamPowerDate:'Tarih',
     weekReport:'Hafta Raporu', sortByWeekTitle:'Bu haftaya göre sırala', zoneGreen:'Yeşil Bölge', zoneYellow:'Sarı Bölge', zoneRed:'Kırmızı Bölge',
@@ -468,6 +470,8 @@ ebParticipationWord:'Participation', ebFootnote:'If you\'re under 50%, consider 
     teamPowerUploadBtn:'📸 Add Team Power', teamPowerUploadTitle:'📸 Add Team Power', teamPowerUploadDesc:'Pick the member, upload their "Team 1" screenshot — the AI will read the team power/element and it will land in the Team Power Suggestions queue.',
     lblClaimedElement:'Element (if you know it, optional)', teamPowerReviewTitle:'Review / Correct Team Power',
     teamPowerMismatchShort:'Element mismatch ⚠️', teamPowerMismatchWarning:'⚠️ The claimed element is {claimed}, but the AI sees {ai} in the screenshot — check which one is right.',
+    lblHawkBoss:'Hawk Boss (Sky-Held Hawk)', lblSnakeBoss:'Snake Boss (Ophidillain)',
+    bossBadgeHawkTitle:'Hawk Boss active', bossBadgeSnakeTitle:'Snake Boss active',
     teamPowerSuggestionsHeading:'💪 Team Power Suggestions from Discord', emptyTeamPowerSuggestionsDesc:'Team 1 power/element suggestions players send themselves from Discord via /suggest-team-power will appear here.',
     thTeamPowerMember:'Member', thTeamPowerElement:'Element', thTeamPowerValue:'Team Power', thTeamPowerDate:'Date',
     weekReport:'Week Report', sortByWeekTitle:'Sort by this week', zoneGreen:'Green Zone', zoneYellow:'Yellow Zone', zoneRed:'Red Zone',
@@ -628,6 +632,8 @@ ebParticipationWord:'Teilnahme', ebFootnote:'Bist du unter 50%, nimm an mehr Eve
     teamPowerUploadBtn:'📸 Teamstärke Hinzufügen', teamPowerUploadTitle:'📸 Teamstärke Hinzufügen', teamPowerUploadDesc:'Wähle das Mitglied, lade den "Team 1"-Screenshot hoch — die KI liest Teamstärke/Element, es landet in der Warteschlange der Teamstärke-Vorschläge.',
     lblClaimedElement:'Element (falls bekannt, optional)', teamPowerReviewTitle:'Teamstärke Prüfen / Korrigieren',
     teamPowerMismatchShort:'Element-Konflikt ⚠️', teamPowerMismatchWarning:'⚠️ Angegebenes Element ist {claimed}, aber die KI sieht {ai} im Screenshot — prüfe, welches stimmt.',
+    lblHawkBoss:'Falken-Boss (Sky-Held Hawk)', lblSnakeBoss:'Schlangen-Boss (Ophidillain)',
+    bossBadgeHawkTitle:'Falken-Boss aktiv', bossBadgeSnakeTitle:'Schlangen-Boss aktiv',
     teamPowerSuggestionsHeading:'💪 Teamstärke-Vorschläge von Discord', emptyTeamPowerSuggestionsDesc:'Vorschläge zur 1. Teamstärke/Element, die Spieler selbst über /suggest-team-power von Discord senden, erscheinen hier.',
     thTeamPowerMember:'Mitglied', thTeamPowerElement:'Element', thTeamPowerValue:'Teamstärke', thTeamPowerDate:'Datum',
     weekReport:'Wochenbericht', sortByWeekTitle:'Nach dieser Woche sortieren', zoneGreen:'Grüne Zone', zoneYellow:'Gelbe Zone', zoneRed:'Rote Zone',
@@ -788,6 +794,8 @@ ebParticipationWord:'Participación', ebFootnote:'¡Si estás por debajo del 50%
     teamPowerUploadBtn:'📸 Añadir Potencia de Equipo', teamPowerUploadTitle:'📸 Añadir Potencia de Equipo', teamPowerUploadDesc:'Elige el miembro, sube la captura de su "Equipo 1" — la IA leerá la potencia/elemento del equipo y entrará en la cola de Sugerencias de Potencia de Equipo.',
     lblClaimedElement:'Elemento (si lo sabes, opcional)', teamPowerReviewTitle:'Revisar / Corregir Potencia de Equipo',
     teamPowerMismatchShort:'Discrepancia de elemento ⚠️', teamPowerMismatchWarning:'⚠️ El elemento declarado es {claimed}, pero la IA ve {ai} en la captura — comprueba cuál es correcto.',
+    lblHawkBoss:'Jefe Halcón (Sky-Held Hawk)', lblSnakeBoss:'Jefe Serpiente (Ophidillain)',
+    bossBadgeHawkTitle:'Jefe Halcón activo', bossBadgeSnakeTitle:'Jefe Serpiente activo',
     teamPowerSuggestionsHeading:'💪 Sugerencias de Potencia de Equipo desde Discord', emptyTeamPowerSuggestionsDesc:'Las sugerencias de potencia/elemento del Equipo 1 que los jugadores envían ellos mismos desde Discord con /suggest-team-power aparecerán aquí.',
     thTeamPowerMember:'Miembro', thTeamPowerElement:'Elemento', thTeamPowerValue:'Potencia de Equipo', thTeamPowerDate:'Fecha',
     weekReport:'Informe Semanal', sortByWeekTitle:'Ordenar por esta semana', zoneGreen:'Zona Verde', zoneYellow:'Zona Amarilla', zoneRed:'Zona Roja',
@@ -948,6 +956,8 @@ ebParticipationWord:'Participation', ebFootnote:"Si tu es en dessous de 50%, pen
     teamPowerUploadBtn:"📸 Ajouter la Puissance d'Équipe", teamPowerUploadTitle:"📸 Ajouter la Puissance d'Équipe", teamPowerUploadDesc:"Choisis le membre, envoie la capture de son \"Équipe 1\" — l'IA lira la puissance/élément de l'équipe, qui ira dans la file des Suggestions de Puissance d'Équipe.",
     lblClaimedElement:"Élément (si tu le sais, optionnel)", teamPowerReviewTitle:"Vérifier / Corriger la Puissance d'Équipe",
     teamPowerMismatchShort:"Élément en désaccord ⚠️", teamPowerMismatchWarning:"⚠️ L'élément déclaré est {claimed}, mais l'IA voit {ai} sur la capture — vérifie lequel est correct.",
+    lblHawkBoss:"Boss Faucon (Sky-Held Hawk)", lblSnakeBoss:"Boss Serpent (Ophidillain)",
+    bossBadgeHawkTitle:"Boss Faucon actif", bossBadgeSnakeTitle:"Boss Serpent actif",
     teamPowerSuggestionsHeading:"💪 Suggestions de Puissance d'Équipe depuis Discord", emptyTeamPowerSuggestionsDesc:"Les suggestions de puissance/élément de l'Équipe 1 que les joueurs envoient eux-mêmes depuis Discord avec /suggest-team-power apparaîtront ici.",
     thTeamPowerMember:'Membre', thTeamPowerElement:'Élément', thTeamPowerValue:"Puissance d'Équipe", thTeamPowerDate:'Date',
     weekReport:'Rapport Hebdomadaire', sortByWeekTitle:'Trier par cette semaine', zoneGreen:'Zone Verte', zoneYellow:'Zone Jaune', zoneRed:'Zone Rouge',
@@ -1108,6 +1118,8 @@ ebParticipationWord:'Tham gia', ebFootnote:'Nếu bạn dưới 50%, hãy tham g
     teamPowerUploadBtn:'📸 Thêm Sức Mạnh Đội', teamPowerUploadTitle:'📸 Thêm Sức Mạnh Đội', teamPowerUploadDesc:'Chọn thành viên, tải lên ảnh chụp "Đội 1" — AI sẽ đọc sức mạnh/hệ của đội và đưa vào hàng chờ Đề Xuất Sức Mạnh Đội.',
     lblClaimedElement:'Hệ (nếu bạn biết, không bắt buộc)', teamPowerReviewTitle:'Duyệt / Sửa Sức Mạnh Đội',
     teamPowerMismatchShort:'Hệ không khớp ⚠️', teamPowerMismatchWarning:'⚠️ Hệ đã khai báo là {claimed}, nhưng AI thấy {ai} trong ảnh — kiểm tra xem cái nào đúng.',
+    lblHawkBoss:'Boss Diều Hâu (Sky-Held Hawk)', lblSnakeBoss:'Boss Rắn (Ophidillain)',
+    bossBadgeHawkTitle:'Boss Diều Hâu đang kích hoạt', bossBadgeSnakeTitle:'Boss Rắn đang kích hoạt',
     teamPowerSuggestionsHeading:'💪 Đề Xuất Sức Mạnh Đội từ Discord', emptyTeamPowerSuggestionsDesc:'Các đề xuất sức mạnh/hệ của Đội 1 mà người chơi tự gửi từ Discord bằng /suggest-team-power sẽ hiện ở đây.',
     thTeamPowerMember:'Thành viên', thTeamPowerElement:'Hệ', thTeamPowerValue:'Sức Mạnh Đội', thTeamPowerDate:'Ngày',
     weekReport:'Báo cáo Tuần', sortByWeekTitle:'Sắp xếp theo tuần này', zoneGreen:'Vùng Xanh', zoneYellow:'Vùng Vàng', zoneRed:'Vùng Đỏ',
@@ -1436,6 +1448,10 @@ export function applyStaticText() {
   document.getElementById("t_lblSelfReportImage2").textContent = t("lblSelfReportImage");
   document.getElementById("t_closeTeamPowerUpload").textContent = t("cancel");
   document.getElementById("t_lblClaimedElement").textContent = t("lblClaimedElement");
+  ["1", "2", "3"].forEach((suffix) => {
+    document.getElementById("t_lblHawkBoss" + suffix).textContent = t("lblHawkBoss");
+    document.getElementById("t_lblSnakeBoss" + suffix).textContent = t("lblSnakeBoss");
+  });
   document.getElementById("t_teamPowerReviewTitle").textContent = t("teamPowerReviewTitle");
   document.getElementById("t_lblTeamPowerReview").textContent = t("lblTeamPower");
   document.getElementById("t_lblTeamElementReview").textContent = t("lblTeamElement");
